@@ -1,0 +1,8 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: body
+---
+<dl>
+<dt>term</dt>
+<dd>definition</dd>
+</dl>
