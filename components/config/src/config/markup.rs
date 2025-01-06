@@ -47,6 +47,8 @@ pub struct Markdown {
     pub external_links_no_referrer: bool,
     /// Whether smart punctuation is enabled (changing quotes, dashes, dots etc in their typographic form)
     pub smart_punctuation: bool,
+    /// Whether parsing of definition lists is enabled
+    pub definition_list: bool,
     /// Whether footnotes are rendered at the bottom in the style of GitHub.
     pub bottom_footnotes: bool,
     /// A list of directories to search for additional `.sublime-syntax` and `.tmTheme` files in.
@@ -227,6 +229,7 @@ impl Default for Markdown {
             external_links_no_follow: false,
             external_links_no_referrer: false,
             smart_punctuation: false,
+            definition_list: false,
             bottom_footnotes: false,
             extra_syntaxes_and_themes: vec![],
             extra_syntax_set: None,
