@@ -920,7 +920,7 @@ mod tests {
             base_url.as_deref(),
             &config_file,
             include_drafts,
-            store_html,
+            false,
             no_port_append,
             ws_port,
         )
