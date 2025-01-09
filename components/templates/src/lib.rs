@@ -23,6 +23,7 @@ pub static ZOLA_TERA: Lazy<Tera> = Lazy::new(|| {
             include_str!("builtins/split_sitemap_index.xml"),
         ),
         ("__zola_builtins/anchor-link.html", include_str!("builtins/anchor-link.html")),
+        ("__zola_builtins/summary-cutoff.html", include_str!("builtins/summary-cutoff.html")),
         ("internal/alias.html", include_str!("builtins/internal/alias.html")),
     ])
     .unwrap();
