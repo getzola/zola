@@ -7,15 +7,14 @@ use config::Config;
 use errors::{anyhow, Context, Result};
 use libs::ahash::{HashMap, HashSet};
 use libs::image::codecs::jpeg::JpegEncoder;
+use libs::image::codecs::avif::AvifEncoder;
 use libs::image::imageops::FilterType;
-use libs::image::{EncodableLayout, ImageFormat};
+use libs::image::{ExtendedColorType, EncodableLayout, ImageEncoder, ImageFormat};
 use libs::image::GenericImageView;
 use libs::rayon::prelude::*;
 use libs::{image, webp};
 use serde::{Deserialize, Serialize};
 use utils::fs as ufs;
-use libs::ravif::*;
-use libs::rgb::{RGB, RGBA};
 
 use crate::format::Format;
 use crate::helpers::get_processed_filename;
@@ -75,24 +74,19 @@ impl ImageOp {
                 buffered_f.write_all(memory.as_bytes())?;
             }
             Format::Avif(q) => {
-                let (width, height) = img.dimensions();
-                let encoder = Encoder::new()
-                    .with_quality(q.unwrap_or(75) as f32)
-                    .with_speed(1);
-                let res = if img.color().has_alpha() { // RGBA image
-                        let rgba = img.to_rgba8().pixels().map(|pixel| {
-                                let [r, g, b, a] = pixel.0;
-                                RGBA { r, g, b, a }
-                            }).collect::<Vec<RGBA<u8>>>().first().unwrap().clone();
-                        encoder.encode_rgba(Img::new(&[rgba], width as usize, height as usize))?
-                    } else { // RGB image
-                        let rgba = img.to_rgb8().pixels().map(|pixel| {
-                                let [r, g, b] = pixel.0;
-                                RGB { r, g, b}
-                            }).collect::<Vec<RGB<u8>>>().first().unwrap().clone();
-                        encoder.encode_rgb(Img::new(&[rgba], width as usize, height as usize))?
-                    };
-                buffered_f.write_all(res.avif_file.as_bytes())?;
+                let mut avif: Vec<u8> = Vec::new();
+                let encoder = 
+                    AvifEncoder::new_with_speed_quality(
+                        &mut avif,
+                        1,
+                        q.unwrap_or(100));
+                encoder.write_image(
+                    &img.as_bytes(),
+                    img.dimensions().0,
+                    img.dimensions().1,
+                    ExtendedColorType::Rgba8,
+                )?;
+                buffered_f.write_all(&avif.as_bytes())?;
             }
         }
 

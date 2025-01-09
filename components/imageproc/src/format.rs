@@ -12,7 +12,7 @@ pub enum Format {
     Png,
     /// WebP, The `u8` argument is WebP quality (in percent), None meaning lossless.
     WebP(Option<u8>),
-    /// AVIF, The `u8` argument is AVIF quality (in percent), None meaning 75 quality.
+    /// AVIF, The `u8` argument is AVIF quality (in percent), None meaning lossless.
     Avif(Option<u8>),
 }
 
