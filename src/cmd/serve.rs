@@ -47,7 +47,7 @@ use ws::{Message, Sender, WebSocket};
 
 use errors::{anyhow, Context, Error, Result};
 use site::sass::compile_sass;
-use site::{Site, SITE_CONTENT};
+use site::{BuildMode, Site, SITE_CONTENT};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
 use crate::fs_utils::{filter_events, ChangeKind, SimpleFileSystemEventKind};
@@ -367,6 +367,7 @@ fn create_new_site(
     base_url: Option<&str>,
     config_file: &Path,
     include_drafts: bool,
+    store_html: bool,
     mut no_port_append: bool,
     ws_port: Option<u16>,
 ) -> Result<(Site, SocketAddr, String)> {
@@ -390,7 +391,7 @@ fn create_new_site(
         constructed_base_url.truncate(constructed_base_url.len() - 1);
     }
 
-    site.enable_serve_mode();
+    site.enable_serve_mode(if store_html { BuildMode::Both } else { BuildMode::Memory });
     site.set_base_url(constructed_base_url.clone());
     if let Some(output_dir) = output_dir {
         if !force && output_dir.exists() {
@@ -427,6 +428,7 @@ pub fn serve(
     config_file: &Path,
     open: bool,
     include_drafts: bool,
+    store_html: bool,
     fast_rebuild: bool,
     no_port_append: bool,
     utc_offset: UtcOffset,
@@ -442,6 +444,7 @@ pub fn serve(
         base_url,
         config_file,
         include_drafts,
+        store_html,
         no_port_append,
         None,
     )?;
@@ -672,6 +675,7 @@ pub fn serve(
         base_url,
         config_file,
         include_drafts,
+        store_html,
         no_port_append,
         ws_port,
     ) {
@@ -916,6 +920,7 @@ mod tests {
             base_url.as_deref(),
             &config_file,
             include_drafts,
+            false,
             no_port_append,
             ws_port,
         )

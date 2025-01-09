@@ -82,6 +82,10 @@ pub enum Command {
         #[clap(short = 'O', long)]
         open: bool,
 
+        /// Also store HTML in the public/ folder (by default HTML is only stored in-memory)
+        #[clap(long)]
+        store_html: bool,
+
         /// Only rebuild the minimum on change - useful when working on a specific page/section
         #[clap(short = 'f', long)]
         fast: bool,
