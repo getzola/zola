@@ -38,6 +38,8 @@ pub enum BuildMode {
     Disk,
     /// In memory for the content -> `zola serve`
     Memory,
+    /// Both on the filesystem and in memory
+    Both,
 }
 
 #[derive(Debug)]
@@ -117,10 +119,10 @@ impl Site {
     }
 
     /// Enable some `zola serve` related options
-    pub fn enable_serve_mode(&mut self) {
+    pub fn enable_serve_mode(&mut self, build_mode: BuildMode) {
         SITE_CONTENT.write().unwrap().clear();
         self.config.enable_serve_mode();
-        self.build_mode = BuildMode::Memory;
+        self.build_mode = build_mode;
     }
 
     /// Set the site to load the drafts.
@@ -668,16 +670,20 @@ impl Site {
         };
 
         match self.build_mode {
-            BuildMode::Disk => {
+            BuildMode::Disk | BuildMode::Both => {
                 let end_path = current_path.join(filename);
                 create_file(&end_path, &final_content)?;
             }
-            BuildMode::Memory => {
+            _ => (),
+        }
+        match self.build_mode {
+            BuildMode::Memory | BuildMode::Both => {
                 let site_path =
                     if filename != "index.html" { site_path.join(filename) } else { site_path };
 
                 SITE_CONTENT.write().unwrap().insert(site_path, final_content);
             }
+            _ => (),
         }
 
         Ok(current_path)
