@@ -42,7 +42,7 @@ use time::{OffsetDateTime, UtcOffset};
 use libs::percent_encoding;
 use libs::relative_path::{RelativePath, RelativePathBuf};
 use libs::serde_json;
-use notify_debouncer_full::{new_debouncer, notify::RecursiveMode, notify::Watcher};
+use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use ws::{Message, Sender, WebSocket};
 
 use errors::{anyhow, Context, Error, Result};
@@ -501,7 +501,7 @@ pub fn serve(
             WatchMode::Condition(b) => b && watch_path.exists(),
         };
         if should_watch {
-            debouncer.watcher()
+            debouncer
                 .watch(&root_dir.join(entry), recursive_mode)
                 .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
             watchers.push(entry.to_string());

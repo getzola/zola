@@ -11,7 +11,7 @@
 - Exclude paginated pages in sitemap by default
 - Allow treating a missing highlight language as error
 - Handle more editors with change detection in `zola serve`
-- Add argument to `zola serve` to write HTML files to disk
+- Add argument to `zola serve` to write HTML files to disk (`--store-html`)
 - Add optional parsing of Markdown definition lists
 
 
