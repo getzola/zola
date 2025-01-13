@@ -45,7 +45,7 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
 
 pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
     let tpl_glob =
-        format!("{}/{}", path.to_string_lossy().replace('\\', "/"), "templates/**/*.{*ml,md}");
+        format!("{}/{}", path.to_string_lossy().replace('\\', "/"), "templates/**/*.{*ml,md,txt}");
 
     // Only parsing as we might be extending templates from themes and that would error
     // as we haven't loaded them yet
