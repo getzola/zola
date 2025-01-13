@@ -3,14 +3,14 @@
 title = "tabi"
 description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2024-12-20T19:06:52+08:00
+date = 2025-01-12T18:42:06+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-12-20T19:06:52+08:00
-updated = 2024-12-20T19:06:52+08:00
+created = 2025-01-12T18:42:06+01:00
+updated = 2025-01-12T18:42:06+01:00
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -184,7 +184,7 @@ highlight_theme = "css"
 >
 > These settings are mutually exclusive and using both may result in no posts being displayed.
 
-1. If you want an introduction section (see screenshot above), add these lines to `content/_index.md`:
+6. If you want an introduction section (see screenshot above), add these lines to `content/_index.md`:
 
 ```
 [extra]

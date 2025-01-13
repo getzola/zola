@@ -3,14 +3,14 @@
 title = "Zolarwind"
 description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
 template = "theme.html"
-date = 2024-12-09T16:12:52+01:00
+date = 2025-01-05T13:23:19+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-12-09T16:12:52+01:00
-updated = 2024-12-09T16:12:52+01:00
+created = 2025-01-05T13:23:19+01:00
+updated = 2025-01-05T13:23:19+01:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
 minimum_version = "0.19.1"

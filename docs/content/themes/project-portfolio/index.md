@@ -3,14 +3,14 @@
 title = "Project Portfolio"
 description = "Theme for a project portfolio (based on Tailwind CSS)."
 template = "theme.html"
-date = 2024-12-09T20:02:25+01:00
+date = 2025-01-09T13:17:38+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-12-09T20:02:25+01:00
-updated = 2024-12-09T20:02:25+01:00
+created = 2025-01-09T13:17:38+01:00
+updated = 2025-01-09T13:17:38+01:00
 repository = "https://github.com/awinterstein/zola-theme-project-portfolio.git"
 homepage = "https://github.com/awinterstein/zola-theme-project-portfolio"
 minimum_version = "0.9.0"
@@ -185,7 +185,7 @@ highlight_themes_css = [
 To overwrite the default footer (copyright notice), extend the `layout.html` template of the theme as described in the [Zola documentation](https://www.getzola.org/documentation/themes/extending-a-theme/#overriding-a-block) by creating a `layout.html` with the following content in your `templates` directory:
 
 ```jinja
-{%/* extends "blow/templates/layout.html" */%}
+{%/* extends "project-portfolio/templates/layout.html" */%}
 
 {%/* block content_footer */%}
 Here is my own footer with a <a href="http://example.com">link</a>.

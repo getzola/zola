@@ -3,14 +3,14 @@
 title = "jiaxiang.wang"
 description = "A fast and beautiful theme for creators, used by https://blog.jiaxiang.wang, porting from Halo-theme-hao."
 template = "theme.html"
-date = 2024-12-23T00:33:31+08:00
+date = 2025-01-09T04:39:33Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-12-23T00:33:31+08:00
-updated = 2024-12-23T00:33:31+08:00
+created = 2025-01-09T04:39:33Z
+updated = 2025-01-09T04:39:33Z
 repository = "https://github.com/iWangJiaxiang/zola-theme-jiaxiang.wang"
 homepage = "https://github.com/iWangJiaxiang/zola-theme-jiaxiang.wang"
 minimum_version = "0.19.2"
