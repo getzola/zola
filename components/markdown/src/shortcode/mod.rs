@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use errors::{Error, Result};
+use errors::Result;
 use libs::tera;
-use utils::templates::{ShortcodeDefinition, ShortcodeFileType};
+use utils::templates::{ShortcodeDefinition, ShortcodeFileType, ShortcodeInvocationCounter};
 
 mod parser;
 
@@ -13,14 +13,11 @@ pub fn extract_shortcodes(
     source: &str,
     definitions: &HashMap<String, ShortcodeDefinition>,
 ) -> Result<(String, Vec<Shortcode>)> {
-    let (out, mut shortcodes) = parse_for_shortcodes(source)?;
+    let (out, mut shortcodes) =
+        parse_for_shortcodes(source, &mut ShortcodeInvocationCounter::new())?;
 
     for sc in &mut shortcodes {
-        if let Some(def) = definitions.get(&sc.name) {
-            sc.tera_name = def.tera_name.clone();
-        } else {
-            return Err(Error::msg(format!("Found usage of a shortcode named `{}` but we do not know about. Make sure it's not a typo and that a field name `{}.{{html,md}} exists in the `templates/shortcodes` directory.", sc.name, sc.name)));
-        }
+        sc.fill_tera_name(definitions)?;
     }
 
     Ok((out, shortcodes))
@@ -79,6 +76,7 @@ mod tests {
                         span: 0..SHORTCODE_PLACEHOLDER.len(),
                         body: None,
                         nth: 1,
+                        inner: Vec::new(),
                         tera_name: "shortcodes/a.md".to_owned(),
                     },
                     Shortcode {
@@ -87,6 +85,7 @@ mod tests {
                         span: SHORTCODE_PLACEHOLDER.len()..(2 * SHORTCODE_PLACEHOLDER.len()),
                         body: None,
                         nth: 2,
+                        inner: Vec::new(),
                         tera_name: "shortcodes/a.md".to_owned(),
                     }
                 ],
@@ -107,7 +106,35 @@ mod tests {
                     span: 9..(9 + SHORTCODE_PLACEHOLDER.len()),
                     body: Some("Content of the body".to_owned()),
                     nth: 1,
+                    inner: Vec::new(),
+                    tera_name: "shortcodes/bodied.md".to_owned(),
+                },],
+                &tera_context,
+                &tera
+            )
+            .unwrap()
+            .0,
+            "Much wow Content of the body".to_string()
+        );
 
+        assert_eq!(
+            insert_md_shortcodes(
+                format!("Much wow {}", SHORTCODE_PLACEHOLDER),
+                vec![Shortcode {
+                    name: "bodied".to_string(),
+                    args: to_value(&HashMap::<u8, u8>::new()).unwrap(),
+                    span: 9..(9 + SHORTCODE_PLACEHOLDER.len()),
+                    body: Some(format!("Content of {SHORTCODE_PLACEHOLDER}")),
+                    nth: 1,
+                    inner: vec![Shortcode {
+                        name: "bodied".to_string(),
+                        args: to_value(&HashMap::<u8, u8>::new()).unwrap(),
+                        span: 11..(11 + SHORTCODE_PLACEHOLDER.len()),
+                        body: Some("the body".to_owned()),
+                        nth: 1,
+                        inner: Vec::new(),
+                        tera_name: "shortcodes/bodied.md".to_owned(),
+                    },],
                     tera_name: "shortcodes/bodied.md".to_owned(),
                 },],
                 &tera_context,

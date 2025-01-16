@@ -1,8 +1,6 @@
 ---
-source: components/rendering/tests/markdown.rs
-assertion_line: 161
+source: components/markdown/tests/markdown.rs
 expression: body
-
+snapshot_kind: text
 ---
 <p><a rel="noreferrer" href="https://google.com">https://google.com</a></p>
-

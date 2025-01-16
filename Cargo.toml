@@ -26,7 +26,7 @@ clap_complete = "4"
 hyper = { version = "0.14.1", default-features = false, features = ["runtime", "server", "http2", "http1"] }
 tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time"] }
 time = { version = "0.3", features = ["formatting", "macros", "local-offset"] }
-notify-debouncer-full = "0.3"
+notify-debouncer-full = "0.5"
 ws = "0.9"
 ctrlc = "3"
 open = "5"

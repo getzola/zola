@@ -23,6 +23,7 @@ pub static ZOLA_TERA: Lazy<Tera> = Lazy::new(|| {
             include_str!("builtins/split_sitemap_index.xml"),
         ),
         ("__zola_builtins/anchor-link.html", include_str!("builtins/anchor-link.html")),
+        ("__zola_builtins/summary-cutoff.html", include_str!("builtins/summary-cutoff.html")),
         ("internal/alias.html", include_str!("builtins/internal/alias.html")),
     ])
     .unwrap();
@@ -44,7 +45,7 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
 
 pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
     let tpl_glob =
-        format!("{}/{}", path.to_string_lossy().replace('\\', "/"), "templates/**/*.{*ml,md}");
+        format!("{}/{}", path.to_string_lossy().replace('\\', "/"), "templates/**/*.{*ml,md,txt}");
 
     // Only parsing as we might be extending templates from themes and that would error
     // as we haven't loaded them yet

@@ -4,7 +4,7 @@ use libs::tera::{Context, Tera};
 
 use errors::{bail, Result};
 
-static DEFAULT_TPL: &str = include_str!("default_tpl.html");
+const DEFAULT_TPL: &str = include_str!("default_tpl.html");
 
 macro_rules! render_default_tpl {
     ($filename: expr, $url: expr) => {{
@@ -31,6 +31,24 @@ impl ShortcodeDefinition {
         let tera_name = tera_name.to_string();
 
         ShortcodeDefinition { file_type, tera_name }
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct ShortcodeInvocationCounter {
+    amounts: HashMap<String, usize>,
+}
+impl ShortcodeInvocationCounter {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn get(&mut self, str: &str) -> usize {
+        let nth = self.amounts.entry(str.into()).or_insert(0);
+        *nth += 1;
+        return *nth;
+    }
+    pub fn reset(&mut self) {
+        self.amounts.clear();
     }
 }
 

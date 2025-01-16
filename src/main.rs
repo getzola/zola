@@ -84,8 +84,10 @@ fn main() {
             base_url,
             drafts,
             open,
+            store_html,
             fast,
             no_port_append,
+            extra_watch_path,
         } => {
             if port != 1111 && !port_is_available(port) {
                 console::error("The requested port is not available");
@@ -111,19 +113,21 @@ fn main() {
                 &config_file,
                 open,
                 drafts,
+                store_html,
                 fast,
                 no_port_append,
                 UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC),
+                extra_watch_path,
             ) {
                 messages::unravel_errors("Failed to serve the site", &e);
                 std::process::exit(1);
             }
         }
-        Command::Check { drafts } => {
+        Command::Check { drafts, skip_external_links } => {
             console::info("Checking site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
-            match cmd::check(&root_dir, &config_file, None, None, drafts) {
+            match cmd::check(&root_dir, &config_file, None, None, drafts, skip_external_links) {
                 Ok(()) => messages::report_elapsed_time(start),
                 Err(e) => {
                     messages::unravel_errors("Failed to check the site", &e);

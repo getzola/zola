@@ -18,7 +18,7 @@ use utils::fs::{get_file_time, read_file};
 
 use crate::global_fns::helpers::search_for_file;
 
-static GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
+const GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
     "`load_data`: requires EITHER a `path`, `url`, or `literal` argument";
 
 #[derive(Debug, PartialEq, Clone, Copy, Hash)]
@@ -579,7 +579,6 @@ mod tests {
     use crate::global_fns::load_data::Method;
     use libs::serde_json::json;
     use libs::tera::{self, to_value, Function};
-    use mockito::mock;
     use std::fs::{copy, create_dir_all};
     use tempfile::tempdir;
 
@@ -610,17 +609,20 @@ mod tests {
 
     #[test]
     fn can_load_remote_data_using_post_method() {
-        let _mg = mock("GET", "/kr1zdgbm4y")
+        let mut server = mockito::Server::new();
+        let _mg = server
+            .mock("GET", "/kr1zdgbm4y")
             .with_header("content-type", "text/plain")
             .with_body("GET response")
             .expect(0)
             .create();
-        let _mp = mock("POST", "/kr1zdgbm4y")
+        let _mp = server
+            .mock("POST", "/kr1zdgbm4y")
             .with_header("content-type", "text/plain")
             .with_body("POST response")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
+        let url = format!("{}{}", server.url(), "/kr1zdgbm4y");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
         let mut args = HashMap::new();
@@ -636,19 +638,22 @@ mod tests {
 
     #[test]
     fn can_load_remote_data_using_post_method_with_content_type_header() {
-        let _mjson = mock("POST", "/kr1zdgbm4yw")
+        let mut server = mockito::Server::new();
+        let _mjson = server
+            .mock("POST", "/kr1zdgbm4yw")
             .match_header("content-type", "application/json")
             .with_header("content-type", "application/json")
             .with_body("{i_am:'json'}")
             .expect(0)
             .create();
-        let _mtext = mock("POST", "/kr1zdgbm4yw")
+        let _mtext = server
+            .mock("POST", "/kr1zdgbm4yw")
             .match_header("content-type", "text/plain")
             .with_header("content-type", "text/plain")
             .with_body("POST response text")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4yw");
+        let url = format!("{}{}", server.url(), "/kr1zdgbm4yw");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
         let mut args = HashMap::new();
@@ -665,19 +670,22 @@ mod tests {
 
     #[test]
     fn can_load_remote_data_using_post_method_with_body() {
-        let _mjson = mock("POST", "/kr1zdgbm4y")
+        let mut server = mockito::Server::new();
+        let _mjson = server
+            .mock("POST", "/kr1zdgbm4y")
             .match_body("qwerty")
             .with_header("content-type", "application/json")
             .with_body("{i_am:'json'}")
             .expect(0)
             .create();
-        let _mtext = mock("POST", "/kr1zdgbm4y")
+        let _mtext = server
+            .mock("POST", "/kr1zdgbm4y")
             .match_body("this is a match")
             .with_header("content-type", "text/plain")
             .with_body("POST response text")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y");
+        let url = format!("{}{}", server.url(), "/kr1zdgbm4y");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
         let mut args = HashMap::new();
@@ -840,7 +848,9 @@ mod tests {
 
     #[test]
     fn can_load_remote_data() {
-        let _m = mock("GET", "/zpydpkjj67")
+        let mut server = mockito::Server::new();
+        let _m = server
+            .mock("GET", "/zpydpkjj67")
             .with_header("content-type", "application/json")
             .with_body(
                 r#"{
@@ -852,7 +862,7 @@ mod tests {
             )
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/zpydpkjj67");
+        let url = format!("{}{}", server.url(), "/zpydpkjj67");
         let static_fn = LoadData::new(PathBuf::new(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
@@ -863,13 +873,15 @@ mod tests {
 
     #[test]
     fn fails_when_request_404s() {
-        let _m = mock("GET", "/aazeow0kog")
+        let mut server = mockito::Server::new();
+        let _m = server
+            .mock("GET", "/aazeow0kog")
             .with_status(404)
             .with_header("content-type", "text/plain")
             .with_body("Not Found")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/aazeow0kog");
+        let url = format!("{}{}", server.url(), "/aazeow0kog");
         let static_fn = LoadData::new(PathBuf::new(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
@@ -884,13 +896,15 @@ mod tests {
 
     #[test]
     fn doesnt_fail_when_request_404s_is_not_required() {
-        let _m = mock("GET", "/aazeow0kog")
+        let mut server = mockito::Server::new();
+        let _m = server
+            .mock("GET", "/aazeow0kog")
             .with_status(404)
             .with_header("content-type", "text/plain")
             .with_body("Not Found")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/aazeow0kog");
+        let url = format!("{}{}", server.url(), "/aazeow0kog");
         let static_fn = LoadData::new(PathBuf::new(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
@@ -903,8 +917,10 @@ mod tests {
 
     #[test]
     fn set_default_user_agent() {
+        let mut server = mockito::Server::new();
         let user_agent = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
-        let _m = mock("GET", "/chu8aizahBiy")
+        let _m = server
+            .mock("GET", "/chu8aizahBiy")
             .match_header("User-Agent", user_agent)
             .with_header("content-type", "application/json")
             .with_body(
@@ -917,7 +933,7 @@ mod tests {
             )
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/chu8aizahBiy");
+        let url = format!("{}{}", server.url(), "/chu8aizahBiy");
         let static_fn = LoadData::new(PathBuf::new(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
@@ -1116,12 +1132,14 @@ mod tests {
 
     #[test]
     fn is_load_remote_data_using_post_method_with_different_body_not_cached() {
-        let _mjson = mock("POST", "/kr1zdgbm4y3")
+        let mut server = mockito::Server::new();
+        let _mjson = server
+            .mock("POST", "/kr1zdgbm4y3")
             .with_header("content-type", "application/json")
             .with_body("{i_am:'json'}")
             .expect(2)
             .create();
-        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y3");
+        let url = format!("{}{}", server.url(), "/kr1zdgbm4y3");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
         let mut args = HashMap::new();
@@ -1147,13 +1165,15 @@ mod tests {
 
     #[test]
     fn is_load_remote_data_using_post_method_with_same_body_cached() {
-        let _mjson = mock("POST", "/kr1zdgbm4y2")
+        let mut server = mockito::Server::new();
+        let _mjson = server
+            .mock("POST", "/kr1zdgbm4y2")
             .match_body("this is a match")
             .with_header("content-type", "application/json")
             .with_body("{i_am:'json'}")
             .expect(1)
             .create();
-        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y2");
+        let url = format!("{}{}", server.url(), "/kr1zdgbm4y2");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
         let mut args = HashMap::new();
@@ -1179,14 +1199,16 @@ mod tests {
 
     #[test]
     fn is_custom_headers_working() {
-        let _mjson = mock("POST", "/kr1zdgbm4y4")
+        let mut server = mockito::Server::new();
+        let _mjson = server
+            .mock("POST", "/kr1zdgbm4y4")
             .with_header("content-type", "application/json")
             .match_header("accept", "text/plain")
             .match_header("x-custom-header", "some-values")
             .with_body("{i_am:'json'}")
             .expect(1)
             .create();
-        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y4");
+        let url = format!("{}{}", server.url(), "/kr1zdgbm4y4");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
         let mut args = HashMap::new();
@@ -1204,7 +1226,8 @@ mod tests {
 
     #[test]
     fn is_custom_headers_working_with_multiple_values() {
-        let _mjson = mock("POST", "/kr1zdgbm4y5")
+        let mut server = mockito::Server::new();
+        let _mjson = server.mock("POST", "/kr1zdgbm4y5")
             .with_status(201)
             .with_header("content-type", "application/json")
             .match_header("authorization", "Bearer 123")
@@ -1216,7 +1239,7 @@ mod tests {
             .with_body("<html>I am a server that needs authentication and returns HTML with Accept set to JSON</html>")
             .expect(1)
             .create();
-        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y5");
+        let url = format!("{}{}", server.url(), "/kr1zdgbm4y5");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
         let mut args = HashMap::new();
@@ -1243,9 +1266,10 @@ mod tests {
 
     #[test]
     fn fails_when_specifying_invalid_headers() {
-        let _mjson = mock("GET", "/kr1zdgbm4y6").with_status(204).expect(0).create();
+        let mut server = mockito::Server::new();
+        let _mjson = server.mock("GET", "/kr1zdgbm4y6").with_status(204).expect(0).create();
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let url = format!("{}{}", mockito::server_url(), "/kr1zdgbm4y6");
+        let url = format!("{}{}", server.url(), "/kr1zdgbm4y6");
         let mut args = HashMap::new();
         args.insert("url".to_string(), to_value(&url).unwrap());
         args.insert("format".to_string(), to_value("plain").unwrap());

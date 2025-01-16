@@ -24,6 +24,7 @@ use crate::codeblock::{CodeBlock, FenceSettings};
 use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
+const SUMMARY_CUTOFF_TEMPLATE: &str = "summary-cutoff.html";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
 
@@ -277,7 +278,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
                 // nr is a number of references to this footnote
                 let (n, nr) = footnote_numbers.entry(name.clone()).or_insert((n, 0usize));
                 *nr += 1;
-                let reference = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">[{n}]</a></sup>"##).into());
+                let reference = Event::Html(format!(r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">{n}</a></sup>"##).into());
 
                 if footnote_bodies_stack.is_empty() {
                     // we are in the main text, just output the reference
@@ -304,7 +305,8 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
         return;
     }
 
-    old_events.push(Event::Html("<hr><ol class=\"footnotes-list\">\n".into()));
+    old_events
+        .push(Event::Html("<footer class=\"footnotes\">\n<ol class=\"footnotes-list\">\n".into()));
 
     // Step 2: retain only footnotes which was actually referenced
     footnotes.retain(|f| match f.first() {
@@ -341,7 +343,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
         //
         // HTML:
         //
-        //     <p>five <sup class="footnote-reference" id="fr-feet-1"><a href="#fn-feet">[1]</a></sup>.</p>
+        //     <p>five <sup class="footnote-reference" id="fr-feet-1"><a href="#fn-feet">1</a></sup>.</p>
         //
         //     <ol class="footnotes-list">
         //     <li id="fn-feet">
@@ -394,7 +396,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     });
 
     old_events.extend(footnotes);
-    old_events.push(Event::Html("</ol>\n".into()));
+    old_events.push(Event::Html("</ol>\n</footer>\n".into()));
 }
 
 pub fn markdown_to_html(
@@ -437,6 +439,9 @@ pub fn markdown_to_html(
 
     if context.config.markdown.smart_punctuation {
         opts.insert(Options::ENABLE_SMART_PUNCTUATION);
+    }
+    if context.config.markdown.definition_list {
+        opts.insert(Options::ENABLE_DEFINITION_LIST);
     }
 
     // we reverse their order so we can pop them easily in order
@@ -559,7 +564,13 @@ pub fn markdown_to_html(
                         cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
                         _ => FenceSettings::new(""),
                     };
-                    let (block, begin) = CodeBlock::new(fence, context.config, path);
+                    let (block, begin) = match CodeBlock::new(fence, context.config, path) {
+                        Ok(cb) => cb,
+                        Err(e) => {
+                            error = Some(e);
+                            break;
+                        }
+                    };
                     code_block = Some(block);
                     events.push(Event::Html(begin.into()));
                 }
@@ -684,7 +695,9 @@ pub fn markdown_to_html(
                         event
                     });
                 }
-                Event::Html(text) if !has_summary && MORE_DIVIDER_RE.is_match(text.as_ref()) => {
+                Event::Html(text) | Event::InlineHtml(text)
+                    if !has_summary && MORE_DIVIDER_RE.is_match(text.as_ref()) =>
+                {
                     has_summary = true;
                     events.push(Event::Html(CONTINUE_READING.into()));
                 }
@@ -787,6 +800,19 @@ pub fn markdown_to_html(
             .position(|e| matches!(e, Event::Html(CowStr::Borrowed(CONTINUE_READING))))
             .unwrap_or(events.len());
 
+        // determine closing tags missing from summary
+        let mut tags = Vec::new();
+        for event in &events[..continue_reading] {
+            match event {
+                Event::Start(Tag::HtmlBlock) | Event::End(TagEnd::HtmlBlock) => (),
+                Event::Start(tag) => tags.push(tag.to_end()),
+                Event::End(tag) => {
+                    tags.truncate(tags.iter().rposition(|t| *t == *tag).unwrap_or(0));
+                }
+                _ => (),
+            }
+        }
+
         let mut events = events.into_iter();
 
         // emit everything up to summary
@@ -794,8 +820,30 @@ pub fn markdown_to_html(
 
         if has_summary {
             // remove footnotes
-            let summary_html = FOOTNOTES_RE.replace_all(&html, "").into_owned();
-            summary = Some(summary_html)
+            let mut summary_html = FOOTNOTES_RE.replace_all(&html, "").into_owned();
+
+            // truncate trailing whitespace
+            summary_html.truncate(summary_html.trim_end().len());
+
+            // add cutoff template
+            if !tags.is_empty() {
+                let mut c = tera::Context::new();
+                c.insert("summary", &summary_html);
+                c.insert("lang", &context.lang);
+                let summary_cutoff = utils::templates::render_template(
+                    SUMMARY_CUTOFF_TEMPLATE,
+                    &context.tera,
+                    c,
+                    &None,
+                )
+                .context("Failed to render summary cutoff template")?;
+                summary_html.push_str(&summary_cutoff);
+            }
+
+            // close remaining tags
+            cmark::html::push_html(&mut summary_html, tags.into_iter().rev().map(Event::End));
+
+            summary = Some(summary_html);
         }
 
         // emit everything after summary
@@ -820,6 +868,7 @@ mod tests {
     use super::*;
     use config::Config;
     use insta::assert_snapshot;
+    use templates::ZOLA_TERA;
 
     #[test]
     fn insert_many_works() {
@@ -875,7 +924,8 @@ mod tests {
         let mores =
             ["<!-- more -->", "<!--more-->", "<!-- MORE -->", "<!--MORE-->", "<!--\t MoRe \t-->"];
         let config = Config::default();
-        let context = RenderContext::from_config(&config);
+        let mut context = RenderContext::from_config(&config);
+        context.tera.to_mut().extend(&ZOLA_TERA).unwrap();
         for more in mores {
             let content = format!("{top}\n\n{more}\n\n{bottom}");
             let rendered = markdown_to_html(&content, &context, vec![]).unwrap();

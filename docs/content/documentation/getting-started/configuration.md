@@ -114,6 +114,9 @@ generate_robots_txt = true
 # When set to "true", all code blocks are highlighted.
 highlight_code = false
 
+# When set to "true", missing highlight languages are treated as errors. Defaults to false.
+error_on_missing_highlight = false
+
 # A list of directories used to search for additional `.sublime-syntax` and `.tmTheme` files.
 extra_syntaxes_and_themes = []
 
@@ -124,6 +127,9 @@ highlight_theme = "base16-ocean-dark"
 # When set to "true", emoji aliases translated to their corresponding
 # Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
 render_emoji = false
+
+# CSS class to add to external links (e.g. "external-link")
+external_links_class = 
 
 # Whether external links are to be opened in a new tab
 # If this is true, a `rel="noopener"` will always automatically be added for security reasons
@@ -138,6 +144,9 @@ external_links_no_referrer = false
 # Whether smart punctuation is enabled (changing quotes, dashes, dots in their typographic form)
 # For example, `...` into `…`, `"quote"` into `“curly”` etc
 smart_punctuation = false
+
+# Whether parsing of definition lists is enabled
+definition_list = false
 
 # Whether to set decoding="async" and loading="lazy" for all images
 # When turned on, the alt text must be plain text.

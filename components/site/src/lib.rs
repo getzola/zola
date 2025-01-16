@@ -38,6 +38,8 @@ pub enum BuildMode {
     Disk,
     /// In memory for the content -> `zola serve`
     Memory,
+    /// Both on the filesystem and in memory
+    Both,
 }
 
 #[derive(Debug)]
@@ -65,6 +67,8 @@ pub struct Site {
     include_drafts: bool,
     build_mode: BuildMode,
     shortcode_definitions: HashMap<String, ShortcodeDefinition>,
+    /// Whether to check external links
+    check_external_links: bool,
 }
 
 impl Site {
@@ -108,22 +112,28 @@ impl Site {
             library: Arc::new(RwLock::new(Library::default())),
             build_mode: BuildMode::Disk,
             shortcode_definitions,
+            check_external_links: true,
         };
 
         Ok(site)
     }
 
     /// Enable some `zola serve` related options
-    pub fn enable_serve_mode(&mut self) {
+    pub fn enable_serve_mode(&mut self, build_mode: BuildMode) {
         SITE_CONTENT.write().unwrap().clear();
         self.config.enable_serve_mode();
-        self.build_mode = BuildMode::Memory;
+        self.build_mode = build_mode;
     }
 
     /// Set the site to load the drafts.
     /// Needs to be called before loading it
     pub fn include_drafts(&mut self) {
         self.include_drafts = true;
+    }
+
+    /// Set the site checker to skip external links check.
+    pub fn skip_external_links_check(&mut self) {
+        self.check_external_links = false;
     }
 
     /// The index sections are ALWAYS at those paths
@@ -344,7 +354,7 @@ impl Site {
         }
 
         // check external links, log the results, and error out if needed
-        if self.config.is_in_check_mode() {
+        if self.config.is_in_check_mode() && self.check_external_links {
             let external_link_messages = link_checking::check_external_links(self);
             if !external_link_messages.is_empty() {
                 let messages: Vec<String> = external_link_messages
@@ -660,16 +670,20 @@ impl Site {
         };
 
         match self.build_mode {
-            BuildMode::Disk => {
+            BuildMode::Disk | BuildMode::Both => {
                 let end_path = current_path.join(filename);
                 create_file(&end_path, &final_content)?;
             }
-            BuildMode::Memory => {
+            _ => (),
+        }
+        match self.build_mode {
+            BuildMode::Memory | BuildMode::Both => {
                 let site_path =
                     if filename != "index.html" { site_path.join(filename) } else { site_path };
 
                 SITE_CONTENT.write().unwrap().insert(site_path, final_content);
             }
+            _ => (),
         }
 
         Ok(current_path)

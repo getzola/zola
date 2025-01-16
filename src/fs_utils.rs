@@ -17,6 +17,8 @@ pub enum ChangeKind {
     StaticFiles,
     Sass,
     Config,
+    /// A change in one of the extra paths to watch provided by the user.
+    ExtraPath,
 }
 
 /// This enum abstracts over the fine-grained group of enums in `notify`.
@@ -35,6 +37,10 @@ pub type MeaningfulEvent = (PathBuf, PathBuf, SimpleFileSystemEventKind);
 /// return `None`.
 fn get_relevant_event_kind(event_kind: &EventKind) -> Option<SimpleFileSystemEventKind> {
     match event_kind {
+        // Nova on macOS reports this as it's final event on change
+        EventKind::Modify(ModifyKind::Name(RenameMode::Any)) => {
+            Some(SimpleFileSystemEventKind::Modify)
+        }
         EventKind::Create(CreateKind::File) | EventKind::Create(CreateKind::Folder) => {
             Some(SimpleFileSystemEventKind::Create)
         }
@@ -156,7 +162,7 @@ fn detect_change_kind(pwd: &Path, path: &Path, config_path: &Path) -> (ChangeKin
     } else if path == config_path {
         ChangeKind::Config
     } else {
-        unreachable!("Got a change in an unexpected path: {}", partial_path.display());
+        ChangeKind::ExtraPath
     };
 
     (change_kind, partial_path)

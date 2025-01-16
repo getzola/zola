@@ -42,12 +42,12 @@ use time::{OffsetDateTime, UtcOffset};
 use libs::percent_encoding;
 use libs::relative_path::{RelativePath, RelativePathBuf};
 use libs::serde_json;
-use notify_debouncer_full::{new_debouncer, notify::RecursiveMode, notify::Watcher};
+use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use ws::{Message, Sender, WebSocket};
 
 use errors::{anyhow, Context, Error, Result};
 use site::sass::compile_sass;
-use site::{Site, SITE_CONTENT};
+use site::{BuildMode, Site, SITE_CONTENT};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
 use crate::fs_utils::{filter_events, ChangeKind, SimpleFileSystemEventKind};
@@ -61,8 +61,8 @@ enum WatchMode {
     Condition(bool),
 }
 
-static METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
-static NOT_FOUND_TEXT: &[u8] = b"Not Found";
+const METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
+const NOT_FOUND_TEXT: &[u8] = b"Not Found";
 
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
@@ -367,6 +367,7 @@ fn create_new_site(
     base_url: Option<&str>,
     config_file: &Path,
     include_drafts: bool,
+    store_html: bool,
     mut no_port_append: bool,
     ws_port: Option<u16>,
 ) -> Result<(Site, SocketAddr, String)> {
@@ -390,7 +391,7 @@ fn create_new_site(
         constructed_base_url.truncate(constructed_base_url.len() - 1);
     }
 
-    site.enable_serve_mode();
+    site.enable_serve_mode(if store_html { BuildMode::Both } else { BuildMode::Memory });
     site.set_base_url(constructed_base_url.clone());
     if let Some(output_dir) = output_dir {
         if !force && output_dir.exists() {
@@ -427,9 +428,11 @@ pub fn serve(
     config_file: &Path,
     open: bool,
     include_drafts: bool,
+    store_html: bool,
     fast_rebuild: bool,
     no_port_append: bool,
     utc_offset: UtcOffset,
+    extra_watch_paths: Vec<String>,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, bind_address, constructed_base_url) = create_new_site(
@@ -441,6 +444,7 @@ pub fn serve(
         base_url,
         config_file,
         include_drafts,
+        store_html,
         no_port_append,
         None,
     )?;
@@ -462,8 +466,8 @@ pub fn serve(
     // An array of (path, WatchMode, RecursiveMode) where the path is watched for changes,
     // the WatchMode value indicates whether this path must exist for zola serve to operate,
     // and the RecursiveMode value indicates whether to watch nested directories.
-    let watch_this = vec![
-        // The first entry is ultimtely to watch config.toml in a more robust manner on Linux when
+    let mut watch_this = vec![
+        // The first entry is ultimately to watch config.toml in a more robust manner on Linux when
         // the file changes by way of a caching strategy used by editors such as vim.
         // https://github.com/getzola/zola/issues/2266
         (root_dir_str, WatchMode::Required, RecursiveMode::NonRecursive),
@@ -473,6 +477,11 @@ pub fn serve(
         ("templates", WatchMode::Optional, RecursiveMode::Recursive),
         ("themes", WatchMode::Condition(site.config.theme.is_some()), RecursiveMode::Recursive),
     ];
+    watch_this.extend(
+        extra_watch_paths
+            .iter()
+            .map(|path| (path.as_str(), WatchMode::Required, RecursiveMode::Recursive)),
+    );
 
     // Setup watchers
     let (tx, rx) = channel();
@@ -492,7 +501,7 @@ pub fn serve(
             WatchMode::Condition(b) => b && watch_path.exists(),
         };
         if should_watch {
-            debouncer.watcher()
+            debouncer
                 .watch(&root_dir.join(entry), recursive_mode)
                 .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
             watchers.push(entry.to_string());
@@ -666,6 +675,7 @@ pub fn serve(
         base_url,
         config_file,
         include_drafts,
+        store_html,
         no_port_append,
         ws_port,
     ) {
@@ -810,6 +820,23 @@ pub fn serve(
                                 site = s;
                             }
                         }
+                        ChangeKind::ExtraPath => {
+                            let full_paths: Vec<&PathBuf> =
+                                change_group.iter().map(|(_, p, _)| p).collect();
+                            let combined_paths = full_paths
+                                .iter()
+                                .map(|p| p.display().to_string())
+                                .collect::<Vec<String>>()
+                                .join(", ");
+                            console::info(&format!(
+                                "-> {combined_paths} changed. Recreating whole site."
+                            ));
+
+                            // We can't know exactly what to update when a user provides the path.
+                            if let Some(s) = recreate_site() {
+                                site = s;
+                            }
+                        }
                     };
                     messages::report_elapsed_time(start);
                 }
@@ -893,6 +920,7 @@ mod tests {
             base_url.as_deref(),
             &config_file,
             include_drafts,
+            false,
             no_port_append,
             ws_port,
         )
