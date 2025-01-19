@@ -57,7 +57,7 @@ fn main() {
                 std::process::exit(1);
             }
         }
-        Command::Build { base_url, output_dir, force, drafts } => {
+        Command::Build { base_url, output_dir, force, drafts, minify } => {
             console::info("Building site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
@@ -68,6 +68,7 @@ fn main() {
                 output_dir.as_deref(),
                 force,
                 drafts,
+                minify,
             ) {
                 Ok(()) => messages::report_elapsed_time(start),
                 Err(e) => {

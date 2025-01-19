@@ -12,6 +12,7 @@ pub fn build(
     output_dir: Option<&Path>,
     force: bool,
     include_drafts: bool,
+    minify: bool,
 ) -> Result<()> {
     let mut site = Site::new(root_dir, config_file)?;
     if let Some(output_dir) = output_dir {
@@ -29,6 +30,9 @@ pub fn build(
     }
     if include_drafts {
         site.include_drafts();
+    }
+    if minify {
+        site.minify();
     }
     site.load()?;
     messages::notify_site_size(&site);

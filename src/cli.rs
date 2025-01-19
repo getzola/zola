@@ -49,6 +49,10 @@ pub enum Command {
         /// Include drafts when loading the site
         #[clap(long)]
         drafts: bool,
+
+        /// Minify generated HTML files
+        #[clap(long)]
+        minify: bool,
     },
 
     /// Serve the site. Rebuild and reload on change automatically
