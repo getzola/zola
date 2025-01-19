@@ -3,14 +3,14 @@
 title = "serene"
 description = "A spiffy blog theme for zola"
 template = "theme.html"
-date = 2024-11-03T22:43:56+08:00
+date = 2024-12-23T23:11:47+07:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-11-03T22:43:56+08:00
-updated = 2024-11-03T22:43:56+08:00
+created = 2024-12-23T23:11:47+07:00
+updated = 2024-12-23T23:11:47+07:00
 repository = "https://github.com/isunjn/serene.git"
 homepage = "https://github.com/isunjn/serene"
 minimum_version = "0.19.0"

@@ -3,14 +3,14 @@
 title = "UI Navigation"
 description = "A multilingual theme designed for accessibility rather than visual."
 template = "theme.html"
-date = 2024-12-21T20:14:47+06:30
+date = 2025-01-12T12:55:23+06:30
 
 [taxonomies]
 theme-tags = ['blind', 'multilingual', 'accessible', 'responsive']
 
 [extra]
-created = 2024-12-21T20:14:47+06:30
-updated = 2024-12-21T20:14:47+06:30
+created = 2025-01-12T12:55:23+06:30
+updated = 2025-01-12T12:55:23+06:30
 repository = "https://github.com/harrymkt/zluinav"
 homepage = "https://github.com/harrymkt/zluinav"
 minimum_version = "0.19.2"
@@ -27,7 +27,7 @@ UI Navigation, or known as zluinav, is a Zola theme designed for accessibility r
 
 This theme is also available for Hugo at [Hguinav](https://github.com/harrymkt/hguinav).
 
-Zola is a fast site generator written in Rust powered by tera as its templating engine and has a powerful theme creation feature.
+[Zola](https://www.getzola.org/) is a fast site generator written in Rust powered by tera as its templating engine and has a powerful theme creation feature.
 
 [Theme demo](https://harrymkt.github.io/zluinav)
 
@@ -42,13 +42,14 @@ This theme is distributed under the terms of the [MIT License](https://github.co
 - Multilingual; build your site in multiple languages.
 - Custom [Menus](https://harrymkt.github.io/zluinav/docs/extra/config#menus); can be set via `config.extra.menus.menu_name`.
 - Taxonomies support.
-- Built-in [search](https://harrymkt.github.io/zluinav/docs/search), with a variety of search formats to choose.
+- Built-in [search](https://harrymkt.github.io/zluinav/docs/search) support, with a variety of search formats to choose.
 - Customizable extrahead, header, navigation, and footer by base templates and blocks.
 - Fast; Zola generates within a few milliseconds. Zluinav is built with HTML using aria whenever possible for accessibility with assistive screen reader as well as using JavaScript. You can rebase the templates, should you wish to add your own content.
 - Copy code blocks; add code blocks which can then be copied using buttons and display the code language if available, helped by JavaScript.
 - Variables; add [variables](https://harrymkt.github.io/zluinav/docs/writing) to your page content to be replaced during the site generate.
 - Local date display; display dates in user's local timezone, no madder what timezone the date is set.
 - Use extensive macros and shortcodes to make your content length shorten.
+- Ability to toggle the use of JavaScript for both config and per-page frontmadder.
 - Comprehensive documentation; Zluinav provides a full Comprehensive documentation including possible templates, shortcodes, blocks, configurable parameters, and more, everything as it updates.
 
 ## Installation
@@ -59,7 +60,7 @@ git clone https://github.com/harrymkt/zluinav.git
 ```
 Or [download manually](https://github.com/harrymkt/zluinav/archive/refs/heads/main.zip) and paste in the themes directory.
 
-Or, add to the Git submodule
+Or, add to the Git submodule (recommended):
 ```bash
 git submodule add --name zluinav https://github.com/harrymkt/zluinav.git themes/zluinav
 git submodule update --remote
@@ -78,6 +79,9 @@ Contributions to this theme are welcome, provided that the following requirement
 - Use 2 level space indentation for HTML. Use 1 tab level indentation for CSS and JavaScript. If Markdown files need indentation, use 1 tab.
 - Be the templates accessible for visually impaired and/or blind and prefer readability. Don't worry, I will process in case accessibility issues before pull requests are merged.
 - Photos are not required in this theme. You may design with CSS for visual if you so wish.
+- When creating a pull request it is advised that you:
+	- Use different branch other than main; this avoids issues with updating in case your pull request gets rejected.
+	- Add label if possible.
 
 Thank you!
         
