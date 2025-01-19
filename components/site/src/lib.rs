@@ -175,6 +175,10 @@ impl Site {
         self.output_path = path.as_ref().to_path_buf();
     }
 
+    pub fn minify(&mut self) {
+        self.config.minify_html = true;
+    }
+
     /// Reads all .md files in the `content` directory and create pages/sections
     /// out of them
     pub fn load(&mut self) -> Result<()> {
