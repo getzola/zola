@@ -1,3 +1,4 @@
+use libs::regex;
 use std::path::{Path, PathBuf};
 
 use libs::unicode_segmentation::UnicodeSegmentation;
@@ -58,11 +59,75 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     assets
 }
 
+/// Remove Markdown footnotes
+///
+/// Footnotes source is [^word]
+///
+/// Footnotes target can be one line
+/// or blocks starting by 4 spaces
+///
+/// Paragraph 1[^1]
+/// Paragraph 2[^2]
+///
+/// [^1]: Footnote 1
+/// [^2]: Footnote 2
+///     Big footnote
+///     Inside
+fn remove_footnotes(content: &str) -> String {
+    let re_footnote_target = regex::Regex::new(r"\[\^\w\]:").unwrap();
+    let re_footnote_src = regex::Regex::new(r"(\[\^\w\])").unwrap();
+    let mut content_wo_footnotes = vec![];
+    let mut in_footnote = false;
+    for line in content.lines() {
+        if in_footnote {
+            // Footnote can be a single line
+            // with or without a 4 spaces block
+            // Also catch multiple single line references
+            in_footnote = line.starts_with("    ") || re_footnote_target.is_match(line.trim());
+        } else {
+            in_footnote = re_footnote_target.is_match(line.trim());
+        }
+        if !in_footnote {
+            let clean_line = re_footnote_src.replace(line, "");
+            content_wo_footnotes.push(clean_line);
+        }
+    }
+
+    content_wo_footnotes.join("\n")
+}
+
+/// Remove HTML comments
+/// <!-- comment -->
+fn remove_html_comments(content: &str) -> String {
+    let mut content_wo_comments = String::new();
+    let mut cur_str = &content[..];
+    while let Some(comment_start) = cur_str.find("<!--") {
+        let comment_end;
+        match cur_str.find("-->") {
+            None => comment_end = cur_str.len(),
+            Some(_end) => comment_end = _end + "-->".len(),
+        }
+        if comment_start != 0 {
+            content_wo_comments.push_str(&cur_str[..comment_start]);
+        }
+        cur_str = &cur_str[comment_end..];
+    }
+
+    if cur_str.len() != 0 {
+        content_wo_comments.push_str(&cur_str);
+    }
+
+    content_wo_comments
+}
+
 /// Get word count and estimated reading time
 pub fn get_reading_analytics(content: &str) -> (usize, usize) {
+    let content_wo_footnotes = remove_footnotes(content);
+    let content_wo_comments = remove_html_comments(&content_wo_footnotes);
+
     // code fences "toggle" the state from non-code to code and back, so anything inbetween the
     // first fence and the next can be ignored
-    let split = content.split("```");
+    let split = content_wo_comments.split("```");
     let word_count = split.step_by(2).map(|section| section.unicode_words().count()).sum();
 
     // https://help.medium.com/hc/en-us/articles/214991667-Read-time
@@ -257,5 +322,42 @@ mod tests {
         );
         assert_eq!(word_count, 4);
         assert_eq!(reading_time, 1);
+    }
+
+    #[test]
+    fn test_remove_html_comments() {
+        let html = "String <!--comments\n -->without <!---->comments";
+        let result = remove_html_comments(html);
+        assert_eq!(result, "String without comments");
+
+        let html = "String <!--comment\n without end tag";
+        let result = remove_html_comments(html);
+        assert_eq!(result, "String ");
+    }
+
+    #[test]
+    fn test_remove_footnotes() {
+        let html = "Hello
+Paragraph 1[^1]
+<!-- more -->
+Paragraph 2[^2]
+Paragraph 3[^3]
+
+[^1]: Footnote 1
+[^2]: Footnote 2
+    Big footnote
+    Inside
+
+[^3]: Footnote 3";
+
+        let result = remove_footnotes(html);
+        let expected = "Hello
+Paragraph 1
+<!-- more -->
+Paragraph 2
+Paragraph 3
+
+";
+        assert_eq!(result, expected);
     }
 }
