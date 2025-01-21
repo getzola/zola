@@ -204,6 +204,7 @@ impl Config {
         let trailing_bit = if path.ends_with('/')
             || self.feed_filenames.iter().any(|feed_filename| path.ends_with(feed_filename))
             || path.is_empty()
+            || path.contains("#")
         {
             ""
         } else {
@@ -582,6 +583,13 @@ hello = "world"
     fn doesnt_add_trailing_slash_to_feed() {
         let config = Config { base_url: "http://vincent.is".to_string(), ..Default::default() };
         assert_eq!(config.make_permalink("atom.xml"), "http://vincent.is/atom.xml");
+    }
+
+    // https://github.com/getzola/zola/issues/2676
+    #[test]
+    fn permalink_with_anchor() {
+        let config = Config { base_url: "http://vincent.is".to_string(), ..Default::default() };
+        assert_eq!(config.make_permalink("/about#me"), "http://vincent.is/about#me");
     }
 
     #[test]
