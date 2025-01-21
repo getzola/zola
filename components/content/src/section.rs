@@ -157,7 +157,7 @@ impl Section {
             &self.lang,
             &self.permalink,
             permalinks,
-            self.meta.insert_anchor_links,
+            self.meta.insert_anchor_links.unwrap_or(config.markdown.insert_anchor_links),
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
