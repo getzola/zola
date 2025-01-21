@@ -156,6 +156,14 @@ lazy_async_image = false
 # Whether footnotes are rendered in the GitHub-style (at the bottom, with back references) or plain (in the place, where they are defined)
 bottom_footnotes = false
 
+# This determines whether to insert a link for each header like the ones you can see on this site if you hover over
+# a header.
+# The default template can be overridden by creating an `anchor-link.html` file in the `templates` directory.
+# This value can be "left", "right", "heading" or "none".
+# "heading" means the full heading becomes the text of the anchor.
+# See "Internal links & deep linking" in the documentation for more information.
+insert_anchor_links = "none"
+
 # Configuration of the link checker.
 [link_checker]
 # Skip link checking for external URLs that start with these prefixes

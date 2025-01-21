@@ -1,6 +1,7 @@
 {% extends "index.html" %}
 {% block content %}
     {{ section.relative_path | safe }}
+    {{ section.content | safe }}
     {% for sub in section.subsections %}
         {% set subsection = get_section(path=sub) %}
         {{subsection.title}}

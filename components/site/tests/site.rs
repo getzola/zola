@@ -10,6 +10,7 @@ use content::Page;
 use libs::ahash::AHashMap;
 use site::sitemap;
 use site::Site;
+use utils::types::InsertAnchor;
 
 #[test]
 fn can_parse_site() {
@@ -374,6 +375,31 @@ fn can_build_site_and_insert_anchor_links() {
         public,
         "posts/something-else/index.html",
         "<h1 id=\"title\"><a class=\"zola-anchor\" href=\"#title\""
+    ));
+}
+
+#[test]
+fn can_build_site_insert_anchor_links_none_by_default() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+
+    assert!(Path::new(&public).exists());
+    // anchor link not inserted
+    assert!(file_contains!(public, "index.html", r#"<h1 id="heading-1">Heading 1</h1>"#));
+}
+
+#[test]
+fn can_build_site_and_insert_anchor_links_global_config() {
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.config.markdown.insert_anchor_links = InsertAnchor::Right;
+        (site, true)
+    });
+
+    assert!(Path::new(&public).exists());
+    // anchor link inserted
+    assert!(file_contains!(
+        public,
+        "index.html",
+        r##"<h1 id="heading-1">Heading 1<a class="zola-anchor" href="#heading-1" aria-label="Anchor link for: heading-1">🔗</a></h1>"##
     ));
 }
 

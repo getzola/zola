@@ -553,7 +553,7 @@ impl Site {
     }
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.
-    /// Defaults to `AnchorInsert::None` if no parent section found
+    /// Defaults to the global setting if no parent section found
     pub fn find_parent_section_insert_anchor(
         &self,
         parent_path: &Path,
@@ -564,10 +564,13 @@ impl Site {
         } else {
             parent_path.join("_index.md")
         };
-        match self.library.read().unwrap().sections.get(&parent) {
-            Some(s) => s.meta.insert_anchor_links,
-            None => InsertAnchor::None,
-        }
+        self.library
+            .read()
+            .unwrap()
+            .sections
+            .get(&parent)
+            .and_then(|s| s.meta.insert_anchor_links)
+            .unwrap_or(self.config.markdown.insert_anchor_links)
     }
 
     /// Find out the direct subsections of each subsection if there are some
