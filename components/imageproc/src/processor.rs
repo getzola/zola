@@ -75,12 +75,16 @@ impl ImageOp {
             }
             Format::Avif(q) => {
                 let mut avif: Vec<u8> = Vec::new();
+                let color_type = match img.color().has_alpha() {
+                    true => ExtendedColorType::Rgba8,
+                    false => ExtendedColorType::Rgb8,
+                };
                 let encoder = AvifEncoder::new_with_speed_quality(&mut avif, 1, q.unwrap_or(100));
                 encoder.write_image(
                     &img.as_bytes(),
                     img.dimensions().0,
                     img.dimensions().1,
-                    ExtendedColorType::Rgba8,
+                    color_type,
                 )?;
                 buffered_f.write_all(&avif.as_bytes())?;
             }
