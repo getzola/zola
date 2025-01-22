@@ -185,6 +185,19 @@ fn read_image_metadata_webp() {
 }
 
 #[test]
+fn read_image_metadata_avif() {
+    assert_eq!(
+        image_meta_test("avif.avif"),
+        ImageMetaResponse {
+            width: 300,
+            height: 380,
+            format: Some("avif"),
+            mime: Some("image/avif")
+        }
+    );
+}
+
+#[test]
 fn fix_orientation_test() {
     fn load_img_and_fix_orientation(img_name: &str) -> DynamicImage {
         let path = TEST_IMGS.join(img_name);
