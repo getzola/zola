@@ -124,7 +124,6 @@ mod tests {
         check_page_for_anchor, check_url, has_anchor, is_valid, message, LinkChecker, LINKS,
     };
     use libs::reqwest::StatusCode;
-    use mockito::mock;
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests
@@ -133,8 +132,10 @@ mod tests {
 
     #[test]
     fn can_validate_ok_links() {
-        let url = format!("{}{}", mockito::server_url(), "/ekbtwxfhjw");
-        let _m = mock("GET", "/ekbtwxfhjw")
+        let mut server = mockito::Server::new();
+        let url = format!("{}{}", server.url(), "/ekbtwxfhjw");
+        let _m = server
+            .mock("GET", "/ekbtwxfhjw")
             .with_header("Content-Type", "text/html")
             .with_body(format!(
                 r#"<!DOCTYPE html>
@@ -159,19 +160,22 @@ mod tests {
 
     #[test]
     fn can_follow_301_links() {
-        let _m1 = mock("GET", "/c7qrtrv3zz")
+        let mut server = mockito::Server::new();
+        let _m1 = server
+            .mock("GET", "/c7qrtrv3zz")
             .with_status(301)
             .with_header("Content-Type", "text/plain")
-            .with_header("Location", format!("{}/rbs5avjs8e", mockito::server_url()).as_str())
+            .with_header("Location", format!("{}/rbs5avjs8e", server.url()).as_str())
             .with_body("Redirecting...")
             .create();
 
-        let _m2 = mock("GET", "/rbs5avjs8e")
+        let _m2 = server
+            .mock("GET", "/rbs5avjs8e")
             .with_header("Content-Type", "text/plain")
             .with_body("Test")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/c7qrtrv3zz");
+        let url = format!("{}{}", server.url(), "/c7qrtrv3zz");
         let res = check_url(&url, &LinkChecker::default());
         assert!(is_valid(&res));
         assert!(res.is_ok());
@@ -180,14 +184,16 @@ mod tests {
 
     #[test]
     fn set_default_user_agent() {
+        let mut server = mockito::Server::new();
         let user_agent = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
-        let _m1 = mock("GET", "/C4Szbfnvj6M0LoPk")
+        let _m1 = server
+            .mock("GET", "/C4Szbfnvj6M0LoPk")
             .match_header("User-Agent", user_agent)
             .with_status(200)
             .with_body("Test")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/C4Szbfnvj6M0LoPk");
+        let url = format!("{}{}", server.url(), "/C4Szbfnvj6M0LoPk");
         let res = check_url(&url, &LinkChecker::default());
         assert!(is_valid(&res));
         assert_eq!(res.unwrap(), StatusCode::OK);
@@ -195,20 +201,23 @@ mod tests {
 
     #[test]
     fn can_fail_301_to_404_links() {
-        let _m1 = mock("GET", "/cav9vibhsc")
+        let mut server = mockito::Server::new();
+        let _m1 = server
+            .mock("GET", "/cav9vibhsc")
             .with_status(301)
             .with_header("Content-Type", "text/plain")
-            .with_header("Location", format!("{}/72zmfg4smd", mockito::server_url()).as_str())
+            .with_header("Location", format!("{}/72zmfg4smd", server.url()).as_str())
             .with_body("Redirecting...")
             .create();
 
-        let _m2 = mock("GET", "/72zmfg4smd")
+        let _m2 = server
+            .mock("GET", "/72zmfg4smd")
             .with_status(404)
             .with_header("Content-Type", "text/plain")
             .with_body("Not Found")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/cav9vibhsc");
+        let url = format!("{}{}", server.url(), "/cav9vibhsc");
         let res = check_url(&url, &LinkChecker::default());
         assert!(!is_valid(&res));
         assert!(res.is_err());
@@ -217,13 +226,15 @@ mod tests {
 
     #[test]
     fn can_fail_404_links() {
-        let _m = mock("GET", "/nlhab9c1vc")
+        let mut server = mockito::Server::new();
+        let _m = server
+            .mock("GET", "/nlhab9c1vc")
             .with_status(404)
             .with_header("Content-Type", "text/plain")
             .with_body("Not Found")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/nlhab9c1vc");
+        let url = format!("{}{}", server.url(), "/nlhab9c1vc");
         let res = check_url(&url, &LinkChecker::default());
         assert!(!is_valid(&res));
         assert!(res.is_err());
@@ -232,13 +243,15 @@ mod tests {
 
     #[test]
     fn can_fail_500_links() {
-        let _m = mock("GET", "/qdbrssazes")
+        let mut server = mockito::Server::new();
+        let _m = server
+            .mock("GET", "/qdbrssazes")
             .with_status(500)
             .with_header("Content-Type", "text/plain")
             .with_body("Internal Server Error")
             .create();
 
-        let url = format!("{}{}", mockito::server_url(), "/qdbrssazes");
+        let url = format!("{}{}", server.url(), "/qdbrssazes");
         let res = check_url(&url, &LinkChecker::default());
         assert!(!is_valid(&res));
         assert!(res.is_err());
@@ -329,10 +342,12 @@ mod tests {
 
     #[test]
     fn skip_anchor_prefixes() {
-        let ignore_url = format!("{}{}", mockito::server_url(), "/ignore/");
+        let mut server = mockito::Server::new();
+        let ignore_url = format!("{}{}", server.url(), "/ignore/");
         let config = LinkChecker { skip_anchor_prefixes: vec![ignore_url], ..Default::default() };
 
-        let _m1 = mock("GET", "/ignore/i30hobj1cy")
+        let _m1 = server
+            .mock("GET", "/ignore/i30hobj1cy")
             .with_header("Content-Type", "text/html")
             .with_body(
                 r#"<!DOCTYPE html>
@@ -349,10 +364,11 @@ mod tests {
             .create();
 
         // anchor check is ignored because the url matches the prefix
-        let ignore = format!("{}{}", mockito::server_url(), "/ignore/i30hobj1cy#nonexistent");
+        let ignore = format!("{}{}", server.url(), "/ignore/i30hobj1cy#nonexistent");
         assert!(is_valid(&check_url(&ignore, &config)));
 
-        let _m2 = mock("GET", "/guvqcqwmth")
+        let _m2 = server
+            .mock("GET", "/guvqcqwmth")
             .with_header("Content-Type", "text/html")
             .with_body(
                 r#"<!DOCTYPE html>
@@ -369,10 +385,10 @@ mod tests {
             .create();
 
         // other anchors are checked
-        let existent = format!("{}{}", mockito::server_url(), "/guvqcqwmth#existent");
+        let existent = format!("{}{}", server.url(), "/guvqcqwmth#existent");
         assert!(is_valid(&check_url(&existent, &config)));
 
-        let nonexistent = format!("{}{}", mockito::server_url(), "/guvqcqwmth#nonexistent");
+        let nonexistent = format!("{}{}", server.url(), "/guvqcqwmth#nonexistent");
         assert!(!is_valid(&check_url(&nonexistent, &config)));
     }
 }

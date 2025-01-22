@@ -49,6 +49,10 @@ pub enum Command {
         /// Include drafts when loading the site
         #[clap(long)]
         drafts: bool,
+
+        /// Minify generated HTML files
+        #[clap(long)]
+        minify: bool,
     },
 
     /// Serve the site. Rebuild and reload on change automatically
@@ -82,6 +86,10 @@ pub enum Command {
         #[clap(short = 'O', long)]
         open: bool,
 
+        /// Also store HTML in the public/ folder (by default HTML is only stored in-memory)
+        #[clap(long)]
+        store_html: bool,
+
         /// Only rebuild the minimum on change - useful when working on a specific page/section
         #[clap(short = 'f', long)]
         fast: bool,
@@ -89,6 +97,10 @@ pub enum Command {
         /// Default append port to the base url.
         #[clap(long)]
         no_port_append: bool,
+
+        /// Extra path to watch for changes, relative to the project root.
+        #[clap(long)]
+        extra_watch_path: Vec<String>,
     },
 
     /// Try to build the project without rendering it. Checks links
@@ -96,6 +108,9 @@ pub enum Command {
         /// Include drafts when loading the site
         #[clap(long)]
         drafts: bool,
+        /// Skip external links
+        #[clap(long)]
+        skip_external_links: bool,
     },
 
     /// Generate shell completion

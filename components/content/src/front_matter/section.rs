@@ -41,7 +41,7 @@ pub struct SectionFrontMatter {
     pub paginate_path: String,
     /// Whether to insert a link for each header like the ones you can see in this site if you hover one
     /// The default template can be overridden by creating a `anchor-link.html` in the `templates` directory
-    pub insert_anchor_links: InsertAnchor,
+    pub insert_anchor_links: Option<InsertAnchor>,
     /// Whether to render that section or not. Defaults to `true`.
     /// Useful when the section is only there to organize things but is not meant
     /// to be used directly, like a posts section in a personal site
@@ -108,7 +108,7 @@ impl Default for SectionFrontMatter {
             paginate_path: DEFAULT_PAGINATE_PATH.to_string(),
             render: true,
             redirect_to: None,
-            insert_anchor_links: InsertAnchor::None,
+            insert_anchor_links: None,
             in_search_index: true,
             transparent: false,
             page_template: None,

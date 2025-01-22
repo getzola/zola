@@ -10,6 +10,7 @@ use content::Page;
 use libs::ahash::AHashMap;
 use site::sitemap;
 use site::Site;
+use utils::types::InsertAnchor;
 
 #[test]
 fn can_parse_site() {
@@ -374,6 +375,31 @@ fn can_build_site_and_insert_anchor_links() {
         public,
         "posts/something-else/index.html",
         "<h1 id=\"title\"><a class=\"zola-anchor\" href=\"#title\""
+    ));
+}
+
+#[test]
+fn can_build_site_insert_anchor_links_none_by_default() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+
+    assert!(Path::new(&public).exists());
+    // anchor link not inserted
+    assert!(file_contains!(public, "index.html", r#"<h1 id="heading-1">Heading 1</h1>"#));
+}
+
+#[test]
+fn can_build_site_and_insert_anchor_links_global_config() {
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.config.markdown.insert_anchor_links = InsertAnchor::Right;
+        (site, true)
+    });
+
+    assert!(Path::new(&public).exists());
+    // anchor link inserted
+    assert!(file_contains!(
+        public,
+        "index.html",
+        r##"<h1 id="heading-1">Heading 1<a class="zola-anchor" href="#heading-1" aria-label="Anchor link for: heading-1">🔗</a></h1>"##
     ));
 }
 
@@ -847,6 +873,32 @@ fn panics_on_invalid_external_domain() {
 
     // check the test site, this time without the invalid domain skip prefix, which should cause a
     // panic
+    site.config.enable_check_mode();
+    site.load().expect("link check test_site");
+}
+
+#[test]
+fn external_links_ignored_on_check() {
+    let (mut site, _tmp_dir, _public) = build_site("test_site");
+
+    // remove the invalid domain skip prefix
+    let i = site
+        .config
+        .link_checker
+        .skip_prefixes
+        .iter()
+        .position(|prefix| prefix == "http://invaliddomain")
+        .unwrap();
+    site.config.link_checker.skip_prefixes.remove(i);
+
+    // confirm the invalid domain skip prefix was removed
+    assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
+
+    // set a flag to skip external links check
+    site.skip_external_links_check();
+
+    // check the test site with all external links (including invalid domain) skipped, which should
+    // not cause a panic
     site.config.enable_check_mode();
     site.load().expect("link check test_site");
 }

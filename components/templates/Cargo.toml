@@ -14,5 +14,5 @@ libs = { path = "../libs" }
 
 
 [dev-dependencies]
-mockito = "0.31"
+mockito = "1.6"
 tempfile = "3"

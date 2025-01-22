@@ -10,6 +10,8 @@
     </div>
     <!-- Next line is meant to test inner html chars (see https://github.com/getzola/zola/issues/1152) -->
     <p> <<< </p>
+
+    {{ section.content | safe }}
 {% endblock content %}
 
 {% block script %}

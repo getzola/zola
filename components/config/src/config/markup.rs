@@ -8,6 +8,7 @@ use libs::syntect::{
 use serde::{Deserialize, Serialize};
 
 use errors::{bail, Result};
+use utils::types::InsertAnchor;
 
 use crate::highlighting::{CLASS_STYLE, THEME_SET};
 
@@ -47,6 +48,8 @@ pub struct Markdown {
     pub external_links_no_referrer: bool,
     /// Whether smart punctuation is enabled (changing quotes, dashes, dots etc in their typographic form)
     pub smart_punctuation: bool,
+    /// Whether parsing of definition lists is enabled
+    pub definition_list: bool,
     /// Whether footnotes are rendered at the bottom in the style of GitHub.
     pub bottom_footnotes: bool,
     /// A list of directories to search for additional `.sublime-syntax` and `.tmTheme` files in.
@@ -59,6 +62,9 @@ pub struct Markdown {
     pub extra_theme_set: Arc<Option<ThemeSet>>,
     /// Add loading="lazy" decoding="async" to img tags. When turned on, the alt text must be plain text. Defaults to false
     pub lazy_async_image: bool,
+    /// Whether to insert a link for each header like the ones you can see in this site if you hover one
+    /// The default template can be overridden by creating a `anchor-link.html` in the `templates` directory
+    pub insert_anchor_links: InsertAnchor,
 }
 
 impl Markdown {
@@ -227,11 +233,13 @@ impl Default for Markdown {
             external_links_no_follow: false,
             external_links_no_referrer: false,
             smart_punctuation: false,
+            definition_list: false,
             bottom_footnotes: false,
             extra_syntaxes_and_themes: vec![],
             extra_syntax_set: None,
             extra_theme_set: Arc::new(None),
             lazy_async_image: false,
+            insert_anchor_links: InsertAnchor::None,
         }
     }
 }

@@ -145,6 +145,9 @@ external_links_no_referrer = false
 # For example, `...` into `…`, `"quote"` into `“curly”` etc
 smart_punctuation = false
 
+# Whether parsing of definition lists is enabled
+definition_list = false
+
 # Whether to set decoding="async" and loading="lazy" for all images
 # When turned on, the alt text must be plain text.
 # For example, `![xx](...)` is ok but `![*x*x](...)` isn’t ok
@@ -152,6 +155,14 @@ lazy_async_image = false
 
 # Whether footnotes are rendered in the GitHub-style (at the bottom, with back references) or plain (in the place, where they are defined)
 bottom_footnotes = false
+
+# This determines whether to insert a link for each header like the ones you can see on this site if you hover over
+# a header.
+# The default template can be overridden by creating an `anchor-link.html` file in the `templates` directory.
+# This value can be "left", "right", "heading" or "none".
+# "heading" means the full heading becomes the text of the anchor.
+# See "Internal links & deep linking" in the documentation for more information.
+insert_anchor_links = "none"
 
 # Configuration of the link checker.
 [link_checker]
