@@ -7,6 +7,7 @@
 pub use ahash;
 pub use ammonia;
 pub use atty;
+pub use avif_parse;
 pub use base64;
 pub use csv;
 pub use elasticlunr;
@@ -44,4 +45,3 @@ pub use unicode_segmentation;
 pub use url;
 pub use walkdir;
 pub use webp;
-pub use avif_parse;
