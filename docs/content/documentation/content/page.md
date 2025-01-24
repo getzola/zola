@@ -141,6 +141,14 @@ in_search_index = true
 # Template to use to render this page.
 template = "page.html"
 
+# Page will be generated if current date < before
+# Format is same as date field
+before =
+
+# Page will be generated if current date >= after
+# Format is same as date field
+after =
+
 # The taxonomies for this page. The keys need to be the same as the taxonomy
 # names configured in `config.toml` and the values are an array of String objects. For example,
 # tags = ["rust", "web"].

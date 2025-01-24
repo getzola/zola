@@ -66,6 +66,16 @@ pub struct PageFrontMatter {
     /// Defaults to `true` but is only used if search if explicitly enabled in the config.
     #[serde(skip_serializing)]
     pub in_search_index: bool,
+    /// Page is valid until `date_before`
+    #[serde(default, deserialize_with = "from_unknown_datetime")]
+    pub before: Option<String>,
+    #[serde(default, skip_deserializing)]
+    pub before_datetime: Option<OffsetDateTime>,
+    /// Page is valid after `date_after`
+    #[serde(default, deserialize_with = "from_unknown_datetime")]
+    pub after: Option<String>,
+    #[serde(default, skip_deserializing)]
+    pub after_datetime: Option<OffsetDateTime>,
     /// Any extra parameter present in the front matter
     pub extra: Map<String, Value>,
 }
@@ -135,6 +145,10 @@ impl PageFrontMatter {
         self.updated_datetime = self.updated.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
         self.updated_datetime_tuple =
             self.updated_datetime.map(|dt| (dt.year(), dt.month().into(), dt.day()));
+
+        self.before_datetime = self.before.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
+
+        self.after_datetime = self.after.as_ref().map(|s| s.as_ref()).and_then(parse_datetime);
     }
 
     pub fn weight(&self) -> usize {
@@ -163,6 +177,10 @@ impl Default for PageFrontMatter {
             authors: Vec::new(),
             aliases: Vec::new(),
             template: None,
+            before: None,
+            after: None,
+            before_datetime: None,
+            after_datetime: None,
             extra: Map::new(),
         }
     }

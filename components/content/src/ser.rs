@@ -70,6 +70,8 @@ pub struct SerializingPage<'a> {
     higher: Option<Box<SerializingPage<'a>>>,
     translations: Vec<TranslatedContent<'a>>,
     backlinks: Vec<BackLink<'a>>,
+    before: &'a Option<String>,
+    after: &'a Option<String>,
 }
 
 impl<'a> SerializingPage<'a> {
@@ -130,6 +132,8 @@ impl<'a> SerializingPage<'a> {
             assets: &page.serialized_assets,
             draft: page.meta.draft,
             lang: &page.lang,
+            before: &page.meta.before,
+            after: &page.meta.after,
             lower,
             higher,
             translations,

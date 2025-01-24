@@ -21,6 +21,7 @@ use errors::{anyhow, bail, Result};
 use libs::relative_path::RelativePathBuf;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
+use time::OffsetDateTime;
 use utils::fs::{
     clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
 };
@@ -179,6 +180,24 @@ impl Site {
         self.config.minify_html = true;
     }
 
+    /// Check date page is valid for publication
+    /// with optional `before` and `after` frontmatter attributes
+    fn check_publication_date(&self, page: &Page) -> bool {
+        let now = OffsetDateTime::now_utc();
+        if let Some(ref before_datetime) = page.meta.before_datetime {
+            if now >= *before_datetime {
+                return false;
+            }
+        }
+
+        if let Some(ref after_datetime) = page.meta.after_datetime {
+            if now < *after_datetime {
+                return false;
+            }
+        }
+
+        true
+    }
     /// Reads all .md files in the `content` directory and create pages/sections
     /// out of them
     pub fn load(&mut self) -> Result<()> {
@@ -279,7 +298,10 @@ impl Site {
                 }
             } else {
                 let page = Page::from_file(path, &self.config, &self.base_path)?;
-                pages.push(page);
+
+                if self.check_publication_date(&page) {
+                    pages.push(page);
+                }
             }
         }
         self.create_default_index_sections()?;
@@ -514,6 +536,9 @@ impl Site {
     /// Only used in `zola serve --fast`
     pub fn add_and_render_page(&mut self, path: &Path) -> Result<()> {
         let page = Page::from_file(path, &self.config, &self.base_path)?;
+        if !self.check_publication_date(&page) {
+            return Ok(());
+        }
         self.add_page(page, true)?;
         self.populate_sections();
         self.populate_taxonomies()?;

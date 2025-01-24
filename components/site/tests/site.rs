@@ -22,7 +22,7 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages.len(), 36);
+    assert_eq!(library.pages.len(), 38);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -35,11 +35,11 @@ fn can_parse_site() {
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(library.sections.len(), 13);
+    assert_eq!(library.sections.len(), 14);
 
     // And that the sections are correct
     let index_section = library.sections.get(&path.join("content").join("_index.md")).unwrap();
-    assert_eq!(index_section.subsections.len(), 5);
+    assert_eq!(index_section.subsections.len(), 6);
     assert_eq!(index_section.pages.len(), 5);
     assert!(index_section.ancestors.is_empty());
 
@@ -283,7 +283,7 @@ fn can_build_site_with_live_reload_and_drafts() {
 
     // drafted sections are included
     let library = site.library.read().unwrap();
-    assert_eq!(library.sections.len(), 15);
+    assert_eq!(library.sections.len(), 16);
 
     assert!(file_exists!(public, "secret_section/index.html"));
     assert!(file_exists!(public, "secret_section/draft-page/index.html"));
@@ -926,6 +926,20 @@ fn can_find_site_and_page_authors() {
     assert_eq!(1, p1.meta.authors.len());
     assert_eq!("page@example.com (Page Author)", p1.meta.authors.get(0).unwrap());
     assert_eq!(0, p2.meta.authors.len());
+}
+
+#[test]
+fn test_before_after() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+
+    assert!(&public.exists());
+    assert!(file_exists!(public, "index.html"));
+
+    assert!(file_exists!(public, "before_after/after-1980/index.html"));
+    assert!(file_exists!(public, "before_after/before-2100/index.html"));
+
+    assert!(!file_exists!(public, "before_after/before-1980/index.html"));
+    assert!(!file_exists!(public, "before_after/after-2100/index.html"));
 }
 
 // Follows test_site/themes/sample/templates/current_path.html
