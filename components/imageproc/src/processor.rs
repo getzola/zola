@@ -79,7 +79,7 @@ impl ImageOp {
                     true => ExtendedColorType::Rgba8,
                     false => ExtendedColorType::Rgb8,
                 };
-                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, 10, q.unwrap_or(100));
+                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, 10, q.unwrap_or(70));
                 encoder.write_image(
                     &img.as_bytes(),
                     img.dimensions().0,
