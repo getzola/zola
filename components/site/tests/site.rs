@@ -600,6 +600,7 @@ fn can_build_site_with_pagination_for_index() {
 
 #[test]
 fn can_build_site_with_pagination_for_taxonomy() {
+    let mut nb_a_pages = 0;
     let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
         site.config.languages.get_mut("en").unwrap().taxonomies.push(TaxonomyConfig {
             name: "tags".to_string(),
@@ -616,6 +617,10 @@ fn can_build_site_with_pagination_for_taxonomy() {
 
             let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
             for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
+                // Discard not rendered pages
+                if i % 2 == 0 && page.meta.render {
+                    nb_a_pages += 1;
+                }
                 page.meta.taxonomies = {
                     let mut taxonomies = HashMap::new();
                     taxonomies.insert(
@@ -633,7 +638,8 @@ fn can_build_site_with_pagination_for_taxonomy() {
         site.populate_taxonomies().unwrap();
         (site, false)
     });
-
+    let nb_a_pagers: usize =
+        if nb_a_pages % 2 == 0 { nb_a_pages / 2 } else { (nb_a_pages / 2) + 1 };
     assert!(&public.exists());
 
     assert!(file_exists!(public, "index.html"));
@@ -661,7 +667,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
         "tags/a/page/1/index.html",
         "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/tags/a/\""
     ));
-    assert!(file_contains!(public, "tags/a/index.html", "Num pagers: 9"));
+    assert!(file_contains!(public, "tags/a/index.html", &format!("Num pagers: {nb_a_pagers}")));
     assert!(file_contains!(public, "tags/a/index.html", "Page size: 2"));
     assert!(file_contains!(public, "tags/a/index.html", "Current index: 1"));
     assert!(!file_contains!(public, "tags/a/index.html", "has_prev"));
@@ -671,11 +677,13 @@ fn can_build_site_with_pagination_for_taxonomy() {
         "tags/a/index.html",
         "First: https://replace-this-with-your-url.com/tags/a/"
     ));
+
     assert!(file_contains!(
         public,
         "tags/a/index.html",
-        "Last: https://replace-this-with-your-url.com/tags/a/page/9/"
+        &format!("Last: https://replace-this-with-your-url.com/tags/a/page/{nb_a_pagers}/")
     ));
+
     assert!(!file_contains!(public, "tags/a/index.html", "has_prev"));
 
     // sitemap contains the pager pages
