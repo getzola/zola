@@ -53,6 +53,3 @@ jobs:
 
       - name: Cargo fmt
         run: cargo fmt --check
-
-      - name: Show version
-        run: ./zola --version
