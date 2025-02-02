@@ -56,13 +56,17 @@ steps:
 
   publish:
     image: bitnami/git
-    secrets: [mail, codeberg_token]
+    environment:
+      CBMAIL:
+        from_secret: "mail"
+      CBTOKEN:
+        from_secret: "codeberg_token"
     commands:
       # Configure Git
-      - git config --global user.email $MAIL
+      - git config --global user.email "$${CBMAIL}"
       - git config --global user.name "Woodpecker CI"
       # Clone the output branch
-      - git clone --branch pages https://$CODEBERG_TOKEN@codeberg.org/$CI_REPO.git $CI_REPO_NAME
+      - git clone --branch pages https://$${CBTOKEN}@codeberg.org/$CI_REPO.git $CI_REPO_NAME
       # Enter the output branch
       - cd $CI_REPO_NAME
       # Remove old files
