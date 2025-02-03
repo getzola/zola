@@ -16,6 +16,7 @@ pub struct Shortcode {
     // In practice, span.len() is always equal to SHORTCODE_PLACEHOLDER.len()
     pub(crate) span: Range<usize>,
     pub(crate) body: Option<String>,
+    pub(crate) indent: String,
     pub(crate) nth: usize,
     pub(crate) inner: Vec<Shortcode>,
     // set later down the line, for quick access without needing the definitions
@@ -88,9 +89,20 @@ impl Shortcode {
         new_context.insert("nth", &self.nth);
         new_context.extend(context.clone());
 
-        let res = utils::templates::render_template(&tpl_name, tera, new_context, &None)
-            .with_context(|| format!("Failed to render {} shortcode", name))?
-            .replace("\r\n", "\n");
+        let rendered = utils::templates::render_template(&tpl_name, tera, new_context, &None)
+            .with_context(|| format!("Failed to render {} shortcode", name))?;
+        // Append the rendered text, but indenting each line after the first one as much as the line in which the shortcode was called.
+        let mut res = String::with_capacity(rendered.len());
+        let mut lines = rendered.split_terminator('\n');
+        if let Some(first_line) = lines.next() {
+            res.push_str(first_line.trim_end_matches('\r'));
+            res.push('\n');
+            for line in lines {
+                res.push_str(&self.indent);
+                res.push_str(line.trim_end_matches('\r'));
+                res.push('\n');
+            }
+        }
 
         Ok(res)
     }
@@ -246,10 +258,23 @@ pub fn parse_for_shortcodes(
 
     // We have at least a `page` pair
     for p in pairs.next().unwrap().into_inner() {
+        fn current_indent(text: &str) -> &str {
+            let current_line = match text.rsplit_once('\n') {
+                Some((_, line)) => line,
+                None => text,
+            };
+            // Stop at the first character that is not considered indentation by the CommonMark spec.
+            match current_line.split_once(|ch| ch != ' ' && ch != '\t') {
+                Some((whitespace, _)) => whitespace,
+                None => current_line,
+            }
+        }
+
         match p.as_rule() {
             Rule::text => output.push_str(p.as_span().as_str()),
             Rule::inline_shortcode => {
                 let start = output.len();
+                let indent = current_indent(&output).into();
                 let (name, args) = parse_shortcode_call(p);
                 let nth = invocation_counter.get(&name);
                 shortcodes.push(Shortcode {
@@ -257,6 +282,7 @@ pub fn parse_for_shortcodes(
                     args,
                     span: start..(start + SHORTCODE_PLACEHOLDER.len()),
                     body: None,
+                    indent,
                     nth,
                     inner: Vec::new(),
                     tera_name: String::new(),
@@ -265,6 +291,7 @@ pub fn parse_for_shortcodes(
             }
             Rule::shortcode_with_body => {
                 let start = output.len();
+                let indent = current_indent(&output).into();
                 let mut inner = p.into_inner();
                 // 3 items in inner: call, body, end
                 // we don't care about the closing tag
@@ -279,6 +306,7 @@ pub fn parse_for_shortcodes(
                     args,
                     span: start..(start + SHORTCODE_PLACEHOLDER.len()),
                     body: Some(body),
+                    indent,
                     nth,
                     inner,
                     tera_name: String::new(),
@@ -422,6 +450,7 @@ mod tests {
             args: Value::Null,
             span: 10..20,
             body: None,
+            indent: String::new(),
             nth: 0,
             inner: Vec::new(),
             tera_name: String::new(),
@@ -442,6 +471,7 @@ mod tests {
             args: Value::Null,
             span: 42..65,
             body: None,
+            indent: String::new(),
             nth: 0,
             inner: Vec::new(),
             tera_name: String::new(),
