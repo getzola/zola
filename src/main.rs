@@ -90,13 +90,13 @@ fn main() {
             no_port_append,
             extra_watch_path,
         } => {
-            if port != 1111 && !port_is_available(port) {
+            if port != 1111 && !port_is_available(interface, port) {
                 console::error("The requested port is not available");
                 std::process::exit(1);
             }
 
-            if !port_is_available(port) {
-                port = get_available_port(1111).unwrap_or_else(|| {
+            if !port_is_available(interface, port) {
+                port = get_available_port(interface, 1111).unwrap_or_else(|| {
                     console::error("No port available");
                     std::process::exit(1);
                 });

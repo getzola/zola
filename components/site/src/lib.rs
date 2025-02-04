@@ -7,6 +7,7 @@ pub mod tpls;
 
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
+use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -149,8 +150,8 @@ impl Site {
     /// We avoid the port the server is going to use as it's not bound yet
     /// when calling this function and we could end up having tried to bind
     /// both http and websocket server to the same port
-    pub fn enable_live_reload(&mut self, port_to_avoid: u16) {
-        self.live_reload = get_available_port(port_to_avoid);
+    pub fn enable_live_reload(&mut self, interface: IpAddr, port_to_avoid: u16) {
+        self.live_reload = get_available_port(interface, port_to_avoid);
     }
 
     /// Only used in `zola serve` to re-use the initial websocket port
