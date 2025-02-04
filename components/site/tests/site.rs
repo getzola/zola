@@ -237,7 +237,9 @@ fn can_build_site_without_live_reload() {
 #[test]
 fn can_build_site_with_live_reload_and_drafts() {
     let (site, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
-        site.enable_live_reload(1000);
+        use std::net::IpAddr;
+        use std::str::FromStr;
+        site.enable_live_reload(IpAddr::from_str("127.0.0.1").unwrap(), 1000);
         site.include_drafts();
         (site, true)
     });

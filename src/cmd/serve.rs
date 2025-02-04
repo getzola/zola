@@ -409,7 +409,7 @@ fn create_new_site(
     if let Some(p) = ws_port {
         site.enable_live_reload_with_port(p);
     } else {
-        site.enable_live_reload(interface_port);
+        site.enable_live_reload(interface, interface_port);
     }
     messages::notify_site_size(&site);
     messages::warn_about_ignored_pages(&site);
