@@ -442,7 +442,6 @@ pub fn markdown_to_html(
     opts.insert(Options::ENABLE_TASKLISTS);
     opts.insert(Options::ENABLE_HEADING_ATTRIBUTES);
     opts.insert(Options::ENABLE_MATH);
-    opts.insert(Options::ENABLE_GFM);
 
     if context.config.markdown.smart_punctuation {
         opts.insert(Options::ENABLE_SMART_PUNCTUATION);
