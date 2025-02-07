@@ -631,21 +631,18 @@ pub fn markdown_to_html(
                                         )));
                                     }
                                 }
-
-                                accumulated_block.clear();
                             }
 
                             _ => {
                                 let html = code_block.highlight(&inner);
                                 events.push(Event::Html(html.into()));
-                                accumulated_block.clear();
-                                events.push(Event::Html("</code></pre>\n".into()));
                             }
                         }
                     }
 
                     // reset highlight and close the code block
                     code_block = None;
+                    accumulated_block.clear();
                     events.push(Event::Html("</code></pre>\n".into()));
                     code_block_language = None;
                 }

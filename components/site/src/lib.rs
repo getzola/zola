@@ -65,7 +65,7 @@ pub struct Site {
     pub permalinks: HashMap<String, String>,
     /// Contains all pages and sections of the site
     pub library: Arc<RwLock<Library>>,
-    /// The cache for rendered math content
+    /// The cache for rendered content
     pub caches: Arc<Caches>,
     /// Whether to load draft pages
     include_drafts: bool,
