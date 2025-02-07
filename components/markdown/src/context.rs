@@ -33,9 +33,7 @@ pub struct Caches {
 
 impl Caches {
     pub fn new(cache_path: &Path) -> Self {
-        Self {
-            typst: Arc::new(TypstCache::new(cache_path, "typst").unwrap()),
-        }
+        Self { typst: Arc::new(TypstCache::new(cache_path, "typst").unwrap()) }
     }
 }
 

@@ -1,4 +1,3 @@
-
 pub fn display_math(code: &str) -> String {
     format!(
         r#"
