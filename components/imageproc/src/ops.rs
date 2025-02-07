@@ -1,29 +1,36 @@
 use errors::{anyhow, Result};
 
+use crate::filter::FilterType;
+
 /// De-serialized & sanitized arguments of `resize_image`
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ResizeOperation {
     /// A simple scale operation that doesn't take aspect ratio into account
-    Scale(u32, u32),
+    Scale(u32, u32, FilterType),
     /// Scales the image to a specified width with height computed such
     /// that aspect ratio is preserved
-    FitWidth(u32),
+    FitWidth(u32, FilterType),
     /// Scales the image to a specified height with width computed such
     /// that aspect ratio is preserved
-    FitHeight(u32),
+    FitHeight(u32, FilterType),
     /// If the image is larger than the specified width or height, scales the image such
     /// that it fits within the specified width and height preserving aspect ratio.
     /// Either dimension may end up being smaller, but never larger than specified.
-    Fit(u32, u32),
+    Fit(u32, u32, FilterType),
     /// Scales the image such that it fills the specified width and height.
     /// Output will always have the exact dimensions specified.
     /// The part of the image that doesn't fit in the thumbnail due to differing
     /// aspect ratio will be cropped away, if any.
-    Fill(u32, u32),
+    Fill(u32, u32, FilterType),
 }
 
 impl ResizeOperation {
-    pub fn from_args(op: &str, width: Option<u32>, height: Option<u32>) -> Result<Self> {
+    pub fn from_args(
+        op: &str,
+        width: Option<u32>,
+        height: Option<u32>,
+        filter: &str,
+    ) -> Result<Self> {
         use ResizeOperation::*;
 
         // Validate args:
@@ -46,12 +53,21 @@ impl ResizeOperation {
             _ => return Err(anyhow!("Invalid image resize operation: {}", op)),
         };
 
+        let filter = match filter {
+            "lanczos3" => FilterType::Lanczos3,
+            "nearest" => FilterType::Nearest,
+            "triangle" => FilterType::Triangle,
+            "catmullrom" => FilterType::CatmullRom,
+            "gaussian" => FilterType::Gaussian,
+            _ => return Err(anyhow!("Invalid filter type: {}", filter)),
+        };
+
         Ok(match op {
-            "scale" => Scale(width.unwrap(), height.unwrap()),
-            "fit_width" => FitWidth(width.unwrap()),
-            "fit_height" => FitHeight(height.unwrap()),
-            "fit" => Fit(width.unwrap(), height.unwrap()),
-            "fill" => Fill(width.unwrap(), height.unwrap()),
+            "scale" => Scale(width.unwrap(), height.unwrap(), filter),
+            "fit_width" => FitWidth(width.unwrap(), filter),
+            "fit_height" => FitHeight(height.unwrap(), filter),
+            "fit" => Fit(width.unwrap(), height.unwrap(), filter),
+            "fill" => Fill(width.unwrap(), height.unwrap(), filter),
             _ => unreachable!(),
         })
     }
@@ -63,7 +79,7 @@ impl ResizeOperation {
 #[derive(Clone, PartialEq, Eq, Hash, Default, Debug)]
 pub struct ResizeInstructions {
     pub crop_instruction: Option<(u32, u32, u32, u32)>, // x, y, w, h
-    pub resize_instruction: Option<(u32, u32)>,         // w, h
+    pub resize_instruction: Option<(u32, u32, FilterType)>, // w, h, filter
 }
 
 impl ResizeInstructions {
@@ -73,16 +89,16 @@ impl ResizeInstructions {
         let res = ResizeInstructions::default();
 
         match args {
-            Scale(w, h) => res.resize((w, h)),
-            FitWidth(w) => {
+            Scale(w, h, filter) => res.resize((w, h), filter),
+            FitWidth(w, filter) => {
                 let h = (orig_h as u64 * w as u64) / orig_w as u64;
-                res.resize((w, h as u32))
+                res.resize((w, h as u32), filter)
             }
-            FitHeight(h) => {
+            FitHeight(h, filter) => {
                 let w = (orig_w as u64 * h as u64) / orig_h as u64;
-                res.resize((w as u32, h))
+                res.resize((w as u32, h), filter)
             }
-            Fit(w, h) => {
+            Fit(w, h, filter) => {
                 if orig_w <= w && orig_h <= h {
                     return res; // ie. no-op
                 }
@@ -91,12 +107,12 @@ impl ResizeInstructions {
                 let orig_h_w = orig_h as u64 * w as u64;
 
                 if orig_w_h > orig_h_w {
-                    Self::new(FitWidth(w), (orig_w, orig_h))
+                    Self::new(FitWidth(w, filter), (orig_w, orig_h))
                 } else {
-                    Self::new(FitHeight(h), (orig_w, orig_h))
+                    Self::new(FitHeight(h, filter), (orig_w, orig_h))
                 }
             }
-            Fill(w, h) => {
+            Fill(w, h, filter) => {
                 const RATIO_EPSILLION: f32 = 0.1;
 
                 let factor_w = orig_w as f32 / w as f32;
@@ -106,7 +122,7 @@ impl ResizeInstructions {
                     // If the horizontal and vertical factor is very similar,
                     // that means the aspect is similar enough that there's not much point
                     // in cropping, so just perform a simple scale in this case.
-                    res.resize((w, h))
+                    res.resize((w, h), filter)
                 } else {
                     // We perform the fill such that a crop is performed first
                     // and then resize_exact can be used, which should be cheaper than
@@ -123,7 +139,7 @@ impl ResizeInstructions {
                         ((orig_w - crop_w) / 2, 0)
                     };
 
-                    res.crop((offset_w, offset_h, crop_w, crop_h)).resize((w, h))
+                    res.crop((offset_w, offset_h, crop_w, crop_h)).resize((w, h), filter)
                 }
             }
         }
@@ -134,8 +150,8 @@ impl ResizeInstructions {
         self
     }
 
-    pub fn resize(mut self, size: (u32, u32)) -> Self {
-        self.resize_instruction = Some(size);
+    pub fn resize(mut self, size: (u32, u32), filter: FilterType) -> Self {
+        self.resize_instruction = Some((size.0, size.1, filter));
         self
     }
 }

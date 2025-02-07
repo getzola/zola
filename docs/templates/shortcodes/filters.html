@@ -1,0 +1,8 @@
+<div>
+    {% for filter in ["lanczos3", "nearest", "triangle", "catmullrom", "gaussian"] -%}
+    {% set image = resize_image(path=path, width=226, height=285, filter=filter) %}
+    <a href="{{ get_url(path=path) }}" target="_blank">
+        <img src="{{ image.url }}" />
+    </a>
+    {%- endfor %}
+</div>
