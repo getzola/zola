@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use libs::tera::{Context as TeraContext, Tera};
 
 use config::Config;
 use errors::{Context, Result};
+use markdown::context::Caches;
 use markdown::{render_content, RenderContext};
 use utils::fs::read_file;
 use utils::net::is_external_link;
@@ -150,6 +152,7 @@ impl Section {
         tera: &Tera,
         config: &Config,
         shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
+        caches: Arc<Caches>,
     ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
@@ -158,9 +161,11 @@ impl Section {
             &self.permalink,
             permalinks,
             self.meta.insert_anchor_links.unwrap_or(config.markdown.insert_anchor_links),
+            caches,
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
+        context.set_parent_absolute(&self.file.parent);
         context
             .tera_context
             .insert("section", &SerializingSection::new(self, SectionSerMode::ForMarkdown));

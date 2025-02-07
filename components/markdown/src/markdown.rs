@@ -2,6 +2,9 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 use crate::markdown::cmark::CowStr;
+use crate::typst::Svgo;
+use crate::typst::TypstMinify;
+use crate::typst::TypstRenderMode;
 use errors::bail;
 use libs::gh_emoji::Replacer as EmojiReplacer;
 use libs::once_cell::sync::Lazy;
@@ -409,6 +412,7 @@ pub fn markdown_to_html(
         .get("page")
         .or_else(|| context.tera_context.get("section"))
         .map(|x| x.as_object().unwrap().get("relative_path").unwrap().as_str().unwrap());
+
     // the rendered html
     let mut html = String::with_capacity(content.len());
     let mut summary = None;
@@ -416,6 +420,7 @@ pub fn markdown_to_html(
     let mut error = None;
 
     let mut code_block: Option<CodeBlock> = None;
+    let mut code_block_language: Option<String> = None;
     // Indicates whether we're in the middle of parsing a text node which will be placed in an HTML
     // attribute, and which hence has to be escaped using escape_html rather than push_html's
     // default HTML body escaping for text nodes.
@@ -436,6 +441,8 @@ pub fn markdown_to_html(
     opts.insert(Options::ENABLE_STRIKETHROUGH);
     opts.insert(Options::ENABLE_TASKLISTS);
     opts.insert(Options::ENABLE_HEADING_ATTRIBUTES);
+    opts.insert(Options::ENABLE_MATH);
+    opts.insert(Options::ENABLE_GFM);
 
     if context.config.markdown.smart_punctuation {
         opts.insert(Options::ENABLE_SMART_PUNCTUATION);
@@ -451,6 +458,17 @@ pub fn markdown_to_html(
     let mut html_shortcodes: Vec<_> = html_shortcodes.into_iter().rev().collect();
     let mut next_shortcode = html_shortcodes.pop();
     let contains_shortcode = |txt: &str| -> bool { txt.contains(SHORTCODE_PLACEHOLDER) };
+
+    let typst = crate::typst::TypstCompiler::new(context.caches.typst.clone());
+
+    if context.config.markdown.math_svgo {
+        Svgo::default().check_bin().map_err(|e| {
+            Error::msg(format!(
+                "Error checking svgo installation, make sure it's installed and in your PATH: {}",
+                e
+            ))
+        })?;
+    }
 
     {
         let mut events = Vec::new();
@@ -513,6 +531,7 @@ pub fn markdown_to_html(
         }
 
         let mut accumulated_block = String::new();
+
         for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
             match event {
                 Event::Text(text) => {
@@ -567,7 +586,7 @@ pub fn markdown_to_html(
                         cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
                         _ => FenceSettings::new(""),
                     };
-                    let (block, begin) = match CodeBlock::new(fence, context.config, path) {
+                    let (block, begin) = match CodeBlock::new(&fence, context.config, path) {
                         Ok(cb) => cb,
                         Err(e) => {
                             error = Some(e);
@@ -576,17 +595,60 @@ pub fn markdown_to_html(
                     };
                     code_block = Some(block);
                     events.push(Event::Html(begin.into()));
+                    code_block_language = fence.language.map(|s| s.to_string());
                 }
                 Event::End(TagEnd::CodeBlock { .. }) => {
                     if let Some(ref mut code_block) = code_block {
-                        let html = code_block.highlight(&accumulated_block);
-                        events.push(Event::Html(html.into()));
-                        accumulated_block.clear();
+                        let inner = &accumulated_block;
+                        match code_block_language.as_deref() {
+                            Some("typ") => {
+                                let rendered = typst.render(
+                                    &inner,
+                                    TypstRenderMode::Raw,
+                                    if context.config.markdown.math_svgo {
+                                        TypstMinify::Yes(
+                                            context.config.markdown.math_svgo_config.as_deref(),
+                                        )
+                                    } else {
+                                        TypstMinify::No
+                                    },
+                                );
+
+                                match rendered {
+                                    Ok((svg, _)) => {
+                                        // Format after minification
+                                        let formatted = crate::typst::format_svg(
+                                            &svg,
+                                            None,
+                                            TypstRenderMode::Raw,
+                                            context.config.markdown.math_css.as_deref(),
+                                        );
+                                        events.push(Event::Html(formatted.into()));
+                                    }
+                                    Err(e) => {
+                                        error = Some(Error::msg(format!(
+                                            "Failed to render math: {}",
+                                            e
+                                        )));
+                                    }
+                                }
+
+                                accumulated_block.clear();
+                            }
+
+                            _ => {
+                                let html = code_block.highlight(&inner);
+                                events.push(Event::Html(html.into()));
+                                accumulated_block.clear();
+                                events.push(Event::Html("</code></pre>\n".into()));
+                            }
+                        }
                     }
 
                     // reset highlight and close the code block
                     code_block = None;
                     events.push(Event::Html("</code></pre>\n".into()));
+                    code_block_language = None;
                 }
                 Event::Start(Tag::Image { link_type, dest_url, title, id }) => {
                     let link = if is_colocated_asset_link(&dest_url) {
@@ -698,9 +760,51 @@ pub fn markdown_to_html(
                         event
                     });
                 }
-                Event::Html(text) | Event::InlineHtml(text)
-                    if !has_summary && MORE_DIVIDER_RE.is_match(text.as_ref()) =>
-                {
+
+                Event::InlineMath(ref content) | Event::DisplayMath(ref content) => {
+                    match context.config.markdown.math {
+                        config::MathRendering::Typst => {
+                            let render_mode = if matches!(event, Event::InlineMath(_)) {
+                                TypstRenderMode::Inline
+                            } else {
+                                TypstRenderMode::Display
+                            };
+
+                            let rendered = typst.render(
+                                content,
+                                render_mode,
+                                if context.config.markdown.math_svgo {
+                                    TypstMinify::Yes(
+                                        context.config.markdown.math_svgo_config.as_deref(),
+                                    )
+                                } else {
+                                    TypstMinify::No
+                                },
+                            );
+
+                            match rendered {
+                                Ok((svg, align)) => {
+                                    // Format after minification
+                                    let formatted = crate::typst::format_svg(
+                                        &svg,
+                                        align,
+                                        render_mode,
+                                        context.config.markdown.math_css.as_deref(),
+                                    );
+
+                                    events.push(Event::Html(formatted.into()));
+                                }
+                                Err(e) => {
+                                    error =
+                                        Some(Error::msg(format!("Failed to render math: {}", e)));
+                                }
+                            }
+                        }
+                        e => todo!("Unsupported math rendering: {:?}", e),
+                    }
+                }
+
+                Event::Html(text) if !has_summary && MORE_DIVIDER_RE.is_match(text.as_ref()) => {
                     has_summary = true;
                     events.push(Event::Html(CONTINUE_READING.into()));
                 }
@@ -852,6 +956,8 @@ pub fn markdown_to_html(
 
             summary = Some(summary_html);
         }
+
+        typst.render_cache.write()?;
 
         // emit everything after summary
         cmark::html::push_html(&mut html, events.into_iter());

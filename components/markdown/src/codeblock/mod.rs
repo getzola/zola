@@ -89,7 +89,7 @@ pub struct CodeBlock<'config> {
 
 impl<'config> CodeBlock<'config> {
     pub fn new<'fence_info>(
-        fence: FenceSettings<'fence_info>,
+        fence: &FenceSettings<'fence_info>,
         config: &'config Config,
         // path to the current file if there is one, to point where the error is
         path: Option<&'config str>,
@@ -123,8 +123,8 @@ impl<'config> CodeBlock<'config> {
                 highlighter,
                 line_numbers: fence.line_numbers,
                 line_number_start: fence.line_number_start,
-                highlight_lines: fence.highlight_lines,
-                hide_lines: fence.hide_lines,
+                highlight_lines: fence.highlight_lines.clone(),
+                hide_lines: fence.hide_lines.clone(),
             },
             html_start,
         ))

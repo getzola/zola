@@ -1,11 +1,11 @@
 #![feature(test)]
 extern crate test;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use config::Config;
 use libs::tera::Tera;
-use markdown::{render_content, RenderContext};
+use markdown::{context::Caches, render_content, RenderContext};
 use utils::types::InsertAnchor;
 
 const CONTENT: &str = r#"
@@ -95,6 +95,7 @@ fn bench_render_content_with_highlighting(b: &mut test::Bencher) {
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
+        Arc::new(Caches::default()),
     );
     let shortcode_def = utils::templates::get_shortcodes(&tera);
     context.set_shortcode_definitions(&shortcode_def);
@@ -116,6 +117,7 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
+        Arc::new(Caches::default()),
     );
     let shortcode_def = utils::templates::get_shortcodes(&tera);
     context.set_shortcode_definitions(&shortcode_def);
@@ -137,6 +139,7 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
+        Arc::new(Caches::default()),
     );
 
     b.iter(|| render_content(&content2, &context).unwrap());
@@ -159,6 +162,7 @@ fn bench_render_content_with_emoji(b: &mut test::Bencher) {
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
+        Arc::new(Caches::default()),
     );
 
     b.iter(|| render_content(&content2, &context).unwrap());
