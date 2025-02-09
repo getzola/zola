@@ -64,7 +64,7 @@ fn can_render_katex_inline_math() {
     println!("{}", res.body);
 
     assert!(res.body.contains(r#"<span"#));
-    assert!(res.body.contains(r#"class="katex-display""#));
+    assert!(res.body.contains(r#"class="katex""#));
     assert!(res.body.contains(r#"aria-hidden="true""#));
 }
 
