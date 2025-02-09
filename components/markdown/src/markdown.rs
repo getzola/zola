@@ -2,9 +2,14 @@ use std::collections::HashMap;
 use std::fmt::Write;
 
 use crate::markdown::cmark::CowStr;
-use crate::typst::Svgo;
-use crate::typst::TypstMinify;
-use crate::typst::TypstRenderMode;
+
+use crate::math::katex::{KatexCompiler, KatexRenderMode};
+use crate::math::Compiler;
+use crate::math::{
+    svgo::Svgo,
+    typst::{self, TypstCompiler, TypstRenderMode},
+    ShouldMinify,
+};
 use errors::bail;
 use libs::gh_emoji::Replacer as EmojiReplacer;
 use libs::once_cell::sync::Lazy;
@@ -458,10 +463,16 @@ pub fn markdown_to_html(
     let mut next_shortcode = html_shortcodes.pop();
     let contains_shortcode = |txt: &str| -> bool { txt.contains(SHORTCODE_PLACEHOLDER) };
 
-    let mut typst = crate::typst::TypstCompiler::new(context.caches.typst.dir().to_path_buf());
-
+    let mut typst = TypstCompiler::new(context.caches.typst.dir().to_path_buf());
+    let mut katex = KatexCompiler::new();
+    let minify = if context.config.markdown.math_svgo {
+        ShouldMinify::Yes(context.config.markdown.math_svgo_config.as_deref())
+    } else {
+        ShouldMinify::No
+    };
     if context.config.markdown.cache {
-        typst.set_render_cache(context.caches.typst.clone());
+        typst.set_cache(context.caches.typst.clone());
+        katex.set_cache(context.caches.katex.clone());
     }
 
     if context.config.markdown.math_svgo {
@@ -605,22 +616,12 @@ pub fn markdown_to_html(
                         let inner = &accumulated_block;
                         match code_block_language.as_deref() {
                             Some("typ") => {
-                                let rendered = typst.render(
-                                    &inner,
-                                    TypstRenderMode::Raw,
-                                    if context.config.markdown.math_svgo {
-                                        TypstMinify::Yes(
-                                            context.config.markdown.math_svgo_config.as_deref(),
-                                        )
-                                    } else {
-                                        TypstMinify::No
-                                    },
-                                );
+                                let rendered = typst.compile(&inner, TypstRenderMode::Raw, &minify);
 
                                 match rendered {
                                     Ok((svg, _)) => {
                                         // Format after minification
-                                        let formatted = crate::typst::format_svg(
+                                        let formatted = typst::format_svg(
                                             &svg,
                                             None,
                                             TypstRenderMode::Raw,
@@ -770,22 +771,12 @@ pub fn markdown_to_html(
                                 TypstRenderMode::Display
                             };
 
-                            let rendered = typst.render(
-                                content,
-                                render_mode,
-                                if context.config.markdown.math_svgo {
-                                    TypstMinify::Yes(
-                                        context.config.markdown.math_svgo_config.as_deref(),
-                                    )
-                                } else {
-                                    TypstMinify::No
-                                },
-                            );
+                            let rendered = typst.compile(content, render_mode, &minify);
 
                             match rendered {
                                 Ok((svg, align)) => {
                                     // Format after minification
-                                    let formatted = crate::typst::format_svg(
+                                    let formatted = typst::format_svg(
                                         &svg,
                                         align,
                                         render_mode,
@@ -800,12 +791,25 @@ pub fn markdown_to_html(
                                 }
                             }
                         }
-                        config::MathRendering::KaTeX => match katex::render(content) {
-                            Ok(html) => events.push(Event::Html(html.into())),
-                            Err(e) => {
-                                error = Some(Error::msg(format!("Failed to render math: {}", e)));
+                        config::MathRendering::KaTeX => {
+                            let render_mode = if matches!(event, Event::InlineMath(_)) {
+                                KatexRenderMode::Inline
+                            } else {
+                                KatexRenderMode::Display
+                            };
+
+                            let rendered = katex.compile(content, render_mode, &minify);
+
+                            match rendered {
+                                Ok(html) => {
+                                    events.push(Event::Html(html.into()));
+                                }
+                                Err(e) => {
+                                    error =
+                                        Some(Error::msg(format!("Failed to render math: {}", e)));
+                                }
                             }
-                        },
+                        }
                         config::MathRendering::None => {}
                     }
                 }

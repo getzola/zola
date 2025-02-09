@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::{
     collections::HashMap,
@@ -31,13 +30,14 @@ fn fonts() -> Vec<Font> {
 }
 
 mod format;
-mod svgo;
 mod templates;
 
 pub use format::*;
-pub use svgo::*;
 
 use crate::cache::GenericCache;
+
+use super::svgo::Svgo;
+use super::{Compiler, ShouldMinify};
 
 /// Fake file
 ///
@@ -69,17 +69,7 @@ pub enum TypstRenderMode {
     Raw,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TypstMinify<'a> {
-    Yes(Option<&'a str>),
-    No,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct TypstCacheEntry {
-    content: String,
-    align: Option<f64>,
-}
+pub type TypstCacheEntry = (String, Option<f64>);
 
 pub type TypstCache = GenericCache<String, TypstCacheEntry>;
 
@@ -97,20 +87,17 @@ pub struct TypstCompiler {
 }
 
 impl TypstCompiler {
-    pub fn new(cache_path: PathBuf) -> Self {
+    pub fn new(base_cache_path: PathBuf) -> Self {
         let fonts = fonts();
 
         Self {
             library: LazyHash::new(Library::default()),
             book: LazyHash::new(FontBook::from_fonts(&fonts)),
             fonts,
-            packages_cache: cache_path.join("packages"),
+            packages_cache: base_cache_path.join("packages"),
             files: Mutex::new(HashMap::new()),
             render_cache: None,
         }
-    }
-    pub fn set_render_cache(&mut self, cache: Arc<TypstCache>) {
-        self.render_cache = Some(cache);
     }
 
     pub fn wrap_source(&self, source: impl Into<String>) -> WrapSource<'_> {
@@ -215,12 +202,25 @@ impl TypstCompiler {
 
         Err(FileError::NotFound(id.vpath().as_rootless_path().into()))
     }
+}
 
-    pub fn render(
+impl Compiler<TypstRenderMode, (String, Option<f64>)> for TypstCompiler {
+    fn set_cache(&mut self, cache: Arc<TypstCache>) {
+        self.render_cache = Some(cache);
+    }
+
+    fn write_cache(&self) -> Result<(), String> {
+        if let Some(ref render_cache) = self.render_cache {
+            render_cache.write().map_err(|e| format!("Failed to write cache: {}", e))?;
+        }
+        Ok(())
+    }
+
+    fn compile(
         &self,
         source: &str,
         mode: TypstRenderMode,
-        minify: TypstMinify,
+        minify: &ShouldMinify,
     ) -> Result<(String, Option<f64>), String> {
         // Prepare source based on mode
         let source = match mode {
@@ -240,7 +240,7 @@ impl TypstCompiler {
 
         // Check cache first
         if let Some(entry) = self.render_cache.as_ref().and_then(|e| e.get(&key)) {
-            return Ok((entry.content.clone(), entry.align));
+            return Ok((entry.0.clone(), entry.1));
         }
 
         // Compile the source
@@ -258,12 +258,12 @@ impl TypstCompiler {
 
         // Minify if requested
         let minified = match minify {
-            TypstMinify::Yes(config) => {
+            ShouldMinify::Yes(config) => {
                 let svgo = Svgo::default();
                 svgo.minify(&image, config.as_deref())
                     .map_err(|e| format!("Failed to minify svg: {}", e))?
             }
-            TypstMinify::No => image,
+            ShouldMinify::No => image,
         };
 
         // Get alignment (for math modes)
@@ -287,13 +287,7 @@ impl TypstCompiler {
 
         // Cache and return
         if let Some(ref render_cache) = self.render_cache {
-            render_cache.insert(
-                key,
-                TypstCacheEntry {
-                    content: minified.clone(),
-                    align: align.map(Some).unwrap_or(None),
-                },
-            );
+            render_cache.insert(key, (minified.clone(), align.map(Some).unwrap_or(None)));
         }
 
         Ok((minified, align))

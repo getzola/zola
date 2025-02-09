@@ -2,8 +2,8 @@ pub mod cache;
 pub mod codeblock;
 pub mod context;
 pub mod markdown;
+pub mod math;
 pub mod shortcode;
-pub mod typst;
 
 use shortcode::{extract_shortcodes, insert_md_shortcodes};
 
