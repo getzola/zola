@@ -800,8 +800,13 @@ pub fn markdown_to_html(
                                 }
                             }
                         }
+                        config::MathRendering::KaTeX => match katex::render(content) {
+                            Ok(html) => events.push(Event::Html(html.into())),
+                            Err(e) => {
+                                error = Some(Error::msg(format!("Failed to render math: {}", e)));
+                            }
+                        },
                         config::MathRendering::None => {}
-                        e => todo!("Unsupported math rendering: {:?}", e),
                     }
                 }
 
