@@ -82,9 +82,10 @@ pub struct Markdown {
     pub math_svgo: bool,
     /// Svgo configuration file path
     pub math_svgo_config: Option<String>,
-    /// Whether to enable automatic dark mode switching based on "prefers-color-scheme" for math
-    /// Injected CSS path for light mode
+    /// Injected CSS path for math rendering
     pub math_css: Option<String>,
+    /// The directory where the cache for the math rendering and other stuff will be stored
+    pub cache_dir: Option<String>,
 }
 
 impl Markdown {
@@ -265,6 +266,7 @@ impl Default for Markdown {
             math_svgo: false,
             math_css: None,
             math_svgo_config: None,
+            cache_dir: None,
         }
     }
 }

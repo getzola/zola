@@ -97,6 +97,12 @@ impl Site {
         let templates_path = path.join("templates");
         let imageproc = imageproc::Processor::new(path.to_path_buf(), &config);
         let output_path = path.join(config.output_dir.clone());
+        let cache_path = config.markdown.cache_dir.clone();
+        let caches = Arc::new(if let Some(cache_path) = cache_path {
+            Caches::new(&path.join(cache_path))
+        } else {
+            Caches::default()
+        });
 
         let site = Site {
             base_path: path.to_path_buf(),
@@ -117,7 +123,7 @@ impl Site {
             build_mode: BuildMode::Disk,
             shortcode_definitions,
             check_external_links: true,
-            caches: Arc::new(Caches::default()),
+            caches,
         };
 
         Ok(site)

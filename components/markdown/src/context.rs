@@ -1,10 +1,10 @@
+use config::Config;
+use dirs::cache_dir;
+use libs::tera::{Context, Tera};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-
-use config::Config;
-use libs::tera::{Context, Tera};
 use utils::templates::ShortcodeDefinition;
 use utils::types::InsertAnchor;
 
@@ -39,7 +39,8 @@ impl Caches {
 
 impl Default for Caches {
     fn default() -> Self {
-        Self::new(Path::new(".cache"))
+        let cache_path = cache_dir().unwrap().join("zola");
+        Self::new(&cache_path)
     }
 }
 
