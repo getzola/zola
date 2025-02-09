@@ -56,6 +56,8 @@ indexing-ja = ["libs/indexing-ja"]
 
 [workspace]
 members = ["components/*"]
+[workspace.package]
+version = "0.19.2"
 
 [profile.release]
 lto = true
