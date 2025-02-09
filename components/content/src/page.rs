@@ -248,6 +248,7 @@ impl Page {
         context.insert("config", &config.serialize(&self.lang));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
+        context.insert("zola_version", env!("CARGO_PKG_VERSION"));
         context.insert("page", &self.serialize(library));
         context.insert("lang", &self.lang);
 
