@@ -458,7 +458,11 @@ pub fn markdown_to_html(
     let mut next_shortcode = html_shortcodes.pop();
     let contains_shortcode = |txt: &str| -> bool { txt.contains(SHORTCODE_PLACEHOLDER) };
 
-    let typst = crate::typst::TypstCompiler::new(context.caches.typst.clone());
+    let mut typst = crate::typst::TypstCompiler::new(context.caches.typst.dir().to_path_buf());
+
+    if context.config.markdown.cache {
+        typst.set_render_cache(context.caches.typst.clone());
+    }
 
     if context.config.markdown.math_svgo {
         Svgo::default().check_bin().map_err(|e| {
@@ -956,7 +960,9 @@ pub fn markdown_to_html(
             summary = Some(summary_html);
         }
 
-        typst.render_cache.write()?;
+        if let Some(render_cache) = typst.render_cache {
+            render_cache.write()?;
+        }
 
         // emit everything after summary
         cmark::html::push_html(&mut html, events.into_iter());

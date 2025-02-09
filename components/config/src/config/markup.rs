@@ -86,6 +86,9 @@ pub struct Markdown {
     pub math_css: Option<String>,
     /// The directory where the cache for the math rendering and other stuff will be stored
     pub cache_dir: Option<String>,
+    /// Whether to cache the rendered math
+    #[serde(skip)]
+    pub cache: bool,
 }
 
 impl Markdown {
@@ -267,6 +270,7 @@ impl Default for Markdown {
             math_css: None,
             math_svgo_config: None,
             cache_dir: None,
+            cache: true,
         }
     }
 }

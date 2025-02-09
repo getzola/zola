@@ -93,21 +93,24 @@ pub struct TypstCompiler {
 
     pub packages_cache: PathBuf,
     pub files: Mutex<HashMap<FileId, TypstFile>>,
-    pub render_cache: Arc<TypstCache>,
+    pub render_cache: Option<Arc<TypstCache>>,
 }
 
 impl TypstCompiler {
-    pub fn new(cache: Arc<TypstCache>) -> Self {
+    pub fn new(cache_path: PathBuf) -> Self {
         let fonts = fonts();
 
         Self {
             library: LazyHash::new(Library::default()),
             book: LazyHash::new(FontBook::from_fonts(&fonts)),
             fonts,
-            packages_cache: PathBuf::from(".cache/packages"),
+            packages_cache: cache_path.join("packages"),
             files: Mutex::new(HashMap::new()),
-            render_cache: cache,
+            render_cache: None,
         }
+    }
+    pub fn set_render_cache(&mut self, cache: Arc<TypstCache>) {
+        self.render_cache = Some(cache);
     }
 
     pub fn wrap_source(&self, source: impl Into<String>) -> WrapSource<'_> {
@@ -236,7 +239,7 @@ impl TypstCompiler {
         };
 
         // Check cache first
-        if let Some(entry) = self.render_cache.get(&key) {
+        if let Some(entry) = self.render_cache.as_ref().and_then(|e| e.get(&key)) {
             return Ok((entry.content.clone(), entry.align));
         }
 
@@ -283,10 +286,15 @@ impl TypstCompiler {
         };
 
         // Cache and return
-        self.render_cache.insert(
-            key,
-            TypstCacheEntry { content: minified.clone(), align: align.map(Some).unwrap_or(None) },
-        );
+        if let Some(ref render_cache) = self.render_cache {
+            render_cache.insert(
+                key,
+                TypstCacheEntry {
+                    content: minified.clone(),
+                    align: align.map(Some).unwrap_or(None),
+                },
+            );
+        }
 
         Ok((minified, align))
     }

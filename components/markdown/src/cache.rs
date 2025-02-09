@@ -23,6 +23,11 @@ where
     K: Eq + Hash + Serialize + for<'de> Deserialize<'de>,
     V: Serialize + for<'de> Deserialize<'de>,
 {
+    /// Get the directory where the cache is stored
+    pub fn dir(&self) -> &Path {
+        self.cache_file.parent().unwrap()
+    }
+
     /// Create a new cache for a specific type
     pub fn new(base_cache_dir: &Path, filename: &str) -> crate::Result<Self> {
         // Create the base cache directory
