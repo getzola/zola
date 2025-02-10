@@ -27,7 +27,7 @@ serde = { version = "1.0.130", features = ["derive"] }
 dashmap = { version = "6.1.0", features = ["serde"] }
 twox-hash = "2.1.0"
 dirs = "6.0.0"
-katex = "0.4.6"
+katex = { version = "0.4.6", default-features = false, features = ["duktape"] }
 
 [dev-dependencies]
 templates = { path = "../templates" }
