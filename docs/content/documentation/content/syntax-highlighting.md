@@ -331,6 +331,7 @@ pre table td {
 /* The line number cells */
 pre table td:nth-of-type(1) {
   text-align: center;
+  vertical-align: top;
   user-select: none;
 }
 pre mark {
