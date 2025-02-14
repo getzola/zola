@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.20.0 (unreleased)
+## 0.20.0 (2025-02-14)
 
 - Add `name` annotation for codeblock
 - Add argument to `zola serve` to watch additional directories
