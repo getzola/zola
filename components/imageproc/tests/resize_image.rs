@@ -128,6 +128,11 @@ fn resize_image_png_webp() {
 }
 
 #[test]
+fn resize_image_png_avif() {
+    image_op_test("png.png", "scale", Some(150), Some(150), "avif", "avif", 150, 150, 300, 380);
+}
+
+#[test]
 fn resize_image_webp_jpg() {
     image_op_test("webp.webp", "scale", Some(150), Some(150), "auto", "jpg", 150, 150, 300, 380);
 }
@@ -175,6 +180,19 @@ fn read_image_metadata_webp() {
             height: 380,
             format: Some("webp"),
             mime: Some("image/webp")
+        }
+    );
+}
+
+#[test]
+fn read_image_metadata_avif() {
+    assert_eq!(
+        image_meta_test("avif.avif"),
+        ImageMetaResponse {
+            width: 300,
+            height: 380,
+            format: Some("avif"),
+            mime: Some("image/avif")
         }
     );
 }
