@@ -43,7 +43,7 @@ pub struct Search {
     pub include_date: bool,
     /// Include the path of the page in the search index. `false` by default.
     pub include_path: bool,
-    /// Foramt of the search index to be produced. 'elasticlunr_javascript' by default.
+    /// Format of the search index to be produced. 'elasticlunr_javascript' by default.
     pub index_format: IndexFormat,
 }
 

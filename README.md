@@ -17,7 +17,7 @@ Hugo that I was using before for 6+ sites.
 - [Syntax highlighting](https://www.getzola.org/documentation/content/syntax-highlighting/)
 - [Sass compilation](https://www.getzola.org/documentation/content/sass/)
 - Assets co-location
-- [Multilingual site suport](https://www.getzola.org/documentation/content/multilingual/) (Basic currently)
+- [Multilingual site support](https://www.getzola.org/documentation/content/multilingual/) (Basic currently)
 - [Image processing](https://www.getzola.org/documentation/content/image-processing/)
 - [Themes](https://www.getzola.org/documentation/themes/overview/)
 - [Shortcodes](https://www.getzola.org/documentation/content/shortcodes/)

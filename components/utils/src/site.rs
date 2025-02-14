@@ -88,7 +88,7 @@ mod tests {
     }
 
     #[test]
-    fn errors_resolve_inexistant_internal_link() {
+    fn errors_resolve_inexistent_internal_link() {
         let res = resolve_internal_link("@/pages/about.md#hello", &HashMap::new());
         assert!(res.is_err());
     }

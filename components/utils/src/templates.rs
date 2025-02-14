@@ -186,7 +186,7 @@ mod tests {
         // Check finding existing template
         assert_eq!(check_template_fallbacks("index.html", &tera, &None), Some("index.html"));
 
-        // Check trying to find non-existant template
+        // Check trying to find non-existent template
         assert_eq!(check_template_fallbacks("not-here.html", &tera, &None), None);
 
         // Check theme fallback

@@ -57,7 +57,7 @@ Under **Repository secrets** click **Add repository secret**. In the *Name* fiel
 
 ## GitHub Actions
 
-Next we need to create the *Github Action* to build and deploy our files to S3. We need to create a workflow file in `.github/workflows` directory of our repository. This can be done by navigating to the *Actions* tab in GitHub or by commiting the file from your machine.
+Next we need to create the *Github Action* to build and deploy our files to S3. We need to create a workflow file in `.github/workflows` directory of our repository. This can be done by navigating to the *Actions* tab in GitHub or by committing the file from your machine.
 
 `.github/workflows/publish.yml`:
 
