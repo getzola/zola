@@ -6,9 +6,11 @@ use std::path::{Path, PathBuf};
 use config::Config;
 use errors::{anyhow, Context, Result};
 use libs::ahash::{HashMap, HashSet};
+use libs::image::codecs::avif::AvifEncoder;
 use libs::image::codecs::jpeg::JpegEncoder;
 use libs::image::imageops::FilterType;
-use libs::image::{EncodableLayout, ImageFormat};
+use libs::image::GenericImageView;
+use libs::image::{EncodableLayout, ExtendedColorType, ImageEncoder, ImageFormat};
 use libs::rayon::prelude::*;
 use libs::{image, webp};
 use serde::{Deserialize, Serialize};
@@ -70,6 +72,21 @@ impl ImageOp {
                     None => encoder.encode_lossless(),
                 };
                 buffered_f.write_all(memory.as_bytes())?;
+            }
+            Format::Avif(q) => {
+                let mut avif: Vec<u8> = Vec::new();
+                let color_type = match img.color().has_alpha() {
+                    true => ExtendedColorType::Rgba8,
+                    false => ExtendedColorType::Rgb8,
+                };
+                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, 10, q.unwrap_or(70));
+                encoder.write_image(
+                    &img.as_bytes(),
+                    img.dimensions().0,
+                    img.dimensions().1,
+                    color_type,
+                )?;
+                buffered_f.write_all(&avif.as_bytes())?;
             }
         }
 
