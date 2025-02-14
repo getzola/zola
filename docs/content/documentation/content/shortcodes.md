@@ -167,6 +167,51 @@ If you want to have some content that looks like a shortcode but not have Zola t
 you will need to escape it by using `{%/*` and `*/%}` instead of `{%` and `%}`. You won't need to escape
 anything else until the closing tag.
 
+### Indentation
+
+If the shortcode expands to multiple lines, the lines after the first one will be indented as much as the first one:
+
+```jinja2
+- Second, heed this ancient wisdom:
+  {%/* quote(author=Vincent) */%}A quote{%/* end */%}
+```
+
+becomes...
+
+```md
+- Second, heed this ancient wisdom:
+  > A quote
+  > -- *Vincent*
+```
+
+But sometimes, the first line is not indented, and this breaks rendering:
+
+```jinja2
+- {%/* quote(author=Vincent) */%}A quote{%/* end */%}
+
+  ...are some wise words
+```
+
+becomes...
+
+```md
+- > A quote
+> -- *Vincent*
+
+  ...are some wise words
+```
+
+...which renders improperly (the second line of the quote onwards are not part of the list item).
+
+Since the first line of a list item can be empty, the fix is simply to add a new line:
+
+```jinja2
+-
+  {%/* quote(author=Vincent) */%}A quote{%/* end */%}
+  
+  ...are some wise words
+```
+
 ## Shortcode context
 
 Every shortcode can access some variables, beyond what you explicitly passed as parameter. These variables are explained in the following subsections:
