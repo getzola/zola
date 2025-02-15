@@ -78,7 +78,7 @@ pages:
         github_api_url="https://api.github.com/repos/getzola/zola/releases/latest"
         zola_url=$(
           wget --output-document - $github_api_url |
-          grep "browser_download_url.*linux-gnu.tar.gz" |
+          grep "browser_download_url.*x86_64.*linux-gnu.tar.gz" |
           cut --delimiter : --fields 2,3 |
           tr --delete "\" "
         )
