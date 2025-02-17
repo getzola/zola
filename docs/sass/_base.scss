@@ -87,7 +87,7 @@ a {
     }
   }
 
-  &[rel~="noreferrer"] {
+  &.external {
     padding-right: 1em;
     background-size: 14px;
     background-image: $external-link-icon;
