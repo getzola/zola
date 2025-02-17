@@ -3,17 +3,17 @@
 title = "Zolarwind"
 description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
 template = "theme.html"
-date = 2025-01-05T13:23:19+01:00
+date = 2025-02-03T09:44:25+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-01-05T13:23:19+01:00
-updated = 2025-01-05T13:23:19+01:00
+created = 2025-02-03T09:44:25+01:00
+updated = 2025-02-03T09:44:25+01:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
-minimum_version = "0.19.1"
+minimum_version = "0.19.2"
 license = "MIT"
 demo = "https://pureandroid.com"
 
@@ -337,17 +337,17 @@ path_language_resources = "themes/zolarwind/i18n/"
 
 ## Development
 
-If you want to adjust the CSS of the theme to your needs, you will need to edit the files in the `templates` and `css` directories.
-While you do this, you should make sure that the CSS file `static/css/generated.css` is up to date.
-This file is generated from the file `css/main.css`, and all the files that are configured as a pattern in `tailwind.config.js`:
+If you want to adjust the CSS of the theme to your needs, you will need to edit the files in the `templates` and `css`
+directories. While you do this, you should make sure that the CSS file `static/css/generated.css` is up to date. This
+file is generated from the file `css/main.css`, and all the files that Tailwind automatically identifies via automatic
+content detection.
 
-- `css/main.css`
+If you ever need to explicitly add a source file excluded by default, you can always add it with the `@source`
+directive, right in your `css/main.css` file:
 
-- `themes/**/*.html`
-
-- `templates/**/*.html`
-
-- `content/**/*.md`
+```css
+@source "../node_modules/@my-company/ui-lib";
+```
 
 So whenever one of these files changes, you need to run the script `css:build` from the `package.json` file.
 To achieve this, you need to have `Node.js` and all dependencies from `package.json` installed (with `npm install`).
