@@ -25,6 +25,7 @@ pub struct FenceSettings<'a> {
     pub highlight_lines: Vec<RangeInclusive<usize>>,
     pub hide_lines: Vec<RangeInclusive<usize>>,
     pub name: Option<&'a str>,
+    pub include: Option<&'a str>,
 }
 
 impl<'a> FenceSettings<'a> {
@@ -36,6 +37,7 @@ impl<'a> FenceSettings<'a> {
             highlight_lines: Vec::new(),
             hide_lines: Vec::new(),
             name: None,
+            include: None,
         };
 
         for token in FenceIter::new(fence_info) {
@@ -46,6 +48,7 @@ impl<'a> FenceSettings<'a> {
                 FenceToken::HighlightLines(lines) => me.highlight_lines.extend(lines),
                 FenceToken::HideLines(lines) => me.hide_lines.extend(lines),
                 FenceToken::Name(n) => me.name = Some(n),
+                FenceToken::Include(file) => me.include = Some(file),
             }
         }
 
@@ -61,6 +64,7 @@ enum FenceToken<'a> {
     HighlightLines(Vec<RangeInclusive<usize>>),
     HideLines(Vec<RangeInclusive<usize>>),
     Name(&'a str),
+    Include(&'a str),
 }
 
 struct FenceIter<'a> {
@@ -110,6 +114,11 @@ impl<'a> Iterator for FenceIter<'a> {
                 "name" => {
                     if let Some(n) = tok_split.next() {
                         return Some(FenceToken::Name(n));
+                    }
+                }
+                "include" => {
+                    if let Some(file) = tok_split.next() {
+                        return Some(FenceToken::Include(file));
                     }
                 }
                 lang => {

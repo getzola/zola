@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Write;
+use std::path::PathBuf;
 
 use crate::markdown::cmark::CowStr;
 use errors::bail;
@@ -564,7 +565,7 @@ pub fn markdown_to_html(
                         cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
                         _ => FenceSettings::new(""),
                     };
-                    let (block, begin) = match CodeBlock::new(fence, context.config, path) {
+                    let (block, begin) = match CodeBlock::new(&fence, context.config, path) {
                         Ok(cb) => cb,
                         Err(e) => {
                             error = Some(e);
@@ -576,7 +577,18 @@ pub fn markdown_to_html(
                 }
                 Event::End(TagEnd::CodeBlock { .. }) => {
                     if let Some(ref mut code_block) = code_block {
-                        let html = code_block.highlight(&accumulated_block);
+                        let inner = code_block
+                            .include(
+                                context
+                                    .parent_absolute
+                                    .map(|e| {
+                                        path.map(|p| e.join(PathBuf::from(p).parent().unwrap()))
+                                    })
+                                    .flatten()
+                                    .as_ref(),
+                            )
+                            .unwrap_or(accumulated_block.clone());
+                        let html = code_block.highlight(&inner);
                         events.push(Event::Html(html.into()));
                         accumulated_block.clear();
                     }
