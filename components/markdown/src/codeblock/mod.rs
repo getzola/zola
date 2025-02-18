@@ -129,15 +129,13 @@ impl<'config> CodeBlock<'config> {
         ))
     }
 
-    pub fn include(&self, base: Option<&PathBuf>) -> Option<String> {
-        let path = base?.join(self.include.as_ref()?);
-        let res = read_file(&path);
-        match res {
-            Ok(content) => Some(content),
-            Err(e) => {
-                eprintln!("Warning: Failed to include {:?}: {}", path, e);
-                None
-            }
+    pub fn include(&self, base: Option<&PathBuf>) -> Result<Option<String>> {
+        if let Some(base) = base {
+            let path = base.join(&self.include.as_ref().expect("No include path"));
+            let content = read_file(&path)?;
+            Ok(Some(content))
+        } else {
+            Ok(None)
         }
     }
 
