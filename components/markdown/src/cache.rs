@@ -30,18 +30,18 @@ where
 
     /// Create a new cache for a specific type
     pub fn new(base_cache_dir: &Path, filename: &str) -> crate::Result<Self> {
-        // Create the base cache directory
-        fs::create_dir_all(base_cache_dir)?;
-
         // Full path to the cache file
         let cache_file = base_cache_dir.join(filename);
 
         // Attempt to load existing cache
         let cache = match Self::read_cache(&cache_file) {
-            Ok(loaded_cache) => {
-                println!("Loaded cache from {:?} ({:?})", cache_file, loaded_cache.len());
-                loaded_cache
-            }
+            Ok(loaded_cache) => match loaded_cache {
+                Some(c) => {
+                    println!("Loaded cache from {:?} ({:?})", cache_file, c.len());
+                    c
+                }
+                None => DashMap::new(),
+            },
             Err(e) => {
                 println!("Failed to load cache: {}", e);
                 DashMap::new()
@@ -52,9 +52,9 @@ where
     }
 
     /// Read cache from file
-    fn read_cache(cache_file: &Path) -> io::Result<DashMap<K, V>> {
+    fn read_cache(cache_file: &Path) -> io::Result<Option<DashMap<K, V>>> {
         if !cache_file.exists() {
-            return Ok(DashMap::new());
+            return Ok(None);
         }
 
         let mut file = File::open(cache_file)?;
@@ -66,6 +66,7 @@ where
 
     /// Write cache to file
     pub fn write(&self) -> io::Result<()> {
+        fs::create_dir_all(self.dir())?;
         let serialized = bincode::serialize(&self.cache)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
