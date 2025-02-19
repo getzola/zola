@@ -29,7 +29,7 @@ use utils::table_of_contents::{make_table_of_contents, Heading};
 use utils::types::InsertAnchor;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag, TagEnd};
-use crate::codeblock::{CodeBlock, CodeBlockType, FenceSettings};
+use crate::codeblock::{CodeBlock, FenceSettings};
 use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
@@ -425,7 +425,7 @@ pub fn markdown_to_html(
     // Set while parsing
     let mut error = None;
 
-    let mut code_block: Option<CodeBlockType> = None;
+    let mut code_block: Option<CodeBlock> = None;
     // Indicates whether we're in the middle of parsing a text node which will be placed in an HTML
     // attribute, and which hence has to be escaped using escape_html rather than push_html's
     // default HTML body escaping for text nodes.
@@ -641,7 +641,22 @@ pub fn markdown_to_html(
                         _ => false,
                     };
                     if should_render {
-                        code_block = Some(CodeBlockType::Rendered);
+                        if let Some(ref compiler) = compiler {
+                            let rendered = compiler.compile(
+                                &accumulated_block,
+                                MathRenderMode::Raw,
+                                &context.config.markdown.math.svgo,
+                            );
+
+                            match rendered {
+                                Ok(svg) => {
+                                    events.push(Event::Html(svg.into()));
+                                }
+                                Err(e) => {
+                                    error = Some(e);
+                                }
+                            }
+                        }
                     } else {
                         let (block, begin) = match CodeBlock::new(&fence, context.config, path) {
                             Ok(cb) => cb,
@@ -650,42 +665,20 @@ pub fn markdown_to_html(
                                 break;
                             }
                         };
-                        code_block = Some(CodeBlockType::Highlighted(block));
+                        code_block = Some(block);
                         events.push(Event::Html(begin.into()));
                     }
                 }
                 Event::End(TagEnd::CodeBlock { .. }) => {
-                    match code_block {
-                        Some(ref mut code_block) => match code_block {
-                            CodeBlockType::Rendered => {
-                                if let Some(ref compiler) = compiler {
-                                    let rendered = compiler.compile(
-                                        &accumulated_block,
-                                        MathRenderMode::Raw,
-                                        &context.config.markdown.math.svgo,
-                                    );
-
-                                    match rendered {
-                                        Ok(svg) => {
-                                            events.push(Event::Html(svg.into()));
-                                        }
-                                        Err(e) => {
-                                            error = Some(e);
-                                        }
-                                    }
-                                }
-                            }
-                            CodeBlockType::Highlighted(ref mut code_block) => {
-                                let html = code_block.highlight(&accumulated_block);
-                                events.push(Event::Html(html.into()));
-                            }
-                        },
-                        None => {}
+                    if let Some(ref mut code_block) = code_block {
+                        let html = code_block.highlight(&accumulated_block);
+                        events.push(Event::Html(html.into()));
+                        accumulated_block.clear();
                     }
 
-                    // reset code block state
+                    // reset highlight and close the code block
                     code_block = None;
-                    accumulated_block.clear();
+                    events.push(Event::Html("</code></pre>\n".into()));
                 }
                 Event::Start(Tag::Image { link_type, dest_url, title, id }) => {
                     let link = if is_colocated_asset_link(&dest_url) {
