@@ -634,31 +634,42 @@ pub fn markdown_to_html(
                     code_block_language = fence.language.map(|s| s.to_string());
                 }
                 Event::End(TagEnd::CodeBlock { .. }) => {
-                    if let Some(ref mut code_block) = code_block {
-                        let inner = &accumulated_block;
-                        if let Some(lang) = code_block_language.as_deref()
-                            && let Some(ref compiler) = compiler
-                        {
-                            if compiler.raw_extensions().contains(&lang) {
-                                let rendered = compiler.compile(
-                                    inner,
-                                    MathRenderMode::Raw,
-                                    &context.config.markdown.math.svgo,
-                                );
+                    match code_block {
+                        Some(ref mut code_block) => {
+                            let inner = &accumulated_block;
 
-                                match rendered {
-                                    Ok(svg) => {
-                                        events.push(Event::Html(svg.into()));
-                                    }
-                                    Err(e) => {
-                                        error = Some(e);
+                            let should_compile = match (code_block_language.as_deref(), &compiler) {
+                                (Some(lang), Some(compiler))
+                                    if compiler.raw_extensions().contains(&lang) =>
+                                {
+                                    true
+                                }
+                                _ => false,
+                            };
+
+                            if should_compile {
+                                if let Some(ref compiler) = compiler {
+                                    let rendered = compiler.compile(
+                                        inner,
+                                        MathRenderMode::Raw,
+                                        &context.config.markdown.math.svgo,
+                                    );
+
+                                    match rendered {
+                                        Ok(svg) => {
+                                            events.push(Event::Html(svg.into()));
+                                        }
+                                        Err(e) => {
+                                            error = Some(e);
+                                        }
                                     }
                                 }
-                            } else {
+                            } else if code_block_language.is_some() && compiler.is_some() {
                                 let html = code_block.highlight(inner);
                                 events.push(Event::Html(html.into()));
                             }
                         }
+                        None => {}
                     }
 
                     // reset code block state
@@ -777,24 +788,27 @@ pub fn markdown_to_html(
                     });
                 }
 
-                Event::InlineMath(ref content) | Event::DisplayMath(ref content)
-                    if let Some(ref compiler) = compiler =>
-                {
-                    let render_mode = if matches!(event, Event::InlineMath(_)) {
-                        MathRenderMode::Inline
-                    } else {
-                        MathRenderMode::Display
-                    };
+                Event::InlineMath(ref content) | Event::DisplayMath(ref content) => {
+                    if let Some(ref compiler) = compiler {
+                        let render_mode = if matches!(event, Event::InlineMath(_)) {
+                            MathRenderMode::Inline
+                        } else {
+                            MathRenderMode::Display
+                        };
 
-                    let rendered =
-                        compiler.compile(content, render_mode, &context.config.markdown.math.svgo);
+                        let rendered = compiler.compile(
+                            content,
+                            render_mode,
+                            &context.config.markdown.math.svgo,
+                        );
 
-                    match rendered {
-                        Ok(svg) => {
-                            events.push(Event::Html(svg.into()));
-                        }
-                        Err(e) => {
-                            error = Some(Error::msg(format!("Failed to render math: {}", e)));
+                        match rendered {
+                            Ok(svg) => {
+                                events.push(Event::Html(svg.into()));
+                            }
+                            Err(e) => {
+                                error = Some(Error::msg(format!("Failed to render math: {}", e)));
+                            }
                         }
                     }
                 }
