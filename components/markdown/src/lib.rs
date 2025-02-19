@@ -1,3 +1,4 @@
+#![feature(if_let_guard, let_chains)]
 pub mod cache;
 pub mod codeblock;
 pub mod context;

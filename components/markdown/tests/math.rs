@@ -1,18 +1,18 @@
-use config::Config;
+use config::{BoolWithPath, Config};
 
 mod common;
 
 fn default_config_math_typst() -> Config {
     let mut config = Config::default_for_test();
-    config.markdown.math = config::MathRendering::Typst;
-    config.markdown.cache = false;
+    config.markdown.math.engine = config::MathRenderingEngine::Typst;
+    config.markdown.cache = BoolWithPath::False;
     config
 }
 
 fn default_config_math_katex() -> Config {
     let mut config = Config::default_for_test();
-    config.markdown.math = config::MathRendering::KaTeX;
-    config.markdown.cache = false;
+    config.markdown.math.engine = config::MathRenderingEngine::Katex;
+    config.markdown.cache = BoolWithPath::False;
     config
 }
 

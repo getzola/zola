@@ -65,8 +65,8 @@ pub struct Site {
     pub permalinks: HashMap<String, String>,
     /// Contains all pages and sections of the site
     pub library: Arc<RwLock<Library>>,
-    /// The cache for rendered content
-    pub caches: Arc<Caches>,
+    /// The caches for rendered content
+    pub caches: Option<Arc<Caches>>,
     /// Whether to load draft pages
     include_drafts: bool,
     build_mode: BuildMode,
@@ -97,13 +97,18 @@ impl Site {
         let templates_path = path.join("templates");
         let imageproc = imageproc::Processor::new(path.to_path_buf(), &config);
         let output_path = path.join(config.output_dir.clone());
-        let cache_path = config.markdown.cache_dir.clone();
-        let caches = Arc::new(if let Some(cache_path) = cache_path {
-            Caches::new(&path.join(cache_path))
-        } else {
-            Caches::default()
-        });
 
+        let caches = match config.markdown.cache {
+            config::BoolWithPath::True(ref maybe_path) => Some(Arc::new(match maybe_path {
+                Some(p) => {
+                    let cache_path = path.join(p);
+                    create_directory(&cache_path)?;
+                    Caches::new(&cache_path)
+                }
+                None => Caches::default(),
+            })),
+            config::BoolWithPath::False => None,
+        };
         let site = Site {
             base_path: path.to_path_buf(),
             config,

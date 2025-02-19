@@ -1,3 +1,5 @@
+use config::BoolWithPath;
+use errors::{Context, Error};
 use std::sync::Arc;
 use std::{
     collections::HashMap,
@@ -17,6 +19,17 @@ use typst::{
     Library, World,
 };
 
+mod format;
+mod templates;
+
+pub use format::*;
+
+use super::svgo::Svgo;
+use super::{MathCompiler, MathRenderMode};
+use crate::cache::GenericCache;
+use crate::context::CACHE_DIR;
+use crate::Result;
+
 fn fonts() -> Vec<Font> {
     typst_assets::fonts()
         .flat_map(|bytes| {
@@ -28,16 +41,6 @@ fn fonts() -> Vec<Font> {
         })
         .collect()
 }
-
-mod format;
-mod templates;
-
-pub use format::*;
-
-use crate::cache::GenericCache;
-
-use super::svgo::Svgo;
-use super::{Compiler, ShouldMinify};
 
 /// Fake file
 ///
@@ -62,14 +65,8 @@ impl TypstFile {
         Ok(source.clone())
     }
 }
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum TypstRenderMode {
-    Display,
-    Inline,
-    Raw,
-}
 
-pub type TypstCacheEntry = (String, Option<f64>);
+pub type TypstCacheEntry = String;
 
 pub type TypstCache = GenericCache<String, TypstCacheEntry>;
 
@@ -77,26 +74,35 @@ pub type TypstCache = GenericCache<String, TypstCacheEntry>;
 ///
 /// This is the compiler which has all the necessary fields except the source
 pub struct TypstCompiler {
-    pub library: LazyHash<Library>,
-    pub book: LazyHash<FontBook>,
-    pub fonts: Vec<Font>,
-
-    pub packages_cache: PathBuf,
-    pub files: Mutex<HashMap<FileId, TypstFile>>,
-    pub render_cache: Option<Arc<TypstCache>>,
+    library: LazyHash<Library>,
+    book: LazyHash<FontBook>,
+    fonts: Vec<Font>,
+    packages_cache_path: PathBuf,
+    files: Mutex<HashMap<FileId, TypstFile>>,
+    render_cache: Option<Arc<TypstCache>>,
+    addon: Option<String>,
+    styles: Option<String>,
 }
 
 impl TypstCompiler {
-    pub fn new(base_cache_path: PathBuf) -> Self {
+    pub fn new(
+        base_cache_path: Option<PathBuf>,
+        addon: Option<String>,
+        styles: Option<String>,
+    ) -> Self {
         let fonts = fonts();
 
         Self {
             library: LazyHash::new(Library::default()),
             book: LazyHash::new(FontBook::from_fonts(&fonts)),
             fonts,
-            packages_cache: base_cache_path.join("packages"),
+            packages_cache_path: base_cache_path
+                .unwrap_or(CACHE_DIR.to_path_buf())
+                .join("packages"),
             files: Mutex::new(HashMap::new()),
             render_cache: None,
+            addon,
+            styles,
         }
     }
 
@@ -111,7 +117,7 @@ impl TypstCompiler {
     /// Get the package directory or download if not exists
     fn package(&self, package: &PackageSpec) -> PackageResult<PathBuf> {
         let package_subdir = format!("{}/{}/{}", package.namespace, package.name, package.version);
-        let path = self.packages_cache.join(package_subdir);
+        let path = self.packages_cache_path.join(package_subdir);
 
         if path.exists() {
             return Ok(path);
@@ -204,29 +210,28 @@ impl TypstCompiler {
     }
 }
 
-impl Compiler<TypstRenderMode, (String, Option<f64>)> for TypstCompiler {
+impl MathCompiler for TypstCompiler {
     fn set_cache(&mut self, cache: Arc<TypstCache>) {
         self.render_cache = Some(cache);
     }
 
-    fn write_cache(&self) -> Result<(), String> {
+    fn raw_extensions(&self) -> &'static [&'static str] {
+        &["typ", "typst"]
+    }
+
+    fn write_cache(&self) -> Result<()> {
         if let Some(ref render_cache) = self.render_cache {
-            render_cache.write().map_err(|e| format!("Failed to write cache: {}", e))?;
+            render_cache.write().context("Failed to write typst cache")?;
         }
         Ok(())
     }
 
-    fn compile(
-        &self,
-        source: &str,
-        mode: TypstRenderMode,
-        minify: &ShouldMinify,
-    ) -> Result<(String, Option<f64>), String> {
+    fn compile(&self, source: &str, mode: MathRenderMode, minify: &BoolWithPath) -> Result<String> {
         // Prepare source based on mode
         let source = match mode {
-            TypstRenderMode::Display => templates::display_math(&source),
-            TypstRenderMode::Inline => templates::inline_math(&source),
-            TypstRenderMode::Raw => templates::raw(&source),
+            MathRenderMode::Display => templates::display_math(&source, self.addon.as_deref()),
+            MathRenderMode::Inline => templates::inline_math(&source, self.addon.as_deref()),
+            MathRenderMode::Raw => templates::raw(&source, self.addon.as_deref()),
         };
 
         // Generate cache key
@@ -240,7 +245,7 @@ impl Compiler<TypstRenderMode, (String, Option<f64>)> for TypstCompiler {
 
         // Check cache first
         if let Some(entry) = self.render_cache.as_ref().and_then(|e| e.get(&key)) {
-            return Ok((entry.0.clone(), entry.1));
+            return Ok(entry.clone());
         }
 
         // Compile the source
@@ -249,48 +254,51 @@ impl Compiler<TypstRenderMode, (String, Option<f64>)> for TypstCompiler {
         let warnings = document.warnings;
 
         if !warnings.is_empty() {
-            return Err(format!("{:?}", warnings));
+            return Err(Error::msg(format!("{:?}", warnings)));
         }
 
-        let document = document.output.map_err(|diags| format!("{:?}", diags))?;
-        let page = document.pages.first().ok_or("no pages")?;
+        let document = document.output.map_err(|diags| Error::msg(format!("{:?}", diags)))?;
+        let page = document.pages.first().ok_or(Error::msg("No pages found"))?;
         let image = typst_svg::svg(page);
 
         // Minify if requested
         let minified = match minify {
-            ShouldMinify::Yes(config) => {
+            BoolWithPath::True(config) => {
                 let svgo = Svgo::default();
                 svgo.minify(&image, config.as_deref())
-                    .map_err(|e| format!("Failed to minify svg: {}", e))?
+                    .map_err(|e| Error::msg(format!("Failed to minify SVG: {}", e)))?
             }
-            ShouldMinify::No => image,
+            BoolWithPath::False => image,
         };
 
-        // Get alignment (for math modes)
-        let align = if mode != TypstRenderMode::Raw {
-            let query = document.introspector.query_label(Label::construct("label".into()));
-            Some(
-                query
-                    .map(|it| {
-                        let field = it.clone().field_by_name("value").unwrap();
-                        if let typst::foundations::Value::Length(value) = field {
-                            value.abs.to_pt()
-                        } else {
-                            0.0
-                        }
-                    })
-                    .unwrap_or(0.0),
-            )
-        } else {
-            None
+        // Get alignment (for inline mode)
+        let align = match mode {
+            MathRenderMode::Inline => {
+                let query = document.introspector.query_label(Label::construct("label".into()));
+                Some(
+                    query
+                        .map(|it| {
+                            let field = it.clone().field_by_name("value").unwrap();
+                            if let typst::foundations::Value::Length(value) = field {
+                                value.abs.to_pt()
+                            } else {
+                                0.0
+                            }
+                        })
+                        .unwrap_or(0.0),
+                )
+            }
+            MathRenderMode::Raw | MathRenderMode::Display => None,
         };
+
+        let formatted = format_svg(&minified, align, mode, self.styles.as_deref());
 
         // Cache and return
         if let Some(ref render_cache) = self.render_cache {
-            render_cache.insert(key, (minified.clone(), align.map(Some).unwrap_or(None)));
+            render_cache.insert(key, formatted.clone());
         }
 
-        Ok((minified, align))
+        Ok(formatted)
     }
 }
 

@@ -215,7 +215,7 @@ impl Page {
         config: &Config,
         anchor_insert: InsertAnchor,
         shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
-        caches: Arc<Caches>,
+        caches: Option<Arc<Caches>>,
     ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
@@ -308,10 +308,8 @@ mod tests {
     use std::fs::{create_dir, File};
     use std::io::Write;
     use std::path::{Path, PathBuf};
-    use std::sync::Arc;
 
     use libs::globset::{Glob, GlobSetBuilder};
-    use markdown::context::Caches;
     use tempfile::tempdir;
     use templates::ZOLA_TERA;
 
@@ -339,7 +337,7 @@ Hello world"#;
             &config,
             InsertAnchor::None,
             &HashMap::new(),
-            Arc::new(Caches::default()),
+            None,
         )
         .unwrap();
 
@@ -368,7 +366,7 @@ Hello world"#;
             &config,
             InsertAnchor::None,
             &HashMap::new(),
-            Arc::new(Caches::default()),
+            None,
         )
         .unwrap();
 
@@ -539,7 +537,7 @@ Hello world
             &config,
             InsertAnchor::None,
             &HashMap::new(),
-            Arc::new(Caches::default()),
+            None,
         )
         .unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>".to_string()));
@@ -574,7 +572,7 @@ And here's another. [^3]
             &config,
             InsertAnchor::None,
             &HashMap::new(),
-            Arc::new(Caches::default()),
+            None,
         )
         .unwrap();
         assert_eq!(

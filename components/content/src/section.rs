@@ -152,7 +152,7 @@ impl Section {
         tera: &Tera,
         config: &Config,
         shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
-        caches: Arc<Caches>,
+        caches: Option<Arc<Caches>>,
     ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,

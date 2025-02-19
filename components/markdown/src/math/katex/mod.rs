@@ -3,56 +3,55 @@ use std::{
     sync::Arc,
 };
 
+use config::BoolWithPath;
+use errors::{Context, Error};
+use libs::pulldown_cmark::CowStr;
 use twox_hash::XxHash64;
 
+use super::{MathCompiler, MathRenderMode};
 use crate::cache::GenericCache;
-
-use super::{Compiler, ShouldMinify};
+use crate::Result;
 
 pub type KatexCache = GenericCache<String, String>;
 
 pub struct KatexCompiler {
-    pub cache: Option<Arc<KatexCache>>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum KatexRenderMode {
-    Inline,
-    Display,
+    cache: Option<Arc<KatexCache>>,
+    addon: Option<String>,
 }
 
 impl KatexCompiler {
-    pub fn new() -> Self {
-        Self { cache: None }
+    pub fn new(addon: Option<String>) -> Self {
+        Self { cache: None, addon }
     }
 }
 
-impl Compiler<KatexRenderMode, String> for KatexCompiler {
+impl MathCompiler for KatexCompiler {
     fn set_cache(&mut self, cache: Arc<KatexCache>) {
         self.cache = Some(cache);
     }
 
-    fn write_cache(&self) -> Result<(), String> {
+    fn write_cache(&self) -> Result<()> {
         if let Some(cache) = self.cache.as_ref() {
-            cache.write().map_err(|e| e.to_string())?
+            cache.write().context("Failed to write KaTeX cache")?;
         }
         Ok(())
     }
 
-    fn compile(
-        &self,
-        tex: &str,
-        mode: KatexRenderMode,
-        minify: &ShouldMinify,
-    ) -> Result<String, String> {
+    fn compile(&self, tex: &str, mode: MathRenderMode, minify: &BoolWithPath) -> Result<String> {
+        let tex: CowStr = if let Some(addon) = self.addon.as_ref() {
+            CowStr::Boxed(format!("{}{}", tex, addon).into())
+        } else {
+            CowStr::Borrowed(tex)
+        };
         let mut opts = katex::Opts::builder();
 
         match mode {
-            KatexRenderMode::Inline => opts.display_mode(false),
-            KatexRenderMode::Display => opts.display_mode(true),
+            MathRenderMode::Inline => opts.display_mode(false),
+            MathRenderMode::Display => opts.display_mode(true),
+            MathRenderMode::Raw => return Err(Error::msg("Raw mode is not supported by KaTeX")),
         };
 
-        let opts = opts.build().map_err(|e| e.to_string())?;
+        let opts = opts.build().map_err(|e| Error::msg(e.to_string()))?;
         // Generate cache key
         let key = {
             let mut hasher = XxHash64::with_seed(42);
@@ -66,7 +65,8 @@ impl Compiler<KatexRenderMode, String> for KatexCompiler {
             return Ok(entry.clone());
         }
 
-        let rendered = katex::render_with_opts(tex, &opts).map_err(|e| e.to_string())?;
+        let rendered = katex::render_with_opts(&tex, &opts)
+            .map_err(|e| Error::msg(format!("Failed to render KaTeX: {}", e)))?;
 
         if let Some(cache) = self.cache.as_ref() {
             cache.insert(key, rendered.clone());

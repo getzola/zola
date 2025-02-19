@@ -1,18 +1,22 @@
-pub fn display_math(code: &str) -> String {
+pub fn display_math(code: &str, addon: Option<&str>) -> String {
+    let addon = addon.unwrap_or("");
     format!(
         r#"
 #set page(height: auto, width: auto, margin: 0pt, fill: none)
 #set text(14pt)
+{addon}
 $ {code} $
 "#,
     )
 }
 
-pub fn inline_math(code: &str) -> String {
+pub fn inline_math(code: &str, addon: Option<&str>) -> String {
+    let addon = addon.unwrap_or("");
     format!(
         r#"
 #set page(height: auto, width: auto, margin: 0pt, fill: none)
 #set text(13pt)
+{addon}
 #let s = state("t", (:))
 
 #let pin(t) = context {{
@@ -35,11 +39,13 @@ $pin("l1"){code}$
     )
 }
 
-pub fn raw(code: &str) -> String {
+pub fn raw(code: &str, addon: Option<&str>) -> String {
+    let addon = addon.unwrap_or("");
     format!(
         r#"
 #set page(height: auto, width: auto, margin: 0pt, fill: none)
 #set text(16pt)
+{addon}
 {code}
 "#,
     )

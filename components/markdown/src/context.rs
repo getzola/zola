@@ -1,5 +1,6 @@
 use config::Config;
 use dirs::cache_dir;
+use libs::once_cell::sync::Lazy;
 use libs::tera::{Context, Tera};
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -24,7 +25,7 @@ pub struct RenderContext<'a> {
     pub insert_anchor: InsertAnchor,
     pub lang: &'a str,
     pub shortcode_definitions: Cow<'a, HashMap<String, ShortcodeDefinition>>,
-    pub caches: Arc<Caches>,
+    pub caches: Option<Arc<Caches>>,
 }
 
 #[derive(Debug, Clone)]
@@ -42,10 +43,11 @@ impl Caches {
     }
 }
 
+pub static CACHE_DIR: Lazy<PathBuf> = Lazy::new(|| cache_dir().unwrap().join("zola"));
+
 impl Default for Caches {
     fn default() -> Self {
-        let cache_path = cache_dir().unwrap().join("zola");
-        Self::new(&cache_path)
+        Self::new(&CACHE_DIR)
     }
 }
 
@@ -57,7 +59,7 @@ impl<'a> RenderContext<'a> {
         current_page_permalink: &'a str,
         permalinks: &'a HashMap<String, String>,
         insert_anchor: InsertAnchor,
-        caches: Arc<Caches>,
+        caches: Option<Arc<Caches>>,
     ) -> RenderContext<'a> {
         let mut tera_context = Context::new();
         tera_context.insert("config", &config.serialize(lang));
@@ -109,7 +111,8 @@ impl<'a> RenderContext<'a> {
             lang: &config.default_language,
             shortcode_definitions: Cow::Owned(HashMap::new()),
             parent_absolute: None,
-            caches: Arc::new(Caches::default()),
+            // We shouldn't need caches for this use case
+            caches: None,
         }
     }
 }
