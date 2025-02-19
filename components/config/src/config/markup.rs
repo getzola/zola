@@ -105,22 +105,40 @@ impl<'de> Deserialize<'de> for MathRenderer {
     where
         D: Deserializer<'de>,
     {
+        // Helper struct that mirrors MathRenderer
+        #[derive(Deserialize)]
+        struct MathRendererHelper {
+            #[serde(default)]
+            engine: MathRenderingEngine,
+            #[serde(default)]
+            svgo: BoolWithPath,
+            css: Option<String>,
+            addon: Option<String>,
+        }
+
         #[derive(Deserialize)]
         #[serde(untagged)]
         enum MathRendererConfig {
             // String case: math = "engine"
             Engine(MathRenderingEngine),
-            // Full struct case
-            Full(MathRenderer),
+            // Table case with full configuration
+            Full(MathRendererHelper),
         }
 
+        // Parse using the helper type
         let config = MathRendererConfig::deserialize(deserializer)?;
 
+        // Convert to MathRenderer
         match config {
             MathRendererConfig::Engine(engine) => {
                 Ok(MathRenderer { engine, svgo: BoolWithPath::default(), css: None, addon: None })
             }
-            MathRendererConfig::Full(full) => Ok(full),
+            MathRendererConfig::Full(helper) => Ok(MathRenderer {
+                engine: helper.engine,
+                svgo: helper.svgo,
+                css: helper.css,
+                addon: helper.addon,
+            }),
         }
     }
 }
