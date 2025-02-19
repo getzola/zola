@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use std::fmt::Write;
 use std::path::Path;
+use std::sync::Arc;
 
+use crate::cache::GenericCache;
 use crate::markdown::cmark::CowStr;
 
 use crate::math::{
@@ -481,19 +483,28 @@ pub fn markdown_to_html(
         .map(|path| read_file(Path::new(&path)).ok())
         .flatten();
 
-    let mut compiler: Option<Box<dyn MathCompiler>> = match context.config.markdown.math.engine {
-        MathRenderingEngine::Typst => Some(Box::new(TypstCompiler::new(
-            context.caches.as_ref().map(|e| e.typst.dir().to_path_buf()),
-            addon,
-            styles,
-        ))),
-        MathRenderingEngine::Katex => Some(Box::new(KatexCompiler::new(addon))),
-        MathRenderingEngine::None => None,
+    let (mut compiler, cache): (
+        Option<Box<dyn MathCompiler>>,
+        Option<Arc<GenericCache<String, String>>>,
+    ) = match context.config.markdown.math.engine {
+        MathRenderingEngine::Typst => (
+            Some(Box::new(TypstCompiler::new(
+                context.caches.as_ref().map(|e| e.typst.dir().to_path_buf()),
+                addon,
+                styles,
+            ))),
+            context.caches.as_ref().map(|e| e.typst.clone()),
+        ),
+        MathRenderingEngine::Katex => (
+            Some(Box::new(KatexCompiler::new(addon))),
+            context.caches.as_ref().map(|e| e.katex.clone()),
+        ),
+        MathRenderingEngine::None => (None, None),
     };
 
-    if let Some(caches) = &context.caches {
-        if let Some(c) = compiler.as_mut() {
-            c.set_cache(caches.typst.clone());
+    if let Some(ref mut compiler) = compiler {
+        if let Some(cache) = cache {
+            compiler.set_cache(cache);
         }
     }
 
