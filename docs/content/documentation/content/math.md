@@ -73,7 +73,7 @@ Linux: `$XDG_CACHE_HOME/zola/` or `~/.cache/zola/`
 
 macOS: `~/Library/Caches/zola/`
 
-This cache directory can be customized using the `cache_dir` option:
+This cache directory can be customized using the `cache` option:
 
 
 ```toml
