@@ -6,18 +6,18 @@ weight = 140
 Zola supports math expression rendering in markdown content using either KaTeX or Typst. Math rendering can be enabled and configured in your `config.toml`:
 
 ```toml
-[markdown]
+[markdown.math]
 # Enable math rendering - options: "none", "katex", "typst" 
-math = "typst" # or "katex"
+engine = "typst" # or "katex"
 
 # Optional: Enable SVGO optimization for generated math SVGs
-math_svgo = false
-
-# Optional: Path to custom SVGO config file
-math_svgo_config = "svgo.config.js"
+svgo = false # true, false, or "config_path"
 
 # Optional: Custom CSS file for styling math output
-math_css = "path/to/math.css"
+css = "path/to/math.css"
+
+# Optional: Additional code included for each snippet
+addon = "path/to/addon.typ"
 ```
 
 ## Writing Math Expressions
@@ -78,19 +78,18 @@ This cache directory can be customized using the `cache_dir` option:
 
 ```toml
 [markdown]
-math_cache_dir = "path/to/cache"
+cache = "path/to/cache" # true, false, or "path/to/cache"
 ```
 
 ## SVG Optimization
 
-Enable `math_svgo = true` to optimize the generated SVG files using [SVGO](https://svgo.dev). This can significantly reduce the file size of complex mathematical expressions.
+Enable `svgo = true` to optimize the generated SVG files using [SVGO](https://svgo.dev). This can significantly reduce the file size of complex mathematical expressions.
 
 You can customize the optimization by providing your own SVGO configuration file:
 
 ```toml
-[markdown]
-math_svgo = true
-math_svgo_config = "svgo.config.mjs"
+[markdown.math]
+svgo = "svgo.config.mjs" # equivalent to true
 ```
 
 ```js
@@ -112,8 +111,8 @@ export default {
 By default, math expressions are rendered with a minimal style. You can customize the appearance of math expressions by providing a custom CSS file, which will be injected into the rendered SVG:
 
 ```toml
-[markdown]
-math_css = "static/math.css"
+[markdown.math]
+css = "static/math.css"
 ```
 
 Example CSS for styling math expressions:
