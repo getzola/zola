@@ -3,14 +3,14 @@
 title = "homepage-creators"
 description = "A fast and beautiful personal homepage for creators, used by https://jiaxiang.wang, a port of HeoWeb."
 template = "theme.html"
-date = 2024-12-25T17:08:52+08:00
+date = 2025-02-05T09:21:16+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-12-25T17:08:52+08:00
-updated = 2024-12-25T17:08:52+08:00
+created = 2025-02-05T09:21:16+08:00
+updated = 2025-02-05T09:21:16+08:00
 repository = "https://github.com/iWangJiaxiang/Homepage-Creators.git"
 homepage = "https://github.com/iWangJiaxiang/homepage-for-creators"
 minimum_version = "0.19.2"
@@ -30,18 +30,18 @@ homepage = "https://blog.jiaxiang.wang"
 
 主题预览](#-预览) | [快速上手](#-快速上手) | [加入讨论
 
-[中文](./README.md) | [English](./README.en.md)
+[中文](https://github.com/iWangJiaxiang/Homepage-Creators/blob/main/README.md) | [English](https://github.com/iWangJiaxiang/Homepage-Creators/blob/main/README.en.md)
 
 </p>
 </div>
 
-[![preview](./screenshot.png)](https://jiaxiang.wang)
+[![preview](https://github.com/iWangJiaxiang/Homepage-Creators/raw/refs/heads/main/screenshot.png)](https://jiaxiang.wang)
 
 ## 🔥 预览
 
 | 站点名称 | 站点地址 |
 |:------:|:-----------------------|
-| 王嘉祥 个人主页 | https://www.jiaxiang.wang |
+| 王嘉祥 个人主页 | [https://www.jiaxiang.wang](https://www.jiaxiang.wang) |
 
 
 ## ℹ️ 简介
