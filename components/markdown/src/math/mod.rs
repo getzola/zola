@@ -27,3 +27,5 @@ pub trait MathCompiler {
     fn set_cache(&mut self, cache: Arc<GenericCache<String, String>>);
     fn write_cache(&self) -> Result<()>;
 }
+
+pub type MathCache = GenericCache<String, String>;

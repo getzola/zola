@@ -8,14 +8,11 @@ use errors::{Context, Error};
 use libs::pulldown_cmark::CowStr;
 use twox_hash::XxHash64;
 
-use super::{MathCompiler, MathRenderMode};
-use crate::cache::GenericCache;
+use super::{MathCache, MathCompiler, MathRenderMode};
 use crate::Result;
 
-pub type KatexCache = GenericCache<String, String>;
-
 pub struct KatexCompiler {
-    cache: Option<Arc<KatexCache>>,
+    cache: Option<Arc<MathCache>>,
     addon: Option<String>,
 }
 
@@ -26,12 +23,12 @@ impl KatexCompiler {
 }
 
 impl MathCompiler for KatexCompiler {
-    fn set_cache(&mut self, cache: Arc<KatexCache>) {
+    fn set_cache(&mut self, cache: Arc<MathCache>) {
         self.cache = Some(cache);
     }
 
     fn write_cache(&self) -> Result<()> {
-        if let Some(cache) = self.cache.as_ref() {
+        if let Some(ref cache) = self.cache {
             cache.write().context("Failed to write KaTeX cache")?;
         }
         Ok(())

@@ -25,8 +25,7 @@ mod templates;
 pub use format::*;
 
 use super::svgo::Svgo;
-use super::{MathCompiler, MathRenderMode};
-use crate::cache::GenericCache;
+use super::{MathCache, MathCompiler, MathRenderMode};
 use crate::context::CACHE_DIR;
 use crate::Result;
 
@@ -66,10 +65,6 @@ impl TypstFile {
     }
 }
 
-pub type TypstCacheEntry = String;
-
-pub type TypstCache = GenericCache<String, TypstCacheEntry>;
-
 /// Compiler
 ///
 /// This is the compiler which has all the necessary fields except the source
@@ -79,7 +74,7 @@ pub struct TypstCompiler {
     fonts: Vec<Font>,
     packages_cache_path: PathBuf,
     files: Mutex<HashMap<FileId, TypstFile>>,
-    render_cache: Option<Arc<TypstCache>>,
+    render_cache: Option<Arc<MathCache>>,
     addon: Option<String>,
     styles: Option<String>,
 }
@@ -211,7 +206,7 @@ impl TypstCompiler {
 }
 
 impl MathCompiler for TypstCompiler {
-    fn set_cache(&mut self, cache: Arc<TypstCache>) {
+    fn set_cache(&mut self, cache: Arc<MathCache>) {
         self.render_cache = Some(cache);
     }
 

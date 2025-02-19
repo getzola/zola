@@ -9,8 +9,7 @@ use std::sync::Arc;
 use utils::templates::ShortcodeDefinition;
 use utils::types::InsertAnchor;
 
-use crate::math::katex::KatexCache;
-use crate::math::typst::TypstCache;
+use crate::math::MathCache;
 
 /// All the information from the zola site that is needed to render HTML from markdown
 #[derive(Debug)]
@@ -30,15 +29,15 @@ pub struct RenderContext<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Caches {
-    pub typst: Arc<TypstCache>,
-    pub katex: Arc<KatexCache>,
+    pub typst: Arc<MathCache>,
+    pub katex: Arc<MathCache>,
 }
 
 impl Caches {
     pub fn new(cache_path: &Path) -> Self {
         Self {
-            typst: Arc::new(TypstCache::new(cache_path, "typst").unwrap()),
-            katex: Arc::new(KatexCache::new(cache_path, "katex").unwrap()),
+            typst: Arc::new(MathCache::new(cache_path, "typst").unwrap()),
+            katex: Arc::new(MathCache::new(cache_path, "katex").unwrap()),
         }
     }
 }
