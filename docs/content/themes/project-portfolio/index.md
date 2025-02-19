@@ -3,14 +3,14 @@
 title = "Project Portfolio"
 description = "Theme for a project portfolio (based on Tailwind CSS)."
 template = "theme.html"
-date = 2025-01-09T13:17:38+01:00
+date = 2025-02-05T12:32:43+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-01-09T13:17:38+01:00
-updated = 2025-01-09T13:17:38+01:00
+created = 2025-02-05T12:32:43+01:00
+updated = 2025-02-05T12:32:43+01:00
 repository = "https://github.com/awinterstein/zola-theme-project-portfolio.git"
 homepage = "https://github.com/awinterstein/zola-theme-project-portfolio"
 minimum_version = "0.9.0"
@@ -142,6 +142,8 @@ read_more = "Read More"
 skills_technologies = "Skills & Technologies"
 main_skills = "Main Skills"
 other_skills = "Additional Skills"
+words = "words"
+minutes = "minutes"
 ```
 
 This would, however, lead to an empty index page. The `config.toml` can be extended by the following configuration parameters for the index page:

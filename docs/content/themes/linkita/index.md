@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-01-06T14:18:42+02:00
+date = 2025-02-16T19:22:57+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-01-06T14:18:42+02:00
-updated = 2025-01-06T14:18:42+02:00
+created = 2025-02-16T19:22:57+02:00
+updated = 2025-02-16T19:22:57+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -28,10 +28,11 @@ A clean and elegant blog theme for [Zola](https://www.getzola.org/). Linkita is 
 
 - The source code is available on [Codeberg](https://codeberg.org/salif/linkita) and mirrored on [GitHub](https://github.com/salif/linkita).
 - For discussion, join the [Matrix chat room](https://matrix.to/#/#linkita:mozilla.org).
-- Screenshots for [light mode](https://codeberg.org/salif/linkita/src/branch/linkita/screenshot.png), [dark mode](https://codeberg.org/salif/linkita/src/branch/linkita/screenshot.dark.png).
-- See sites using Linkita.
-- Live preview in [English](https://salif.github.io/linkita/en/), [Bulgarian](https://salif.github.io/linkita/), [Esperanto](https://salif.github.io/linkita/eo/).
-- Incomplete live preview in [Globasa](https://salif.github.io/linkita/glb/), [Arabic](https://salif.github.io/linkita/ar/).
+- Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/linkita/issues).
+- See [demo source code](https://codeberg.org/salif/linkita-demo) and screenshots for [light mode](https://codeberg.org/salif/linkita/src/branch/linkita/screenshot.png) and [dark mode](https://codeberg.org/salif/linkita/src/branch/linkita/screenshot.dark.png).
+- Live preview in:
+  - [English](https://salif.github.io/linkita/en/), [Bulgarian](https://salif.github.io/linkita/), [Esperanto](https://salif.github.io/linkita/eo/).
+  - [Chinese](https://salif.github.io/linkita/zh/), [Arabic](https://salif.github.io/linkita/ar/), [Turkish](https://salif.github.io/linkita/tr/), [Globasa](https://salif.github.io/linkita/gb/).
 
 ## Features
 
@@ -74,7 +75,7 @@ Alternatively, clone the repository: `git clone https://codeberg.org/salif/linki
 
 2. Set `linkita` as your theme in your `config.toml` file.
 
-```toml
+```toml ,name=config.toml
 theme = "linkita"
 ```
 
@@ -93,16 +94,17 @@ cd themes/linkita
 git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
 ```
 
-Check the [changelog](https://codeberg.org/salif/linkita/src/branch/linkita/CHANGELOG.md) for all versions after the one you are using; there may be breaking changes that require manual involvement.
+Check the [changelog](https://codeberg.org/salif/linkita/src/branch/linkita/CHANGELOG.md)
+for all versions after the one you are using; there may be breaking changes that require manual involvement.
 
 ## Usage
 
-All options for the frontmatter and for the `config.toml` file are optional.
+All variables are optional.
 Set the ones you need.
 
 ### TOML frontmatter
 
-```toml
+```toml ,name=frontmatter
 +++
 title = ""
 description = ""
@@ -116,7 +118,6 @@ authors = []
 # comment = true
 # math = true
 # mermaid = true
-# page_info = []
 [extra.cover]
 # image = ""
 # alt = ""
@@ -125,7 +126,7 @@ authors = []
 
 ### YAML frontmatter
 
-```yaml
+```yaml ,name=frontmatter
 ---
 title: ""
 description: ""
@@ -145,19 +146,24 @@ extra:
 ---
 ```
 
-### Open Graph frontmatter options
+### Extra frontmatter variables
 
-```toml
-[extra.open_graph]
-# MIME type of the cover image. e.g. `image/jpeg`, `image/gif`, `image/png`.
-#  (type: string; default value: uses `get_image_metadata()`;)
-cover_type = ""
+```toml ,name=frontmatter
+[extra]
+# page_info = []
+[extra.cover]
 # Width of the cover image in pixels.
 #  (type: number; default value: uses `get_image_metadata()`;)
-cover_width =
+# width =
 # Height of the cover image in pixels.
 #  (type: number; default value: uses `get_image_metadata()`;)
-cover_height =
+# height =
+```
+
+### Open Graph frontmatter variables
+
+```toml ,name=frontmatter
+[extra.open_graph]
 # When the article is out of date after. e.g. `2024-02-29`.
 #  (type: datetime; no default value;)
 expiration_time =
@@ -196,9 +202,9 @@ video_height =
 url = ""
 ```
 
-### Sitemap frontmatter options
+### Sitemap frontmatter variables
 
-```toml
+```toml ,name=frontmatter
 [extra.sitemap]
 # Set only if different from `page.updated`.
 #  (type: string; default value: page.updated;)
@@ -215,7 +221,7 @@ priority =
 
 Create `content/_index.md` file in your blog and set `extra.profile` to your username:
 
-```toml
+```toml ,name=content/_index.md
 +++
 sort_by = "date"
 paginate_by = 5
@@ -229,55 +235,15 @@ For French, the file name is `content/_index.fr.md`.
 
 ### Profiles for authors
 
-Add `extra.profiles.author_username` table in your `config.toml` file for each author.
+Add `extra.profiles.author_username` table in your `config.toml` file for each author in your blog.
 Replace `author_username` with author's username.
 See Profiles.
-
-### Authors
-
-#### Option 1: Using `page.authors`
-
-You don't need to set `page.authors` in the frontmatter if you are the only author.
-
-Otherwise, set `page.authors`:
-
-```toml
-+++
-authors = ["author_username", "author2_username"]
-+++
-```
-
-#### Option 2: Using Taxonomies
-
-If you choose this option you should set taxonomies in each post.
-
-Examples:
-
-**If the blog is your personal blog**:
-
-```toml
-+++
-[taxonomies]
-authors = ["your_username"]
-+++
-```
-
-**If the blog has a team of multiple authors**:
-
-```toml
-+++
-[taxonomies]
-authors = ["author_username"]
-# or:
-# authors = ["author_username", "author2_username"]
-+++
-```
 
 ### Non-post pages
 
 Create `content/pages/_index.md` file in your blog:
 
-```toml
+```toml ,name=content/pages/_index.md
 +++
 render = false
 page_template = "pages.html"
@@ -288,7 +254,7 @@ page_template = "pages.html"
 
 Create `content/pages/archive.md` file in your blog:
 
-```toml
+```toml ,name=content/pages/archive.md
 +++
 title = "Archive"
 # description = ""
@@ -303,11 +269,37 @@ section = "_index.md"
 
 Create `content/pages/about.md` file in your blog:
 
-```toml
+```toml ,name=content/pages/about.md
 +++
 title = "About me"
 # description = ""
 # path = "about"
++++
+```
+
+### Page authors
+
+#### Option 1: Using `page.authors`
+
+You don't need to set `page.authors` in the frontmatter if you are the only author of the post.
+
+Otherwise, set `page.authors`:
+
+```toml ,name=frontmatter
++++
+authors = ["author_username"]
++++
+```
+
+#### Option 2: Using Taxonomies
+
+Useful if the blog has a team of several authors.
+If you choose this option you should set taxonomies in each page.
+
+```toml ,name=frontmatter
++++
+[taxonomies]
+authors = ["author_username", "author2_username"]
 +++
 ```
 
@@ -331,14 +323,14 @@ The available inject points are: `head`, `header_nav`, `body_start`, `body_end`,
 | Go to next page   | <kbd>Alt</kbd>+<kbd>\.</kbd> |
 | Table of contents | <kbd>Alt</kbd>+<kbd>\=</kbd> |
 | Skip to footer    | <kbd>Alt</kbd>+<kbd>\_</kbd> |
-| Skip to main      | <kbd>Alt</kbd>+<kbd>\-</kbd> |
 
 ## Configuring
 
 Copy and paste the examples into your `config.toml` file
-and comment out the options you don't use instead of setting empty values.
+and comment out the variables you don't use instead of setting empty values.
+All variables are optional.
 
-```toml
+```toml ,name=config.toml
 # The default language. (type: string;)
 default_language = "en"
 
@@ -364,7 +356,7 @@ build_search_index = true
 
 Taxonomies with translated names are `tags`, `categories`, and `authors`.
 
-```toml
+```toml ,name=config.toml
 [[taxonomies]]
 name = "categories"
 feed = true
@@ -383,7 +375,7 @@ paginate_by = 5
 
 Add more languages ​​by replacing `fr` from the example with the language code.
 
-```toml
+```toml ,name=config.toml
 [languages.fr]
 title = "Site title in French"
 description = "Site description in French"
@@ -397,7 +389,7 @@ taxonomies = [
 
 ### General config
 
-```toml
+```toml ,name=config.toml
 [extra]
 # Enable KaTeX math formula support globally.
 # (type: boolean; default value: `false`;)
@@ -420,10 +412,13 @@ title_separator = " | "
 header_menu_name = "menu_name"
 
 # (type: boolean; default value: false;)
-# disable_default_favicon = true
+disable_default_favicon = false
 
 # (type: boolean; default value: false;)
-# disable_javascript = true
+disable_javascript = false
+
+# (type: boolean; default value: false;)
+use_cdn = false
 
 # You can reorder the strings, remove them, or replace them.
 #  For example, you can replace `site_title` with `home_button`.
@@ -443,7 +438,7 @@ header_menu_name = "menu_name"
 
 ### Style config
 
-```toml
+```toml ,name=config.toml
 [extra.style]
 # The custom background color. (type: string;)
 bg_color = "#f4f4f5"
@@ -464,7 +459,7 @@ header_dark_color = "#27272a"
 ### Menus
 
 ```toml
-[extra.menus]
+[extra.menus] ,name=config.toml
 menu_name = [
   {url = "$BASE_URL/pages/archive/", name = "Archive"},
   {url = "$BASE_URL/categories", name = "Categories"},
@@ -474,12 +469,12 @@ menu_name = [
 
 # Example multilingual menu.
 multilingual_menu_name = [
-  {url = "$BASE_URL/pages/about/", names = {en = "About", fr = "About in French"*/}},
-  {url = "$BASE_URL/pages/projects/", names = {en = "Projects", fr = "Projects in French"*/}},
-  {url = "$BASE_URL/pages/archive/", names = {en = "Archive", fr = "Archive in French"*/}},
-  {url = "$BASE_URL/categories/", names = {en = "Categories", fr = "Categories in French"*/}},
-  {url = "$BASE_URL/tags/", names = {en = "Tags", fr = "Tags in French"*/}},
-  {url = "$BASE_URL/authors/", names = {en = "Authors", fr = "Authors in French"*/}},
+  {url = "$BASE_URL/pages/about/", names = {en = "About", fr = "About in French"} },
+  {url = "$BASE_URL/pages/projects/", names = {en = "Projects", fr = "Projects in French"} },
+  {url = "$BASE_URL/pages/archive/", names = {en = "Archive", fr = "Archive in French"} },
+  {url = "$BASE_URL/categories/", names = {en = "Categories", fr = "Categories in French"} },
+  {url = "$BASE_URL/tags/", names = {en = "Tags", fr = "Tags in French"} },
+  {url = "$BASE_URL/authors/", names = {en = "Authors", fr = "Authors in French"} },
 ]
 ```
 
@@ -491,7 +486,7 @@ set `names_i18n` to a `common_` key.
 
 ### Profiles
 
-```toml
+```toml ,name=config.toml
 # Replace `your_username` with your username.
 [extra.profiles.your_username]
 # The URL of avatar.
@@ -506,11 +501,11 @@ avatar_alt = ""
 # (type: boolean; default value: `false`;)
 avatar_invert = false
 
-# Profile name for all languages.
+# Profile name.
 # (type: string; default value: the username;)
 name = ""
 
-# Profile bio for all languages.
+# Profile bio.
 # (type: string; supports markdown; no default value;)
 bio = ""
 
@@ -535,7 +530,7 @@ social = [
 
 ### Profile translations
 
-```toml
+```toml ,name=config.toml
 # For French. Replace `your_username` with your username.
 [extra.profiles.your_username.languages.fr]
 # Profile name.
@@ -559,7 +554,7 @@ avatar_alt = ""
 
 See [the Open Graph protocol](https://ogp.me/).
 
-```toml
+```toml ,name=config.toml
 # Replace `your_username` with your username.
 [extra.profiles.your_username.open_graph]
 # The URL of social image. (type: string; no default value;)
@@ -587,7 +582,7 @@ gender = "" # "female" or "male"
 In addition, `image` and `image_alt` of the profile will be used as a
 fallback open graph image for all pages.
 
-```toml
+```toml ,name=config.toml
 # Replace `your_username` with your username.
 [extra.profiles.your_username.open_graph]
 # (type: string; no default value;)
@@ -598,7 +593,7 @@ fb_admins = ["YOUR_USER_ID"]
 
 #### Open Graph translations
 
-```toml
+```toml ,name=config.toml
 # For French. Replace `your_username` with your username.
 [extra.profiles.your_username.open_graph.languages.fr]
 # A description of what is in the social image.
@@ -608,7 +603,7 @@ image_alt = ""
 
 ### The page footer
 
-```toml
+```toml ,name=config.toml
 [extra.footer]
 # Replace with the correct year.
 # (type: number; default value: current year;)
@@ -642,7 +637,7 @@ Option `copyright` supports Markdown and:
 
 For date format, see [chrono docs](https://docs.rs/chrono/0.4/chrono/format/strftime/index.html).
 
-```toml
+```toml ,name=config.toml
 # For English
 [extra.languages.en]
 # (type: string; no default value;)
@@ -661,7 +656,7 @@ date_format_archive = "%m-%d"
 # header_buttons = []
 
 # IETF tag for artificial languages. (type: string; no default value;)
-# art_x_lang = "art-x-code"
+# language_code = "art-x-code"
 
 # Taxonomy/term pages do not have a description by default.
 # Optionally you can set a generic description. `$NAME` will be automatically replaced.
@@ -669,7 +664,7 @@ date_format_archive = "%m-%d"
 # taxonomy_single_description = "Browse articles related to $NAME. Start exploring!"
 ```
 
-```toml
+```toml ,name=config.toml
 # For French
 [extra.languages.fr]
 locale = "fr_FR"
@@ -683,12 +678,10 @@ date_format_archive = "%m-%d"
 
 Set only if you use [GoatCounter](https://www.goatcounter.com/).
 
-```toml
+```toml ,name=config.toml
 [extra.goatcounter]
 # (type: string; no default value;)
 endpoint = "https://MYCODE.goatcounter.com/count"
-# (type: string; no default value;)
-src = "//gc.zgo.at/count.js"
 # (type: string; no default value;)
 # noscript_prefix = ""
 ```
@@ -700,7 +693,7 @@ If your `base_url` includes a subpath, set `noscript_prefix` to the subpath with
 
 Set only if you use [Vercel Web Analytics](https://vercel.com/docs/analytics).
 
-```toml
+```toml ,name=config.toml
 [extra.vercel_analytics]
 # (type: string; no default value;)
 src = "/_vercel/insights/script.js"
@@ -717,7 +710,7 @@ For example, open <http://127.0.0.1:1111/#disable-analytics>.
 See [giscus.app](https://giscus.app/).
 Only available when `extra.comment` in the frontmatter or `extra.comment` in the config is set to `true`.
 
-```toml
+```toml ,name=config.toml
 [extra.giscus]
 # (type: string; no default value;)
 repo = ""
@@ -752,13 +745,12 @@ See the [MIT License](https://codeberg.org/salif/linkita/src/branch/linkita/LICE
 ## Contributing
 
 Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [Github](https://github.com/salif/linkita).
-Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/linkita/issues).
 
 ## Sites using Linkita
 
-- [Zola Themes Collection](https://salif.github.io/zola-themes-collection/)
-- [salif.eu](https://salif.eu): Personal website
+- [Zola Themes Collection](https://github.com/salif/zola-themes-collection)
+- [salif.eu](https://github.com/salif/personal-web-page): Personal website
 
-If you use Linkita, feel free to create a pull request to add your site to this list.
+If your blog uses Linkita and is open source, feel free to create a pull request to add it to this list.
 
         
