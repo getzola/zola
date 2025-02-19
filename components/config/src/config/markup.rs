@@ -92,55 +92,13 @@ impl Serialize for BoolWithPath {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct MathRenderer {
     pub engine: MathRenderingEngine,
+    #[serde(default)]
     pub svgo: BoolWithPath,
     pub css: Option<String>,
     pub addon: Option<String>,
-}
-
-impl<'de> Deserialize<'de> for MathRenderer {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        // Helper struct that mirrors MathRenderer
-        #[derive(Deserialize)]
-        struct MathRendererHelper {
-            #[serde(default)]
-            engine: MathRenderingEngine,
-            #[serde(default)]
-            svgo: BoolWithPath,
-            css: Option<String>,
-            addon: Option<String>,
-        }
-
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum MathRendererConfig {
-            // String case: math = "engine"
-            Engine(MathRenderingEngine),
-            // Table case with full configuration
-            Full(MathRendererHelper),
-        }
-
-        // Parse using the helper type
-        let config = MathRendererConfig::deserialize(deserializer)?;
-
-        // Convert to MathRenderer
-        match config {
-            MathRendererConfig::Engine(engine) => {
-                Ok(MathRenderer { engine, svgo: BoolWithPath::default(), css: None, addon: None })
-            }
-            MathRendererConfig::Full(helper) => Ok(MathRenderer {
-                engine: helper.engine,
-                svgo: helper.svgo,
-                css: helper.css,
-                addon: helper.addon,
-            }),
-        }
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

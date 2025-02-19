@@ -5,9 +5,7 @@ description = "Everything you need to make a static site engine in one binary."
 compile_sass = true
 build_search_index = true
 
-taxonomies = [
-  { name = "theme-tags"}
-]
+taxonomies = [{ name = "theme-tags" }]
 
 [search]
 index_format = "elasticlunr_json"
@@ -22,7 +20,8 @@ external_links_class = "external"
 #  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
 #]
 
-math = "typst"
+[markdown.math]
+engine = "typst"
 
 [link_checker]
 internal_level = "warn"
