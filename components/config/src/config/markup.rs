@@ -92,12 +92,37 @@ impl Serialize for BoolWithPath {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Default)]
 pub struct MathRenderer {
     pub engine: MathRenderingEngine,
     pub svgo: BoolWithPath,
     pub css: Option<String>,
     pub addon: Option<String>,
+}
+
+impl<'de> Deserialize<'de> for MathRenderer {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum MathRendererConfig {
+            // String case: math = "engine"
+            Engine(MathRenderingEngine),
+            // Full struct case
+            Full(MathRenderer),
+        }
+
+        let config = MathRendererConfig::deserialize(deserializer)?;
+
+        match config {
+            MathRendererConfig::Engine(engine) => {
+                Ok(MathRenderer { engine, svgo: BoolWithPath::default(), css: None, addon: None })
+            }
+            MathRendererConfig::Full(full) => Ok(full),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
