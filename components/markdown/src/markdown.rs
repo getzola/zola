@@ -29,7 +29,7 @@ use utils::table_of_contents::{make_table_of_contents, Heading};
 use utils::types::InsertAnchor;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag, TagEnd};
-use crate::codeblock::{CodeBlock, FenceSettings};
+use crate::codeblock::{CodeBlock, CodeBlockType, FenceSettings};
 use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
@@ -425,8 +425,7 @@ pub fn markdown_to_html(
     // Set while parsing
     let mut error = None;
 
-    let mut code_block: Option<CodeBlock> = None;
-    let mut code_block_language: Option<String> = None;
+    let mut code_block: Option<CodeBlockType> = None;
     // Indicates whether we're in the middle of parsing a text node which will be placed in an HTML
     // attribute, and which hence has to be escaped using escape_html rather than push_html's
     // default HTML body escaping for text nodes.
@@ -633,35 +632,35 @@ pub fn markdown_to_html(
                         cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
                         _ => FenceSettings::new(""),
                     };
-                    let (block, begin) = match CodeBlock::new(&fence, context.config, path) {
-                        Ok(cb) => cb,
-                        Err(e) => {
-                            error = Some(e);
-                            break;
+                    let should_render = match (fence.language.as_deref(), &compiler) {
+                        (Some(lang), Some(compiler))
+                            if compiler.raw_extensions().contains(&lang) =>
+                        {
+                            true
                         }
+                        _ => false,
                     };
-                    code_block = Some(block);
-                    events.push(Event::Html(begin.into()));
-                    code_block_language = fence.language.map(|s| s.to_string());
+                    if should_render {
+                        code_block = Some(CodeBlockType::Rendered);
+                    } else {
+                        let (block, begin) = match CodeBlock::new(&fence, context.config, path) {
+                            Ok(cb) => cb,
+                            Err(e) => {
+                                error = Some(e);
+                                break;
+                            }
+                        };
+                        code_block = Some(CodeBlockType::Highlighted(block));
+                        events.push(Event::Html(begin.into()));
+                    }
                 }
                 Event::End(TagEnd::CodeBlock { .. }) => {
                     match code_block {
-                        Some(ref mut code_block) => {
-                            let inner = &accumulated_block;
-
-                            let should_compile = match (code_block_language.as_deref(), &compiler) {
-                                (Some(lang), Some(compiler))
-                                    if compiler.raw_extensions().contains(&lang) =>
-                                {
-                                    true
-                                }
-                                _ => false,
-                            };
-
-                            if should_compile {
+                        Some(ref mut code_block) => match code_block {
+                            CodeBlockType::Rendered => {
                                 if let Some(ref compiler) = compiler {
                                     let rendered = compiler.compile(
-                                        inner,
+                                        &accumulated_block,
                                         MathRenderMode::Raw,
                                         &context.config.markdown.math.svgo,
                                     );
@@ -675,18 +674,18 @@ pub fn markdown_to_html(
                                         }
                                     }
                                 }
-                            } else if code_block_language.is_some() && compiler.is_some() {
-                                let html = code_block.highlight(inner);
+                            }
+                            CodeBlockType::Highlighted(ref mut code_block) => {
+                                let html = code_block.highlight(&accumulated_block);
                                 events.push(Event::Html(html.into()));
                             }
-                        }
+                        },
                         None => {}
                     }
 
                     // reset code block state
                     code_block = None;
                     accumulated_block.clear();
-                    code_block_language = None;
                 }
                 Event::Start(Tag::Image { link_type, dest_url, title, id }) => {
                     let link = if is_colocated_asset_link(&dest_url) {

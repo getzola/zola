@@ -87,6 +87,11 @@ pub struct CodeBlock<'config> {
     hide_lines: Vec<RangeInclusive<usize>>,
 }
 
+pub enum CodeBlockType<'config> {
+    Highlighted(CodeBlock<'config>),
+    Rendered,
+}
+
 impl<'config> CodeBlock<'config> {
     pub fn new<'fence_info>(
         fence: &FenceSettings<'fence_info>,
