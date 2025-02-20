@@ -26,6 +26,7 @@ pub struct FenceSettings<'a> {
     pub hide_lines: Vec<RangeInclusive<usize>>,
     pub name: Option<&'a str>,
     pub include: Option<&'a str>,
+    pub enable_copy: bool,
 }
 
 impl<'a> FenceSettings<'a> {
@@ -38,6 +39,7 @@ impl<'a> FenceSettings<'a> {
             hide_lines: Vec::new(),
             name: None,
             include: None,
+            enable_copy: false,
         };
 
         for token in FenceIter::new(fence_info) {
@@ -49,6 +51,7 @@ impl<'a> FenceSettings<'a> {
                 FenceToken::HideLines(lines) => me.hide_lines.extend(lines),
                 FenceToken::Name(n) => me.name = Some(n),
                 FenceToken::Include(file) => me.include = Some(file),
+                FenceToken::EnableCopy => me.enable_copy = true,
             }
         }
 
@@ -65,6 +68,7 @@ enum FenceToken<'a> {
     HideLines(Vec<RangeInclusive<usize>>),
     Name(&'a str),
     Include(&'a str),
+    EnableCopy,
 }
 
 struct FenceIter<'a> {
@@ -121,6 +125,7 @@ impl<'a> Iterator for FenceIter<'a> {
                         return Some(FenceToken::Include(file));
                     }
                 }
+                "copy" => return Some(FenceToken::EnableCopy),
                 lang => {
                     if tok_split.next().is_some() {
                         eprintln!("Warning: Unknown annotation {}", lang);
