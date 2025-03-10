@@ -38,6 +38,13 @@ feed_filenames)
 
 ## 0.19.0 (2024-06-20)
 
+### Breaking
+
+- Changed config options named `generate_feed` to `generate_feeds` (both in config.toml and in section front-matter)
+- Changed config option `feed_filename: String` to `feed_filenames: Vec<String>`
+
+### Other
+
 - Updates the pulldown-cmark dependency to v0.11.0. This improves footnote handling, and may also introduce some minor behavior changes such as reducing the amount of unnecessary HTML-escaping of text content.
 - Add bottom footnotes with backreference option
 - Fix link check report inconsistency
@@ -48,8 +55,6 @@ feed_filenames)
 - Handle string dates in YAML front-matter
 - Add support for fuse.js search format
 - Added support for generating multiple kinds of feeds at once
-- Changed config options named `generate_feed` to `generate_feeds` (both in config.toml and in section front-matter)
-- Changed config option `feed_filename: String` to `feed_filenames: Vec<String>`
 - The config file no longer allows arbitrary fields outside the `[extra]` section
 
 ## 0.18.0 (2023-12-18)
