@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-02-16T19:22:57+02:00
+date = 2025-03-09T18:19:08+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-02-16T19:22:57+02:00
-updated = 2025-02-16T19:22:57+02:00
+created = 2025-03-09T18:19:08+02:00
+updated = 2025-03-09T18:19:08+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -309,7 +309,7 @@ You can easily use inject to add new features to your side without modifying the
 
 To use inject, you need to add some HTML files to the `templates/injects` directory.
 
-The available inject points are: `head`, `header_nav`, `body_start`, `body_end`, `page_start`, `page_end`, `footer`.
+The available inject points are: `head`, `head_end`, `header_nav`, `body_start`, `body_end`, `page_start`, `page_end`, `footer`.
 
 ### Keyboard shortcuts
 

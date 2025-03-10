@@ -3,14 +3,14 @@
 title = "jiaxiang.wang"
 description = "A fast and beautiful theme for creators, used by https://blog.jiaxiang.wang, porting from Halo-theme-hao."
 template = "theme.html"
-date = 2025-02-05T11:11:12+08:00
+date = 2025-02-27T22:27:38+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-02-05T11:11:12+08:00
-updated = 2025-02-05T11:11:12+08:00
+created = 2025-02-27T22:27:38+08:00
+updated = 2025-02-27T22:27:38+08:00
 repository = "https://github.com/iWangJiaxiang/zola-theme-jiaxiang.wang"
 homepage = "https://github.com/iWangJiaxiang/zola-theme-jiaxiang.wang"
 minimum_version = "0.19.2"
@@ -72,6 +72,7 @@ homepage = "https://blog.jiaxiang.wang"
   - [x] 右键菜单
   - [x] Pjax
   - [ ] i18n 国际化
+  - [x] AVIF 图片格式支持
   - [ ] 文章摘要
     - [x] 抽取本地文章描述
     - [ ] 基于 Post GPT by Tianli
