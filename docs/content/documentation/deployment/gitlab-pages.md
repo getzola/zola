@@ -85,7 +85,7 @@ pages:
       fi
       wget $zola_url
       tar -xzf *.tar.gz
-      ./zola build
+      ./zola build --base-url $CI_PAGES_URL
 
   artifacts:
     paths:
