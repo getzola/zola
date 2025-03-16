@@ -15,7 +15,7 @@ repository = "https://github.com/lopes/zola.386.git"
 homepage = "https://github.com/lopes/zola.386"
 minimum_version = "0.10.1"
 license = "MIT"
-demo = "https://zola386.netlify.com"
+demo = "https://zola386.netlify.app/"
 
 [extra.author]
 name = "José Lopes"
