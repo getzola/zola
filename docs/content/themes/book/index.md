@@ -3,14 +3,14 @@
 title = "book"
 description = "A book theme inspired from GitBook/mdBook"
 template = "theme.html"
-date = 2023-11-09T14:55:40-06:00
+date = 2025-03-14T12:12:57-07:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2023-11-09T14:55:40-06:00
-updated = 2023-11-09T14:55:40-06:00
+created = 2025-03-14T12:12:57-07:00
+updated = 2025-03-14T12:12:57-07:00
 repository = "https://github.com/getzola/book.git"
 homepage = "https://github.com/getzola/book"
 minimum_version = "0.17.0"
@@ -75,6 +75,14 @@ You can disable that by setting the `book_number_chapters` in `extra`:
 
 ```toml
 book_number_chapters = false
+```
+
+### Current section pages only
+By default, the `book` theme will list all the pages in the current section.
+You can disable that by setting the `book_only_current_section_pages` in `extra`:
+
+```toml
+book_only_current_section_pages = false
 ```
 
         
