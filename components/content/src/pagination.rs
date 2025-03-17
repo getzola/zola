@@ -130,9 +130,41 @@ impl<'a> Paginator<'a> {
 
         for p in &*self.all_pages {
             let page = &library.pages[p];
+
             if !page.meta.render {
                 continue;
             }
+
+            // Check if any ancestor or page is hidden and allows any
+            // `hidden = false` to override prior explicit or
+            // inferred `hidden = true`
+            let is_hidden = page
+                .ancestors
+                .iter()
+                .map(|ancestor| {
+                    // Go through each ancestor in the library map,
+                    // find it based on relative anchestor path
+                    // and map the hidden (Option<bool>)
+                    library
+                        .sections
+                        .values()
+                        .find(|section| &section.file.relative == ancestor)?
+                        .meta
+                        .hidden
+                })
+                // Add page hidden meta to the chain, to fold into final value
+                .chain([page.meta.hidden].into_iter())
+                // Accumulate together as `accumulator || boolean` unless value explicitely
+                // set by a section's frontmatter as `hidden = false`
+                .fold(false, |accumulator, boolean| match (accumulator, boolean) {
+                    (_, Some(value)) => value,
+                    (value, None) => value,
+                });
+
+            if is_hidden {
+                continue;
+            }
+
             current_page.push(SerializingPage::new(page, Some(library), false));
 
             if current_page.len() == self.paginate_by {
