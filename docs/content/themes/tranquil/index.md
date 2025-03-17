@@ -3,14 +3,14 @@
 title = "tranquil"
 description = "A blog theme for zola, simple and clean"
 template = "theme.html"
-date = 2025-01-25T22:42:42+01:00
+date = 2025-03-01T17:19:35+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-01-25T22:42:42+01:00
-updated = 2025-01-25T22:42:42+01:00
+created = 2025-03-01T17:19:35+01:00
+updated = 2025-03-01T17:19:35+01:00
 repository = "https://github.com/TeaDrinkingProgrammer/tranquil.git"
 homepage = "https://github.com/TeaDrinkingProgrammer/tranquil"
 minimum_version = "0.9.0"

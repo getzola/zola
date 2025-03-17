@@ -3,14 +3,14 @@
 title = "tabi"
 description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2025-02-16T21:28:11+01:00
+date = 2025-03-15T10:12:11+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-02-16T21:28:11+01:00
-updated = 2025-02-16T21:28:11+01:00
+created = 2025-03-15T10:12:11+01:00
+updated = 2025-03-15T10:12:11+01:00
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -240,6 +240,7 @@ git pull
 | [Nizzlay](https://nizzlay.com) | Niels Gouman ([Nizzlay](https://github.com/Nizzlay)) | Personal blog | [Source](https://github.com/Nizzlay/nizzlay.com) |
 | [ZzMzaw's blog](https://zzmzaw.github.io/) | ZzMzaw ([ZzMzaw](https://github.com/ZzMzaw)) | Personal blog | [Source](https://github.com/ZzMzaw/zzmzaw.github.io) |
 | [idle-ti.me](https://idle-ti.me/) | Jérôme Ramette ([be-next](https://github.com/be-next)) | Personal blog | [Source](https://github.com/be-next/idle-ti.me) |
+| [tzinm.me](https://tzinm.me/) | [Tzinm](https://github.com/tzinm) | Personal blog | [Source](https://codeberg.org/tzinm/blog) |
 
 Using tabi? Feel free to create a PR and add your site to this list.
 
