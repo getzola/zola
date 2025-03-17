@@ -3,14 +3,14 @@
 title = "UI Navigation"
 description = "A multilingual theme designed for accessibility rather than visual."
 template = "theme.html"
-date = 2025-01-22T13:39:07+06:30
+date = 2025-03-07T12:07:40+06:30
 
 [taxonomies]
 theme-tags = ['blind', 'multilingual', 'accessible', 'responsive', 'search', 'documentation', 'blog', 'SEO']
 
 [extra]
-created = 2025-01-22T13:39:07+06:30
-updated = 2025-01-22T13:39:07+06:30
+created = 2025-03-07T12:07:40+06:30
+updated = 2025-03-07T12:07:40+06:30
 repository = "https://github.com/harrymkt/zluinav"
 homepage = "https://github.com/harrymkt/zluinav"
 minimum_version = "0.19.2"
@@ -81,7 +81,6 @@ Contributions to this theme are welcome, provided that the following requirement
 - Photos are not required in this theme. You may design with CSS for visual if you so wish.
 - When creating a pull request it is advised that you:
 	- Use different branch other than main; this avoids issues with updating in case your pull request gets rejected.
-	- Add label if possible.
 
 Thank you!
         
