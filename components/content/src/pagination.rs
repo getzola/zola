@@ -155,7 +155,7 @@ impl<'a> Paginator<'a> {
                 // Add page hidden meta to the chain, to fold into final value
                 .chain([page.meta.hidden].into_iter())
                 // Accumulate together as `accumulator || boolean` unless value explicitely
-                // set by a section's frontmatter as `hidden = false`
+                // set by a section's or page's frontmatter as `hidden = false`
                 .fold(false, |accumulator, boolean| match (accumulator, boolean) {
                     (_, Some(value)) => value,
                     (value, None) => value,
