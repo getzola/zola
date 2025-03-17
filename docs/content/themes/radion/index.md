@@ -3,14 +3,14 @@
 title = "radion"
 description = "A sleek, modern blog theme."
 template = "theme.html"
-date = 2025-02-14T12:54:34-06:00
+date = 2025-03-02T14:11:58-06:00
 
 [taxonomies]
-theme-tags = []
+theme-tags = ['SEO', 'search', 'accessible']
 
 [extra]
-created = 2025-02-14T12:54:34-06:00
-updated = 2025-02-14T12:54:34-06:00
+created = 2025-03-02T14:11:58-06:00
+updated = 2025-03-02T14:11:58-06:00
 repository = "https://github.com/micahkepe/radion.git"
 homepage = "https://github.com/micahkepe/radion"
 minimum_version = "0.19.2"
@@ -24,24 +24,26 @@ homepage = "https://micahkepe.com"
 
 # radion
 
-A sleek, modern blog theme for [Zola](https://www.getzola.org/). See the live 
+A sleek, modern blog theme for [Zola](https://www.getzola.org/). See the live
 site demo [here](https://micahkepe.com/radion/).
 
-> **radion** 
-> noun 
-> 1. (*physics*) A scalar field in higher-dimensional spacetimes
+> **radion**
+> noun
 >
+> 1. (_physics_) A scalar field in higher-dimensional spacetimes
 
 <details open>
 <summary>Dark theme</summary>
 
 ![radion dark theme screenshot](screenshot.png)
+
 </details>
 
 <details>
 <summary>Light theme</summary>
 
 ![radion light theme screenshot](screenshot-light.png)
+
 </details>
 
 ## Features
@@ -52,6 +54,8 @@ site demo [here](https://micahkepe.com/radion/).
 - [x] Light/Dark mode support
 - [x] Search functionality
 - [x] Table of Contents option
+- [x] Footnote support
+- [x] Built-in comments option (Giscus)
 
 ## Contents and Configuration Guide
 
@@ -60,12 +64,14 @@ site demo [here](https://micahkepe.com/radion/).
   - Top menu
   - Title
   - Author
+  - Favicon
   - GitHub
   - Code Snippets
   - LaTex Support
   - Searchbar
   - Light and Dark Modes
   - Table of Contents
+  - Comments
 - Acknowledgements
 
 ## Installation
@@ -150,6 +156,22 @@ date = 1970-01-01
 author = "John Smith"
 ```
 
+### Favicon
+
+To change the default favicon, create your own favicon folder with the following
+site: [RealFaviconGenerator](https://realfavicongenerator.net/), setting the
+'Favicon path' option to `/icons/favicon/`. Unzip the created folder, then
+create a `static/icons/` directory if it does not already exist, and then place
+the unzipped `favicon/` directory in `static/icons/`.
+
+By default, favicons are enabled, however, if for some reason you would like to
+disable favicons, set the following in your `config.toml`:
+
+```toml
+[extra]
+favicon = false
+```
+
 ### GitHub
 
 To enable a GitHub reference link in the header, set the following in your
@@ -230,6 +252,39 @@ of the page:
 [extra]
 toc = true
 ```
+
+### Comments
+
+> [!NOTE]
+> Giscus comments assumes that you are hosting the blog site via GitHub Pages
+> and thus have access to GitHub Discussions.
+
+First, follow the instructions at [giscus.app](https://giscus.app/).
+This includes installing the Giscus app and enabling discussions on the
+GitHup repository that you host the website code. Additionally, fill in the
+repository path in the prompt. Then, from the generated script, fill in the
+corresponding values in the `config.toml`:
+
+```toml
+[extra]
+comments = true  # {true, false}; sets global enabling of comments by default
+giscus_repo = "FILL ME IN"
+giscus_repo_id = "FILL ME IN"
+giscus_data_category_id = "FILL ME IN"
+```
+
+Comments can be enabled or disabled on a per page basis by editing the page's
+front matter. For example, to disable comments on a specific post:
+
+```toml
+[extra]
+comments = false
+```
+
+The `config.toml` value for `comments` takes precedence and priority. For
+example, if you globally disable comments in your `config.toml` by setting
+`comments = false`, then trying to enabling comments through a page's front
+matter will have no effect.
 
 ## Acknowledgements
 
