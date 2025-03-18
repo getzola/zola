@@ -65,6 +65,31 @@ pub fn render_feeds(
     let num_entries = site.config.feed_limit.unwrap_or(pages.len());
     let p = pages
         .iter()
+        .filter(|page| {
+            !page
+                .ancestors
+                .iter()
+                .map(|ancestor| {
+                    // Go through each ancestor in the library map,
+                    // find it based on relative anchestor path
+                    // and map the hidden (Option<bool>)
+                    &library
+                        .sections
+                        .values()
+                        .find(|section| &section.file.relative == ancestor)
+                        .expect("page to have ancestor")
+                        .meta
+                        .hidden
+                })
+                // Add page hidden meta to the chain, to fold into final value
+                .chain([page.meta.hidden].iter())
+                // Accumulate together as `accumulator || boolean` unless value explicitely
+                // set by a section's or page's frontmatter as `hidden = false`
+                .fold(false, |accumulator, boolean| match (accumulator, boolean) {
+                    (_, Some(value)) => *value,
+                    (value, None) => value,
+                })
+        })
         .take(num_entries)
         .map(|x| x.serialize_without_siblings(&library))
         .collect::<Vec<_>>();
