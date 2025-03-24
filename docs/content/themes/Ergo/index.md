@@ -3,14 +3,14 @@
 title = "Ergo"
 description = "A simple blog Theme focused on writing, inspired by svbtle"
 template = "theme.html"
-date = 2023-07-14T17:59:06+01:00
+date = 2025-03-17T15:01:15Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2023-07-14T17:59:06+01:00
-updated = 2023-07-14T17:59:06+01:00
+created = 2025-03-17T15:01:15Z
+updated = 2025-03-17T15:01:15Z
 repository = "https://github.com/insipx/Ergo.git"
 homepage = "https://github.com/insipx/Ergo"
 minimum_version = "0.4.1"

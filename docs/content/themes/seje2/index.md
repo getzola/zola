@@ -3,14 +3,14 @@
 title = "Seje2"
 description = "A beautiful zola theme"
 template = "theme.html"
-date = 2024-11-20T15:05:16+08:00
+date = 2025-03-19T11:48:05+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-11-20T15:05:16+08:00
-updated = 2024-11-20T15:05:16+08:00
+created = 2025-03-19T11:48:05+08:00
+updated = 2025-03-19T11:48:05+08:00
 repository = "https://github.com/eatradish/seje2.git"
 homepage = "https://github.com/eatradish/Seje2"
 minimum_version = "0.15.0"
@@ -77,6 +77,13 @@ seje2_menu_links = [
 
 If you put `$BASE_URL` in a url, it will automatically be replaced by the actual
 site URL.
+
+### MathJax Latex Support
+Set a field in `extra` with a bool key of `seje_mathjax`:
+
+```toml
+seje_mathjax = true
+```
 
 ### License
 
