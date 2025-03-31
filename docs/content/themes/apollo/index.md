@@ -3,14 +3,14 @@
 title = "apollo"
 description = "Modern and minimalistic blog theme"
 template = "theme.html"
-date = 2025-02-18T18:52:04+01:00
+date = 2025-03-23T14:37:26+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-02-18T18:52:04+01:00
-updated = 2025-02-18T18:52:04+01:00
+created = 2025-03-23T14:37:26+01:00
+updated = 2025-03-23T14:37:26+01:00
 repository = "https://github.com/not-matthias/apollo.git"
 homepage = "https://github.com/not-matthias/apollo"
 minimum_version = "0.14.0"
@@ -31,21 +31,23 @@ Modern and minimalistic blog theme powered by [Zola](https://getzola.org). See a
 <details open>
   <summary>Dark theme</summary>
 
-  ![blog-dark](./screenshot-dark.png)
+![blog-dark](./screenshot-dark.png)
+
 </details>
 
 <details>
   <summary>Light theme</summary>
 
 ![blog-light](./screenshot.png)
+
 </details>
 
 ## Features
 
-- [X] Pagination
-- [X] Themes (light, dark, auto)
-- [X] Projects page
-- [X] Analytics using [GoatCounter](https://www.goatcounter.com/) / [Umami](https://umami.is/)
+- [x] Pagination
+- [x] Themes (light, dark, auto)
+- [x] Projects page
+- [x] Analytics using [GoatCounter](https://www.goatcounter.com/) / [Umami](https://umami.is/)
 - [x] Social Links
 - [x] MathJax Rendering
 - [x] Taxonomies
@@ -57,6 +59,7 @@ Modern and minimalistic blog theme powered by [Zola](https://getzola.org). See a
 ## Installation
 
 1. Download the theme
+
 ```
 git submodule add https://github.com/not-matthias/apollo themes/apollo
 ```
