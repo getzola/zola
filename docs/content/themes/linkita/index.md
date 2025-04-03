@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-03-15T13:10:54+02:00
+date = 2025-03-28T20:48:09+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-03-15T13:10:54+02:00
-updated = 2025-03-15T13:10:54+02:00
+created = 2025-03-28T20:48:09+02:00
+updated = 2025-03-28T20:48:09+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -61,6 +61,7 @@ A clean and elegant blog theme for [Zola](https://www.getzola.org/). Linkita is 
 - Improved search engine optimization
 - Improved configurability
 - Author profiles
+- Projects shortcode
 - Keyboard shortcuts
 
 ## Installing
@@ -71,7 +72,7 @@ A clean and elegant blog theme for [Zola](https://www.getzola.org/). Linkita is 
 git submodule add https://codeberg.org/salif/linkita.git themes/linkita
 ```
 
-Alternatively, clone the repository: `git clone https://codeberg.org/salif/linkita.git themes/linkita`.
+Alternatively, clone the repository: `git clone https://codeberg.org/salif/linkita.git themes/linkita`
 
 2. Set `linkita` as your theme in your `config.toml` file.
 
@@ -108,19 +109,28 @@ Set the ones you need.
 +++
 title = ""
 description = ""
-# date = 
-# updated = 
+# The date of the post
+date = 2025-12-30
+# The last updated date of the post,
+# if different from the date
+updated = 2025-12-31
+
 [taxonomies]
 categories = []
 tags = []
 authors = []
+
 [extra]
-# comment = true
-# math = true
-# mermaid = true
+# Enable comments
+comment = false
+# Enable KaTeX support
+math = false
+# Enable Mermaid support
+mermaid = false
 [extra.cover]
-# image = ""
-# alt = ""
+image = ""
+# A description of the cover image
+alt = ""
 +++
 ```
 
@@ -131,7 +141,7 @@ authors = []
 title: ""
 description: ""
 date: 
-# updated: 
+updated: 
 taxonomies:
   categories:
   tags:
@@ -146,74 +156,73 @@ extra:
 ---
 ```
 
-### Extra frontmatter variables
+### Other extra frontmatter variables
 
 ```toml ,name=frontmatter
 [extra]
-# page_info = []
+# See `config.extra.page_info`.
+# (type: array of strings; default value: config.extra.page_info;)
+page_info = []
+# See `config.extra.toc`.
+# (type: boolean or object; default value: config.extra.toc;)
+toc = true
 [extra.cover]
 # Width of the cover image in pixels.
-#  (type: number; default value: uses `get_image_metadata()`;)
-# width =
+# (type: number; default value: uses `get_image_metadata()`;)
+width =
 # Height of the cover image in pixels.
-#  (type: number; default value: uses `get_image_metadata()`;)
-# height =
-```
+# (type: number; default value: uses `get_image_metadata()`;)
+height =
 
-### Open Graph frontmatter variables
-
-```toml ,name=frontmatter
+# Open Graph frontmatter variables
 [extra.open_graph]
 # When the article is out of date after. e.g. `2024-02-29`.
-#  (type: datetime; no default value;)
+# (type: datetime; no default value;)
 expiration_time =
 # Describes the tier status for an article. e.g. `free`, `locked`, or `metered`.
-#  (type: string; no default value;)
+# (type: string; no default value;)
 content_tier = ""
 # Defines the location to target for the article. e.g. `["county:COUNTY"]` or `["city:CITY,COUNTY"]`.
-#  (type: array of strings; no default value;)
+# (type: array of strings; no default value;)
 locations = []
 # A high-level section name. e.g. `Technology`.
-#  (type: string; no default value;)
+# (type: string; no default value;)
 section = ""
 # Indicates whether the article is an opinion piece or not. e.g. `true` or `false`.
-#  (type: boolean; no default value;)
+# (type: boolean; no default value;)
 opinion =
 # The URL for the audio.
-#  (type: string; no default value;)
+# (type: string; no default value;)
 audio = ""
 # MIME type of the audio. e.g. `audio/vnd.facebook.bridge`, `audio/mpeg`.
-#  (type: string; no default value;)
+# (type: string; no default value;)
 audio_type = ""
 # The URL for the video.
-#  (type: string; no default value;)
+# (type: string; no default value;)
 video = ""
 # MIME type of the video. e.g. `application/x-shockwave-flash`, `video/mp4`.
-#  (type: string; no default value;)
+# (type: string; no default value;)
 video_type = ""
 # Width of the video in pixels.
-#  (type: number; no default value;)
+# (type: number; no default value;)
 video_width =
 # Height of the video in pixels.
-#  (type: number; no default value;)
+# (type: number; no default value;)
 video_height =
 # Set only if different from canonical page URL.
-#  (type: string; default value: current_url;)
+# (type: string; default value: current_url;)
 url = ""
-```
 
-### Sitemap frontmatter variables
-
-```toml ,name=frontmatter
+# Sitemap frontmatter variables
 [extra.sitemap]
 # Set only if different from `page.updated`.
-#  (type: string; default value: page.updated;)
+# (type: string; default value: page.updated;)
 updated =
 # Valid values are `always`, `hourly`, `daily`, `weekly`, `monthly`, `yearly`, `never`.
-#  (type: string; no default value;)
+# (type: string; no default value;)
 changefreq =
 # Valid values range from 0.0 to 1.0. The default priority of a page is 0.5.
-#  (type: string; no default value;)
+# (type: string; no default value;)
 priority =
 ```
 
@@ -223,6 +232,8 @@ Create `content/_index.md` file in your blog and set `extra.profile` to your use
 
 ```toml ,name=content/_index.md
 +++
+# title = ""
+# description = ""
 sort_by = "date"
 paginate_by = 5
 [extra]
@@ -233,13 +244,12 @@ profile = "your_username"
 Do it for each language in your blog.
 For French, the file name is `content/_index.fr.md`.
 
-### Profiles for authors
-
-Add `extra.profiles.author_username` table in your `config.toml` file for each author in your blog.
-Replace `author_username` with author's username.
-See Profiles.
+See Profiles for more.
 
 ### Non-post pages
+
+The default page template `page.html` is for blog posts.
+For pages that are not blog posts, create a `pages` directory and use the `pages.html` template.
 
 Create `content/pages/_index.md` file in your blog:
 
@@ -248,6 +258,20 @@ Create `content/pages/_index.md` file in your blog:
 render = false
 page_template = "pages.html"
 +++
+```
+
+#### About you page
+
+Create `content/pages/about.md` file in your blog:
+
+```toml ,name=content/pages/about.md
++++
+title = "About me"
+# description = ""
+# path = "about"
++++
+
+## Hello, world!
 ```
 
 #### Archive page
@@ -265,21 +289,38 @@ section = "_index.md"
 +++
 ```
 
-#### About you page
+#### Projects page
 
-Create `content/pages/about.md` file in your blog:
+Create `content/pages/projects/index.md` file in your blog:
 
-```toml ,name=content/pages/about.md
+```toml ,name=content/pages/projects/index.md
 +++
-title = "About me"
+title = "My Projects"
 # description = ""
-# path = "about"
+# path = "projects"
 +++
+```
+
+Include the following shortcode too: \{\{ projects(path="data.toml", format="toml") \}\}
+
+Create `content/pages/projects/data.toml` file in your blog:
+
+```toml ,name=content/pages/projects/data.toml
+[[project]]
+name = "lorem"
+desc = "Lorem ipsum dolor sit."
+tags = ["lorem", "ipsum"]
+links = [
+    { name = "homepage", url = "https://example.com" },
+    { name = "source", url = "https://example.com" },
+]
 ```
 
 ### Page authors
 
-#### Option 1: Using `page.authors`
+Choose one of the following options or skip if you don't know what you're doing:
+
+#### Option A: Using `page.authors`
 
 You don't need to set `page.authors` in the frontmatter if you are the only author of the post.
 
@@ -291,7 +332,7 @@ authors = ["author_username"]
 +++
 ```
 
-#### Option 2: Using Taxonomies
+#### Option B: Using Taxonomies
 
 Useful if the blog has a team of several authors.
 If you choose this option you should set taxonomies in each page.
@@ -331,30 +372,43 @@ and comment out the variables you don't use instead of setting empty values.
 All variables are optional.
 
 ```toml ,name=config.toml
-# The default language. (type: string;)
+# The URL the site will be built for
+base_url = "https://example.com"
+
+# The site theme to use.
+theme = "linkita"
+
+# The default language.
 default_language = "en"
 
-# The default author for pages. See `extra.profiles`. (type: string;)
+# The default author for pages.
+# See `extra.profiles`.
+# (type: string;)
 author = "your_username"
 
-# The site title. (type: string;)
+# The site title. Will be in all page titles.
+# (type: string;)
 title = ""
 
-# The site description. (type: string;)
+# The site description. Used in feeds by default.
+# (type: string;)
 description = ""
 
-# Automatically generate a feed. (type: boolean;)
+# Automatically generate a feed.
+# (type: boolean;)
 generate_feeds = true
 
-# The filenames to use for the feeds. (type: array of strings;)
+# The filenames to use for the feeds.
+# (type: array of strings;)
 feed_filenames = ["atom.xml"] # or ["rss.xml"]
 
 # Build a search index from the pages and section content
-#  for `default_language`. (type: boolean;)
+# for `default_language`. (type: boolean;)
 build_search_index = true
 ```
 
-Taxonomies with translated names are `tags`, `categories`, and `authors`.
+Zola has built-in support for taxonomies.
+Taxonomies on Linkita with translated names are `tags`, `categories`, and `authors`.
 
 ```toml ,name=config.toml
 [[taxonomies]]
@@ -373,7 +427,7 @@ feed = true
 paginate_by = 5
 ```
 
-Add more languages ​​by replacing `fr` from the example with the language code.
+Add more languages by replacing `fr` from the example with the language code:
 
 ```toml ,name=config.toml
 [languages.fr]
@@ -383,7 +437,7 @@ generate_feeds = true
 feed_filenames = ["atom.xml"] # or ["rss.xml"]
 build_search_index = true
 taxonomies = [
-    { name = "authors", feed = true, paginate_by = 5 }
+    { name = "tags", feed = true, paginate_by = 5 }
 ]
 ```
 
@@ -411,18 +465,22 @@ title_separator = " | "
 # (type: string; no default value;)
 header_menu_name = "menu_name"
 
-# (type: boolean; default value: false;)
+# If you disable default favicons, you can use
+# the inject support to set your own favicons.
+# (type: boolean; default value: `false`;)
 disable_default_favicon = false
 
-# (type: boolean; default value: false;)
+# If you want to reimplement the JS code
+# yourself, set to true and use the inject support.
+# (type: boolean; default value: `false`;)
 disable_javascript = false
 
-# (type: boolean; default value: false;)
+# (type: boolean; default value: `false`;)
 use_cdn = false
 
 # You can reorder the strings, remove them, or replace them.
-#  For example, you can replace `site_title` with `home_button`.
-#  (type: array of strings; default value: `["site_title", "theme_button", "search_button", "translations_button"]`;)
+# For example, you can replace `site_title` with `home_button`.
+# (type: array of strings; default value: `["site_title", "theme_button", "search_button", "translations_button"]`;)
 # header_buttons = []
 
 # Valid values:
@@ -432,8 +490,18 @@ use_cdn = false
 #  `word_count`, `word_count_on_page`, `word_count_on_paginator`,
 #  `authors`, `authors_on_page`, `authors_on_paginator`,
 #  `tags`, `tags_on_page`, `tags_on_paginator`.
-#  (type: array of strings; default value: `["date", "date_updated_on_page", "reading_time", "authors"]`;)
+# (type: array of strings; default value: `["date", "date_updated_on_page", "reading_time", "authors"]`;)
 # page_info = []
+
+# Enable table of contents on all pages.
+# If not set, toc is enabled only on post pages.
+# If set to false, toc is disabled on all pages.
+# (type: boolean or object;)
+# toc = true
+
+# Reverse the order of prev and next post links.
+# (type: boolean; default value: `false`;)
+# invert_page_navigation = false
 ```
 
 ### Style config
@@ -449,10 +517,10 @@ bg_dark_color = "#18181b"
 header_blur = false
 
 # The custom header color, only available
-#  when `header_blur` is false. (type: string;)
+# when `header_blur` is false. (type: string;)
 header_color = "#e4e4e7"
 # The custom header color in dark mode, only available
-#  when `header_blur` is false. (type: string;)
+# when `header_blur` is false. (type: string;)
 header_dark_color = "#27272a"
 ```
 
@@ -461,20 +529,20 @@ header_dark_color = "#27272a"
 ```toml ,name=config.toml
 [extra.menus]
 menu_name = [
-  {url = "$BASE_URL/pages/archive/", name = "Archive"},
-  {url = "$BASE_URL/categories", name = "Categories"},
-  {url = "$BASE_URL/tags/", name = "Tags"},
-  {url = "$BASE_URL/pages/about/", name = "About"},
+  { url = "$BASE_URL/pages/archive/", name = "Archive" },
+  { url = "$BASE_URL/categories", name = "Categories" },
+  { url = "$BASE_URL/tags/", name = "Tags" },
+  { url = "$BASE_URL/pages/about/", name = "About" },
 ]
 
 # Example multilingual menu.
 multilingual_menu_name = [
-  {url = "$BASE_URL/pages/about/", names = {en = "About", fr = "About in French"} },
-  {url = "$BASE_URL/pages/projects/", names = {en = "Projects", fr = "Projects in French"} },
-  {url = "$BASE_URL/pages/archive/", names = {en = "Archive", fr = "Archive in French"} },
-  {url = "$BASE_URL/categories/", names = {en = "Categories", fr = "Categories in French"} },
-  {url = "$BASE_URL/tags/", names = {en = "Tags", fr = "Tags in French"} },
-  {url = "$BASE_URL/authors/", names = {en = "Authors", fr = "Authors in French"} },
+  { url = "$BASE_URL/pages/about/", names = { en = "About", fr = "About in French" } },
+  { url = "$BASE_URL/pages/projects/", names = { en = "Projects", fr = "Projects in French" } },
+  { url = "$BASE_URL/pages/archive/", names = { en = "Archive", fr = "Archive in French" } },
+  { url = "$BASE_URL/categories/", names = { en = "Categories", fr = "Categories in French" } },
+  { url = "$BASE_URL/tags/", names = { en = "Tags", fr = "Tags in French" } },
+  { url = "$BASE_URL/authors/", names = { en = "Authors", fr = "Authors in French" } },
 ]
 ```
 
@@ -509,14 +577,6 @@ name = ""
 # (type: string; supports markdown; no default value;)
 bio = ""
 
-# Profile email.
-# (type: string; no default value;)
-# email = ""
-
-# Profile website.
-# (type: string; no default value;)
-# url = ""
-
 # Social icons.
 # The `name` should be the file name of `static/icons/*.svg` or the icon name of https://simpleicons.org/
 # The `url` supports `$BASE_URL`.
@@ -533,21 +593,21 @@ social = [
 ```toml ,name=config.toml
 # For French. Replace `your_username` with your username.
 [extra.profiles.your_username.languages.fr]
+# A description of what is in the avatar.
+# (type: string; default avatar: extra.profiles.your_username.avatar_alt;)
+avatar_alt = ""
+
 # Profile name.
-# (type: string; default value: extra.profiles.your_username.url;)
+# (type: string; default value: extra.profiles.your_username.name;)
 name = ""
 
 # Profile bio.
 # (type: string; supports markdown; default value: extra.profiles.your_username.bio;)
 bio = ""
 
-# Profile website.
-# (type: string; default value: extra.profiles.your_username.url;)
-url = ""
-
-# A description of what is in the avatar.
-# (type: string; default avatar: extra.profiles.your_username.avatar_alt;)
-avatar_alt = ""
+# Social icons.
+# (type: array of tables; default value: extra.profiles.your_username.social;)
+social = []
 ```
 
 ### Open Graph for profiles
@@ -574,8 +634,9 @@ gender = "" # "female" or "male"
 #  handle - Your Fediverse handle. (type: string; no default value;)
 #  domain - Your Fediverse instance. (type: string; no default value;)
 #  url - Your Fediverse account URL. (type: string; optional;)
-# Example for @user@mastodon.social:
-# fediverse_creator = { handle = "user", domain = "mastodon.social" }
+# Example for @me@mastodon.social:
+# fediverse_creator = { handle = "me", domain = "mastodon.social" }
+fediverse_creator = { handle = "", domain = "" }
 ```
 
 `fb_app_id` and `fb_admins` are only allowed in the default author's profile.
@@ -658,10 +719,18 @@ date_format_archive = "%m-%d"
 # IETF tag for artificial languages. (type: string; no default value;)
 # language_code = "art-x-code"
 
-# Taxonomy/term pages do not have a description by default.
-# Optionally you can set a generic description. `$NAME` will be automatically replaced.
-# taxonomy_list_description = "A map of all $NAME on this site. Start exploring!"
-# taxonomy_single_description = "Browse articles related to $NAME. Start exploring!"
+# Set a description for taxonomy pages.
+[extra.languages.en.taxonomy_descriptions]
+categories = "A map of all categories on this site. Start exploring!"
+tags = "A map of all tags on this site. Start exploring!"
+authors = "A map of all authors on this site. Start exploring!"
+
+# Set a description for term pages.
+# `$NAME` will be automatically replaced.
+[extra.languages.en.term_descriptions]
+categories = "Browse articles related to $NAME. Start exploring!"
+tags = "Browse articles related to $NAME. Start exploring!"
+authors = "Browse articles written by $NAME. Start exploring!"
 ```
 
 ```toml ,name=config.toml
@@ -720,21 +789,21 @@ repo_id = ""
 category = ""
 # (type: string; no default value;)
 category_id = ""
-# (type: string; default value: `pathname`)
+# (type: string; default value: `pathname`;)
 mapping = "pathname"
-# (type: number; default value: `1`)
+# (type: number; default value: `1`;)
 strict = 1
-# (type: number; default value: `0`)
+# (type: number; default value: `0`;)
 reactions_enabled = 0
-# (type: number; default value: `0`)
+# (type: number; default value: `0`;)
 emit_metadata = 0
-# (type: string; default value: `top`)
+# (type: string; default value: `top`;)
 input_position = "top"
-# (type: string; default value: `light`)
+# (type: string; default value: `light`;)
 theme = "light"
-# (type: string; default value: `en`)
+# (type: string; default value: `en`;)
 lang = "en"
-# (type: string; default value: `lazy`)
+# (type: string; default value: `lazy`;)
 loading = "lazy"
 ```
 
@@ -746,12 +815,14 @@ See the [MIT License](https://codeberg.org/salif/linkita/src/branch/linkita/LICE
 
 Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [Github](https://github.com/salif/linkita).
 
-If you notice even the slightest ambiguity or bug in this repo, report it IMMEDIATELY before it breeds and takes over the entire project!
+If you notice even the slightest ambiguity or bug in this repo,
+report it IMMEDIATELY, before it breeds and takes over the entire project!
 
 ## Sites using Linkita
 
 - [Zola Themes Collection](https://github.com/salif/zola-themes-collection)
 - [salif.eu](https://github.com/salif/personal-web-page): Personal website
+- [Rratic's blog](https://github.com/Rratic/rratic.github.io): Personal website
 
 If your blog uses Linkita and is open source, feel free to create a pull request to add it to this list.
 

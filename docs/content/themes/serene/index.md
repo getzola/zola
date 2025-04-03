@@ -3,14 +3,14 @@
 title = "serene"
 description = "A spiffy blog theme for zola"
 template = "theme.html"
-date = 2025-02-02T23:22:46+08:00
+date = 2025-03-31T08:20:53+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-02-02T23:22:46+08:00
-updated = 2025-02-02T23:22:46+08:00
+created = 2025-03-31T08:20:53+08:00
+updated = 2025-03-31T08:20:53+08:00
 repository = "https://github.com/isunjn/serene.git"
 homepage = "https://github.com/isunjn/serene"
 minimum_version = "0.19.0"
@@ -22,33 +22,15 @@ name = "isunjn"
 homepage = "https://github.com/isunjn"
 +++        
 
-<img width="1498" alt="截屏2024-11-02 19 15 38" src="https://github.com/user-attachments/assets/67a7907c-4845-4541-af83-0a31d0497808">
+<p align="center">
+  A minimal blog theme for <a href="https://www.getzola.org">zola</a>, well crafted
+</p>
 
-<br />
+<p align="center">
+  <a href="https://serene-demo.pages.dev">Demo</a> ·
+  <a href="https://github.com/isunjn/serene/blob/latest/USAGE.md">Usage</a>
+</p>
 
-A spiffy blog theme for [zola](https://www.getzola.org), demo: <https://serene-demo.pages.dev>
-
-## Features
-
-- Well crafted design
-- Customizable homepage layout
-- Projects page & Prose page
-- Dark mode & Customizable colors
-- Image zooming, Table-of-contents, Back-to-top button...
-- Out-of-date alert, Special quote, Featured mark...
-- Callout (note, warning, alert, etc.)
-- Anonymous emoji reactions
-- Comments using [Giscus](https://giscus.app)
-- Mathematical notations using [KaTeX](https://katex.org) or [Typst](https://typst.app)
-- Diagrams and visualizations using [Mermaid](https://github.com/mermaid-js/mermaid)
-
-## Usage
-
-- Check the [USAGE.md](https://github.com/isunjn/serene/blob/latest/USAGE.md) of `latest` branch
-- Also available in Simplified Chinese: [USAGE-zh_CN.md](https://github.com/isunjn/serene/blob/latest/USAGE-zh_CN.md) (简体中文)
-
-## License
-
-[MIT](https://github.com/isunjn/serene/blob/main/LICENSE)
+<img alt="Screenshot" src="https://github.com/user-attachments/assets/fa0c9529-f83b-4e4d-aed9-5327a44bc828" />
 
         
