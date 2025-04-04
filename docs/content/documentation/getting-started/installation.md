@@ -236,29 +236,21 @@ Zola does not work in PowerShell ISE.
 
 ## From source
 
-To build Zola from source, you will need to have Git, [Rust and Cargo](https://www.rust-lang.org/)
+To build Zola from source, you will need to have [Rust and Cargo](https://www.rust-lang.org/)
 installed.
 
 From a terminal, you can now run the following commands:
 
 ```sh
-$ git clone https://github.com/getzola/zola.git
-$ cd zola
-$ cargo install --path . --locked
+$ cargo install --locked --git https://github.com/getzola/zola
 $ zola --version
 ```
 
 If you encountered compilation errors like `error: failed to run custom build command for 'ring v0.16.20'`, you can try the command below instead:
 
 ```sh
-$ cargo build --release --locked --no-default-features --features=native-tls
+$ cargo install --locked --no-default-features --features=native-tls --git https://github.com/getzola/zola
 ```
 
-The binary will be available in the `target/release` directory. You can move it in your `$PATH` to have the
-`zola` command available globally:
-
-```sh
-$ cp target/release/zola ~/.cargo/bin/zola
-```
-
-or in a directory if you want for example to have the binary in the same repository as the site.
+Cargo will install the `zola` binary in `~/.cargo/bin/`.
+You can move it into the repository of your site if you want.
