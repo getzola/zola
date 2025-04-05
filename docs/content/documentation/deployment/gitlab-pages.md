@@ -44,53 +44,37 @@ We provide you with a template to accomplish this task easily.
 Create a file called `.gitlab-ci.yml` in the root directory of your
 repository and copy the contents of the template below.
 
+You are free to change the version of the Alpine Linux image and of Zola used to build your site.
+
 ```yaml
 stages:
   - deploy
 
 default:
-  image: debian:stable-slim
+  image: alpine:3.21
 
 variables:
   # The runner will be able to pull your Zola theme when the strategy is
   # set to "recursive".
   GIT_SUBMODULE_STRATEGY: "recursive"
 
-  # If you don't set a version here, your site will be built with the latest
-  # version of Zola available in GitHub releases.
-  # Use the semver (x.y.z) format to specify a version. For example: "0.17.2" or "0.18.0".
+  # Make sure you specify a supported version of Zola whenever you upgrade
+  # the version of the Alpine image.
+  # See https://pkgs.alpinelinux.org/packages
   ZOLA_VERSION:
     description: "The version of Zola used to build the site."
-    value: ""
+    value: "0.19.2-r0"
 
 pages:
   stage: deploy
   script:
     - |
-      apt-get update --assume-yes && apt-get install --assume-yes --no-install-recommends wget ca-certificates
-      if [ $ZOLA_VERSION ]; then
-        zola_url="https://github.com/getzola/zola/releases/download/v$ZOLA_VERSION/zola-v$ZOLA_VERSION-x86_64-unknown-linux-gnu.tar.gz"
-        if ! wget --quiet --spider $zola_url; then
-          echo "A Zola release with the specified version could not be found.";
-          exit 1;
-        fi
-      else
-        github_api_url="https://api.github.com/repos/getzola/zola/releases/latest"
-        zola_url=$(
-          wget --output-document - $github_api_url |
-          grep "browser_download_url.*x86_64.*linux-gnu.tar.gz" |
-          cut --delimiter : --fields 2,3 |
-          tr --delete "\" "
-        )
-      fi
-      wget $zola_url
-      tar -xzf *.tar.gz
-      ./zola build --base-url $CI_PAGES_URL
+    apk add zola=${ZOLA_VERSION}
+    zola build --base-url $CI_PAGES_URL
 
   artifacts:
     paths:
-      # This is the directory whose contents will be deployed to the GitLab Pages
-      # server.
+      # This is the directory whose contents will be deployed to the GitLab Pages server.
       # GitLab Pages expects a directory with this name by default.
       - public
 
