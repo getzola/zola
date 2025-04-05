@@ -49,6 +49,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rustup_toolchain }}
+          targets: ${{ matrix.target }}
 
       - name: Install Zig and cargo-zigbuild
         run: |
