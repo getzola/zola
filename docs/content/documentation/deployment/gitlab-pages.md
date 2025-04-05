@@ -69,8 +69,8 @@ pages:
   stage: deploy
   script:
     - |
-    apk add zola=${ZOLA_VERSION}
-    zola build --base-url $CI_PAGES_URL
+      apk add zola=${ZOLA_VERSION}
+      zola build --base-url $CI_PAGES_URL
 
   artifacts:
     paths:
