@@ -62,7 +62,7 @@ variables:
   # the version of the Alpine image.
   # See https://pkgs.alpinelinux.org/packages
   ZOLA_VERSION:
-    description: "The version of Zola used to build the site."
+    description: "The version of Zola used to build the site, as defined in the Alpine Package Index."
     value: "0.19.2-r0"
 
 pages:
