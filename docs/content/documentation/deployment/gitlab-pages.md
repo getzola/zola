@@ -70,7 +70,7 @@ variables:
   # Use semantic versioning (semver) format (x.y.z).
   # See https://pkgs.alpinelinux.org/packages
   ZOLA_VERSION:
-    description: "The version of Zola used to build the site"
+    description: "The version of Zola used to build the site."
     value: "0.19.2"
 
 pages:
