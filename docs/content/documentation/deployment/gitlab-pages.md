@@ -71,10 +71,10 @@ pages:
     - |
       apt-get update
       DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends wget ca-certificates
-      zola_url="https://github.com/getzola/zola/releases/download/v$ZOLA_VERSION/zola-v$ZOLA_VERSION-x86_64-unknown-linux-gnu.tar.gz"
+      zola_url="https://github.com/getzola/zola/releases/download/v${ZOLA_VERSION}/zola-v${ZOLA_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
       if ! wget --quiet --spider $zola_url; then
-        echo "A Zola release with the specified version could not be found.";
-        exit 1;
+        echo "A Zola release with the specified version could not be found."
+        exit 1
       fi
       wget $zola_url
       tar -xzf *.tar.gz
