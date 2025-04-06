@@ -44,41 +44,41 @@ We provide you with a template to accomplish this task easily.
 Create a file called `.gitlab-ci.yml` in the root directory of your
 repository and copy the contents of the template below.
 
-Note:
-
-Each version of Alpine Linux supports a single version of Zola, for example:
-
-Alpine Linux 3.20 supports Zola version 0.18.0.
-Alpine Linux 3.21 supports Zola version 0.19.2.
-
-Make sure the version of Zola you specify in `ZOLA_VERSION` is supported by your version of the Alpine image.
+Make sure you specify a version of Zola in the `ZOLA_VERSION` variable.
 
 ```yaml
 stages:
   - deploy
 
 default:
-  image: alpine:3.21
+  image: debian:stable-slim
 
 variables:
   # The runner will be able to pull your Zola theme when the strategy is
   # set to "recursive".
   GIT_SUBMODULE_STRATEGY: "recursive"
 
-  # Make sure you specify a supported version of Zola whenever
-  # you upgrade the version of the Alpine image.
-  # Use semantic versioning (semver) format (x.y.z).
-  # See https://pkgs.alpinelinux.org/packages
+  # Make sure you specify a version of Zola here.
+  # Use the semver format (x.y.z) to specify a version.
+  # For example: "0.17.2" or "0.18.0".
   ZOLA_VERSION:
     description: "The version of Zola used to build the site."
-    value: "0.19.2"
+    value: ""
 
 pages:
   stage: deploy
   script:
     - |
-      apk add zola=~${ZOLA_VERSION}
-      zola build --base-url $CI_PAGES_URL
+      apt-get update
+      DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends wget ca-certificates
+      zola_url="https://github.com/getzola/zola/releases/download/v$ZOLA_VERSION/zola-v$ZOLA_VERSION-x86_64-unknown-linux-gnu.tar.gz"
+      if ! wget --quiet --spider $zola_url; then
+        echo "A Zola release with the specified version could not be found.";
+        exit 1;
+      fi
+      wget $zola_url
+      tar -xzf *.tar.gz
+      ./zola build --base-url $CI_PAGES_URL
 
   artifacts:
     paths:
