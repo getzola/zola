@@ -44,7 +44,14 @@ We provide you with a template to accomplish this task easily.
 Create a file called `.gitlab-ci.yml` in the root directory of your
 repository and copy the contents of the template below.
 
-You are free to change the version of the Alpine Linux image and of Zola used to build your site.
+Note:
+
+Each version of Alpine Linux supports a single version of Zola, for example:
+
+Alpine Linux 3.20 supports Zola version 0.18.0.
+Alpine Linux 3.21 supports Zola version 0.19.2.
+
+Make sure the version of Zola you specify in `ZOLA_VERSION` is supported by your version of the Alpine image.
 
 ```yaml
 stages:
@@ -58,18 +65,19 @@ variables:
   # set to "recursive".
   GIT_SUBMODULE_STRATEGY: "recursive"
 
-  # Make sure you specify a supported version of Zola whenever you upgrade
-  # the version of the Alpine image.
+  # Make sure you specify a supported version of Zola whenever
+  # you upgrade the version of the Alpine image.
+  # Use semantic versioning (semver) format (x.y.z).
   # See https://pkgs.alpinelinux.org/packages
   ZOLA_VERSION:
-    description: "The version of Zola used to build the site, as defined in the Alpine Package Index."
-    value: "0.19.2-r0"
+    description: "The version of Zola used to build the site"
+    value: "0.19.2"
 
 pages:
   stage: deploy
   script:
     - |
-      apk add zola=${ZOLA_VERSION}
+      apk add zola=~${ZOLA_VERSION}
       zola build --base-url $CI_PAGES_URL
 
   artifacts:
