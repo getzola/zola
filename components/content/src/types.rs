@@ -17,6 +17,8 @@ pub enum SortBy {
     Weight,
     /// Sort by slug
     Slug,
+    /// Sort by permalink
+    Permalink,
     /// No sorting
     None,
 }

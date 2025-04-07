@@ -378,7 +378,7 @@ impl Library {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::FileInfo;
+    use crate::{FileInfo, SortBy};
     use config::{LanguageOptions, TaxonomyConfig};
     use std::collections::HashMap;
     use utils::slugs::SlugifyStrategy;
