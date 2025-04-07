@@ -3,14 +3,14 @@
 title = "radion"
 description = "A sleek, modern blog theme."
 template = "theme.html"
-date = 2025-03-02T14:11:58-06:00
+date = 2025-03-31T11:19:50-05:00
 
 [taxonomies]
 theme-tags = ['SEO', 'search', 'accessible']
 
 [extra]
-created = 2025-03-02T14:11:58-06:00
-updated = 2025-03-02T14:11:58-06:00
+created = 2025-03-31T11:19:50-05:00
+updated = 2025-03-31T11:19:50-05:00
 repository = "https://github.com/micahkepe/radion.git"
 homepage = "https://github.com/micahkepe/radion"
 minimum_version = "0.19.2"
@@ -158,11 +158,15 @@ author = "John Smith"
 
 ### Favicon
 
-To change the default favicon, create your own favicon folder with the following
-site: [RealFaviconGenerator](https://realfavicongenerator.net/), setting the
-'Favicon path' option to `/icons/favicon/`. Unzip the created folder, then
-create a `static/icons/` directory if it does not already exist, and then place
-the unzipped `favicon/` directory in `static/icons/`.
+To change the default favicon:
+
+1. Create your own favicon folder with the following site: [RealFaviconGenerator](https://realfavicongenerator.net/)
+
+   - Set the 'Favicon path' option to `/icons/favicon/`
+
+2. Unzip the created folder
+3. Create a `static/icons/` directory if it does not already exist
+4. Place the unzipped `favicon/` directory in `static/icons/`.
 
 By default, favicons are enabled, however, if for some reason you would like to
 disable favicons, set the following in your `config.toml`:
@@ -201,6 +205,10 @@ Enhanced Codeblocks (Clipboard Support and Language Tags)
 [extra]
 codeblock = true
 ```
+
+> [!NOTE]
+> Ligatures are disabled by default as defined in the
+> [\_theme.scss](./sass/_theme.scss) file.
 
 ### LaTex Support
 

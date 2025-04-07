@@ -3,14 +3,14 @@
 title = "homepage-creators"
 description = "A fast and beautiful personal homepage for creators, used by https://jiaxiang.wang, a port of HeoWeb."
 template = "theme.html"
-date = 2025-03-14T12:19:40+08:00
+date = 2025-03-27T00:49:13+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-03-14T12:19:40+08:00
-updated = 2025-03-14T12:19:40+08:00
+created = 2025-03-27T00:49:13+08:00
+updated = 2025-03-27T00:49:13+08:00
 repository = "https://github.com/iWangJiaxiang/Homepage-Creators.git"
 homepage = "https://github.com/iWangJiaxiang/homepage-for-creators"
 minimum_version = "0.19.2"
