@@ -6,7 +6,7 @@ use libs::ahash::{AHashMap, AHashSet};
 use crate::ser::TranslatedContent;
 use crate::sorting::sort_pages;
 use crate::taxonomies::{Taxonomy, TaxonomyFound};
-use crate::{Page, Section, SortBy};
+use crate::{Page, Section};
 
 macro_rules! set {
     ($($key:expr,)+) => (set!($($key),+));
@@ -177,10 +177,7 @@ impl Library {
         let mut updates = AHashMap::new();
         for (path, section) in &self.sections {
             let pages: Vec<_> = section.pages.iter().map(|p| &self.pages[p]).collect();
-            let (sorted_pages, cannot_be_sorted_pages) = match section.meta.sort_by {
-                SortBy::None => continue,
-                _ => sort_pages(&pages, section.meta.sort_by),
-            };
+            let (sorted_pages, cannot_be_sorted_pages) = sort_pages(&pages, section.meta.sort_by);
 
             updates
                 .insert(path.clone(), (sorted_pages, cannot_be_sorted_pages, section.meta.sort_by));
@@ -378,7 +375,7 @@ impl Library {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::FileInfo;
+    use crate::{FileInfo, SortBy};
     use config::{LanguageOptions, TaxonomyConfig};
     use std::collections::HashMap;
     use utils::slugs::SlugifyStrategy;

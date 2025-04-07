@@ -17,7 +17,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             SortBy::Title | SortBy::TitleBytes => page.meta.title.is_some(),
             SortBy::Weight => page.meta.weight.is_some(),
             SortBy::Slug => true,
-            SortBy::None => unreachable!(),
+            SortBy::None => true, // fallback to permalink sorting
         });
 
     can_be_sorted.par_sort_unstable_by(|a, b| {
@@ -34,7 +34,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             }
             SortBy::Weight => a.meta.weight.unwrap().cmp(&b.meta.weight.unwrap()),
             SortBy::Slug => natural_lexical_cmp(&a.slug, &b.slug),
-            SortBy::None => unreachable!(),
+            SortBy::None => Ordering::Equal, // fallback to permalink sorting
         };
 
         if ord == Ordering::Equal {
