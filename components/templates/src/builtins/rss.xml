@@ -17,7 +17,7 @@
       <generator>Zola</generator>
       <language>{{ lang }}</language>
       <atom:link href="{{ feed_url | safe }}" rel="self" type="application/rss+xml"/>
-      <lastBuildDate>{{ last_updated | date(format="%a, %d %b %Y %H:%M:%S %z") }}</lastBuildDate>
+      {% if last_updated is defined %}<lastBuildDate>{{ last_updated | date(format="%a, %d %b %Y %H:%M:%S %z") }}</lastBuildDate>{% endif %}
       {%- for page in pages %}
       <item>
           <title>{{ page.title }}</title>
