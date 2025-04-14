@@ -3,14 +3,14 @@
 title = "Duckquill"
 description = "Modern, pretty, and clean theme"
 template = "theme.html"
-date = 2025-03-30T08:12:44+03:00
+date = 2025-04-12T00:51:44Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-03-30T08:12:44+03:00
-updated = 2025-03-30T08:12:44+03:00
+created = 2025-04-12T00:51:44Z
+updated = 2025-04-12T00:51:44Z
 repository = "https://codeberg.org/daudix/duckquill.git"
 homepage = "https://codeberg.org/daudix/duckquill"
 minimum_version = "0.19.0"
