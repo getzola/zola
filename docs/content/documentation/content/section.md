@@ -145,7 +145,7 @@ This would iterate over the posts in the order specified
 by the `sort_by` variable set in the `_index.md` page for the corresponding
 section.  The `sort_by` variable can be given a few values: `date`, `update_date`
 `title`, `title_bytes`, `weight`, `slug` or `none`.  If `sort_by` is not set, the pages will be
-sorted in the `none` order, which is not intended for sorted content.
+sorted by their permalink, which is usually not desired.
 
 Any page that is missing the data it needs to be sorted will be ignored and
 won't be rendered. For example, if a page is missing the date variable and its
