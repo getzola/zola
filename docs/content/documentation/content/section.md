@@ -144,8 +144,9 @@ create a list of links to the posts, a simple template might look like this:
 This would iterate over the posts in the order specified
 by the `sort_by` variable set in the `_index.md` page for the corresponding
 section.  The `sort_by` variable can be given a few values: `date`, `update_date`
-`title`, `title_bytes`, `weight`, `slug` or `none`.  If `sort_by` is not set, the pages will be
-sorted in the `none` order, which is not intended for sorted content.
+`title`, `title_bytes`, `weight`, `slug`, `permalink` or `none`.  If `sort_by`
+is not set, the pages will be sorted in the `none` order, which is not intended
+for sorted content.
 
 Any page that is missing the data it needs to be sorted will be ignored and
 won't be rendered. For example, if a page is missing the date variable and its
@@ -195,6 +196,10 @@ pages with lighter and heavier weights, respectively.
 
 ### `slug`
 This will sort pages or sections by their slug in natural lexical order.
+
+### `permalink`
+Similar to `slug`, this will sort pages or sections by their permalink in natural lexical order.
+Useful if you set the `path` key on your pages.
 
 ### Reversed sorting
 When iterating through pages, you may wish to use the Tera `reverse` filter,
