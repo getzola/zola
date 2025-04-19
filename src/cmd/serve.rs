@@ -543,7 +543,9 @@ pub fn serve(
 
                 println!(
                     "Web server is available at {} (bound to {})\n",
-                    &constructed_base_url, &bind_address
+                    &constructed_base_url
+                        .replace(&bind_address.to_string(), &server.local_addr().to_string()),
+                    &server.local_addr()
                 );
                 if open {
                     if let Err(err) = open::that(&constructed_base_url) {
