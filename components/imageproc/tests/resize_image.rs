@@ -50,7 +50,7 @@ fn image_op_test(
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args(op, width, height).unwrap();
 
-    let resp = proc.enqueue(resize_op, source_img.into(), source_path, format, None).unwrap();
+    let resp = proc.enqueue(resize_op, source_img.into(), source_path, format, None, None).unwrap();
     assert_processed_path_matches(&resp.url, "https://example.com/processed_images/", expect_ext);
     assert_processed_path_matches(&resp.static_path, PROCESSED_PREFIX.as_str(), expect_ext);
     assert_eq!(resp.width, expect_width);
@@ -247,7 +247,7 @@ fn resize_and_check(source_img: &str) -> bool {
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args("scale", Some(16), Some(16)).unwrap();
 
-    let resp = proc.enqueue(resize_op, source_img.into(), source_path, "jpg", None).unwrap();
+    let resp = proc.enqueue(resize_op, source_img.into(), source_path, "jpg", None, None).unwrap();
 
     proc.do_process().unwrap();
     let processed_path = PathBuf::from(&resp.static_path);

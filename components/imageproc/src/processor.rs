@@ -73,13 +73,13 @@ impl ImageOp {
                 };
                 buffered_f.write_all(memory.as_bytes())?;
             }
-            Format::Avif(q) => {
+            Format::Avif(quality, speed) => {
                 let mut avif: Vec<u8> = Vec::new();
                 let color_type = match img.color().has_alpha() {
                     true => ExtendedColorType::Rgba8,
                     false => ExtendedColorType::Rgb8,
                 };
-                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, 10, q.unwrap_or(70));
+                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, speed, quality);
                 encoder.write_image(
                     &img.as_bytes(),
                     img.dimensions().0,
@@ -162,6 +162,7 @@ impl Processor {
         input_path: PathBuf,
         format: &str,
         quality: Option<u8>,
+        speed: Option<u8>,
     ) -> Result<EnqueueResponse> {
         // First we load metadata from the cache if possible, otherwise from the file itself
         if !self.meta_cache.contains_key(&input_path) {
@@ -172,7 +173,7 @@ impl Processor {
         // We will have inserted it just above
         let meta = &self.meta_cache[&input_path];
         // We get the output format
-        let format = Format::from_args(meta.is_lossy(), format, quality)?;
+        let format = Format::from_args(meta.is_lossy(), format, quality, speed)?;
         // Now we have all the data we need to generate the output filename and the response
         let filename = get_processed_filename(&input_path, &input_src, &op, &format);
         let url = format!("{}{}", self.base_url, filename);
