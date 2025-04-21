@@ -3,14 +3,14 @@
 title = "tabi"
 description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2025-04-05T22:53:51+02:00
+date = 2025-04-14T20:03:16+03:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-04-05T22:53:51+02:00
-updated = 2025-04-05T22:53:51+02:00
+created = 2025-04-14T20:03:16+03:00
+updated = 2025-04-14T20:03:16+03:00
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -29,7 +29,7 @@ homepage = "https://osc.garden"
         <img src="https://img.shields.io/github/contributors/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Contributors"></a>
     <a href="https://github.com/welpo/tabi/forks">
         <img src="https://img.shields.io/github/forks/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Forks"></a>
-    <a hfref="https://github.com/welpo/tabi/commits/main/">
+    <a href="https://github.com/welpo/tabi/commits/main/">
         <img src="https://img.shields.io/github/last-commit/welpo/tabi?style=flat-square&labelColor=202b2d&color=087e96" alt="Last commit"></a>
     <br>
     <a href="https://github.com/welpo/tabi/releases">

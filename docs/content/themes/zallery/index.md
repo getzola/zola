@@ -3,14 +3,14 @@
 title = "zallery"
 description = "Gallery theme for zola"
 template = "theme.html"
-date = 2025-01-04T23:57:40-06:00
+date = 2025-04-20T19:42:28-05:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-01-04T23:57:40-06:00
-updated = 2025-01-04T23:57:40-06:00
+created = 2025-04-20T19:42:28-05:00
+updated = 2025-04-20T19:42:28-05:00
 repository = "https://github.com/gamingrobot/zallery.git"
 homepage = "https://github.com/gamingrobot/zallery"
 minimum_version = "0.19.0"
@@ -217,6 +217,7 @@ goatcounter = ""
 
 - `src` (required) - Video path
 - `autoplay` (optional) - Set to `true` to enable autoplay
+- `loop` (optional) - Set to `true` to enable looping
 
 ### `youtube` / `vimeo`
 
