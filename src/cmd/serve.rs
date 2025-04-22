@@ -215,7 +215,7 @@ async fn response_error_injector(
 
         let mut cause = error.source();
         while let Some(e) = cause {
-            error_str.push_str(&format!("Reason: {}\n", e));
+            error_str.push_str(&format!("Reason: {e}\n"));
             cause = e.source();
         }
 
@@ -345,15 +345,15 @@ fn construct_url(base_url: &str, no_port_append: bool, interface_port: u16) -> S
     };
 
     let full_address = if no_port_append {
-        format!("{}{}{}", protocol, domain, path)
+        format!("{protocol}{domain}{path}")
     } else {
-        format!("{}{}:{}{}", protocol, domain, interface_port, path)
+        format!("{protocol}{domain}:{interface_port}{path}")
     };
 
     if full_address.ends_with('/') {
         full_address
     } else {
-        format!("{}/", full_address)
+        format!("{full_address}/")
     }
 }
 
@@ -449,7 +449,7 @@ pub fn serve(
         None,
     )?;
     let base_path = match constructed_base_url.splitn(4, '/').nth(3) {
-        Some(path) => format!("/{}", path),
+        Some(path) => format!("/{path}"),
         None => "/".to_string(),
     };
 
@@ -549,7 +549,7 @@ pub fn serve(
                 );
                 if open {
                     if let Err(err) = open::that(&constructed_base_url) {
-                        eprintln!("Failed to open URL in your browser: {}", err);
+                        eprintln!("Failed to open URL in your browser: {err}");
                     }
                 }
 
@@ -608,7 +608,7 @@ pub fn serve(
     ctrlc::set_handler(move || {
         match clean_site_output_folder(&output_path, preserve_dotfiles_in_output) {
             Ok(()) => (),
-            Err(e) => println!("Errored while cleaning output folder: {}", e),
+            Err(e) => println!("Errored while cleaning output folder: {e}"),
         }
         ::std::process::exit(0);
     })
@@ -617,7 +617,7 @@ pub fn serve(
     let reload_sass = |site: &Site, paths: &Vec<&PathBuf>| {
         let combined_paths =
             paths.iter().map(|p| p.display().to_string()).collect::<Vec<String>>().join(", ");
-        let msg = format!("-> Sass file(s) changed {}", combined_paths);
+        let msg = format!("-> Sass file(s) changed {combined_paths}");
         console::info(&msg);
         rebuild_done_handling(
             &broadcaster,
@@ -715,7 +715,7 @@ pub fn serve(
                     let current_time =
                         OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
                     if let Ok(time_str) = current_time {
-                        println!("Change detected @ {}", time_str);
+                        println!("Change detected @ {time_str}");
                     } else {
                         // if formatting fails for some reason
                         println!("Change detected");
@@ -781,7 +781,7 @@ pub fn serve(
                                 .map(|p| p.display().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ");
-                            let msg = format!("-> Template file(s) changed {}", combined_paths);
+                            let msg = format!("-> Template file(s) changed {combined_paths}");
                             console::info(&msg);
 
                             let shortcodes_updated = partial_paths
@@ -843,8 +843,8 @@ pub fn serve(
                     messages::report_elapsed_time(start);
                 }
             }
-            Ok(Err(e)) => console::error(&format!("File system event errors: {:?}", e)),
-            Err(e) => console::error(&format!("File system event receiver errors: {:?}", e)),
+            Ok(Err(e)) => console::error(&format!("File system event errors: {e:?}")),
+            Err(e) => console::error(&format!("File system event receiver errors: {e:?}")),
         };
     }
 }
