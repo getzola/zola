@@ -3,14 +3,14 @@
 title = "futu"
 description = "Futu Theme"
 template = "theme.html"
-date = 2025-03-11T13:20:21+08:00
+date = 2025-04-21T13:31:26+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-03-11T13:20:21+08:00
-updated = 2025-03-11T13:20:21+08:00
+created = 2025-04-21T13:31:26+08:00
+updated = 2025-04-21T13:31:26+08:00
 repository = "https://github.com/inhzus/zola-futu.git"
 homepage = "https://github.com/inhzus/zola-futu/"
 minimum_version = "0.20.0"
