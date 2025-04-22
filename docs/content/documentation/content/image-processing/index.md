@@ -9,7 +9,7 @@ which is available in template code as well as in shortcodes.
 The function usage is as follows:
 
 ```jinja2
-resize_image(path, width, height, op, format, quality)
+resize_image(path, width, height, op, format, quality, speed)
 ```
 
 ### Arguments
