@@ -2,8 +2,8 @@ use errors::{anyhow, Result};
 use std::hash::{Hash, Hasher};
 
 const DEFAULT_Q_JPG: u8 = 75;
-const DEFAULT_Q_AVIF: u8 = 70;
-const DEFAULT_S_AVIF: u8 = 10;
+const DEFAULT_Q_AVIF: u8 = 80;
+const DEFAULT_S_AVIF: u8 = 5;
 
 /// Thumbnail image format
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
