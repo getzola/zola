@@ -1,9 +1,16 @@
 use errors::{anyhow, Result};
 use std::hash::{Hash, Hasher};
 
+const QUALITY_MIN_JPEG: u8 = 1;
+const QUALITY_MAX_JPEG: u8 = 100;
+const QUALITY_MIN_WEBP: u8 = 0;
+const QUALITY_MAX_WEBP: u8 = 100;
+const QUALITY_MIN_AVIF: u8 = 1;
+const QUALITY_MAX_AVIF: u8 = 100;
+const SPEED_MIN_AVIF: u8 = 1;
+const SPEED_MAX_AVIF: u8 = 10;
+
 const DEFAULT_QUALITY_JPEG: u8 = 75;
-// The following AVIF defaults are the same as `ravif` uses:
-// https://github.com/kornelski/cavif-rs/blob/ed676dd1a3d9726b740ad679843bad55d3a84ebd/ravif/src/av1encoder.rs#L82-L84
 const DEFAULT_QUALITY_AVIF: u8 = 80;
 const DEFAULT_SPEED_AVIF: u8 = 5;
 
@@ -28,28 +35,52 @@ impl Format {
         speed: Option<u8>,
     ) -> Result<Format> {
         use Format::*;
-        if let Some(quality) = quality {
-            assert!(quality > 0 && quality <= 100, "Quality must be within the range [1; 100]");
-        }
-        if let Some(speed) = speed {
-            assert!(speed > 0 && speed <= 10, "Speed must be within the range [1; 10]");
-        }
-        let jpeg_quality = quality.unwrap_or(DEFAULT_QUALITY_JPEG);
-        match format {
-            "auto" => {
-                if is_lossy {
-                    Ok(Jpeg(jpeg_quality))
-                } else {
-                    Ok(Png)
-                }
-            }
-            "jpeg" | "jpg" => Ok(Jpeg(jpeg_quality)),
+        let format_from_auto = match (format, is_lossy) {
+            ("auto", true) => "jpeg",
+            ("auto", false) => "png",
+            (other_format, _) => other_format,
+        };
+        match format_from_auto {
+            "jpeg" | "jpg" => match quality.unwrap_or(DEFAULT_QUALITY_JPEG) {
+                valid_quality @ QUALITY_MIN_JPEG..=QUALITY_MAX_JPEG => Ok(Jpeg(valid_quality)),
+                invalid_quality => Err(anyhow!(
+                    "Quality for JPEG must be between {} and {} (inclusive); {} is not valid",
+                    QUALITY_MIN_JPEG,
+                    QUALITY_MAX_JPEG,
+                    invalid_quality
+                )),
+            },
             "png" => Ok(Png),
-            "webp" => Ok(WebP(quality)),
-            "avif" => Ok(Avif(
-                quality.unwrap_or(DEFAULT_QUALITY_AVIF),
-                speed.unwrap_or(DEFAULT_SPEED_AVIF),
-            )),
+            "webp" => match quality {
+                Some(QUALITY_MIN_WEBP..=QUALITY_MAX_WEBP) | None => Ok(WebP(quality)),
+                Some(invalid_quality) => Err(anyhow!(
+                    "Quality for WebP must be between {} and {} (inclusive); {} is not valid",
+                    QUALITY_MIN_WEBP,
+                    QUALITY_MAX_WEBP,
+                    invalid_quality
+                )),
+            },
+            "avif" => {
+                let q = match quality.unwrap_or(DEFAULT_QUALITY_AVIF) {
+                    valid_quality @ QUALITY_MIN_AVIF..=QUALITY_MAX_AVIF => Ok(valid_quality),
+                    invalid_quality => Err(anyhow!(
+                        "Quality for AVIF must be between {} and {} (inclusive); {} is not valid",
+                        QUALITY_MIN_AVIF,
+                        QUALITY_MAX_AVIF,
+                        invalid_quality
+                    )),
+                }?;
+                let s = match speed.unwrap_or(DEFAULT_SPEED_AVIF) {
+                    valid_speed @ SPEED_MIN_AVIF..=SPEED_MAX_AVIF => Ok(valid_speed),
+                    invalid_speed => Err(anyhow!(
+                        "Speed for AVIF must be between {} and {} (inclusive); {} is not valid",
+                        SPEED_MIN_AVIF,
+                        SPEED_MAX_AVIF,
+                        invalid_speed
+                    )),
+                }?;
+                Ok(Avif(q, s))
+            }
             _ => Err(anyhow!("Invalid image format: {}", format)),
         }
     }

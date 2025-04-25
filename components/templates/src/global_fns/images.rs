@@ -55,18 +55,8 @@ impl TeraFn for ResizeImage {
 
         let quality =
             optional_arg!(u8, args.get("quality"), "`resize_image`: `quality` must be a number");
-        if let Some(quality) = quality {
-            if quality == 0 || quality > 100 {
-                return Err("`resize_image`: `quality` must be in range 1-100".to_string().into());
-            }
-        }
         let speed =
             optional_arg!(u8, args.get("speed"), "`resize_image`: `speed` must be a number");
-        if let Some(speed) = speed {
-            if speed == 0 || speed > 10 {
-                return Err("`resize_image`: `speed` must be in range 1-10".to_string().into());
-            }
-        }
         let resize_op = imageproc::ResizeOperation::from_args(&op, width, height)
             .map_err(|e| format!("`resize_image`: {}", e))?;
         let mut imageproc = self.imageproc.lock().unwrap();
