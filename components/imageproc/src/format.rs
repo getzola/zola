@@ -17,14 +17,10 @@ const DEFAULT_SPEED_AVIF: u8 = 5;
 /// Thumbnail image format
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Format {
-    /// JPEG, The `u8` argument is JPEG quality (in percent).
-    Jpeg(u8),
-    /// PNG
+    Jpeg { quality: u8 },
     Png,
-    /// WebP, The `u8` argument is WebP quality (in percent), None meaning lossless.
-    WebP(Option<u8>),
-    /// AVIF, The first `u8` argument is AVIF quality (in percent). The second `u8` argument is AVIF speed.
-    Avif(u8, u8),
+    WebP { quality: Option<u8> }, // 'None' means lossless
+    Avif { quality: u8, speed: u8 },
 }
 
 impl Format {
@@ -42,7 +38,9 @@ impl Format {
         };
         match format_from_auto {
             "jpeg" | "jpg" => match quality.unwrap_or(DEFAULT_QUALITY_JPEG) {
-                valid_quality @ QUALITY_MIN_JPEG..=QUALITY_MAX_JPEG => Ok(Jpeg(valid_quality)),
+                valid_quality @ QUALITY_MIN_JPEG..=QUALITY_MAX_JPEG => {
+                    Ok(Jpeg { quality: valid_quality })
+                }
                 invalid_quality => Err(anyhow!(
                     "Quality for JPEG must be between {} and {} (inclusive); {} is not valid",
                     QUALITY_MIN_JPEG,
@@ -52,7 +50,7 @@ impl Format {
             },
             "png" => Ok(Png),
             "webp" => match quality {
-                Some(QUALITY_MIN_WEBP..=QUALITY_MAX_WEBP) | None => Ok(WebP(quality)),
+                Some(QUALITY_MIN_WEBP..=QUALITY_MAX_WEBP) | None => Ok(WebP { quality }),
                 Some(invalid_quality) => Err(anyhow!(
                     "Quality for WebP must be between {} and {} (inclusive); {} is not valid",
                     QUALITY_MIN_WEBP,
@@ -79,7 +77,7 @@ impl Format {
                         invalid_speed
                     )),
                 }?;
-                Ok(Avif(q, s))
+                Ok(Avif { quality: q, speed: s })
             }
             _ => Err(anyhow!("Invalid image format: {}", format)),
         }
@@ -91,9 +89,9 @@ impl Format {
 
         match *self {
             Png => "png",
-            Jpeg(_) => "jpg",
-            WebP(_) => "webp",
-            Avif(_, _) => "avif",
+            Jpeg { .. } => "jpg",
+            WebP { .. } => "webp",
+            Avif { .. } => "avif",
         }
     }
 }
@@ -105,16 +103,16 @@ impl Hash for Format {
 
         let quality = match *self {
             Png => 0,
-            Jpeg(q) => q,
-            WebP(None) => 0,
-            WebP(Some(q)) => q,
-            Avif(q, _) => q,
+            Jpeg { quality } => quality,
+            WebP { quality: None } => 0,
+            WebP { quality: Some(quality) } => quality,
+            Avif { quality, .. } => quality,
         };
         let speed = match *self {
             Png => 0,
-            Jpeg(_) => 0,
-            WebP(_) => 0,
-            Avif(_, s) => s,
+            Jpeg { .. } => 0,
+            WebP { .. } => 0,
+            Avif { speed, .. } => speed,
         };
 
         hasher.write(self.extension().as_bytes());

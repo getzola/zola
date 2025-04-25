@@ -60,20 +60,20 @@ impl ImageOp {
             Format::Png => {
                 img.write_to(&mut buffered_f, ImageFormat::Png)?;
             }
-            Format::Jpeg(q) => {
-                let mut encoder = JpegEncoder::new_with_quality(&mut buffered_f, q);
+            Format::Jpeg { quality } => {
+                let mut encoder = JpegEncoder::new_with_quality(&mut buffered_f, quality);
                 encoder.encode_image(&img)?;
             }
-            Format::WebP(q) => {
+            Format::WebP { quality } => {
                 let encoder = webp::Encoder::from_image(&img)
                     .map_err(|_| anyhow!("Unable to load this kind of image with webp"))?;
-                let memory = match q {
+                let memory = match quality {
                     Some(q) => encoder.encode(q as f32),
                     None => encoder.encode_lossless(),
                 };
                 buffered_f.write_all(memory.as_bytes())?;
             }
-            Format::Avif(quality, speed) => {
+            Format::Avif { quality, speed } => {
                 let mut avif: Vec<u8> = Vec::new();
                 let color_type = match img.color() {
                     image::ColorType::L8 => Ok(ExtendedColorType::L8),
