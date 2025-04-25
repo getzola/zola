@@ -1,9 +1,11 @@
 use errors::{anyhow, Result};
 use std::hash::{Hash, Hasher};
 
-const DEFAULT_Q_JPG: u8 = 75;
-const DEFAULT_Q_AVIF: u8 = 80;
-const DEFAULT_S_AVIF: u8 = 5;
+const DEFAULT_QUALITY_JPEG: u8 = 75;
+// The following AVIF defaults are the same as `ravif` uses:
+// https://github.com/kornelski/cavif-rs/blob/ed676dd1a3d9726b740ad679843bad55d3a84ebd/ravif/src/av1encoder.rs#L82-L84
+const DEFAULT_QUALITY_AVIF: u8 = 80;
+const DEFAULT_SPEED_AVIF: u8 = 5;
 
 /// Thumbnail image format
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -32,19 +34,22 @@ impl Format {
         if let Some(speed) = speed {
             assert!(speed > 0 && speed <= 10, "Speed must be within the range [1; 10]");
         }
-        let jpg_quality = quality.unwrap_or(DEFAULT_Q_JPG);
+        let jpeg_quality = quality.unwrap_or(DEFAULT_QUALITY_JPEG);
         match format {
             "auto" => {
                 if is_lossy {
-                    Ok(Jpeg(jpg_quality))
+                    Ok(Jpeg(jpeg_quality))
                 } else {
                     Ok(Png)
                 }
             }
-            "jpeg" | "jpg" => Ok(Jpeg(jpg_quality)),
+            "jpeg" | "jpg" => Ok(Jpeg(jpeg_quality)),
             "png" => Ok(Png),
             "webp" => Ok(WebP(quality)),
-            "avif" => Ok(Avif(quality.unwrap_or(DEFAULT_Q_AVIF), speed.unwrap_or(DEFAULT_S_AVIF))),
+            "avif" => Ok(Avif(
+                quality.unwrap_or(DEFAULT_QUALITY_AVIF),
+                speed.unwrap_or(DEFAULT_SPEED_AVIF),
+            )),
             _ => Err(anyhow!("Invalid image format: {}", format)),
         }
     }
