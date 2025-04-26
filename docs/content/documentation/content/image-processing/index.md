@@ -9,7 +9,7 @@ which is available in template code as well as in shortcodes.
 The function usage is as follows:
 
 ```jinja2
-resize_image(path, width, height, op, format, quality)
+resize_image(path, width, height, op, format, quality, speed)
 ```
 
 ### Arguments
@@ -38,7 +38,8 @@ resize_image(path, width, height, op, format, quality)
 
   The default is `"auto"`, this means that the format is chosen based on input image format.
   JPEG is chosen for JPEGs and other lossy formats, and PNG is chosen for PNGs and other lossless formats.
-- `quality` (_optional_): Quality of the resized image, in percent. Only used when encoding JPEGs, WebPs or AVIFs; for JPEG default value is `75`, for WebP default is lossless, for Avif default is `70`.
+- `quality` (_optional_): Quality of the resized image. Quality is only used when encoding JPEGs, WebPs or AVIFs. Quality for JPEG ranges from 1 to 100 and defaults to 75. Quality for WebP ranges from 0 to 100 and defaults to lossless encoding. Quality for AVIF ranges from 1 to 100 and defaults to 80.
+- `speed` (_optional_): Speed of encoding the resized image. Speed is only used when encoding AVIFs. Speed for AVIF ranges from 1 to 10 and defaults to 5. Speed 10 should process images the fastest, but may not produce the best compression; speed 1 is much slower but produces the best compression.
 
 ### Image processing and return value
 

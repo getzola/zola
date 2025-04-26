@@ -38,6 +38,8 @@ fn image_op_test(
     width: Option<u32>,
     height: Option<u32>,
     format: &str,
+    quality: Option<u8>,
+    speed: Option<u8>,
     expect_ext: &str,
     expect_width: u32,
     expect_height: u32,
@@ -50,7 +52,8 @@ fn image_op_test(
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args(op, width, height).unwrap();
 
-    let resp = proc.enqueue(resize_op, source_img.into(), source_path, format, None).unwrap();
+    let resp =
+        proc.enqueue(resize_op, source_img.into(), source_path, format, quality, speed).unwrap();
     assert_processed_path_matches(&resp.url, "https://example.com/processed_images/", expect_ext);
     assert_processed_path_matches(&resp.static_path, PROCESSED_PREFIX.as_str(), expect_ext);
     assert_eq!(resp.width, expect_width);
@@ -74,67 +77,380 @@ fn image_meta_test(source_img: &str) -> ImageMetaResponse {
 
 #[test]
 fn resize_image_scale() {
-    image_op_test("jpg.jpg", "scale", Some(150), Some(150), "auto", "jpg", 150, 150, 300, 380);
+    image_op_test(
+        "jpg.jpg",
+        "scale",
+        Some(150),
+        Some(150),
+        "auto",
+        None,
+        None,
+        "jpg",
+        150,
+        150,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_fit_width() {
-    image_op_test("jpg.jpg", "fit_width", Some(150), None, "auto", "jpg", 150, 190, 300, 380);
+    image_op_test(
+        "jpg.jpg",
+        "fit_width",
+        Some(150),
+        None,
+        "auto",
+        None,
+        None,
+        "jpg",
+        150,
+        190,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_fit_height() {
-    image_op_test("webp.webp", "fit_height", None, Some(190), "auto", "jpg", 150, 190, 300, 380);
+    image_op_test(
+        "webp.webp",
+        "fit_height",
+        None,
+        Some(190),
+        "auto",
+        None,
+        None,
+        "jpg",
+        150,
+        190,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_fit1() {
-    image_op_test("jpg.jpg", "fit", Some(150), Some(200), "auto", "jpg", 150, 190, 300, 380);
+    image_op_test(
+        "jpg.jpg",
+        "fit",
+        Some(150),
+        Some(200),
+        "auto",
+        None,
+        None,
+        "jpg",
+        150,
+        190,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_fit2() {
-    image_op_test("jpg.jpg", "fit", Some(160), Some(180), "auto", "jpg", 142, 180, 300, 380);
+    image_op_test(
+        "jpg.jpg",
+        "fit",
+        Some(160),
+        Some(180),
+        "auto",
+        None,
+        None,
+        "jpg",
+        142,
+        180,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_fit3() {
-    image_op_test("jpg.jpg", "fit", Some(400), Some(400), "auto", "jpg", 300, 380, 300, 380);
+    image_op_test(
+        "jpg.jpg",
+        "fit",
+        Some(400),
+        Some(400),
+        "auto",
+        None,
+        None,
+        "jpg",
+        300,
+        380,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_fill1() {
-    image_op_test("jpg.jpg", "fill", Some(100), Some(200), "auto", "jpg", 100, 200, 300, 380);
+    image_op_test(
+        "jpg.jpg",
+        "fill",
+        Some(100),
+        Some(200),
+        "auto",
+        None,
+        None,
+        "jpg",
+        100,
+        200,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_fill2() {
-    image_op_test("jpg.jpg", "fill", Some(200), Some(100), "auto", "jpg", 200, 100, 300, 380);
+    image_op_test(
+        "jpg.jpg",
+        "fill",
+        Some(200),
+        Some(100),
+        "auto",
+        None,
+        None,
+        "jpg",
+        200,
+        100,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_png_png() {
-    image_op_test("png.png", "scale", Some(150), Some(150), "auto", "png", 150, 150, 300, 380);
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "auto",
+        None,
+        None,
+        "png",
+        150,
+        150,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_png_jpg() {
-    image_op_test("png.png", "scale", Some(150), Some(150), "jpg", "jpg", 150, 150, 300, 380);
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "jpg",
+        None,
+        None,
+        "jpg",
+        150,
+        150,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_png_webp() {
-    image_op_test("png.png", "scale", Some(150), Some(150), "webp", "webp", 150, 150, 300, 380);
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "webp",
+        None,
+        None,
+        "webp",
+        150,
+        150,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_png_avif() {
-    image_op_test("png.png", "scale", Some(150), Some(150), "avif", "avif", 150, 150, 300, 380);
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "avif",
+        None,
+        None,
+        "avif",
+        150,
+        150,
+        300,
+        380,
+    );
 }
 
 #[test]
 fn resize_image_webp_jpg() {
-    image_op_test("webp.webp", "scale", Some(150), Some(150), "auto", "jpg", 150, 150, 300, 380);
+    image_op_test(
+        "webp.webp",
+        "scale",
+        Some(150),
+        Some(150),
+        "auto",
+        None,
+        None,
+        "jpg",
+        150,
+        150,
+        300,
+        380,
+    );
+}
+
+#[test]
+fn resize_image_png_jpg_min_quality() {
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "jpeg",
+        Some(1),
+        None,
+        "jpg",
+        150,
+        150,
+        300,
+        380,
+    );
+}
+
+#[test]
+fn resize_image_png_jpg_max_quality() {
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "jpeg",
+        Some(100),
+        None,
+        "jpg",
+        150,
+        150,
+        300,
+        380,
+    );
+}
+
+#[test]
+fn resize_image_png_webp_min_quality() {
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "webp",
+        Some(0),
+        None,
+        "webp",
+        150,
+        150,
+        300,
+        380,
+    );
+}
+
+#[test]
+fn resize_image_png_webp_max_quality() {
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "webp",
+        Some(100),
+        None,
+        "webp",
+        150,
+        150,
+        300,
+        380,
+    );
+}
+
+#[test]
+fn resize_image_png_avif_min_quality_min_speed() {
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "avif",
+        Some(1),
+        Some(1),
+        "avif",
+        150,
+        150,
+        300,
+        380,
+    );
+}
+
+#[test]
+fn resize_image_png_avif_min_quality_max_speed() {
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "avif",
+        Some(1),
+        Some(10),
+        "avif",
+        150,
+        150,
+        300,
+        380,
+    );
+}
+
+#[test]
+fn resize_image_png_avif_max_quality_min_speed() {
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "avif",
+        Some(100),
+        Some(1),
+        "avif",
+        150,
+        150,
+        300,
+        380,
+    );
+}
+
+#[test]
+fn resize_image_png_avif_max_quality_max_speed() {
+    image_op_test(
+        "png.png",
+        "scale",
+        Some(150),
+        Some(150),
+        "avif",
+        Some(100),
+        Some(10),
+        "avif",
+        150,
+        150,
+        300,
+        380,
+    );
 }
 
 #[test]
@@ -247,7 +563,7 @@ fn resize_and_check(source_img: &str) -> bool {
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args("scale", Some(16), Some(16)).unwrap();
 
-    let resp = proc.enqueue(resize_op, source_img.into(), source_path, "jpg", None).unwrap();
+    let resp = proc.enqueue(resize_op, source_img.into(), source_path, "jpg", None, None).unwrap();
 
     proc.do_process().unwrap();
     let processed_path = PathBuf::from(&resp.static_path);
@@ -270,21 +586,138 @@ fn check_img(img: DynamicImage) -> bool {
 #[test]
 fn asymmetric_resize_with_exif_orientations() {
     // No exif metadata
-    image_op_test("exif_0.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    image_op_test(
+        "exif_0.jpg",
+        "scale",
+        Some(16),
+        Some(32),
+        "auto",
+        None,
+        None,
+        "jpg",
+        16,
+        32,
+        16,
+        16,
+    );
     // 1: Horizontal (normal)
-    image_op_test("exif_1.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    image_op_test(
+        "exif_1.jpg",
+        "scale",
+        Some(16),
+        Some(32),
+        "auto",
+        None,
+        None,
+        "jpg",
+        16,
+        32,
+        16,
+        16,
+    );
     // 2: Mirror horizontal
-    image_op_test("exif_2.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    image_op_test(
+        "exif_2.jpg",
+        "scale",
+        Some(16),
+        Some(32),
+        "auto",
+        None,
+        None,
+        "jpg",
+        16,
+        32,
+        16,
+        16,
+    );
     // 3: Rotate 180
-    image_op_test("exif_3.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    image_op_test(
+        "exif_3.jpg",
+        "scale",
+        Some(16),
+        Some(32),
+        "auto",
+        None,
+        None,
+        "jpg",
+        16,
+        32,
+        16,
+        16,
+    );
     // 4: Mirror vertical
-    image_op_test("exif_4.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    image_op_test(
+        "exif_4.jpg",
+        "scale",
+        Some(16),
+        Some(32),
+        "auto",
+        None,
+        None,
+        "jpg",
+        16,
+        32,
+        16,
+        16,
+    );
     // 5: Mirror horizontal and rotate 270 CW
-    image_op_test("exif_5.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    image_op_test(
+        "exif_5.jpg",
+        "scale",
+        Some(16),
+        Some(32),
+        "auto",
+        None,
+        None,
+        "jpg",
+        16,
+        32,
+        16,
+        16,
+    );
     // 6: Rotate 90 CW
-    image_op_test("exif_6.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    image_op_test(
+        "exif_6.jpg",
+        "scale",
+        Some(16),
+        Some(32),
+        "auto",
+        None,
+        None,
+        "jpg",
+        16,
+        32,
+        16,
+        16,
+    );
     // 7: Mirror horizontal and rotate 90 CW
-    image_op_test("exif_7.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    image_op_test(
+        "exif_7.jpg",
+        "scale",
+        Some(16),
+        Some(32),
+        "auto",
+        None,
+        None,
+        "jpg",
+        16,
+        32,
+        16,
+        16,
+    );
     // 8: Rotate 270 CW
-    image_op_test("exif_8.jpg", "scale", Some(16), Some(32), "auto", "jpg", 16, 32, 16, 16);
+    image_op_test(
+        "exif_8.jpg",
+        "scale",
+        Some(16),
+        Some(32),
+        "auto",
+        None,
+        None,
+        "jpg",
+        16,
+        32,
+        16,
+        16,
+    );
 }
