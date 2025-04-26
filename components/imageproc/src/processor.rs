@@ -60,26 +60,35 @@ impl ImageOp {
             Format::Png => {
                 img.write_to(&mut buffered_f, ImageFormat::Png)?;
             }
-            Format::Jpeg(q) => {
-                let mut encoder = JpegEncoder::new_with_quality(&mut buffered_f, q);
+            Format::Jpeg { quality } => {
+                let mut encoder = JpegEncoder::new_with_quality(&mut buffered_f, quality);
                 encoder.encode_image(&img)?;
             }
-            Format::WebP(q) => {
+            Format::WebP { quality } => {
                 let encoder = webp::Encoder::from_image(&img)
                     .map_err(|_| anyhow!("Unable to load this kind of image with webp"))?;
-                let memory = match q {
+                let memory = match quality {
                     Some(q) => encoder.encode(q as f32),
                     None => encoder.encode_lossless(),
                 };
                 buffered_f.write_all(memory.as_bytes())?;
             }
-            Format::Avif(q) => {
+            Format::Avif { quality, speed } => {
                 let mut avif: Vec<u8> = Vec::new();
-                let color_type = match img.color().has_alpha() {
-                    true => ExtendedColorType::Rgba8,
-                    false => ExtendedColorType::Rgb8,
-                };
-                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, 10, q.unwrap_or(70));
+                let color_type = match img.color() {
+                    image::ColorType::L8 => Ok(ExtendedColorType::L8),
+                    image::ColorType::La8 => Ok(ExtendedColorType::La8),
+                    image::ColorType::Rgb8 => Ok(ExtendedColorType::Rgb8),
+                    image::ColorType::Rgba8 => Ok(ExtendedColorType::Rgba8),
+                    image::ColorType::L16 => Ok(ExtendedColorType::L16),
+                    image::ColorType::La16 => Ok(ExtendedColorType::La16),
+                    image::ColorType::Rgb16 => Ok(ExtendedColorType::Rgb16),
+                    image::ColorType::Rgba16 => Ok(ExtendedColorType::Rgba16),
+                    image::ColorType::Rgb32F => Ok(ExtendedColorType::Rgb32F),
+                    image::ColorType::Rgba32F => Ok(ExtendedColorType::Rgba32F),
+                    c => Err(anyhow!("Unknown image color type '{:?}' for AVIF", c)),
+                }?;
+                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, speed, quality);
                 encoder.write_image(
                     &img.as_bytes(),
                     img.dimensions().0,
@@ -162,6 +171,7 @@ impl Processor {
         input_path: PathBuf,
         format: &str,
         quality: Option<u8>,
+        speed: Option<u8>,
     ) -> Result<EnqueueResponse> {
         // First we load metadata from the cache if possible, otherwise from the file itself
         if !self.meta_cache.contains_key(&input_path) {
@@ -172,7 +182,7 @@ impl Processor {
         // We will have inserted it just above
         let meta = &self.meta_cache[&input_path];
         // We get the output format
-        let format = Format::from_args(meta.is_lossy(), format, quality)?;
+        let format = Format::from_args(meta.is_lossy(), format, quality, speed)?;
         // Now we have all the data we need to generate the output filename and the response
         let filename = get_processed_filename(&input_path, &input_src, &op, &format);
         let url = format!("{}{}", self.base_url, filename);
