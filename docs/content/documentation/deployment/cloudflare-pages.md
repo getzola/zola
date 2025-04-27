@@ -21,6 +21,21 @@ Your website is now built and deployed to Cloudflare's network! You can add a cu
 You may find documentation and guides like [Getting started with Cloudflare Pages](https://developers.cloudflare.com/pages/getting-started) and
 [Deploying Zola with Cloudflare Pages](https://developers.cloudflare.com/pages/how-to/deploy-a-zola-site#deploying-with-cloudflare-pages) in the Developers portal.
 
+## Handling preview deployments
+
+When working with Cloudflare Pages, you'll often use preview deployments for testing changes before merging to your main branch. By default, these preview deployments use different URLs (like `https://your-branch-name.your-project.pages.dev`), which can cause issues with asset loading if your `base_url` is hardcoded in your `config.toml`.
+
+To fix this, modify your build command in the Cloudflare Pages configuration to dynamically set the base URL depending on the environment:
+
+```sh
+if [ "$CF_PAGES_BRANCH" = "main" ]; then zola build; else zola build --base-url $CF_PAGES_URL; fi
+```
+
+This command:
+
+- Uses your `config.toml` `base_url` when building from the main branch
+- Uses the preview deployment URL (automatically provided by Cloudflare Pages as `$CF_PAGES_URL`) for all other branches
+
 ## Troubleshooting
 
 Some tips to help troubleshoot issues getting started with Cloudflare Pages.
@@ -58,7 +73,3 @@ And add an environment variable `UNSTABLE_PRE_BUILD`, with the following value a
 ```sh
 asdf plugin add zola https://github.com/salasrod/asdf-zola && asdf install zola 0.18.0 && asdf global zola 0.18.0
 ```
-
-
-
-
