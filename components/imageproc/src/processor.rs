@@ -61,13 +61,15 @@ impl ImageOp {
         let f = File::create(&self.output_path)?;
         let mut buffered_f = BufWriter::new(f);
 
-        match self.format {
+        let write_result: Result<()> = match self.format {
             Format::Png => {
                 img.write_to(&mut buffered_f, ImageFormat::Png)?;
+                Ok(())
             }
             Format::Jpeg { quality } => {
                 let mut encoder = JpegEncoder::new_with_quality(&mut buffered_f, quality);
                 encoder.encode_image(&img)?;
+                Ok(())
             }
             Format::WebP { quality } => {
                 let encoder = webp::Encoder::from_image(&img)
@@ -77,6 +79,7 @@ impl ImageOp {
                     None => encoder.encode_lossless(),
                 };
                 buffered_f.write_all(memory.as_bytes())?;
+                Ok(())
             }
             Format::Avif { quality, speed } => {
                 let mut avif: Vec<u8> = Vec::new();
@@ -88,10 +91,14 @@ impl ImageOp {
                     img.color().into(),
                 )?;
                 buffered_f.write_all(&avif.as_bytes())?;
+                Ok(())
             }
-        }
+        };
 
-        Ok(())
+        if write_result.is_err() {
+            fs::remove_file(&self.output_path)?;
+        }
+        write_result
     }
 }
 
