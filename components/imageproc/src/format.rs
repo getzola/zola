@@ -101,22 +101,22 @@ impl Hash for Format {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
         use Format::*;
 
-        let quality = match *self {
-            Png => 0,
-            Jpeg { quality } => quality,
-            WebP { quality: None } => 0,
-            WebP { quality: Some(quality) } => quality,
-            Avif { quality, .. } => quality,
+        let quality: i16 = match *self {
+            Png => -1,
+            Jpeg { quality } => quality.into(),
+            WebP { quality: None } => -1,
+            WebP { quality: Some(quality) } => quality.into(),
+            Avif { quality, .. } => quality.into(),
         };
-        let speed = match *self {
-            Png => 0,
-            Jpeg { .. } => 0,
-            WebP { .. } => 0,
-            Avif { speed, .. } => speed,
+        let speed: i16 = match *self {
+            Png => -1,
+            Jpeg { .. } => -1,
+            WebP { .. } => -1,
+            Avif { speed, .. } => speed.into(),
         };
 
         hasher.write(self.extension().as_bytes());
-        hasher.write_u8(quality);
-        hasher.write_u8(speed);
+        hasher.write_i16(quality);
+        hasher.write_i16(speed);
     }
 }
