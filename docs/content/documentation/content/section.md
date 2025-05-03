@@ -48,6 +48,10 @@ description = ""
 # A draft section is only loaded if the `--drafts` flag is passed to `zola build`, `zola serve` or `zola check`.
 draft = false
 
+# A hidden section is loaded and created, but won't be added to Paginators,
+# set to true to hide section's pages or false to override a parent section's `hidden = true` 
+hidden = false
+
 # Used to sort pages by "date", "update_date", "title", "title_bytes", "weight", "slug" or "none". See below for more information.
 sort_by = "none"
 
