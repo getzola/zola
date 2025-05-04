@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-04-20T23:58:43+03:00
+date = 2025-04-22T14:19:59+03:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-04-20T23:58:43+03:00
-updated = 2025-04-20T23:58:43+03:00
+created = 2025-04-22T14:19:59+03:00
+updated = 2025-04-22T14:19:59+03:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -178,8 +178,6 @@ Create a `content/_index.md` file and set `extra.profile` to your username:
 
 ```toml ,name=content/_index.md
 +++
-# title = ""
-# description = ""
 sort_by = "date"
 paginate_by = 4
 [extra]
@@ -221,7 +219,7 @@ Summary <!-- more -->
 ## Hello, world!
 ```
 
-### Pages
+#### Pages
 
 The default page template `page.html` is for blog posts.
 For pages that are not blog posts you can use the `pages.html` template.
@@ -236,49 +234,19 @@ page_template = "pages.html"
 +++
 ```
 
-#### About you page
-
 Create a `content/pages/about.md` file:
 
-```toml ,name=content/pages/about.md
+```md ,name=content/pages/about.md
 +++
 title = "About me"
-# description = ""
+description = ""
 path = "about"
 +++
 
 ## Hello, world!
 ```
 
-#### Projects page
-
-Optionally, you can make a page for your projects.
-
-Create a `content/pages/projects/index.md` file:
-
-```toml ,name=content/pages/projects/index.md
-+++
-title = "My Projects"
-# description = ""
-# path = "projects"
-+++
-```
-
-Include the following shortcode too:
-\{\{ projects(path="data.toml", format="toml") \}\}
-
-Create a `content/pages/projects/data.toml` file:
-
-```toml ,name=content/pages/projects/data.toml
-[[project]]
-name = "lorem"
-desc = "Lorem ipsum dolor sit."
-tags = ["lorem", "ipsum"]
-links = [
-    { name = "homepage", url = "https://example.com" },
-    { name = "source", url = "https://example.com" },
-]
-```
+If you want, you can also create [a page for your projects](https://salif.github.io/linkita/en/shortcodes/#projects).
 
 ### Setting page authors
 
@@ -514,8 +482,8 @@ menu_name = [
 
 # Example multilingual menu.
 multilingual_menu_name = [
-  { url = "$BASE_URL/pages/about/", names = { en = "About", fr = "About in French" } },
-  { url = "$BASE_URL/pages/projects/", names = { en = "Projects", fr = "Projects in French" } },
+  { url = "$BASE_URL/about/", names = { en = "About", fr = "About in French" } },
+  { url = "$BASE_URL/projects/", names = { en = "Projects", fr = "Projects in French" } },
   { url = "$BASE_URL/blog/", names = { en = "Archive", fr = "Archive in French" } },
   { url = "$BASE_URL/categories/", names = { en = "Categories", fr = "Categories in French" } },
   { url = "$BASE_URL/tags/", names = { en = "Tags", fr = "Tags in French" } },
