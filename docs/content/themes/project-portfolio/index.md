@@ -3,14 +3,14 @@
 title = "Project Portfolio"
 description = "Theme for a project portfolio (based on Tailwind CSS)."
 template = "theme.html"
-date = 2025-04-10T10:44:14+02:00
+date = 2025-04-30T10:24:00+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-04-10T10:44:14+02:00
-updated = 2025-04-10T10:44:14+02:00
+created = 2025-04-30T10:24:00+02:00
+updated = 2025-04-30T10:24:00+02:00
 repository = "https://github.com/awinterstein/zola-theme-project-portfolio.git"
 homepage = "https://codeberg.org/winterstein/zola-theme-project-portfolio"
 minimum_version = "0.19.0"
@@ -111,7 +111,7 @@ taxonomies = [
 
 Taxonomies should have exactly the same (not translated) name in all languages, for the language switching to work best.
 
-You need to create an i18n file containing the translations for all theme variables for all the languages of your website, if they are not included in the theme. Right now, only [English](i18n/en.toml) and [German](i18n/de.toml) are included. You can create a the directory `i18n` in your website root directory and the language files in there will be picked up by the theme. It would be great, however, I you create a pull-request on the theme repository to add your translations to the theme.
+You need to create an i18n file containing the translations for all theme variables for all the languages of your website, if they are not included in the theme. Right now, [English](i18n/en.toml), [German](i18n/de.toml) and [Hungarian](i18n/hu.toml) are included. You can create a the directory `i18n` in your website root directory and the language files in there will be picked up by the theme. It would be great, however, if you create a pull-request on the theme repository to add your translations to the theme.
 
 ### Search
 
@@ -132,7 +132,7 @@ build_search_index = true
 
 As soon as `build_search_index` is enabled, the search indices are created for all languages that have this variable enabled in their section in the `config.toml` and the search bar is shown in the navbar of the website.
 
-Just be aware, that you need to add a [Lunr Languages](https://github.com/MihaiValentin/lunr-languages) file to your `static` directory, if you ae using other languages than English and German. See the corresponding repository for the [`min` files](https://github.com/MihaiValentin/lunr-languages/tree/master/min). Feel free to add support for your languages to the theme as well, via a pull-request.
+Just be aware, that you need to add an [Elasticlunr.js](http://elasticlunr.com/)-compatible [Lunr Languages](https://github.com/weixsong/lunr-languages) file to your `static` directory, if you are using other languages than English and German. See the corresponding repository for the [`min` files](https://github.com/weixsong/lunr-languages/tree/master/min). Feel free to add support for your languages to the theme as well, via a pull-request.
 
 ### Navbar
 
