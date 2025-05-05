@@ -88,7 +88,7 @@ Let's make a template for a home page. Create `templates/base.html` with the fol
 <body>
   <section class="section">
     <div class="container">
-      {% block content %} {% endblock %}
+      {% block content %} {% endblock content %}
     </div>
   </section>
 </body>
