@@ -17,10 +17,14 @@ fn opening_html(
     pre_style: Option<String>,
     pre_class: Option<String>,
     line_numbers: bool,
+    enable_copy: bool,
 ) -> String {
     let mut html = String::from("<pre");
     if line_numbers {
         html.push_str(" data-linenos");
+    }
+    if enable_copy {
+        html.push_str(" data-copy");
     }
     let mut classes = String::new();
 
@@ -112,6 +116,7 @@ impl<'config> CodeBlock<'config> {
             highlighter.pre_style(),
             highlighter.pre_class(),
             fence.line_numbers,
+            fence.enable_copy,
         );
         Ok((
             Self {
