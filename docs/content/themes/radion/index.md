@@ -3,17 +3,17 @@
 title = "radion"
 description = "A sleek, modern blog theme."
 template = "theme.html"
-date = 2025-03-31T11:19:50-05:00
+date = 2025-05-01T08:49:49-07:00
 
 [taxonomies]
 theme-tags = ['SEO', 'search', 'accessible']
 
 [extra]
-created = 2025-03-31T11:19:50-05:00
-updated = 2025-03-31T11:19:50-05:00
+created = 2025-05-01T08:49:49-07:00
+updated = 2025-05-01T08:49:49-07:00
 repository = "https://github.com/micahkepe/radion.git"
 homepage = "https://github.com/micahkepe/radion"
-minimum_version = "0.19.2"
+minimum_version = "0.20.0"
 license = "MIT"
 demo = "https://micahkepe.com/radion/"
 
