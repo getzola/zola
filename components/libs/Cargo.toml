@@ -9,7 +9,7 @@ ammonia = "4"
 atty = "0.2.11"
 base64 = "0.22"
 csv = "1"
-elasticlunr-rs = { version = "3.0.2", features = ["da", "no", "de", "du", "es", "fi", "fr", "hu", "it", "pt", "ro", "ru", "sv", "tr"] }
+elasticlunr-rs = { version = "3.0.2", features = ["da", "no", "de", "du", "es", "fi", "fr", "hu", "it", "pt", "ro", "ru", "sv", "tr", "ko"] }
 filetime = "0.2"
 gh-emoji = "1"
 glob = "0.3"
