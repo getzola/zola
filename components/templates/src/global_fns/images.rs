@@ -189,12 +189,12 @@ mod tests {
 
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("gutenberg.e99218b5a3185c99.jpg").display()))
+            to_value(&format!("{}", static_path.join("gutenberg.9786ef7a62f75bc4.jpg").display()))
                 .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/gutenberg.e99218b5a3185c99.jpg")
+            to_value("http://a-website.com/processed_images/gutenberg.9786ef7a62f75bc4.jpg")
                 .unwrap()
         );
 
@@ -203,12 +203,12 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("gutenberg.155d032b1aae0133.jpg").display()))
+            to_value(&format!("{}", static_path.join("gutenberg.9786ef7a62f75bc4.jpg").display()))
                 .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/gutenberg.155d032b1aae0133.jpg")
+            to_value("http://a-website.com/processed_images/gutenberg.9786ef7a62f75bc4.jpg")
                 .unwrap()
         );
 
@@ -227,12 +227,12 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("asset.160461e0d0be19e6.jpg").display()))
+            to_value(&format!("{}", static_path.join("asset.9786ef7a62f75bc4.jpg").display()))
                 .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/asset.160461e0d0be19e6.jpg").unwrap()
+            to_value("http://a-website.com/processed_images/asset.9786ef7a62f75bc4.jpg").unwrap()
         );
 
         // 6. Looking up a file in the theme
@@ -240,12 +240,12 @@ mod tests {
         let data = static_fn.call(&args).unwrap().as_object().unwrap().clone();
         assert_eq!(
             data["static_path"],
-            to_value(&format!("{}", static_path.join("in-theme.d8f4f6eef30de1b2.jpg").display()))
+            to_value(&format!("{}", static_path.join("in-theme.9786ef7a62f75bc4.jpg").display()))
                 .unwrap()
         );
         assert_eq!(
             data["url"],
-            to_value("http://a-website.com/processed_images/in-theme.d8f4f6eef30de1b2.jpg")
+            to_value("http://a-website.com/processed_images/in-theme.9786ef7a62f75bc4.jpg")
                 .unwrap()
         );
     }
