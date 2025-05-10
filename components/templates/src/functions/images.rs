@@ -57,7 +57,7 @@ impl Function<TeraResult<Value>> for ResizeImage {
             .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?;
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        let (file_path, _) =
+        let file_path =
             match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
                 .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?
             {
@@ -83,7 +83,7 @@ pub struct GetImageMetadata {
     /// The base path of the Zola site
     base_path: PathBuf,
     theme: Option<String>,
-    result_cache: Arc<Mutex<HashMap<String, Value>>>,
+    result_cache: Arc<Mutex<HashMap<PathBuf, Value>>>,
     output_path: PathBuf,
 }
 
@@ -109,31 +109,30 @@ impl Function<TeraResult<Value>> for GetImageMetadata {
         let path: String = kwargs.must_get("path")?;
         let allow_missing: bool = kwargs.get("allow_missing")?.unwrap_or(false);
 
-        let (src_path, unified_path) =
-            match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
-                .map_err(|e| Error::message(format!("`get_image_metadata`: {}", e)))?
-            {
-                Some((f, p)) => (f, p),
-                None => {
-                    if allow_missing {
-                        return Ok(Value::none());
-                    }
-                    return Err(Error::message(format!(
-                        "`get_image_metadata`: Cannot find path: {}",
-                        path
-                    )));
+        let src_path = match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
+            .map_err(|e| Error::message(format!("`get_image_metadata`: {}", e)))?
+        {
+            Some(f) => f,
+            None => {
+                if allow_missing {
+                    return Ok(Value::none());
                 }
-            };
+                return Err(Error::message(format!(
+                    "`get_image_metadata`: Cannot find path: {}",
+                    path
+                )));
+            }
+        };
 
         let mut cache = self.result_cache.lock().expect("result cache lock");
-        if let Some(cached_result) = cache.get(&unified_path) {
+        if let Some(cached_result) = cache.get(&src_path) {
             return Ok(cached_result.clone());
         }
 
-        let response = imageproc::read_image_metadata(src_path)
+        let response = imageproc::read_image_metadata(&src_path)
             .map_err(|e| Error::message(format!("`get_image_metadata`: {}", e)))?;
         let out = Value::from_serializable(&response);
-        cache.insert(unified_path, out.clone());
+        cache.insert(src_path, out.clone());
 
         Ok(out)
     }

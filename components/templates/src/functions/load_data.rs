@@ -111,7 +111,7 @@ impl DataSource {
             return match search_for_file(base_path, &path, theme, output_path)
                 .map_err(|e| Error::message(format!("`load_data`: {}", e)))?
             {
-                Some((f, _)) => Ok(Some(DataSource::Path(f))),
+                Some(f) => Ok(Some(DataSource::Path(f))),
                 None => Ok(None),
             };
         }
