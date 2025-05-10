@@ -199,12 +199,12 @@ mod tests {
             data.get(&"static_path".into()).unwrap(),
             &Value::from(format!(
                 "{}",
-                static_path.join("gutenberg.e99218b5a3185c99.jpg").display()
+                static_path.join("gutenberg.9786ef7a62f75bc4.jpg").display()
             ))
         );
         assert_eq!(
             data.get(&"url".into()).unwrap(),
-            &Value::from("http://a-website.com/processed_images/gutenberg.e99218b5a3185c99.jpg")
+            &Value::from("http://a-website.com/processed_images/gutenberg.9786ef7a62f75bc4.jpg")
         );
 
         // 2. resizing an image in content with a relative path
@@ -219,12 +219,12 @@ mod tests {
             data.get(&"static_path".into()).unwrap(),
             &Value::from(format!(
                 "{}",
-                static_path.join("gutenberg.155d032b1aae0133.jpg").display()
+                static_path.join("gutenberg.9786ef7a62f75bc4.jpg").display()
             ))
         );
         assert_eq!(
             data.get(&"url".into()).unwrap(),
-            &Value::from("http://a-website.com/processed_images/gutenberg.155d032b1aae0133.jpg")
+            &Value::from("http://a-website.com/processed_images/gutenberg.9786ef7a62f75bc4.jpg")
         );
 
         // 3. resizing with an absolute path is the same as the above
@@ -255,11 +255,11 @@ mod tests {
         let data = data.as_map().unwrap();
         assert_eq!(
             data.get(&"static_path".into()).unwrap(),
-            &Value::from(format!("{}", static_path.join("asset.160461e0d0be19e6.jpg").display()))
+            &Value::from(format!("{}", static_path.join("asset.9786ef7a62f75bc4.jpg").display()))
         );
         assert_eq!(
             data.get(&"url".into()).unwrap(),
-            &Value::from("http://a-website.com/processed_images/asset.160461e0d0be19e6.jpg")
+            &Value::from("http://a-website.com/processed_images/asset.9786ef7a62f75bc4.jpg")
         );
 
         // 6. Looking up a file in the theme
@@ -274,12 +274,12 @@ mod tests {
             data.get(&"static_path".into()).unwrap(),
             &Value::from(format!(
                 "{}",
-                static_path.join("in-theme.d8f4f6eef30de1b2.jpg").display()
+                static_path.join("in-theme.9786ef7a62f75bc4.jpg").display()
             ))
         );
         assert_eq!(
             data.get(&"url".into()).unwrap(),
-            &Value::from("http://a-website.com/processed_images/in-theme.d8f4f6eef30de1b2.jpg")
+            &Value::from("http://a-website.com/processed_images/in-theme.9786ef7a62f75bc4.jpg")
         );
     }
 
