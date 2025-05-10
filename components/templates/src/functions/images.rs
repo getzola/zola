@@ -57,7 +57,7 @@ impl Function<TeraResult<Value>> for ResizeImage {
             .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?;
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        let (file_path, unified_path) =
+        let (file_path, _) =
             match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
                 .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?
             {
@@ -71,7 +71,7 @@ impl Function<TeraResult<Value>> for ResizeImage {
             };
 
         let response = imageproc
-            .enqueue(resize_op, unified_path, file_path, &format, quality, speed)
+            .enqueue(resize_op, file_path, &format, quality, speed)
             .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?;
 
         Ok(Value::from_serializable(&response))
