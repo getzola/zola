@@ -3,14 +3,14 @@
 title = "BelResume"
 description = "A beautiful, modern, and minimal single-page resume site"
 template = "theme.html"
-date = 2025-04-18T15:10:10+05:30
+date = 2025-04-30T17:15:25+05:30
 
 [taxonomies]
 theme-tags = ['minimal', 'resume']
 
 [extra]
-created = 2025-04-18T15:10:10+05:30
-updated = 2025-04-18T15:10:10+05:30
+created = 2025-04-30T17:15:25+05:30
+updated = 2025-04-30T17:15:25+05:30
 repository = "https://github.com/cx48/BelResume.git"
 homepage = "https://github.com/cx48/BelResume"
 minimum_version = "0.20.0"
@@ -36,15 +36,15 @@ Powered by [Zola](https://getzola.org/). Styled with Tailwind CSS & Font Awesome
 
 #### Light Mode
 
-![Light Mode](screenshots/light.png)
+![Light Mode](https://raw.githubusercontent.com/cx48/BelResume/refs/heads/main/static/images/light.png)
 
 #### Dark Mode
 
-![Dark Mode](screenshots/dark.png)
+![Dark Mode](https://raw.githubusercontent.com/cx48/BelResume/refs/heads/main/static/images/dark.png)
 
 #### PageSpeed Insights
 
-![PageSpeed](screenshots/pagspeed.png)
+![PageSpeed](https://raw.githubusercontent.com/cx48/BelResume/refs/heads/main/static/images/pagespeed.png)
 
 ## Project Structure
 
