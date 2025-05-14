@@ -10,7 +10,7 @@ use libs::image::codecs::avif::AvifEncoder;
 use libs::image::codecs::jpeg::JpegEncoder;
 use libs::image::imageops::FilterType;
 use libs::image::GenericImageView;
-use libs::image::{EncodableLayout, ExtendedColorType, ImageEncoder, ImageFormat};
+use libs::image::{EncodableLayout, ImageEncoder, ImageFormat};
 use libs::rayon::prelude::*;
 use libs::{image, webp};
 use serde::{Deserialize, Serialize};
@@ -75,25 +75,12 @@ impl ImageOp {
             }
             Format::Avif { quality, speed } => {
                 let mut avif: Vec<u8> = Vec::new();
-                let color_type = match img.color() {
-                    image::ColorType::L8 => Ok(ExtendedColorType::L8),
-                    image::ColorType::La8 => Ok(ExtendedColorType::La8),
-                    image::ColorType::Rgb8 => Ok(ExtendedColorType::Rgb8),
-                    image::ColorType::Rgba8 => Ok(ExtendedColorType::Rgba8),
-                    image::ColorType::L16 => Ok(ExtendedColorType::L16),
-                    image::ColorType::La16 => Ok(ExtendedColorType::La16),
-                    image::ColorType::Rgb16 => Ok(ExtendedColorType::Rgb16),
-                    image::ColorType::Rgba16 => Ok(ExtendedColorType::Rgba16),
-                    image::ColorType::Rgb32F => Ok(ExtendedColorType::Rgb32F),
-                    image::ColorType::Rgba32F => Ok(ExtendedColorType::Rgba32F),
-                    c => Err(anyhow!("Unknown image color type '{:?}' for AVIF", c)),
-                }?;
                 let encoder = AvifEncoder::new_with_speed_quality(&mut avif, speed, quality);
                 encoder.write_image(
                     &img.as_bytes(),
                     img.dimensions().0,
                     img.dimensions().1,
-                    color_type,
+                    img.color().into(),
                 )?;
                 buffered_f.write_all(&avif.as_bytes())?;
             }
