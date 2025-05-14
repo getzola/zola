@@ -1,7 +1,10 @@
 use std::borrow::Cow;
 use std::collections::hash_map::DefaultHasher;
+use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::Path;
+
+use errors::{Context, Result};
 
 use crate::format::Format;
 use crate::ResizeOperation;
@@ -32,17 +35,16 @@ pub fn fix_orientation(img: &DynamicImage, path: &Path) -> Option<DynamicImage> 
     }
 }
 
-/// We only use the input_path to get the file stem.
-/// Hashing the resolved `input_path` would include the absolute path to the image
-/// with all filesystem components.
 pub fn get_processed_filename(
     input_path: &Path,
-    input_src: &str,
     op: &ResizeOperation,
     format: &Format,
-) -> String {
+) -> Result<String> {
     let mut hasher = DefaultHasher::new();
-    hasher.write(input_src.as_ref());
+    hasher.write(
+        &fs::read(input_path)
+            .with_context(|| format!("Failed to read file {}", input_path.display()))?,
+    );
     op.hash(&mut hasher);
     format.hash(&mut hasher);
     let hash = hasher.finish();
@@ -51,5 +53,5 @@ pub fn get_processed_filename(
         .map(|s| s.to_string_lossy())
         .unwrap_or_else(|| Cow::Borrowed("unknown"));
 
-    format!("{}.{:016x}.{}", filename, hash, format.extension())
+    Ok(format!("{}.{:016x}.{}", filename, hash, format.extension()))
 }
