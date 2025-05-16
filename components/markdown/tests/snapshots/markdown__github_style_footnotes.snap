@@ -8,7 +8,7 @@ expression: body
 <p>This text has two<sup class="footnote-reference" id="fr-5-1"><a href="#fn-5">5</a></sup> identical footnotes<sup class="footnote-reference" id="fr-5-2"><a href="#fn-5">5</a></sup></p>
 <p>This text has a footnote<sup class="footnote-reference" id="fr-7-1"><a href="#fn-7">6</a></sup></p>
 <p>Footnotes can also be referenced with identifiers<sup class="footnote-reference" id="fr-first-1"><a href="#fn-first">8</a></sup>.</p>
-<footer class="footnotes">
+<section class="footnotes">
 <ol class="footnotes-list">
 <li id="fn-1">
 <p>But it is meaningless. <a href="#fr-1-1">↩</a></p>
@@ -35,4 +35,4 @@ expression: body
 <p>Like this: <code>[^first]</code>. <a href="#fr-first-1">↩</a></p>
 </li>
 </ol>
-</footer>
+</section>
