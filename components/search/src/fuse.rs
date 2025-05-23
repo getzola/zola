@@ -10,9 +10,13 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
     #[derive(serde::Serialize)]
     struct Item<'a> {
         url: &'a str,
+        #[serde(skip_serializing_if = "Option::is_none")]
         title: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         description: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         body: Option<String>, // AMMONIA.clean has to allocate anyway
+        #[serde(skip_serializing_if = "Option::is_none")]
         path: Option<&'a str>,
     }
     let mut items: Vec<Item> = Vec::new();
