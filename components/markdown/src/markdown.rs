@@ -749,7 +749,7 @@ pub fn markdown_to_html(
             c.insert("text", &get_text(&events[start_idx + 1..end_idx]));
             c.insert("lang", &context.lang);
 
-            match utils::templates::render_template(HEADING_TEMPLATE, &context.tera, c, &None) {
+            match utils::templates::render_template(HEADING_TEMPLATE, &context.tera, c.clone(), &None) {
                 Ok(html) => {
                     // "Clear" events
                     for i in start_idx..=end_idx {
@@ -770,11 +770,7 @@ pub fn markdown_to_html(
                             InsertAnchor::Heading => 0, // modified later to the correct value
                             InsertAnchor::None => unreachable!(),
                         };
-                        let mut c = tera::Context::new();
-                        c.insert("id", &id);
-                        c.insert("level", &heading_ref.level);
-                        c.insert("lang", &context.lang);
-
+                        
                         let anchor_link = utils::templates::render_template(
                             ANCHOR_LINK_TEMPLATE,
                             &context.tera,
