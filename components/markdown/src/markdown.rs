@@ -26,6 +26,7 @@ use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const SUMMARY_CUTOFF_TEMPLATE: &str = "summary-cutoff.html";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
+const HEADING_TEMPLATE: &str = "heading.html";
 static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
 
 /// Set as a regex to help match some extra cases. This way, spaces and case don't matter.
@@ -727,54 +728,72 @@ pub fn markdown_to_html(
         }
 
         // Second heading pass: auto-generate remaining IDs, and emit HTML
-        for mut heading_ref in heading_refs {
+        for heading_ref in heading_refs {
             let start_idx = heading_ref.start_idx;
             let end_idx = heading_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
 
-            if heading_ref.id.is_none() {
-                heading_ref.id = Some(find_anchor(
+            let id = heading_ref.id.clone().unwrap_or_else(|| {
+                find_anchor(
                     &inserted_anchors,
                     slugify_anchors(&title, context.config.slugify.anchors),
                     0,
-                ));
-            }
-
-            inserted_anchors.push(heading_ref.id.clone().unwrap());
-            let id = inserted_anchors.last().unwrap();
-
-            let html = heading_ref.to_html(id);
-            events[start_idx] = Event::Html(html.into());
-
-            // generate anchors and places to insert them
-            if context.insert_anchor != InsertAnchor::None {
-                let anchor_idx = match context.insert_anchor {
-                    InsertAnchor::Left => start_idx + 1,
-                    InsertAnchor::Right => end_idx,
-                    InsertAnchor::Heading => 0, // modified later to the correct value
-                    InsertAnchor::None => unreachable!(),
-                };
-                let mut c = tera::Context::new();
-                c.insert("id", &id);
-                c.insert("level", &heading_ref.level);
-                c.insert("lang", &context.lang);
-
-                let anchor_link = utils::templates::render_template(
-                    ANCHOR_LINK_TEMPLATE,
-                    &context.tera,
-                    c,
-                    &None,
                 )
-                .context("Failed to render anchor link template")?;
-                if context.insert_anchor != InsertAnchor::Heading {
-                    anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
-                } else if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
-                    let opening_tag = captures.get(1).map_or("", |m| m.as_str()).to_string();
-                    anchors_to_insert.push((start_idx + 1, Event::Html(opening_tag.into())));
-                    anchors_to_insert.push((end_idx, Event::Html("</a>".into())));
+            });
+
+            inserted_anchors.push(id.clone());
+
+            let mut c = tera::Context::new();
+            c.insert("id", &id);
+            c.insert("level", &heading_ref.level);
+            c.insert("text", &get_text(&events[start_idx + 1..end_idx]));
+            c.insert("lang", &context.lang);
+
+            match utils::templates::render_template(HEADING_TEMPLATE, &context.tera, c, &None) {
+                Ok(html) => {
+                    // "Clear" events
+                    for i in start_idx..=end_idx {
+                        events[i] = Event::Html("".into());
+                    }
+                    // Set event to rendered HTML
+                    events[start_idx] = Event::Html(html.into());
+                }
+                Err(_) => {
+                    let html = heading_ref.to_html(&id);
+                    events[start_idx] = Event::Html(html.into());
+
+                    // generate anchors and places to insert them
+                    if context.insert_anchor != InsertAnchor::None {
+                        let anchor_idx = match context.insert_anchor {
+                            InsertAnchor::Left => start_idx + 1,
+                            InsertAnchor::Right => end_idx,
+                            InsertAnchor::Heading => 0, // modified later to the correct value
+                            InsertAnchor::None => unreachable!(),
+                        };
+                        let mut c = tera::Context::new();
+                        c.insert("id", &id);
+                        c.insert("level", &heading_ref.level);
+                        c.insert("lang", &context.lang);
+
+                        let anchor_link = utils::templates::render_template(
+                            ANCHOR_LINK_TEMPLATE,
+                            &context.tera,
+                            c,
+                            &None,
+                        )
+                        .context("Failed to render anchor link template")?;
+                        if context.insert_anchor != InsertAnchor::Heading {
+                            anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
+                        } else if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
+                            let opening_tag =
+                                captures.get(1).map_or("", |m| m.as_str()).to_string();
+                            anchors_to_insert
+                                .push((start_idx + 1, Event::Html(opening_tag.into())));
+                            anchors_to_insert.push((end_idx, Event::Html("</a>".into())));
+                        }
+                    }
                 }
             }
-
             // record heading to make table of contents
             let permalink = format!("{}#{}", context.current_page_permalink, id);
             let h = Heading {
