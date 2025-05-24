@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use config::Config;
 use libs::tera::{Context, Tera};
@@ -13,6 +14,7 @@ pub struct RenderContext<'a> {
     pub config: &'a Config,
     pub tera_context: Context,
     pub current_page_path: Option<&'a str>,
+    pub parent_absolute: Option<&'a PathBuf>,
     pub current_page_permalink: &'a str,
     pub permalinks: Cow<'a, HashMap<String, String>>,
     pub insert_anchor: InsertAnchor,
@@ -43,6 +45,7 @@ impl<'a> RenderContext<'a> {
             config,
             lang,
             shortcode_definitions: Cow::Owned(HashMap::new()),
+            parent_absolute: None,
         }
     }
 
@@ -55,6 +58,11 @@ impl<'a> RenderContext<'a> {
     /// Same as above
     pub fn set_current_page_path(&mut self, path: &'a str) {
         self.current_page_path = Some(path);
+    }
+
+    /// Same as above
+    pub fn set_parent_absolute(&mut self, path: &'a PathBuf) {
+        self.parent_absolute = Some(path);
     }
 
     // In use in the markdown filter
@@ -71,6 +79,7 @@ impl<'a> RenderContext<'a> {
             config,
             lang: &config.default_language,
             shortcode_definitions: Cow::Owned(HashMap::new()),
+            parent_absolute: None,
         }
     }
 }
