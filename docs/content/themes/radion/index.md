@@ -3,14 +3,14 @@
 title = "radion"
 description = "A sleek, modern blog theme."
 template = "theme.html"
-date = 2025-05-01T08:49:49-07:00
+date = 2025-06-01T10:18:43-07:00
 
 [taxonomies]
 theme-tags = ['SEO', 'search', 'accessible']
 
 [extra]
-created = 2025-05-01T08:49:49-07:00
-updated = 2025-05-01T08:49:49-07:00
+created = 2025-06-01T10:18:43-07:00
+updated = 2025-06-01T10:18:43-07:00
 repository = "https://github.com/micahkepe/radion.git"
 homepage = "https://github.com/micahkepe/radion"
 minimum_version = "0.20.0"
@@ -89,7 +89,8 @@ and then enable it in your `config.toml`:
 theme = "radion"
 ```
 
-This theme requires your index section (`content/_index.md`) to be paginated to work:
+This theme requires your index section (`content/_index.md`) to be paginated to
+work:
 
 ```toml
 paginate_by = 5
@@ -110,6 +111,8 @@ taxonomies = [
 
 If you want to paginate taxonomies pages, you will need to overwrite the
 templates as it only works for non-paginated taxonomies by default.
+
+---
 
 ## Options
 
@@ -160,7 +163,8 @@ author = "John Smith"
 
 To change the default favicon:
 
-1. Create your own favicon folder with the following site: [RealFaviconGenerator](https://realfavicongenerator.net/)
+1. Create your own favicon folder with the following site:
+   [RealFaviconGenerator](https://realfavicongenerator.net/)
 
    - Set the 'Favicon path' option to `/icons/favicon/`
 
@@ -188,18 +192,21 @@ github = "https://github.com/your-github-link"
 
 ### Code Snippets
 
-Syntax Highlighting:
+#### Syntax Highlighting:
 
 ```toml
 [markdown]
 # Whether to do syntax highlighting
-# Theme can be customized by setting the `highlight_theme` variable to a theme supported by Zola
+# Theme can be customized by setting the `highlight_theme` variable to a theme
+# supported by Zola
 highlight_code = true
 
+# For a complete list of themes, see:
+# https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting
 highlight_theme = "one-dark"
 ```
 
-Enhanced Codeblocks (Clipboard Support and Language Tags)
+#### Enhanced Codeblocks (Clipboard Support and Language Tags)
 
 ```toml
 [extra]
@@ -293,6 +300,8 @@ The `config.toml` value for `comments` takes precedence and priority. For
 example, if you globally disable comments in your `config.toml` by setting
 `comments = false`, then trying to enabling comments through a page's front
 matter will have no effect.
+
+---
 
 ## Acknowledgements
 
