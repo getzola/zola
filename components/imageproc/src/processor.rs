@@ -92,7 +92,7 @@ impl ImageOp {
             }
         };
 
-        fs::hard_link(&tmp_output_file, &self.output_path)?;
+        fs::rename(&tmp_output_file, &self.output_path)?;
 
         Ok(())
     }
