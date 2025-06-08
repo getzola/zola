@@ -41,6 +41,7 @@ impl ImageOp {
             return Ok(());
         }
 
+        let input_permissions = fs::metadata(&self.input_path)?.permissions();
         let img = image::open(&self.input_path)?;
         let mut img = fix_orientation(&img, &self.input_path).unwrap_or(img);
 
@@ -92,6 +93,7 @@ impl ImageOp {
             }
         };
 
+        fs::set_permissions(&tmp_output_file, input_permissions)?;
         fs::rename(&tmp_output_file, &self.output_path)?;
 
         Ok(())
