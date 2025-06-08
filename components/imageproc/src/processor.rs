@@ -1,6 +1,4 @@
-use std::ffi::{OsStr, OsString};
 use std::fs;
-use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 
@@ -15,6 +13,7 @@ use libs::image::{EncodableLayout, ImageEncoder, ImageFormat};
 use libs::rayon::prelude::*;
 use libs::webp;
 use serde::{Deserialize, Serialize};
+use tempfile::NamedTempFile;
 use utils::fs as ufs;
 
 use crate::format::Format;
@@ -22,7 +21,6 @@ use crate::helpers::get_processed_filename;
 use crate::{fix_orientation, ImageMeta, ResizeInstructions, ResizeOperation};
 
 pub const RESIZED_SUBDIR: &str = "processed_images";
-const TMP_OUTPUT_SUFFIX: &str = ".tmp";
 
 /// Holds all data needed to perform a resize operation
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -60,25 +58,22 @@ impl ImageOp {
             None => img,
         };
 
-        let output_name = self.output_path.file_name().ok_or(anyhow!(""))?;
-        let tmp_output_suffix = OsStr::new(TMP_OUTPUT_SUFFIX);
-        let mut tmp_output_name =
-            OsString::with_capacity(output_name.len() + tmp_output_suffix.len());
-        tmp_output_name.push(output_name);
-        tmp_output_name.push(tmp_output_suffix);
-        let tmp_output_path = &self.output_path.with_file_name(tmp_output_name);
-        let tmp_output_file = File::create(&tmp_output_path)?;
-        let mut tmp_output_writer = BufWriter::new(tmp_output_file);
+        let tmp_output_file = match self.output_path.parent() {
+            Some(parent) => Ok(NamedTempFile::new_in(parent)?),
+            None => Err(anyhow!(
+                "Image output path '{:?}' should contain a parent directory, but doesn't",
+                self.output_path
+            )),
+        }?;
+        let mut tmp_output_writer = BufWriter::new(&tmp_output_file);
 
-        let write_result: Result<()> = match self.format {
+        match self.format {
             Format::Png => {
                 img.write_to(&mut tmp_output_writer, ImageFormat::Png)?;
-                Ok(())
             }
             Format::Jpeg { quality } => {
                 let mut encoder = JpegEncoder::new_with_quality(&mut tmp_output_writer, quality);
                 encoder.encode_image(&img)?;
-                Ok(())
             }
             Format::WebP { quality } => {
                 let encoder = webp::Encoder::from_image(&img)
@@ -88,7 +83,6 @@ impl ImageOp {
                     None => encoder.encode_lossless(),
                 };
                 tmp_output_writer.write_all(memory.as_bytes())?;
-                Ok(())
             }
             Format::Avif { quality, speed } => {
                 let mut avif: Vec<u8> = Vec::new();
@@ -100,18 +94,12 @@ impl ImageOp {
                     img.color().into(),
                 )?;
                 tmp_output_writer.write_all(&avif.as_bytes())?;
-                Ok(())
             }
         };
 
-        if write_result.is_ok() {
-            // Move the successful temporary output file to the real output path
-            fs::rename(tmp_output_path, &self.output_path)?;
-        } else {
-            // Clean up the failed temporary output file
-            fs::remove_file(tmp_output_path)?;
-        }
-        write_result
+        fs::hard_link(&tmp_output_file, &self.output_path)?;
+
+        Ok(())
     }
 }
 
