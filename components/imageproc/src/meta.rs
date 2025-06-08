@@ -9,6 +9,8 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
+use crate::get_rotated_size;
+
 /// Size and format read cheaply with `image`'s `Reader`.
 #[derive(Debug)]
 pub struct ImageMeta {
@@ -21,7 +23,11 @@ impl ImageMeta {
     pub fn read(path: &Path) -> ImageResult<Self> {
         let reader = ImageReader::open(path).and_then(ImageReader::with_guessed_format)?;
         let format = reader.format();
-        let size = reader.into_dimensions()?;
+        let mut size = reader.into_dimensions()?;
+
+        if let Some((w, h)) = get_rotated_size(size.0, size.1, path) {
+            size = (w, h);
+        }
 
         Ok(Self { size, format })
     }

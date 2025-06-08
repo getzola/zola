@@ -2,7 +2,7 @@ use std::env;
 use std::path::{PathBuf, MAIN_SEPARATOR as SLASH};
 
 use config::Config;
-use imageproc::{fix_orientation, ImageMetaResponse, Processor, ResizeOperation};
+use imageproc::{fix_orientation, get_rotated_size, ImageMetaResponse, Processor, ResizeOperation};
 use libs::image::{self, DynamicImage, GenericImageView, Pixel};
 use libs::once_cell::sync::Lazy;
 
@@ -511,6 +511,27 @@ fn read_image_metadata_avif() {
             mime: Some("image/avif")
         }
     );
+}
+
+#[test]
+fn get_rotated_size_test() {
+    fn is_landscape(img_name: &str) -> bool {
+        let path = TEST_IMGS.join(img_name);
+        let img = image::open(&path).unwrap();
+        let w = img.width() + 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
+        let h = img.height();
+        let (w, h) = get_rotated_size(w, h, &path).unwrap_or((w, h));
+        w > h
+    }
+    assert!(is_landscape("exif_0.jpg"));
+    assert!(is_landscape("exif_1.jpg"));
+    assert!(is_landscape("exif_2.jpg"));
+    assert!(is_landscape("exif_3.jpg"));
+    assert!(is_landscape("exif_4.jpg"));
+    assert!(!is_landscape("exif_5.jpg"));
+    assert!(!is_landscape("exif_6.jpg"));
+    assert!(!is_landscape("exif_7.jpg"));
+    assert!(!is_landscape("exif_8.jpg"));
 }
 
 #[test]
