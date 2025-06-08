@@ -41,6 +41,7 @@ impl ImageOp {
             return Ok(());
         }
 
+        let input_permissions = fs::metadata(&self.input_path)?.permissions();
         let reader =
             ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
         let mut decoder = reader.into_decoder()?;
@@ -97,6 +98,7 @@ impl ImageOp {
             }
         };
 
+        fs::set_permissions(&tmp_output_file, input_permissions)?;
         fs::rename(&tmp_output_file, &self.output_path)?;
 
         Ok(())
