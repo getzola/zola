@@ -26,7 +26,7 @@ pub fn ask_bool(question: &str, default: bool) -> Result<bool> {
         "n" | "N" | "no" | "NO" | "false" => Ok(false),
         "" => Ok(default),
         _ => {
-            println!("Invalid choice: '{}'", input);
+            println!("Invalid choice: '{input}'");
             ask_bool(question, default)
         }
     }
@@ -34,7 +34,7 @@ pub fn ask_bool(question: &str, default: bool) -> Result<bool> {
 
 /// Ask a question to the user where they can write a URL
 pub fn ask_url(question: &str, default: &str) -> Result<String> {
-    print!("{} ({}): ", question, default);
+    print!("{question} ({default}): ");
     let _ = io::stdout().flush();
     let input = read_line()?;
 
@@ -43,7 +43,7 @@ pub fn ask_url(question: &str, default: &str) -> Result<String> {
         _ => match Url::parse(&input) {
             Ok(_) => Ok(input),
             Err(_) => {
-                println!("Invalid URL: '{}'", input);
+                println!("Invalid URL: '{input}'");
                 ask_url(question, default)
             }
         },
