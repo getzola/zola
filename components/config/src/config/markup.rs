@@ -149,6 +149,8 @@ pub struct Markdown {
     pub math: MathRenderer,
     /// Whether to cache the rendered math
     pub cache: BoolWithPath,
+    /// Whether to enable GitHub-style alerts
+    pub github_alerts: bool,
 }
 
 impl Markdown {
@@ -327,6 +329,7 @@ impl Default for Markdown {
             github_alerts: false,
             math: MathRenderer::default(),
             cache: BoolWithPath::True(None),
+            github_alerts: false,
         }
     }
 }
