@@ -1,0 +1,19 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: body
+---
+<blockquote class="markdown-alert-note">
+<p>alert note</p>
+</blockquote>
+<blockquote class="markdown-alert-tip">
+<p>alert tip</p>
+</blockquote>
+<blockquote class="markdown-alert-important">
+<p>alert important</p>
+</blockquote>
+<blockquote class="markdown-alert-warning">
+<p>alert warning</p>
+</blockquote>
+<blockquote class="markdown-alert-caution">
+<p>alert caution</p>
+</blockquote>

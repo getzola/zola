@@ -449,3 +449,29 @@ Footnotes can also be referenced with identifiers[^first].
     let body = common::render_with_config(&markdown, config).unwrap().body;
     insta::assert_snapshot!(body);
 }
+
+#[test]
+fn github_alerts() {
+    let mut config = Config::default_for_test();
+    config.markdown.github_alerts = true;
+
+    let markdown = r#"
+> [!NOTE]  
+> alert note
+
+> [!TIP]
+> alert tip
+
+> [!IMPORTANT]  
+> alert important
+
+> [!WARNING]  
+> alert warning
+
+> [!CAUTION]
+> alert caution
+"#;
+
+    let body = common::render_with_config(&markdown, config).unwrap().body;
+    insta::assert_snapshot!(body);
+}
