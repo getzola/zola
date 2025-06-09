@@ -3,14 +3,14 @@
 title = "Academic Workshop"
 description = "A Zola theme for a website to list the schedule of your scientific workshop or seminar series"
 template = "theme.html"
-date = 2025-03-03T15:58:29-05:00
+date = 2025-05-30T13:51:53-04:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-03-03T15:58:29-05:00
-updated = 2025-03-03T15:58:29-05:00
+created = 2025-05-30T13:51:53-04:00
+updated = 2025-05-30T13:51:53-04:00
 repository = "https://github.com/aterenin/academic-workshop.git"
 homepage = "https://github.com/aterenin/academic-workshop"
 minimum_version = "0.18.0"
@@ -67,6 +67,7 @@ buttons = [{name = "Example", url = "https://example.com/"}, {name="GitHub", url
 image = {resize = 400, ext = '.jpg'} # this sets the desired size for image resizing, as well as the default extension
 list_page_limit = 10 # this sets the default number of items which show up in one page in a list
 header_pages = [{name = "Home", url = "/#home"},{name = "Design", url = "/#design"}] # this sets the pages which show up in the navigation menu which gets displayed on mobile devices
+button_shortcuts = [{variable = "video", name = "Video"}] # this configuration makes it possible to add a button to a page or section in a less-verbose way, for example by writing video = "/url/to/video" instead of buttons = [{name = "Video", url = "/url/to/video"}]
 ```
 
 ## Page configuration 
