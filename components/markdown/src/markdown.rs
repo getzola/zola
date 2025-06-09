@@ -443,6 +443,9 @@ pub fn markdown_to_html(
     if context.config.markdown.definition_list {
         opts.insert(Options::ENABLE_DEFINITION_LIST);
     }
+    if context.config.markdown.github_alerts {
+        opts.insert(Options::ENABLE_GFM);
+    }
 
     // we reverse their order so we can pop them easily in order
     let mut html_shortcodes: Vec<_> = html_shortcodes.into_iter().rev().collect();
