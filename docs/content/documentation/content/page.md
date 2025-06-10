@@ -112,6 +112,10 @@ weight = 0
 # A draft page is only loaded if the `--drafts` flag is passed to `zola build`, `zola serve` or `zola check`.
 draft = false
 
+# A hidden page is loaded and created, but won't be added to Paginators,
+# set to true to hide page or false to override a parent section's `hidden = true` 
+hidden = false
+
 # When set to "false" Zola will not create a separate folder with index.html inside for this page.
 render = false
 
