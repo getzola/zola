@@ -509,7 +509,10 @@ pub fn serve(
     }
 
     let ws_port = site.live_reload;
-    let ws_address = format!("{}:{}", interface, ws_port.unwrap());
+    let ws_address = match interface {
+        IpAddr::V6(_) => format!("[{}]:{}", interface, ws_port.unwrap()),
+        IpAddr::V4(_) => format!("{}:{}", interface, ws_port.unwrap()),
+    };
     let output_path = site.output_path.clone();
     create_directory(&output_path)?;
 
