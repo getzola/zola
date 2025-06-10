@@ -1,6 +1,6 @@
 use errors::{anyhow, Context, Result};
 use libs::avif_parse::read_avif;
-use libs::image::ImageReader;
+use libs::image::{ImageDecoder, ImageReader};
 use libs::image::{ImageFormat, ImageResult};
 use libs::svg_metadata::Metadata as SvgMetadata;
 use serde::Serialize;
@@ -23,9 +23,11 @@ impl ImageMeta {
     pub fn read(path: &Path) -> ImageResult<Self> {
         let reader = ImageReader::open(path).and_then(ImageReader::with_guessed_format)?;
         let format = reader.format();
-        let mut size = reader.into_dimensions()?;
+        let mut decoder = reader.into_decoder()?;
+        let mut size = decoder.dimensions();
+        let raw_metadata = decoder.exif_metadata()?;
 
-        if let Some((w, h)) = get_rotated_size(size.0, size.1, path) {
+        if let Some((w, h)) = get_rotated_size(size.0, size.1, raw_metadata) {
             size = (w, h);
         }
 

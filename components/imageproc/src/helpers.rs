@@ -9,8 +9,8 @@ use libs::image::DynamicImage;
 
 /// Apply image rotation based on EXIF data
 /// Returns `None` if no transformation is needed
-pub fn fix_orientation(img: &DynamicImage, path: &Path) -> Option<DynamicImage> {
-    match get_orientation(path)? {
+pub fn fix_orientation(img: &DynamicImage, raw_metadata: Option<Vec<u8>>) -> Option<DynamicImage> {
+    match get_orientation(raw_metadata)? {
         // Values are taken from the page 30 of
         // https://www.cipa.jp/std/documents/e/DC-008-2012_E.pdf
         // For more details check http://sylvana.net/jpegcrop/exif_orientation.html
@@ -28,20 +28,22 @@ pub fn fix_orientation(img: &DynamicImage, path: &Path) -> Option<DynamicImage> 
 
 /// Adjusts the width and height of an image based on EXIF rotation data.
 /// Returns `None` if no transformation is needed.
-pub fn get_rotated_size(w: u32, h: u32, path: &Path) -> Option<(u32, u32)> {
+pub fn get_rotated_size(w: u32, h: u32, raw_metadata: Option<Vec<u8>>) -> Option<(u32, u32)> {
     // See fix_orientation for the meaning of these values.
-    match get_orientation(path)? {
+    match get_orientation(raw_metadata)? {
         5 | 6 | 7 | 8 => Some((h, w)),
         _ => None,
     }
 }
 
-fn get_orientation(path: &Path) -> Option<u32> {
-    let file = std::fs::File::open(path).ok()?;
-    let mut buf_reader = std::io::BufReader::new(&file);
-    let exif_reader = exif::Reader::new();
-    let exif = exif_reader.read_from_container(&mut buf_reader).ok()?;
-    Some(exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?.value.get_uint(0)?)
+fn get_orientation(raw_metadata: Option<Vec<u8>>) -> Option<u32> {
+    match raw_metadata {
+        Some(metadata) => {
+            let exif = exif::Reader::new().read_raw(metadata).ok()?;
+            Some(exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?.value.get_uint(0)?)
+        }
+        None => None,
+    }
 }
 
 /// We only use the input_path to get the file stem.

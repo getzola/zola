@@ -3,7 +3,7 @@ use std::path::{PathBuf, MAIN_SEPARATOR as SLASH};
 
 use config::Config;
 use imageproc::{fix_orientation, get_rotated_size, ImageMetaResponse, Processor, ResizeOperation};
-use libs::image::{self, DynamicImage, GenericImageView, Pixel};
+use libs::image::{self, DynamicImage, GenericImageView, ImageDecoder, ImageReader, Pixel};
 use libs::once_cell::sync::Lazy;
 
 /// Assert that `address` matches `prefix` + RESIZED_FILENAME regex + "." + `extension`,
@@ -517,10 +517,12 @@ fn read_image_metadata_avif() {
 fn get_rotated_size_test() {
     fn is_landscape(img_name: &str) -> bool {
         let path = TEST_IMGS.join(img_name);
-        let img = image::open(&path).unwrap();
+        let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
+        let metadata = decoder.exif_metadata().unwrap();
+        let img = DynamicImage::from_decoder(decoder).unwrap();
         let w = img.width() + 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
         let h = img.height();
-        let (w, h) = get_rotated_size(w, h, &path).unwrap_or((w, h));
+        let (w, h) = get_rotated_size(w, h, metadata).unwrap_or((w, h));
         w > h
     }
     assert!(is_landscape("exif_0.jpg"));
@@ -538,8 +540,10 @@ fn get_rotated_size_test() {
 fn fix_orientation_test() {
     fn load_img_and_fix_orientation(img_name: &str) -> DynamicImage {
         let path = TEST_IMGS.join(img_name);
-        let img = image::open(&path).unwrap();
-        fix_orientation(&img, &path).unwrap_or(img)
+        let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
+        let metadata = decoder.exif_metadata().unwrap();
+        let img = DynamicImage::from_decoder(decoder).unwrap();
+        fix_orientation(&img, metadata).unwrap_or(img)
     }
 
     let img = image::open(TEST_IMGS.join("exif_1.jpg")).unwrap();
