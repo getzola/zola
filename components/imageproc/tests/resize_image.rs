@@ -518,11 +518,10 @@ fn get_rotated_size_test() {
     fn is_landscape(img_name: &str) -> bool {
         let path = TEST_IMGS.join(img_name);
         let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
+        let (mut w, mut h) = decoder.dimensions();
+        w = w + 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
         let metadata = decoder.exif_metadata().unwrap();
-        let img = DynamicImage::from_decoder(decoder).unwrap();
-        let w = img.width() + 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
-        let h = img.height();
-        let (w, h) = get_rotated_size(w, h, metadata).unwrap_or((w, h));
+        (w, h) = get_rotated_size(w, h, metadata).unwrap_or((w, h));
         w > h
     }
     assert!(is_landscape("exif_0.jpg"));
