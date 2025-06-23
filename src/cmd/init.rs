@@ -98,9 +98,9 @@ pub fn create_new_project(name: &str, force: bool) -> Result<()> {
     let config = CONFIG
         .trim_start()
         .replace("%BASE_URL%", &base_url)
-        .replace("%COMPILE_SASS%", &format!("{}", compile_sass))
-        .replace("%SEARCH%", &format!("{}", search))
-        .replace("%HIGHLIGHT%", &format!("{}", highlight));
+        .replace("%COMPILE_SASS%", &format!("{compile_sass}"))
+        .replace("%SEARCH%", &format!("{search}"))
+        .replace("%HIGHLIGHT%", &format!("{highlight}"));
 
     populate(path, compile_sass, &config)?;
 

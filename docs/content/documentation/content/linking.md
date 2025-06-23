@@ -47,7 +47,7 @@ The anchor link template has the following variables:
 - `lang`: the current language, unless called from the `markdown` template filter, in which case it will always be `en`
 - `level`: the heading level (between 1 and 6)
 
-If you use `insert_anchor = "heading"`, the template will still be used but only the opening `<a>` tag will get extracted
+If you use `insert_anchor_links = "heading"`, the template will still be used but only the opening `<a>` tag will get extracted
 from it, everything else will not be used.
 
 ## Internal links

@@ -58,7 +58,7 @@ pub fn report_elapsed_time(instant: Instant) {
     let duration_ms = duration.whole_milliseconds() as f64;
 
     if duration_ms < 1000.0 {
-        console::success(&format!("Done in {}ms.\n", duration_ms));
+        console::success(&format!("Done in {duration_ms}ms.\n"));
     } else {
         let duration_sec = duration_ms / 1000.0;
         console::success(&format!("Done in {:.1}s.\n", ((duration_sec * 10.0).round() / 10.0)));
@@ -73,7 +73,7 @@ pub fn unravel_errors(message: &str, error: &Error) {
     console::error(&error.to_string());
     let mut cause = error.source();
     while let Some(e) = cause {
-        console::error(&format!("Reason: {}", e));
+        console::error(&format!("Reason: {e}"));
         cause = e.source();
     }
 }
