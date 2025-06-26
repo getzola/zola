@@ -381,7 +381,7 @@ A quote
 fn can_highlight_overflow_scroll() {
     let body = render_codeblock(
         r#"
-```html,overflow_scroll
+```html,overflowscroll
 <p>Example of a very long line of source code in HTML, which will trigger a scrollbar to appear on the rendered codeblock instead of it overflowing</p>
 ```
     "#,

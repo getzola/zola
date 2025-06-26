@@ -3,5 +3,5 @@ source: components/markdown/tests/codeblocks.rs
 assertion_line: 390
 expression: body
 ---
-<pre data-lang="overflow_scroll" style="background-color:#2b303b;color:#c0c5ce;" class="language-overflow_scroll "><code class="language-overflow_scroll" data-lang="overflow_scroll"><span>&lt;p&gt;Example of a very long line of source code in HTML, which will trigger a scrollbar to appear on the rendered codeblock instead of it overflowing&lt;/p&gt;
+<pre data-lang="html" style="background-color:#2b303b;color:#c0c5ce;overflow: scroll;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#bf616a;">p</span><span>&gt;Example of a very long line of source code in HTML, which will trigger a scrollbar to appear on the rendered codeblock instead of it overflowing&lt;/</span><span style="color:#bf616a;">p</span><span>&gt;
 </span></code></pre>
