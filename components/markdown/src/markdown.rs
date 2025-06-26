@@ -315,7 +315,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     }
 
     old_events
-        .push(Event::Html("<footer class=\"footnotes\">\n<ol class=\"footnotes-list\">\n".into()));
+        .push(Event::Html("<section class=\"footnotes\">\n<ol class=\"footnotes-list\">\n".into()));
 
     // Step 2: retain only footnotes which was actually referenced
     footnotes.retain(|f| match f.first() {
@@ -405,7 +405,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     });
 
     old_events.extend(footnotes);
-    old_events.push(Event::Html("</ol>\n</footer>\n".into()));
+    old_events.push(Event::Html("</ol>\n</section>\n".into()));
 }
 
 pub fn markdown_to_html(
@@ -455,6 +455,9 @@ pub fn markdown_to_html(
     }
     if context.config.markdown.definition_list {
         opts.insert(Options::ENABLE_DEFINITION_LIST);
+    }
+    if context.config.markdown.github_alerts {
+        opts.insert(Options::ENABLE_GFM);
     }
 
     // we reverse their order so we can pop them easily in order
