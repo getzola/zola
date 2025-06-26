@@ -321,6 +321,14 @@ highlight(code);
 ```
 ````
 
+- `overflowscroll` to add a scrollbar to the codeblock when the text doesn't fit the page.
+
+````
+```html,overflowscroll
+<p>Example of a very long line of source code in HTML, which will trigger a scrollbar to appear on the rendered codeblock instead of it overflowing</p>
+```
+````
+
 ## Styling codeblocks
 
 Depending on the annotations used, some codeblocks will be hard to read without any CSS. We recommend using the following
