@@ -378,6 +378,19 @@ A quote
 }
 
 #[test]
+fn can_highlight_overflow_scroll() {
+    let body = render_codeblock(
+        r#"
+```html,overflow_scroll
+<p>Example of a very long line of source code in HTML, which will trigger a scrollbar to appear on the rendered codeblock instead of it overflowing</p>
+```
+    "#,
+        HighlightMode::Inlined,
+    );
+    insta::assert_snapshot!(body);
+}
+
+#[test]
 fn can_highlight_unknown_lang() {
     let body = render_codeblock(
         r#"

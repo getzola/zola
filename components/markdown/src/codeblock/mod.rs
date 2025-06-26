@@ -18,6 +18,7 @@ fn opening_html(
     pre_class: Option<String>,
     line_numbers: bool,
     enable_copy: bool,
+    overflow_scroll: bool,
 ) -> String {
     let mut html = String::from("<pre");
     if line_numbers {
@@ -47,6 +48,9 @@ fn opening_html(
     if let Some(styles) = pre_style {
         html.push_str(" style=\"");
         html.push_str(styles.as_str());
+        if overflow_scroll {
+            html.push_str("overflow: scroll;");
+        }
         html.push('"');
     }
 
@@ -117,6 +121,7 @@ impl<'config> CodeBlock<'config> {
             highlighter.pre_class(),
             fence.line_numbers,
             fence.enable_copy,
+            fence.overflow_scroll,
         );
         Ok((
             Self {
