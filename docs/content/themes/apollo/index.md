@@ -3,14 +3,14 @@
 title = "apollo"
 description = "Modern and minimalistic blog theme"
 template = "theme.html"
-date = 2025-04-03T18:13:10+02:00
+date = 2025-06-29T20:41:01+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-04-03T18:13:10+02:00
-updated = 2025-04-03T18:13:10+02:00
+created = 2025-06-29T20:41:01+02:00
+updated = 2025-06-29T20:41:01+02:00
 repository = "https://github.com/not-matthias/apollo.git"
 homepage = "https://github.com/not-matthias/apollo"
 minimum_version = "0.14.0"
@@ -55,6 +55,9 @@ Modern and minimalistic blog theme powered by [Zola](https://getzola.org). See a
 - [x] Custom homepage
 - [x] Comments
 - [x] Search
+- [x] RSS feeds
+- [x] Mermaid diagram support
+- [x] Table of Contents
 
 ## Installation
 
@@ -90,7 +93,7 @@ cp -r themes/apollo/content/* content/
 
 ## Configuration
 
-You can find all the configuration options [here](./content/posts/configuration.md)
+Checkout all the [options you can configure](./content/posts/configuration.md) and the [example pages](./content/posts/).
 
 ## References
 
