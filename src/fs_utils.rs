@@ -224,7 +224,7 @@ mod tests {
         ];
         for (case, expected) in cases.iter() {
             let ek = get_relevant_event_kind(&case);
-            assert_eq!(ek, *expected, "case: {:?}", case);
+            assert_eq!(ek, *expected, "case: {case:?}");
         }
     }
 

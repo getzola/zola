@@ -17,6 +17,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             SortBy::Title | SortBy::TitleBytes => page.meta.title.is_some(),
             SortBy::Weight => page.meta.weight.is_some(),
             SortBy::Slug => true,
+            SortBy::Permalink => true,
             SortBy::None => unreachable!(),
         });
 
@@ -34,6 +35,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             }
             SortBy::Weight => a.meta.weight.unwrap().cmp(&b.meta.weight.unwrap()),
             SortBy::Slug => natural_lexical_cmp(&a.slug, &b.slug),
+            SortBy::Permalink => a.permalink.cmp(&b.permalink),
             SortBy::None => unreachable!(),
         };
 
