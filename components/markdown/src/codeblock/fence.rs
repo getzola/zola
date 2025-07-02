@@ -26,6 +26,7 @@ pub struct FenceSettings<'a> {
     pub hide_lines: Vec<RangeInclusive<usize>>,
     pub name: Option<&'a str>,
     pub enable_copy: bool,
+    pub overflow_scroll: bool,
 }
 
 impl<'a> FenceSettings<'a> {
@@ -38,6 +39,7 @@ impl<'a> FenceSettings<'a> {
             hide_lines: Vec::new(),
             name: None,
             enable_copy: false,
+            overflow_scroll: false,
         };
 
         for token in FenceIter::new(fence_info) {
@@ -49,6 +51,7 @@ impl<'a> FenceSettings<'a> {
                 FenceToken::HideLines(lines) => me.hide_lines.extend(lines),
                 FenceToken::Name(n) => me.name = Some(n),
                 FenceToken::EnableCopy => me.enable_copy = true,
+                FenceToken::OverflowScroll => me.overflow_scroll = true,
             }
         }
 
@@ -65,6 +68,7 @@ enum FenceToken<'a> {
     HideLines(Vec<RangeInclusive<usize>>),
     Name(&'a str),
     EnableCopy,
+    OverflowScroll,
 }
 
 struct FenceIter<'a> {
@@ -117,6 +121,7 @@ impl<'a> Iterator for FenceIter<'a> {
                     }
                 }
                 "copy" => return Some(FenceToken::EnableCopy),
+                "overflowscroll" => return Some(FenceToken::OverflowScroll),
                 lang => {
                     if tok_split.next().is_some() {
                         eprintln!("Warning: Unknown annotation {}", lang);
