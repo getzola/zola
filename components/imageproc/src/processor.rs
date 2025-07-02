@@ -9,10 +9,10 @@ use libs::ahash::{HashMap, HashSet};
 use libs::image::codecs::avif::AvifEncoder;
 use libs::image::codecs::jpeg::JpegEncoder;
 use libs::image::imageops::FilterType;
-use libs::image::GenericImageView;
+use libs::image::{DynamicImage, GenericImageView, ImageDecoder, ImageReader};
 use libs::image::{EncodableLayout, ImageEncoder, ImageFormat};
 use libs::rayon::prelude::*;
-use libs::{image, webp};
+use libs::webp;
 use serde::{Deserialize, Serialize};
 use utils::fs as ufs;
 
@@ -41,8 +41,13 @@ impl ImageOp {
             return Ok(());
         }
 
-        let img = image::open(&self.input_path)?;
-        let mut img = fix_orientation(&img, &self.input_path).unwrap_or(img);
+        let reader =
+            ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
+        let mut decoder = reader.into_decoder()?;
+        let raw_metadata = decoder.exif_metadata()?;
+        let img = DynamicImage::from_decoder(decoder)?;
+
+        let mut img = fix_orientation(&img, raw_metadata).unwrap_or(img);
 
         let img = match self.instr.crop_instruction {
             Some((x, y, w, h)) => img.crop(x, y, w, h),
