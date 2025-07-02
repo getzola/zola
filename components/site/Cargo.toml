@@ -18,6 +18,7 @@ imageproc = { path = "../imageproc" }
 link_checker = { path = "../link_checker" }
 libs = { path = "../libs" }
 content = { path = "../content" }
+markdown = { path = "../markdown" }
 
 [dev-dependencies]
 tempfile = "3"
