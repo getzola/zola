@@ -2,8 +2,8 @@ use std::env;
 use std::path::{PathBuf, MAIN_SEPARATOR as SLASH};
 
 use config::Config;
-use imageproc::{fix_orientation, ImageMetaResponse, Processor, ResizeOperation};
-use libs::image::{self, DynamicImage, GenericImageView, Pixel};
+use imageproc::{fix_orientation, get_rotated_size, ImageMetaResponse, Processor, ResizeOperation};
+use libs::image::{self, DynamicImage, GenericImageView, ImageDecoder, ImageReader, Pixel};
 use libs::once_cell::sync::Lazy;
 
 /// Assert that `address` matches `prefix` + RESIZED_FILENAME regex + "." + `extension`,
@@ -514,11 +514,35 @@ fn read_image_metadata_avif() {
 }
 
 #[test]
+fn get_rotated_size_test() {
+    fn is_landscape(img_name: &str) -> bool {
+        let path = TEST_IMGS.join(img_name);
+        let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
+        let (mut w, mut h) = decoder.dimensions();
+        w = w + 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
+        let metadata = decoder.exif_metadata().unwrap();
+        (w, h) = get_rotated_size(w, h, metadata).unwrap_or((w, h));
+        w > h
+    }
+    assert!(is_landscape("exif_0.jpg"));
+    assert!(is_landscape("exif_1.jpg"));
+    assert!(is_landscape("exif_2.jpg"));
+    assert!(is_landscape("exif_3.jpg"));
+    assert!(is_landscape("exif_4.jpg"));
+    assert!(!is_landscape("exif_5.jpg"));
+    assert!(!is_landscape("exif_6.jpg"));
+    assert!(!is_landscape("exif_7.jpg"));
+    assert!(!is_landscape("exif_8.jpg"));
+}
+
+#[test]
 fn fix_orientation_test() {
     fn load_img_and_fix_orientation(img_name: &str) -> DynamicImage {
         let path = TEST_IMGS.join(img_name);
-        let img = image::open(&path).unwrap();
-        fix_orientation(&img, &path).unwrap_or(img)
+        let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
+        let metadata = decoder.exif_metadata().unwrap();
+        let img = DynamicImage::from_decoder(decoder).unwrap();
+        fix_orientation(&img, metadata).unwrap_or(img)
     }
 
     let img = image::open(TEST_IMGS.join("exif_1.jpg")).unwrap();
