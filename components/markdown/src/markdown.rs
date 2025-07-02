@@ -816,14 +816,18 @@ pub fn markdown_to_html(
             }
         }
 
-        let mut events = events.into_iter();
-
-        // emit everything up to summary
-        cmark::html::push_html(&mut html, events.by_ref().take(continue_reading));
-
         if has_summary {
+            // Note: we render the summary separately, restarting from
+            // the beginning for the actual body of the page, as cmark's html
+            // renderer has internal state, such as the footnote counter,
+            // that it does not expose.
+            let mut summary_html = String::new();
+            cmark::html::push_html(
+                &mut summary_html,
+                events.iter().cloned().take(continue_reading),
+            );
             // remove footnotes
-            let mut summary_html = FOOTNOTES_RE.replace_all(&html, "").into_owned();
+            let mut summary_html = FOOTNOTES_RE.replace_all(&summary_html, "").into_owned();
 
             // truncate trailing whitespace
             summary_html.truncate(summary_html.trim_end().len());
@@ -850,7 +854,7 @@ pub fn markdown_to_html(
         }
 
         // emit everything after summary
-        cmark::html::push_html(&mut html, events);
+        cmark::html::push_html(&mut html, events.into_iter());
     }
 
     if let Some(e) = error {
