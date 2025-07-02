@@ -176,7 +176,36 @@ impl Library {
     pub fn sort_section_pages(&mut self) {
         let mut updates = AHashMap::new();
         for (path, section) in &self.sections {
-            let pages: Vec<_> = section.pages.iter().map(|p| &self.pages[p]).collect();
+            let pages: Vec<_> = section
+                .pages
+                .iter()
+                .map(|p| &self.pages[p])
+                .filter(|page| {
+                    !page
+                        .ancestors
+                        .iter()
+                        .map(|ancestor| {
+                            // Go through each ancestor in the library map,
+                            // find it based on relative anchestor path
+                            // and map the hidden (Option<bool>)
+                            &self
+                                .sections
+                                .values()
+                                .find(|section| &section.file.relative == ancestor)
+                                .expect("to find ancestor of page")
+                                .meta
+                                .hidden
+                        })
+                        // Add page hidden meta to the chain, to fold into final value
+                        .chain([page.meta.hidden].iter())
+                        // Accumulate together as `accumulator || boolean` unless value explicitely
+                        // set by a section's or page's frontmatter as `hidden = false`
+                        .fold(false, |accumulator, boolean| match (accumulator, boolean) {
+                            (_, Some(value)) => *value,
+                            (value, None) => value,
+                        })
+                })
+                .collect();
             let (sorted_pages, cannot_be_sorted_pages) = match section.meta.sort_by {
                 SortBy::None => continue,
                 _ => sort_pages(&pages, section.meta.sort_by),
