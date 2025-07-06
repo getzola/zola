@@ -494,7 +494,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha256_no_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
@@ -508,7 +508,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha256_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
@@ -519,7 +519,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha384_no_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("base64".to_string(), to_value(false).unwrap());
@@ -532,7 +532,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha384() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         assert_eq!(
@@ -544,7 +544,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha512_no_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
@@ -558,7 +558,7 @@ title = "A title"
     #[test]
     fn can_get_file_hash_sha512() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("app.css").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
@@ -571,7 +571,7 @@ title = "A title"
     #[test]
     fn can_get_hash_sha256_no_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
@@ -585,7 +585,7 @@ title = "A title"
     #[test]
     fn can_get_hash_sha256_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("sha_type".to_string(), to_value(256).unwrap());
@@ -596,7 +596,7 @@ title = "A title"
     #[test]
     fn can_get_hash_sha384_no_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("base64".to_string(), to_value(false).unwrap());
@@ -609,7 +609,7 @@ title = "A title"
     #[test]
     fn can_get_hash_sha384() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         assert_eq!(
@@ -621,7 +621,7 @@ title = "A title"
     #[test]
     fn can_get_hash_sha512_no_base64() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
@@ -635,7 +635,7 @@ title = "A title"
     #[test]
     fn can_get_hash_sha512() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("literal".to_string(), to_value("Hello World").unwrap());
         args.insert("sha_type".to_string(), to_value(512).unwrap());
@@ -648,7 +648,7 @@ title = "A title"
     #[test]
     fn error_when_file_not_found_for_hash() {
         let dir = create_temp_dir();
-        let static_fn = GetHash::new(dir.into_path(), None, PathBuf::new());
+        let static_fn = GetHash::new(dir.keep(), None, PathBuf::new());
         let mut args = HashMap::new();
         args.insert("path".to_string(), to_value("doesnt-exist").unwrap());
         let err = format!("{}", static_fn.call(&args).unwrap_err());

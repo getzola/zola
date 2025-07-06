@@ -16,7 +16,7 @@ glob = "0.3"
 globset = "0.4"
 image = {version = "0.25", default-features = true, features = ["avif"]}
 lexical-sort = "0.3"
-minify-html = "0.15"
+minify-html = "0.16"
 nom-bibtex = "0.5"
 num-format = "0.4"
 once_cell = "1"
@@ -26,7 +26,7 @@ pulldown-cmark-escape = { version = "0.11", default-features = false }
 quickxml_to_serde = "0.6"
 rayon = "1"
 regex = "1"
-relative-path = "1"
+relative-path = "2"
 reqwest = { version = "0.12", default-features = false, features = ["blocking"] }
 grass = {version = "0.13", default-features = false, features = ["random"]}
 serde_json = "1"
