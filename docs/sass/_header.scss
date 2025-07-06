@@ -1,8 +1,4 @@
 header {
-  .header__logo {
-    border-bottom: none;
-  }
-
   ul {
     padding-inline-start: 0;
     display: flex;
@@ -15,8 +11,15 @@ header {
   }
 
   .header__logo {
+    border-bottom: none;
     font-size: 2rem;
     font-weight: bold;
+
+    img {
+      height: 2.5rem;
+      width: auto;
+      display: block;
+    } 
 
     &:hover {
       text-decoration: none;
