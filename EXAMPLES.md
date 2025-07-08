@@ -45,3 +45,4 @@
 | [dmarcoux.com](https://dmarcoux.com)                               | https://github.com/dmarcoux/dmarcoux.com                 |
 | [Herman Schaaf's Blog](https://hermanschaaf.com)                   | https://github.com/hermanschaaf/zola-blog                |
 | [Nizzlay](https://nizzlay.com)                                     | https://github.com/Nizzlay/nizzlay.com                   |
+| [Lysator](https://www.lysator.liu.se)                              | https://git.lysator.liu.se/www/hemsida                   |
