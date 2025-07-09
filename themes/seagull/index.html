@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Seagull | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;seagull&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Seagull</h1>
+            <p>A Zola theme.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;trentesaux.fr&#x2F;">Hugo Trentesaux</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.17.0 and above</p>
+            
+            <p><b>License:</b> AGPL</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;git.42l.fr&#x2F;HugoTrentesaux&#x2F;seagull">https:&#x2F;&#x2F;git.42l.fr&#x2F;HugoTrentesaux&#x2F;seagull</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;seagull.coinduf.eu&#x2F;">https:&#x2F;&#x2F;seagull.coinduf.eu&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-06-28T17:25:23+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="seagull">Seagull</h1>
+<p>A Zola theme.</p>
+<p><img src="https://www.getzola.org/themes/seagull/./static/img/gull_rect.svg" alt="gull" /></p>
+<h2 id="installation">Installation</h2>
+<p>Add the theme as a git submodule</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git submodule add</span><span style="font-style:italic;color:#fd971f;"> --name</span><span> seagull https://git.42l.fr/HugoTrentesaux/seagull.git themes/seagull
+</span></code></pre>
+<p>Enable the theme in your <code>config.toml</code></p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>theme = &quot;seagull&quot;
+</span></code></pre>
+<p>Add a <code>_variables.sass</code> file in a <code>sass</code> folder</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>mkdir sass
+</span><span>touch sass/_variables.sass
+</span></code></pre>
+<p>Add a <code>_index.md</code> file in your <code>content</code> folder.</p>
+<h2 id="features">Features</h2>
+<p>Features can be seen on the demo website: https://seagull.coinduf.eu/.</p>
+<p>You can customize the theme with the <code>/sass/_variables.sass</code> file.</p>
+<h2 id="support">Support</h2>
+<p>I'll provide support on demand on <a class="external" href="https://zola.discourse.group/">Zola forum</a> if you tag <a class="external" href="https://zola.discourse.group/u/hugotrentesaux/summary">@HugoTrentesaux</a></p>
+<h2 id="build-website">Build website</h2>
+<p>Because of the hack used to allow theme customization, before building seagull website itself, you need to create an empty file</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>mkdir ../../sass
+</span><span>touch ../../sass/_variables.sass
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

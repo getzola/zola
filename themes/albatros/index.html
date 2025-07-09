@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Albatros | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;albatros&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Albatros</h1>
+            <p>A feature rich theme originally made for Duniter website.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;trentesaux.fr&#x2F;">Hugo Trentesaux</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.16.0 and above</p>
+            
+            <p><b>License:</b> AGPL</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;git.42l.fr&#x2F;HugoTrentesaux&#x2F;Albatros">https:&#x2F;&#x2F;git.42l.fr&#x2F;HugoTrentesaux&#x2F;Albatros</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;albatros.coinduf.eu&#x2F;">https:&#x2F;&#x2F;albatros.coinduf.eu&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-06-19T13:57:05+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="albatros-theme-for-zola">Albatros theme for Zola</h1>
+<p>This theme was made for <a class="external" href="https://duniter.fr/">Duniter</a> website. It was then abstracted and turned into <strong>Albatros</strong>.</p>
+<p><img src="https://www.getzola.org/themes/albatros/./screenshot.png" alt="screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>Add the theme as a git submodule:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git submodule add</span><span style="font-style:italic;color:#fd971f;"> --name</span><span> albatros https://git.42l.fr/HugoTrentesaux/albatros.git themes/albatros
+</span></code></pre>
+<p>and enable the theme in your <code>config.toml</code></p>
+<p>theme = "albatros"</p>
+<h2 id="features">Features</h2>
+<p>It has a lot of feature that I could not find time to document yet. Most of the available customization is in <code>theme.toml</code>/<code>extra</code> section and <code>sass/_albatros.sass</code> file (e.g. for colors).</p>
+<p>See:</p>
+<ul>
+<li>https://duniter.fr/</li>
+<li>https://duniter.org/</li>
+</ul>
+<p>for reference.</p>
+<h3 id="landing-pages">Landing pages</h3>
+<p>You are encouraged to provide custom landing pages that you can write in <code>template/custom</code>.
+The theme will take care of the rest (pages organised as wiki with breadcrumb).</p>
+<h3 id="authors">Authors</h3>
+<p>Each author must have a card in <code>content/team</code> folder.</p>
+<h2 id="support">Support</h2>
+<p>I'll provide support on demand on <a class="external" href="https://zola.discourse.group/">Zola forum</a> by documenting the theme step by step.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

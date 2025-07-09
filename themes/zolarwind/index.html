@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Zolarwind | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zolarwind&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Zolarwind</h1>
+            <p>A localizable blog theme using Tailwind CSS for styling and KaTex for math</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;weitzel.dev">Thomas Weitzel</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.20.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;thomasweitzel&#x2F;zolarwind">https:&#x2F;&#x2F;github.com&#x2F;thomasweitzel&#x2F;zolarwind</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;pureandroid.com">https:&#x2F;&#x2F;pureandroid.com</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-06-27T19:21:13+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><img src="https://www.getzola.org/themes/zolarwind/screenshot.png" alt="A screenshot of how the theme looks like" /></p>
+<h1 id="the-zolarwind-theme-for-zola">The Zolarwind Theme for Zola</h1>
+<p>Welcome to Zolarwind, the simple Zola blog theme with Tailwind CSS and KaTex support.
+This theme is for Zola users aiming to have a nice blog design powered by Tailwind CSS.
+It seamlessly integrates with <a class="external" href="https://mermaid.js.org">Mermaid</a>, enabling the creation of various diagrams
+directly within your blog posts using a Markdown-inspired syntax.
+Additionally, the theme smoothly integrates math formulas using <a class="external" href="https://katex.org">KaTex</a>.
+Most importantly, while the theme is designed to be easily localizable,
+you can choose your preferred language setting for a consistent blog experience.</p>
+<hr />
+<h2 id="features">Features:</h2>
+<ul>
+<li>
+<p><strong>Tailwind CSS</strong>: Utilize the utility-first CSS framework for rapid UI development.</p>
+</li>
+<li>
+<p><strong>Mermaid Integration</strong>: Create diverse diagrams using simple text.</p>
+</li>
+<li>
+<p><strong>KaTex Integration</strong>: Integrate and display math formulas seamlessly in your blog posts.</p>
+</li>
+<li>
+<p><strong>Localization Support</strong>: All theme-specific strings are available in multiple languages; choose the one that's right for you.
+If your language isn't supported yet, just create the resource file with your translations.</p>
+</li>
+</ul>
+<hr />
+<h2 id="table-of-contents">Table of Contents:</h2>
+<ul>
+<li>Demo Website</li>
+<li>Prerequisites</li>
+<li>Installation</li>
+<li>Configuration</li>
+<li>Front Matter</li>
+<li>Localization</li>
+<li>Integrating the theme folder</li>
+<li>Development</li>
+<li>Remarks</li>
+<li>Contributing</li>
+<li>License</li>
+</ul>
+<hr />
+<h2 id="demo-website">Demo Website</h2>
+<p>You can see the theme in action on my <a class="external" href="https://pureandroid.com">personal website</a>.
+The site uses the German language.</p>
+<hr />
+<h2 id="prerequisites">Prerequisites</h2>
+<p>To use the theme, you need some software pre-installed:</p>
+<ul>
+<li>
+<p><a class="external" href="https://git-scm.com/downloads">Git</a>, Required for version control.</p>
+</li>
+<li>
+<p><a class="external" href="https://nodejs.org/en/download">Node</a>, an open-source, cross-platform JavaScript runtime environment.
+Node is optional and only needed if you want to change the CSS in <code>css/main.css</code>.</p>
+</li>
+<li>
+<p><a class="external" href="https://github.com/getzola/zola/releases">Zola</a>, a fast static site generator.</p>
+</li>
+<li>
+<p>an editor or integrated development environment of your choice —
+I use <a class="external" href="https://www.jetbrains.com/idea/download">JetBrains IDEA</a>,
+an IDE that makes development a more productive and enjoyable experience.</p>
+</li>
+</ul>
+<hr />
+<h2 id="installation">Installation</h2>
+<ol>
+<li>
+<p>Clone this theme repository with e.g. <code>git@github.com:thomasweitzel/zolarwind.git</code>.
+Or download it from <code>https://github.com/thomasweitzel/zolarwind</code>.</p>
+</li>
+<li>
+<p>Make adjustments to the <code>config.toml</code> file as needed.
+To run the theme as a standalone site, you need to adjust the <code>base_url</code> to your domain.
+If you want to try it out on your local machine, you can leave it as is.
+Just run <code>zola serve</code> from the theme's root directory.</p>
+</li>
+</ol>
+<hr />
+<h2 id="configuration">Configuration</h2>
+<p>Your <code>config.toml</code> file is crucial in customizing the Zola site.
+Here's a breakdown of the configuration settings tailored for this theme:</p>
+<h3 id="basic-configuration">Basic Configuration:</h3>
+<ul>
+<li>
+<p><strong>base_url</strong>: Specify the URL the site will be built for.
+In this case, the site will be built for <code>https://example.org</code>.
+Adjust this to your own domain.</p>
+</li>
+<li>
+<p><strong>compile_sass</strong>: Determines whether to automatically compile all Sass files present in the <code>sass</code> directory.
+Here, it's set to <code>false</code>, meaning Sass files won't be automatically compiled for this theme.</p>
+</li>
+<li>
+<p><strong>default_language</strong>: Sets the default language for the site.
+The provided config uses English (<code>en</code>) as the default language.
+As of now, German (<code>de</code>) is available in the <code>i18n</code> directory.</p>
+</li>
+<li>
+<p><strong>theme</strong>: The theme used for the site.
+The provided line is commented out, indicating that the theme's files are taken from the <code>template</code> directory.
+If you move the theme to the <code>themes/zolarwind</code> directory, use <code>zolarwind</code> for this entry.</p>
+</li>
+<li>
+<p><strong>build_search_index</strong>: If set to <code>true</code>, a search index will be built from the pages and section content for the <code>default_language</code>.
+In this configuration and for this theme, it's disabled (<code>false</code>).</p>
+</li>
+<li>
+<p><strong>generate_feed</strong>: Determines if an Atom feed (file <code>atom.xml</code>) is automatically generated.
+It's set to <code>true</code>, meaning a feed will be generated.</p>
+</li>
+<li>
+<p><strong>taxonomies</strong>: An array of taxonomies (classification systems) used for the site.
+Here, a taxonomy for <code>tags</code> is defined, with a pagination limit of 6 and an enabled feed.</p>
+</li>
+</ul>
+<h3 id="markdown-configuration">Markdown Configuration:</h3>
+<ul>
+<li>
+<p><strong>highlight_code</strong>: Indicates whether code snippets in Markdown files should be highlighted. Here, it's set to <code>true</code>.</p>
+</li>
+<li>
+<p><strong>highlight_theme</strong>: Specifies the theme to be used for code highlighting. The chosen theme in this configuration is <code>1337</code>.</p>
+</li>
+<li>
+<p><strong>extra_syntaxes_and_themes</strong>: directory for additional syntax highlighting configuration files for languages not directly supported by Zola.</p>
+</li>
+</ul>
+<h3 id="extra-configuration">Extra Configuration:</h3>
+<p>The <code>[extra]</code> section is where you can place any custom variables you want to be accessible in your templates.</p>
+<ul>
+<li>
+<p><strong>title</strong>: Required.
+The title of the site.
+Here, it's set to "Zolarwind."</p>
+</li>
+<li>
+<p><strong>path_language_resources</strong>: Required.
+The path to the directory containing language resource files.
+In this config, it's set to <code>i18n/</code>.
+If you move the theme to the <code>themes/zolarwind</code> directory, use <code>themes/zolarwind/i18n/</code> for this entry.</p>
+</li>
+<li>
+<p><strong>generator</strong>: Optional.
+Specify the generator used for creating the static website.
+This site is generated using <code>Zola v0.19.0</code>.</p>
+</li>
+<li>
+<p><strong>favicon_svg</strong>: Optional.
+Provides a path to the site's favicon in SVG format.
+The provided path points to <code>/img/yin-yang.svg</code>.</p>
+</li>
+<li>
+<p><strong>copyright</strong>: Optional.
+A template for the copyright notice.
+It includes a placeholder <code>{year}</code> which is dynamically replaced with the current year of your <code>zola build</code> run.</p>
+</li>
+<li>
+<p><strong>site_description</strong>: Optional.
+A brief description is displayed on the site's banner.</p>
+</li>
+<li>
+<p><strong>quote</strong>: Optional.
+A structure defining a quote and its author.
+This quote is from Yoda.</p>
+</li>
+<li>
+<p><strong>menu_pages</strong>: Optional.
+An array of main navigation menu items.
+Each item has a <code>title</code> and a <code>url</code>.</p>
+</li>
+<li>
+<p><strong>footer_pages</strong>: Optional.
+An array of pages that will appear in the site's footer.
+Each item has a <code>title</code> and a <code>url</code>.</p>
+</li>
+<li>
+<p><strong>social_links</strong>: Optional.
+An array of social media links.
+Each link has a name, a boolean indicating if it's enabled, a URL, and an SVG icon.</p>
+</li>
+</ul>
+<hr />
+<h2 id="front-matter">Front matter</h2>
+<p>For blog posts (Markdown files in folder <code>content/blog</code>), this theme uses a directory structure where each post has its own folder.
+This way, I have all resources for a post in one place.
+It can include images, videos, and other files.</p>
+<p>Each post is associated with an image displayed on the blog's main page and on the post's detail page.
+If you do not provide an image under <code>extra.image</code>, a default image is used instead.</p>
+<ul>
+<li>
+<p><strong>date</strong>: the date of the blog posts, e.g. <code>2020-06-11</code>.</p>
+</li>
+<li>
+<p><strong>title</strong>: the title of the blog posts, e.g. <code>The Game of Fifteen</code>.</p>
+</li>
+<li>
+<p><strong>description</strong>: the description of the blog posts. It is used as a summary on the blog's main page.</p>
+</li>
+<li>
+<p><strong>authors</strong>: an optional array of all the post's authors, e.g. <code>["Thomas Weitzel"]</code>.
+You can leave it empty, but then the first author will show up as <code>Unknown</code> in the feed (<code>atom.xml</code>).</p>
+</li>
+<li>
+<p><strong>taxonomies</strong>: only the optional <code>tags</code> taxonomy is used by this theme.
+I tend to list programming languages used in the post, e.g. <code>["rust", "javascript"]</code>.
+You can omit it, but then the post will not show up under <code>tags</code>.</p>
+</li>
+<li>
+<p><strong>extra.math</strong>: either <code>false</code> (default) or <code>true</code>.
+If set to <code>true</code>, the post will be rendered with KaTex support for displaying math formulas.
+If the entry is omitted or set to <code>false</code>, the post will not have KaTex support.</p>
+</li>
+<li>
+<p><strong>extra.diagram</strong>: either <code>false</code> (default) or <code>true</code>.
+Controls loading of the necessary JavaScript to render the Mermaid diagram.
+If set to <code>true</code>, the post will be rendered with Mermaid support for displaying diagrams
+by using the <code>diagram()</code> shortcode.</p>
+</li>
+<li>
+<p><strong>extra.image</strong>: an optional image for the post.
+If omitted, a default image is used instead.
+The image is displayed on the blog's main page and on the post's detail page.</p>
+</li>
+</ul>
+<hr />
+<h2 id="localization">Localization</h2>
+<p>Consider this text on a page where a blog post is published as an example: <code>Published on July 04, 2023; 1,234 words</code>.
+If your blog is in the German language, you want to have <code>Veröffentlicht am 04. Juli 2023; 1.234 Wörter</code> instead.
+Not only the text should be translated, but also the date and number formats are different.
+And you want a text like <code>1 word</code> or <code>1 Wort</code>, because the singular form should be used where applicable.
+This theme takes care of that.</p>
+<p>To localize your blog with this theme:</p>
+<ol>
+<li>
+<p>Pick your desired language by setting the <code>default_language</code> in <code>config.toml</code>.
+As of now, English (<code>en</code>) and German (<code>de</code>) have language resources available in the <code>i18n</code> directory.
+If your language is not supported yet, just create a new resource file with your translations.
+Use the file <code>en.toml</code> as a template for your own translations.
+Use the correct language code for the file name, e.g. <code>eo.toml</code> for Esperanto.
+This theme supports only languages that read from left-to-right (ltr).</p>
+</li>
+<li>
+<p>The theme will automatically display all theme-specific string resources in the chosen language.</p>
+</li>
+<li>
+<p>The content that you provide should match this language.
+But that is your responsibility.
+The theme will not translate your content.</p>
+</li>
+</ol>
+<p>If you need to define your own date format, look <a class="external" href="https://docs.rs/chrono/latest/chrono/format/strftime/index.html">here</a> for supported specifiers.</p>
+<hr />
+<h2 id="integrating-the-theme-folder">Integrating the theme folder</h2>
+<p>This project is structured as a stand-alone Zola site.
+This section is for those who might want to integrate the theme into an existing Zola website.
+You can do so by moving the relevant theme files to the <code>themes/zolarwind</code> directory.
+All other files stay in the root directory.
+If you have your own files there, you need to merge them with the ones from this theme.
+You also need to adjust the <code>config.toml</code> and <code>package.json</code> files in the root accordingly.</p>
+<p>I will only show you the relevant directories that need to be moved.
+This is the directory structure of the stand-alone site, where the theme is in the root directory:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>/
+</span><span>├── css
+</span><span>├── i18n
+</span><span>├── static
+</span><span>│   ├── css
+</span><span>│   ├── img
+</span><span>│   └── js
+</span><span>├── syntaxes
+</span><span>├── templates
+</span><span>└── theme.toml
+</span></code></pre>
+<p>Create a new directory <code>themes/zolarwind</code> and move the following files and directories there:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>/
+</span><span>├── static
+</span><span>│   └── css
+</span><span>└── themes
+</span><span>    └── zolarwind
+</span><span>        ├── css
+</span><span>        ├── i18n
+</span><span>        ├── static
+</span><span>        │   ├── img
+</span><span>        │   └── js
+</span><span>        ├── syntaxes
+</span><span>        ├── templates
+</span><span>        └── theme.toml
+</span></code></pre>
+<p>The <code>static/css</code> directory is a special case.
+It contains the generated Tailwind CSS file with the name <code>generated.css</code>.
+It will stay in its original location.
+This file is generated from the file <code>css/main.css</code>, which is the input for the CSS generation.
+The generation process can be triggered with a script in the <code>package.json</code> file.
+<strong>You only need to adjust and run the script</strong> in <code>package.json</code> if you make changes to the theme's template files or use new Tailwind CSS classes directly in your content files.
+Since the source file <code>css/main.css</code> has moved to the directory <code>themes/zolarwind/css/main.css</code>, we need to adjust the script in <code>package.json</code> accordingly.</p>
+<p>This is what the relevant part of it looks like for the stand-alone site:</p>
+<pre data-lang="json" style="background-color:#383838;color:#e6e1dc;" class="language-json "><code class="language-json" data-lang="json"><span style="color:#c1be91;">&quot;scripts&quot;</span><span>: {
+</span><span>  </span><span style="color:#c1be91;">&quot;css:build&quot;</span><span>: </span><span style="color:#c1be91;">&quot;npx tailwindcss -i ./css/main.css -o ./static/css/generated.css --minify&quot;</span><span>,
+</span><span>  </span><span style="color:#c1be91;">&quot;css:watch&quot;</span><span>: </span><span style="color:#c1be91;">&quot;npx tailwindcss -i ./css/main.css -o ./static/css/generated.css --watch&quot;</span><span>,
+</span><span>  </span><span style="color:#c1be91;">&quot;server&quot;</span><span>: </span><span style="color:#c1be91;">&quot;zola serve&quot;
+</span><span>}
+</span></code></pre>
+<p>Now change it so that the input file <code>css/main.css</code> will be the file <code>themes/zolarwind/css/main.css</code>:</p>
+<pre data-lang="json" style="background-color:#383838;color:#e6e1dc;" class="language-json "><code class="language-json" data-lang="json"><span style="color:#c1be91;">&quot;scripts&quot;</span><span>: {
+</span><span>  </span><span style="color:#c1be91;">&quot;css:build&quot;</span><span>: </span><span style="color:#c1be91;">&quot;npx tailwindcss -i ./themes/zolarwind/css/main.css -o ./static/css/generated.css --minify&quot;</span><span>,
+</span><span>  </span><span style="color:#c1be91;">&quot;css:watch&quot;</span><span>: </span><span style="color:#c1be91;">&quot;npx tailwindcss -i ./themes/zolarwind/css/main.css -o ./static/css/generated.css --watch&quot;</span><span>,
+</span><span>  </span><span style="color:#c1be91;">&quot;server&quot;</span><span>: </span><span style="color:#c1be91;">&quot;zola serve&quot;
+</span><span>}
+</span></code></pre>
+<p>Since you now use Zolarwind as a theme, you need to declare it in the <code>config.toml</code> file.
+The theme's files have moved to the directory <code>themes/zolarwind</code>, so you need to adjust the only reference to the theme's files in the <code>config.toml</code> file accordingly by changing the <code>path_language_resources</code> entry:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># The site theme to use
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;zolarwind&quot;
+</span><span>
+</span><span style="color:#95815e;"># ...
+</span><span>
+</span><span style="color:#95815e;"># Path to the language resource files
+</span><span style="color:#e8bf6a;">path_language_resources </span><span>= </span><span style="color:#c1be91;">&quot;themes/zolarwind/i18n/&quot;
+</span></code></pre>
+<hr />
+<h2 id="development">Development</h2>
+<p>If you want to adjust the CSS of the theme to your needs, you will need to edit the files in the <code>templates</code> and <code>css</code>
+directories. While you do this, you should make sure that the CSS file <code>static/css/generated.css</code> is up to date. This
+file is generated from the file <code>css/main.css</code>, and all the files that Tailwind automatically identifies via automatic
+content detection.</p>
+<p>If you ever need to explicitly add a source file excluded by default, you can always add it with the <code>@source</code>
+directive, right in your <code>css/main.css</code> file:</p>
+<pre data-lang="css" style="background-color:#383838;color:#e6e1dc;" class="language-css "><code class="language-css" data-lang="css"><span>@</span><span style="color:#e8bf6a;">source</span><span> &quot;../node_modules/@</span><span style="color:#e8bf6a;">my-company</span><span>/</span><span style="color:#e8bf6a;">ui-lib</span><span>&quot;;
+</span></code></pre>
+<p>So whenever one of these files changes, you need to run the script <code>css:build</code> from the <code>package.json</code> file.
+To achieve this, you need to have <code>Node.js</code> and all dependencies from <code>package.json</code> installed (with <code>npm install</code>).
+Then you can run the script with <code>npm run css:watch</code>.
+It monitors all files mentioned above and triggers the CSS generation whenever a relevant file changes.
+This ensures, that the file <code>static/css/generated.css</code> is always up to date.</p>
+<p>I recommend having two terminals open.
+In one terminal, run <code>npm run server</code> - or just <code>zola serve</code> - to start the Zola server.
+In the other terminal, run <code>npm run css:watch</code> to start the CSS generation whenever a relevant file changes.</p>
+<p>That way, your local web browser will automatically reload the page with the updated CSS whenever you change a file.</p>
+<hr />
+<h2 id="remarks">Remarks</h2>
+<h3 id="typography-for-markdown">Typography for Markdown</h3>
+<p>I'm not using <code>@tailwindcss/typography</code> for styling of Markdown files.
+I don't like how it looks.
+Instead, I use <code>@apply</code> in the <code>css/main.css</code> file.
+The <code>@apply</code> directive in Tailwind CSS enables you to compose utility classes into custom CSS classes.
+This makes it possible to apply multiple utility styles within a single class, making it efficient to style Markdown content.</p>
+<p>This approach has pros and cons.
+But it gives me fine-grained control over how the result looks like.
+While it is time-consuming, I prefer this solution over the <code>@tailwindcss/typography</code> plugin.</p>
+<p>Yes, I'm reinventing the wheel here, because for common typographic patterns, I'm just recreating what's already provided by the typography plugin.</p>
+<h3 id="serve-katex-files-locally">Serve KaTex files locally</h3>
+<p>All KaTex files are included in the <code>static</code> directory for this theme.
+Using KaTeX (or any other library) by serving it from a Content Delivery Network (CDN) has implications concerning the General Data Protection Regulation (GDPR) and the use of cookies:</p>
+<ul>
+<li>
+<p><strong>Third-Party Requests &amp; Data Privacy</strong>: When you load resources from a CDN, it triggers third-party requests to the CDN's servers.
+These servers might log your IP address, user agent, and other request-related metadata.
+Under GDPR, IP addresses can be considered personal data.
+By serving KaTeX from your domain, you reduce third-party data transfers, limiting the amount of personal data you expose to external entities.</p>
+</li>
+<li>
+<p><strong>Cookies</strong>: Many CDNs set cookies for various reasons, including analytics or performance optimizations.
+These cookies can track users across different websites that use the same CDN, potentially infringing on their privacy rights.
+By hosting KaTeX on your domain, you have full control over cookies and can ensure compliance with GDPR.</p>
+</li>
+<li>
+<p><strong>Consent</strong>: If you're using a CDN that sets cookies or collects data, you might need to get explicit user consent before loading resources from that CDN.
+This can complicate user experience and lead to a reduced site performance for users who opt-out.
+By self-hosting, you circumvent this issue.</p>
+</li>
+<li>
+<p><strong>Transparency &amp; Control</strong>: By self-hosting, you know exactly which version of KaTeX you're using and can ensure there are no modifications or unexpected behaviors.
+With CDNs, there's a minor risk of the library being compromised, which could affect all sites using that resource.</p>
+</li>
+<li>
+<p><strong>Data Transfer Outside the EU</strong>: If the CDN servers are located outside the European Union, you might be transferring data out of the EU,
+which adds another layer of GDPR compliance requirements.
+By self-hosting, you ensure that user data doesn't leave the region unless you specifically choose a hosting solution outside the EU.</p>
+</li>
+</ul>
+<hr />
+<h2 id="contributing">Contributing</h2>
+<p>Contributions are always welcome!
+If you see areas of improvement or want to add features, please submit a PR.</p>
+<p>I'm especially interested in more translations.
+See folder <code>i18n</code> for what's available and what is not.
+Use the file <code>en.toml</code> as a template for your own translations.</p>
+<hr />
+<h2 id="license">License</h2>
+<p>This theme is under the MIT License.
+For details, please refer to the LICENSE file.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

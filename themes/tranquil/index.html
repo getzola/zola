@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>tranquil | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;tranquil&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>tranquil</h1>
+            <p>A blog theme for zola, simple and clean</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;TeaDrinkingProgrammer">TeaDrinkingProgrammer</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.9.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;TeaDrinkingProgrammer&#x2F;tranquil">https:&#x2F;&#x2F;github.com&#x2F;TeaDrinkingProgrammer&#x2F;tranquil</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;teadrinkingprogrammer.github.io&#x2F;tranquil-demo&#x2F;">https:&#x2F;&#x2F;teadrinkingprogrammer.github.io&#x2F;tranquil-demo&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-03-01T17:19:35+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><img src="https://github.com/TeaDrinkingProgrammer/tranquil/blob/main/screenshot.png?raw=true" alt="A screenshot (dark theme) of the example page of the demo website" />
+<img src="https://github.com/TeaDrinkingProgrammer/tranquil/blob/main/screenshot-light.png?raw=true" alt="A screenshot (light theme) of the example page of the demo website" />
+<br />
+A blog theme for <a class="external" href="https://www.getzola.org">Zola</a>. Simple, elegant and uses Tailwind. Based on <a class="external" href="https://github.com/isunjn/serene">Isunjns Serene theme</a>.</p>
+<h2 id="demo">Demo</h2>
+<ul>
+<li><a class="external" href="https://teadrinkingprogrammer.github.io/tranquil-demo/">https://teadrinkingprogrammer.github.io/tranquil-demo/</a></li>
+<li>My own blog: <a class="external" href="https://teadrinkingprogrammer.github.io">https://teadrinkingprogrammer.github.io</a></li>
+</ul>
+<h2 id="features">Features</h2>
+<ul>
+<li>A simple and elegant design.</li>
+<li>Projects page: display a list of the projects you have worked on with links.</li>
+<li>Theme toggle: switch between light and dark theme regardless of your browser preference.</li>
+<li>Image zooming using <a class="external" href="https://github.com/sparanoid/lightense-images">Lightense</a>: zoom in on images by clicking on them.</li>
+<li>Out-of-date alert: show alerts when your post is outdated.</li>
+<li>Callouts (note, warning, alert, etc.) that can be used right in Markdown.</li>
+<li>Comments using <a class="external" href="https://giscus.app">Giscus</a>.</li>
+<li>Mathematical notations using <a class="external" href="https://katex.org">KaTeX</a>.</li>
+<li>Diagrams and visualizations using <a class="external" href="https://github.com/mermaid-js/mermaid">Mermaid</a>.</li>
+</ul>
+<h2 id="shoutouts">Shoutouts</h2>
+<p>This theme wouldn't have existed without <a class="external" href="https://github.com/isunjn/serene">Isunjns Serene theme</a>. It's a great theme, so go check that one out as well.</p>
+<p>When I doubted about layout, I always went to look at <a class="external" href="https://fasterthanli.me">FasterThanLimes blog</a> to see how he did it.</p>
+<p>Of course, this website wouldn't render without <a class="external" href="https://getzola.org">Zola</a> and it wouldn't show anything without <a class="external" href="https://tailwindcss.com/">Tailwind</a>.</p>
+<h2 id="tranquil-vs-serene">Tranquil vs Serene</h2>
+<p>Tranquil is a fork of Serene. The main reason to fork was not that I thought Serene was bad: I just wanted to try out Tailwind for a while and reimplementing a blog theme seemed like the perfect way to do so.</p>
+<p>The main and pretty much only difference between Tranquil and Serene is that the styling is built from scratch with Tailwind. The icons have also been changed to align better with Tailwind.</p>
+<h2 id="usage">Usage</h2>
+<ul>
+<li>Check the <a href="https://www.getzola.org/themes/tranquil/./USAGE.md">USAGE.md</a> of <code>main</code> branch.</li>
+</ul>
+<h2 id="contributing">Contributing</h2>
+<ul>
+<li>Before you make any non-trivial changes, consider opening an issue so we can discuss the change.</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

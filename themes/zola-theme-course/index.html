@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Course | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zola-theme-course&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Course</h1>
+            <p>A zola theme designed for online courses or tutorials</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;ana.gelez.xyz">Ana Gelez</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.17.1 and above</p>
+            
+            <p><b>License:</b> GPL-3.0</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;elegaanz&#x2F;zola-theme-course">https:&#x2F;&#x2F;github.com&#x2F;elegaanz&#x2F;zola-theme-course</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;c.gelez.xyz&#x2F;">https:&#x2F;&#x2F;c.gelez.xyz&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-03-21T12:00:20+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zola-theme-course">Zola Theme : Course</h1>
+<p>This theme allows you to publish only courses/tutorials structured in
+parts and subparts, using Zola.</p>
+<p><img src="https://www.getzola.org/themes/zola-theme-course/screenshot.png" alt="Homepage of the demo" /></p>
+<p><img src="https://www.getzola.org/themes/zola-theme-course/screenshot2.png" alt="Page of a course" /></p>
+<p>It automatically links pages of the course with the next and previous ones
+for easy navigation. There is also a navigation bar at the top of each page
+to easily navigate the whole tutorial, and for the reader to never be lost.</p>
+<p>Each page can have an illustration.</p>
+<p>It lets you customize some parts of the site, like the color palette.</p>
+<p>It also features a light/dark mode switcher.</p>
+<p>It also has some SEO features.</p>
+<p>It was made for french courses, so a few parts of the interface may be in french.
+You can easily adapt it to your language by editing the files in <code>themes/zola-theme-course/templates/</code>.</p>
+<h2 id="usage">Usage</h2>
+<p>Create your Zola site, and import this theme:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola init NAME
+</span><span style="color:#da4939;">cd</span><span> NAME/themes
+</span><span>git clone https://github.com/elegaanz/zola-theme-course.git
+</span><span style="color:#da4939;">cd</span><span> ..
+</span></code></pre>
+<p>Then update your <code>config.toml</code> with this line:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;zola-theme-course&quot;
+</span></code></pre>
+<p>You can also add these lines to customize how the theme behaves:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">site_name </span><span>= </span><span style="color:#c1be91;">&quot;My course&quot;
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;image.png&quot;
+</span><span style="color:#e8bf6a;">icon_desc </span><span>= </span><span style="color:#c1be91;">&quot;Icon of the course&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;A great course!&quot;
+</span><span style="color:#e8bf6a;">default_illus </span><span>= </span><span style="color:#c1be91;">&quot;illus.png&quot;
+</span><span style="color:#e8bf6a;">primary_color </span><span>= </span><span style="color:#c1be91;">&quot;#FFFFFF&quot;
+</span><span style="color:#e8bf6a;">accent_color </span><span>= </span><span style="color:#c1be91;">&quot;#FFFFFF&quot;
+</span><span style="color:#e8bf6a;">source_url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/me/my-course&quot;
+</span></code></pre>
+<h3 id="file-structure">File structure</h3>
+<p>For your course to be displayed correctly, it needs to follow a specific structure.</p>
+<ul>
+<li><code>content/_index.md</code> is the text displayed on the homepage</li>
+<li>each part should have its own folder, with an <code>_index.md</code></li>
+<li>each subpart should have its own markdown file (which can be an <code>index.md</code> in a subfolder)</li>
+<li>all <code>_index.md</code> files should have <code>sort_by = "weight"</code> in their frontmatter, and you can then
+order parts and subparts using the <code>weight</code> option.</li>
+</ul>
+<p>With this theme, pages can also have extra options:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#95815e;"># Don&#39;t display the page title, useful for the homepage
+</span><span style="color:#e8bf6a;">no_title </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#95815e;"># The name of the image to use as a banner
+</span><span style="color:#e8bf6a;">illus </span><span>= </span><span style="color:#c1be91;">&quot;illus.jpg&quot;
+</span><span style="color:#95815e;"># Adds JSON-LD metadata on this page, useful for the homepage
+</span><span style="color:#e8bf6a;">jsonld </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>The standard <code>title</code> and <code>description</code> fields are also taken into account.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

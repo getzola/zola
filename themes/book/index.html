@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>book | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;book&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>book</h1>
+            <p>A book theme inspired from GitBook&#x2F;mdBook</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;www.vincentprouillet.com">Vincent Prouillet</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.17.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;getzola&#x2F;book">https:&#x2F;&#x2F;github.com&#x2F;getzola&#x2F;book</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;getzola.github.io&#x2F;book&#x2F;">https:&#x2F;&#x2F;getzola.github.io&#x2F;book&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-03-14T12:12:57-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="book">book</h1>
+<p>A theme based on <a class="external" href="https://www.gitbook.com">Gitbook</a>, to write documentation
+or books.</p>
+<p><img src="https://github.com/Keats/book/blob/master/screenshot.png?raw=true" alt="book screenshot" /></p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li>Installation</li>
+<li>Options
+<ul>
+<li>Numbered chapters</li>
+</ul>
+</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/getzola/book.git
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;book&quot;
+</span><span style="color:#95815e;"># Optional, if you want search
+</span><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h2 id="usage">Usage</h2>
+<p>Book will generate a book from the files you place in the <code>content</code> directory.  Your book
+can have two levels of hierarchy: chapters and subchapters.</p>
+<p>Each chapter should be a <code>section</code> within the Gutenberg site and should have an <code>_index.md</code>
+file that sets its <code>weight</code> front-matter variable to its chapter number.  For example,
+chapter 2 should have <code>weight = 2</code>.  Additionally, each chapter should also set the
+<code>sort_by = "weight"</code> in its front matter.</p>
+<p>Each subchapter should be a <code>page</code> and should have its <code>weight</code> variable set to the subchapter
+number.  For example, subchapter 3.4 should have <code>weight = 4</code>.</p>
+<p>Finally, you should create an <code>_index.md</code> file and set the <code>redirect_to</code> front-matter variable
+to redirect to the first section of your content.  For example, if your first section has the
+slug <code>introduction</code>, then you would set <code>redirect_to = "introduction"</code>.</p>
+<h2 id="options">Options</h2>
+<h3 id="numbered-chapters">Numbered chapters</h3>
+<p>By default, the <code>book</code> theme will number the chapters and pages in the left menu.
+You can disable that by setting the <code>book_number_chapters</code> in <code>extra</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">book_number_chapters </span><span>= </span><span style="color:#6e9cbe;">false
+</span></code></pre>
+<h3 id="current-section-pages-only">Current section pages only</h3>
+<p>By default, the <code>book</code> theme will list all the pages in the current section.
+You can disable that by setting the <code>book_only_current_section_pages</code> in <code>extra</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">book_only_current_section_pages </span><span>= </span><span style="color:#6e9cbe;">false
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

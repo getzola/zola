@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Inky | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;inky&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Inky</h1>
+            <p>An elegant and understated theme for Zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;www.jimmyff.co.uk">jimmyff</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.17.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;jimmyff&#x2F;zola-inky">https:&#x2F;&#x2F;github.com&#x2F;jimmyff&#x2F;zola-inky</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;jimmyff.github.io&#x2F;zola-inky&#x2F;">https:&#x2F;&#x2F;jimmyff.github.io&#x2F;zola-inky&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-10-01T19:26:11+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zola-inky">Zola-Inky</h1>
+<blockquote>
+<p>An elegant and understated theme for Zola</p>
+</blockquote>
+<p>Zola Inky (<a class="external" href="https://jimmyff.github.io/zola-inky">view demo</a>) is a theme by <a class="external" href="https://github.com/jimmyff">jimmyff</a> and <a class="external" href="https://github.com/mr-karan">mr-karan</a> for the <a class="external" href="https://www.getzola.org/">Zola</a> static site generator. This theme was originally based on the <a class="external" href="https://github.com/knadh/hugo-ink">hugo-ink</a> theme, ported by mr-karan. It was then packaged and developed further by jimmyff. The theme is available on <a class="external" href="https://github.com/jimmyff/zola-inky">Github</a> under the MIT license, for more information on how to use it please see the <a class="external" href="https://github.com/jimmyff/zola-inky/blob/main/README.md">readme</a> and check the <a class="external" href="https://github.com/jimmyff/zola-inky/blob/main/CHANGELOG.md">changelog</a> for a list of the latest changes.</p>
+<p><a class="external" href="https://jimmyff.github.io/zola-inky"><img src="https://www.getzola.org/themes/inky/screenshot.png" alt="PNG" /></a></p>
+<h2 id="changelog">Changelog</h2>
+<p>For latest changes please see the <a href="https://www.getzola.org/themes/inky/CHANGELOG.md">changelog</a>.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Responsive design</li>
+<li>Responsive images</li>
+<li>Gallery template</li>
+<li>Taxonomy support</li>
+<li>Search</li>
+<li>Customisable via template hooks</li>
+</ul>
+<h2 id="getting-started">Getting started</h2>
+<ol>
+<li>Add this theme to your <code>themes/</code> folder (recommended method: git submodule).</li>
+<li>Copy of the the theme's config.toml file and put in your projects root directory. Update it as required and don't forget to add <code>theme = 'zola-inky'</code> at the top of the file.</li>
+<li>Copy this contents of the <code>content/</code> directory the root of your project and change the files as your necessary.</li>
+</ol>
+<h2 id="customising-the-theme">Customising the theme</h2>
+<ul>
+<li><strong>To change the settings</strong> copy <code>config.toml</code> in to your project and update as required (make sure you add the theme variable at the top of the file, see the getting started heading above).</li>
+<li><strong>To change the themes colours</strong> copy <code>sass/variables.scss</code> in to your project under the same folder and update as required.</li>
+<li><strong>To inject content in to templates</strong> copy <code>templates/macros/hooks.html</code> and update as required.</li>
+</ul>
+<h2 id="using-the-responsive-image-shortcode">Using the responsive image shortcode</h2>
+<p>Using the responsive images will make sure your images are generated at various sizes and served up to viewers at the size that best suits their device via the image srcset attribute. You can use this feature in your markdown like so:</p>
+<pre data-lang="md" style="background-color:#383838;color:#e6e1dc;" class="language-md "><code class="language-md" data-lang="md"><span>{{ image(src=&quot;yourimage.jpg&quot;, alt=&quot;This is my image&quot;) }}
+</span></code></pre>
+<h2 id="feature-requests-support">Feature requests &amp; support</h2>
+<p>I'm afraid I'm unable to accept feature requests or provide user support for this theme. The <a class="external" href="https://www.getzola.org/documentation/getting-started/overview/">Zola documentation</a> and <a class="external" href="https://tera.netlify.app/docs/">Tera documentation</a> are great resources and there is a <a class="external" href="https://zola.discourse.group/">Zola discussion forum</a>. If you've found a bug in the themse please open a github issue.</p>
+<h2 id="contributing">Contributing</h2>
+<p>Contributions are very welcome! If you are planning to add a feature to the theme then feel free to open an issue to discuss your approach and we will be able to say if it's it will likely be accepted. Please keep the following in mind:</p>
+<ul>
+<li>Only widely generic features will be accepted, anything too specific should be kept to your own templates.</li>
+<li>Be careful about destroying indentation as Tera syntax doesn't seem to be widely supported by IDEs.</li>
+<li>Keep it lean. Adding bloat will likely result in your PR being rejected.</li>
+<li>Consider backward compatibility, ideally people blindly-upgrading won't see any unexpected changes to their sites.</li>
+</ul>
+<p>New theme maintainers are welcome but should provide pull-request or two first!</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

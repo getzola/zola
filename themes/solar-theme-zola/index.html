@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>solar-theme-zola | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;solar-theme-zola&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>solar-theme-zola</h1>
+            <p>A port of solar-theme-hugo for zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;hulufei">hulufei</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;hulufei&#x2F;solar-theme-zola">https:&#x2F;&#x2F;github.com&#x2F;hulufei&#x2F;solar-theme-zola</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-themes-demos.github.io&#x2F;solar&#x2F;">https:&#x2F;&#x2F;zola-themes-demos.github.io&#x2F;solar&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-03-20T15:48:51+08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="solar-theme-for-zola">Solar Theme for Zola</h1>
+<p>Port of <a class="external" href="https://github.com/bake/solar-theme-hugo">Solar theme for Hugo</a> to Zola.</p>
+<p><img src="https://www.getzola.org/themes/solar-theme-zola/./screenshot.png" alt="screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/hulufei/solar-theme-zola.git
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;solar-theme-zola&quot;
+</span></code></pre>
+<p>Add <code>title</code> and <code>description</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Your Blog Title&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Your blog description&quot;
+</span></code></pre>
+<h2 id="options">Options</h2>
+<h3 id="color-schemes">Color schemes</h3>
+<p>Set color scheme to (Solarized) <code>dark</code> or (Solarized) <code>light</code> with <code>highlight_theme</code> option:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">highlight_theme </span><span>= </span><span style="color:#c1be91;">&quot;solarized-dark&quot;
+</span></code></pre>
+<h3 id="sidebar-menu">Sidebar menu</h3>
+<p>Set a field in <code>extra</code> with a key of <code>site_menus</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">site_menus </span><span>= [
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/hulufei/solar-theme-zola&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Repository&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;rss.xml&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;RSS&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<p>Each link needs to have a <code>url</code> and a <code>name</code>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

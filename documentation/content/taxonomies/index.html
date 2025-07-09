@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Taxonomies | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+
+<div class="documentation">
+    <aside class="documentation__sidebar">
+        <ul>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Getting Started</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;installation&#x2F;">Installation</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;cli-usage&#x2F;">CLI usage</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;directory-structure&#x2F;">Directory structure</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;configuration&#x2F;">Configuration</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Content</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;section&#x2F;">Section</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;page&#x2F;">Page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;shortcodes&#x2F;">Shortcodes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;linking&#x2F;">Internal links &amp; deep linking</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;table-of-contents&#x2F;">Table of Contents</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;syntax-highlighting&#x2F;">Syntax Highlighting</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;search&#x2F;">Search</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;sass&#x2F;">Sass</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;image-processing&#x2F;">Image processing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;multilingual&#x2F;">Multilingual sites</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Templates</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pages-sections&#x2F;">Sections and Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pagination&#x2F;">Pagination</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;feeds&#x2F;">Feeds</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;sitemap&#x2F;">Sitemap</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;robots&#x2F;">Robots.txt</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;404&#x2F;">404 error page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;archive&#x2F;">Archive</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Themes</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;installing-and-using-themes&#x2F;">Installing &amp; using themes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;creating-a-theme&#x2F;">Creating a theme</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;extending-a-theme&#x2F;">Customizing a theme</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Deployment</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;sourcehut&#x2F;">Sourcehut Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;netlify&#x2F;">Netlify</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;github-pages&#x2F;">GitHub Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;gitlab-pages&#x2F;">GitLab Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;codeberg-pages&#x2F;">Codeberg Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;edgio&#x2F;">Edgio</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;vercel&#x2F;">Vercel</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;zeabur&#x2F;">Zeabur</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;cloudflare-pages&#x2F;">Cloudflare Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;flyio&#x2F;">Fly.io</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;aws-s3&#x2F;">AWS S3 Bucket</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;docker-image&#x2F;">Docker image</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+        </ul>
+    </aside>
+    <div class="documentation__content">
+        
+    <h1>Taxonomies</h1>
+    <p>Zola has built-in support for taxonomies. Taxonomies are a way for users to group content according to user-defined categories.</p>
+<h2 id="definitions"><a class="zola-anchor" href="#definitions" aria-label="Anchor link for: definitions">🔗</a>Definitions</h2>
+<ul>
+<li>Taxonomy: A category that can be used to group content</li>
+<li>Term: A specific group within a taxonomy</li>
+<li>Value: A piece of content that can be associated with a term</li>
+</ul>
+<h2 id="example-a-movie-website"><a class="zola-anchor" href="#example-a-movie-website" aria-label="Anchor link for: example-a-movie-website">🔗</a>Example: a movie website</h2>
+<p>Imagine that you want to make a website to display information about various movies. In that case you could use the following taxonomies:</p>
+<ul>
+<li>Director</li>
+<li>Genres</li>
+<li>Awards</li>
+<li>Release year</li>
+</ul>
+<p>Then at build time Zola can create pages for each taxonomy listing all of the known terms as well as pages for each term in a taxonomy, listing all of the pieces of content associated with that term.</p>
+<p>Imagine again we have the following movies:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>- Shape of water                   &lt;--- Value
+</span><span>  - Director                         &lt;--- Taxonomy
+</span><span>    - Guillermo Del Toro                 &lt;--- Term
+</span><span>  - Genres                            &lt;--- Taxonomy
+</span><span>    - Thriller                           &lt;--- Term
+</span><span>    - Drama                              &lt;--- Term
+</span><span>  - Awards                           &lt;--- Taxonomy
+</span><span>    - Golden globe                         &lt;--- Term
+</span><span>    - Academy award                        &lt;--- Term
+</span><span>    - BAFTA                                &lt;--- Term
+</span><span>  - Release year                      &lt;--- Taxonomy
+</span><span>    - 2017                                &lt;--- Term
+</span><span>    
+</span><span>- The Room:                         &lt;--- Value
+</span><span>  - Director                           &lt;--- Taxonomy
+</span><span>    - Tommy Wiseau                         &lt;--- Term
+</span><span>  - Genres                              &lt;--- Taxonomy
+</span><span>    - Romance                              &lt;--- Term
+</span><span>    - Drama                                &lt;--- Term
+</span><span>  - Release Year                       &lt;--- Taxonomy
+</span><span>    - 2003                                 &lt;--- Term
+</span><span>
+</span><span>- Bright                           &lt;--- Value
+</span><span>  - Director                           &lt;--- Taxonomy
+</span><span>    - David Ayer                           &lt;--- Term
+</span><span>  - Genres                              &lt;--- Taxonomy
+</span><span>    - Fantasy                              &lt;--- Term
+</span><span>    - Action                               &lt;--- Term
+</span><span>  - Awards                             &lt;--- Taxonomy
+</span><span>    - California on Location Awards        &lt;--- Term
+</span><span>  - Release Year                       &lt;--- Taxonomy
+</span><span>    - 2017                                 &lt;--- Term
+</span></code></pre>
+<p>In this example the page for <code>Release year</code> would include links to pages for both 2003 and 2017, where the page for 2017 would list both Shape of Water and Bright.</p>
+<h2 id="configuration"><a class="zola-anchor" href="#configuration" aria-label="Anchor link for: configuration">🔗</a>Configuration</h2>
+<p>A taxonomy has six variables:</p>
+<ul>
+<li><code>name</code>: a required string that will be used in the URLs, usually the plural version (i.e., tags, categories, etc.)</li>
+<li><code>paginate_by</code>: if this is set to a number, each term page will be paginated by this much.</li>
+<li><code>paginate_path</code>: if set, this path will be used by the paginated page and the page number will be appended after it.
+For example the default would be page/1.</li>
+<li><code>feed</code>: if set to <code>true</code>, a feed (atom by default) will be generated for each term.</li>
+<li><code>lang</code>: only set this if you are making a multilingual site and want to indicate which language this taxonomy is for</li>
+<li><code>render</code>: if set to <code>false</code>, pages will not be rendered for the taxonomy or for individual terms.</li>
+</ul>
+<p>Insert into the configuration file (config.toml):</p>
+<p>⚠️ Place the taxonomies key in the main section and not in the <code>[extra]</code> section</p>
+<p><strong>Example 1:</strong> (one language)</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;director&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;genres&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;awards&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;release-year&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>]
+</span></code></pre>
+<p><strong>Example 2:</strong> (multilingual site)</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># These taxonomies go in the main section
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;director&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;genres&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;awards&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;release-year&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.fr</span><span>]
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;director&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;genres&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;awards&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;release-year&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>]
+</span></code></pre>
+<h2 id="using-taxonomies"><a class="zola-anchor" href="#using-taxonomies" aria-label="Anchor link for: using-taxonomies">🔗</a>Using taxonomies</h2>
+<p>Once the configuration is done, you can then set taxonomies in your content and Zola will pick them up:</p>
+<p><strong>Example:</strong></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Shape of water&quot;
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#6d9cbe;">2019-08-15 </span><span style="color:#95815e;"># date of the post, not the movie
+</span><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span style="color:#e8bf6a;">director</span><span>=[</span><span style="color:#c1be91;">&quot;Guillermo Del Toro&quot;</span><span>]
+</span><span style="color:#e8bf6a;">genres</span><span>=[</span><span style="color:#c1be91;">&quot;Thriller&quot;</span><span>,</span><span style="color:#c1be91;">&quot;Drama&quot;</span><span>]
+</span><span style="color:#e8bf6a;">awards</span><span>=[</span><span style="color:#c1be91;">&quot;Golden Globe&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Academy award&quot;</span><span>, </span><span style="color:#c1be91;">&quot;BAFTA&quot;</span><span>]
+</span><span style="color:#e8bf6a;">release-year </span><span>= [</span><span style="color:#c1be91;">&quot;2017&quot;</span><span>]
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<h2 id="output-paths"><a class="zola-anchor" href="#output-paths" aria-label="Anchor link for: output-paths">🔗</a>Output paths</h2>
+<p>In a similar manner to how section and pages calculate their output path:</p>
+<ul>
+<li>the taxonomy name is never slugified</li>
+<li>the taxonomy term (e.g. as specific tag) is slugified when <code>slugify.taxonomies</code> is enabled (<code>"on"</code>, the default) in the configuration</li>
+</ul>
+<p>The taxonomy pages are then available at the following paths:</p>
+<pre data-lang="txt" style="background-color:#383838;color:#e6e1dc;" class="language-txt "><code class="language-txt" data-lang="txt"><span>$BASE_URL/$NAME/ (taxonomy)
+</span><span>$BASE_URL/$NAME/$SLUG (taxonomy entry)
+</span></code></pre>
+<p>Note that taxonomies are case insensitive so terms that have the same slug will get merged, e.g. sections and pages containing the tag "example" will be shown in the same taxonomy page as ones containing "Example"</p>
+
+
+    </div>
+</div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

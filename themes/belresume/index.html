@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>BelResume | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;belresume&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>BelResume</h1>
+            <p>A beautiful, modern, and minimal single-page resume site</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;cx48.dev">cx48</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.20.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;cx48&#x2F;BelResume">https:&#x2F;&#x2F;github.com&#x2F;cx48&#x2F;BelResume</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;cx48.github.io&#x2F;BelResume&#x2F;">https:&#x2F;&#x2F;cx48.github.io&#x2F;BelResume&#x2F;</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;minimal&#x2F;">minimal</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;resume&#x2F;">resume</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2025-04-30T17:15:25+05:30</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="belresume">BelResumé</h1>
+<p><em><strong>A beautiful, modern, and minimal single-page resume site</strong></em></p>
+<p>Powered by <a class="external" href="https://getzola.org/">Zola</a>. Styled with Tailwind CSS &amp; Font Awesome</p>
+<blockquote>
+<p>“Bel” in French means beautiful — this is your beautiful resumé!</p>
+</blockquote>
+<h2 id="preview">Preview</h2>
+<p><a class="external" href="https://cx48.github.io/BelResume/">BelResumé</a> can be deployed for free using GitHub Pages or Vercel</p>
+<h4 id="light-mode">Light Mode</h4>
+<p><img src="https://raw.githubusercontent.com/cx48/BelResume/refs/heads/main/static/images/light.png" alt="Light Mode" /></p>
+<h4 id="dark-mode">Dark Mode</h4>
+<p><img src="https://raw.githubusercontent.com/cx48/BelResume/refs/heads/main/static/images/dark.png" alt="Dark Mode" /></p>
+<h4 id="pagespeed-insights">PageSpeed Insights</h4>
+<p><img src="https://raw.githubusercontent.com/cx48/BelResume/refs/heads/main/static/images/pagespeed.png" alt="PageSpeed" /></p>
+<h2 id="project-structure">Project Structure</h2>
+<ul>
+<li><strong>config.toml</strong>: Site metadata</li>
+<li><strong>static/</strong>: <code>css/style.css</code>, <code>js/script.js</code></li>
+<li><strong>templates/index.html</strong>: Main layout (calls all partials)</li>
+<li><strong>templates/partials/</strong>: All resume sections are modular
+<ul>
+<li><code>header.html</code>: Name, job title, contact links</li>
+<li><code>experience.html</code>: Work history (companies, roles, achievements)</li>
+<li><code>education.html</code>: Schools, degrees, specializations</li>
+<li><code>projects.html</code>: Key project summaries with tags</li>
+<li><code>skills.html</code>: Visual skill bars (adjust widths)</li>
+<li><code>certifications.html</code>: Cert title + authority + year</li>
+<li><code>languages.html</code>: Language proficiency (bars &amp; labels)</li>
+<li><code>awards.html</code>: Award names + year + issuer</li>
+</ul>
+</li>
+</ul>
+<h2 id="quick-start">Quick Start</h2>
+<ol>
+<li>
+<p><strong>Install Zola</strong>: <a class="external" href="https://getzola.org/documentation/getting-started/installation/">https://getzola.org/documentation/getting-started/installation/</a></p>
+</li>
+<li>
+<p><strong>Clone repository</strong>:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/cx48/BelResume
+</span><span style="color:#da4939;">cd</span><span> BelResume
+</span></code></pre>
+</li>
+<li>
+<p><strong>Serve locally</strong>:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola serve
+</span></code></pre>
+<p>After making necessary changes to HTML files present under <code>partials/</code> visit <a class="external" href="http://127.0.0.1:1111">http://127.0.0.1:1111</a></p>
+</li>
+<li>
+<p><strong>Build static site</strong>:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola build
+</span></code></pre>
+<p>All files output to <code>/public</code></p>
+</li>
+</ol>
+<h2 id="deployment-guide">Deployment Guide</h2>
+<blockquote>
+<p>Deploy to GitHub Pages</p>
+</blockquote>
+<ol>
+<li>
+<p>Run Zola build:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola build
+</span></code></pre>
+</li>
+<li>
+<p>Commit and push the contents of the <code>public/</code> folder to your <code>gh-pages</code> branch</p>
+</li>
+<li>
+<p>In GitHub repo settings, enable Pages from the <code>/public</code> folder or <code>gh-pages</code> branch</p>
+</li>
+<li>
+<p>Your site will be live at <code>https://yourusername.github.io/BelResume/</code></p>
+</li>
+</ol>
+<blockquote>
+<p>Deploy to Vercel</p>
+</blockquote>
+<ol>
+<li>
+<p>Login to <a class="external" href="https://vercel.com">Vercel</a> and import your GitHub repo</p>
+</li>
+<li>
+<p>Set <strong>Build Command</strong> to:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola build
+</span></code></pre>
+</li>
+<li>
+<p>Set <strong>Output Directory</strong> to:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>public
+</span></code></pre>
+</li>
+<li>
+<p>Set <strong>Framework Preset</strong> to <code>Other</code></p>
+</li>
+<li>
+<p>Click <strong>Deploy</strong></p>
+</li>
+</ol>
+<p>Zola will build and serve from the <code>public/</code> folder automatically on every push</p>
+<h2 id="customization-guide">Customization Guide</h2>
+<p>To update your resume, simply open the required HTML file under <code>partials/</code> and modify it as per your requirement</p>
+<h3 id="1-config-toml">1. <strong>config.toml</strong></h3>
+<p>Update site-wide metadata:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;John Doe&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Senior Software Engineer&quot;
+</span><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;https://yourdomain.com&quot;
+</span></code></pre>
+<h3 id="2-partials-header-html">2. <strong>partials/header.html</strong></h3>
+<p>Edit your name, role, email, phone, location, LinkedIn link. Example:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">h1 class</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="color:#c1be91;">text-3xl font-bold</span><span>&quot;&gt;John Doe&lt;/</span><span style="color:#e8bf6a;">h1</span><span>&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">h2 class</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="color:#c1be91;">text-xl text-[var(--primary)] font-semibold</span><span>&quot;&gt;Senior Software Engineer&lt;/</span><span style="color:#e8bf6a;">h2</span><span>&gt;
+</span></code></pre>
+<h3 id="3-partials-experience-html">3. <strong>partials/experience.html</strong></h3>
+<p>Replace job titles, companies, durations, and bullet points.</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">h3 class</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="color:#c1be91;">font-semibold</span><span>&quot;&gt;Senior Developer&lt;/</span><span style="color:#e8bf6a;">h3</span><span>&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">span</span><span>&gt;2020–Present&lt;/</span><span style="color:#e8bf6a;">span</span><span>&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">ul</span><span>&gt;
+</span><span>  &lt;</span><span style="color:#e8bf6a;">li</span><span>&gt;Improved system performance by 30%&lt;/</span><span style="color:#e8bf6a;">li</span><span>&gt;
+</span><span>&lt;/</span><span style="color:#e8bf6a;">ul</span><span>&gt;
+</span></code></pre>
+<h3 id="4-partials-education-html">4. <strong>partials/education.html</strong></h3>
+<p>List your degrees, schools, GPA or honors:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">h3</span><span>&gt;Master of CS&lt;/</span><span style="color:#e8bf6a;">h3</span><span>&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">p</span><span>&gt;Stanford University — GPA: 3.9&lt;/</span><span style="color:#e8bf6a;">p</span><span>&gt;
+</span></code></pre>
+<h3 id="5-partials-projects-html">5. <strong>partials/projects.html</strong></h3>
+<p>List project names, stacks used, short descriptions.</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">h3</span><span>&gt;E-commerce Platform&lt;/</span><span style="color:#e8bf6a;">h3</span><span>&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">span class</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="color:#c1be91;">tag</span><span>&quot;&gt;React&lt;/</span><span style="color:#e8bf6a;">span</span><span>&gt; &lt;</span><span style="color:#e8bf6a;">span class</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="color:#c1be91;">tag</span><span>&quot;&gt;Node.js&lt;/</span><span style="color:#e8bf6a;">span</span><span>&gt;
+</span></code></pre>
+<h3 id="6-partials-skills-html">6. <strong>partials/skills.html</strong></h3>
+<p>Update skill bars by adjusting the width in <code>style="width: 90%"</code>.</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">h3</span><span>&gt;JavaScript&lt;/</span><span style="color:#e8bf6a;">h3</span><span>&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">div class</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="color:#c1be91;">progress</span><span>&quot; </span><span style="color:#e8bf6a;">style</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="font-style:italic;color:#6e9cbe;">width</span><span>: </span><span style="color:#a5c261;">95</span><span style="color:#cc7833;">%</span><span>&quot;&gt;&lt;/</span><span style="color:#e8bf6a;">div</span><span>&gt;
+</span></code></pre>
+<h3 id="7-partials-certifications-html">7. <strong>partials/certifications.html</strong></h3>
+<p>List certificates with name, organization, and date:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">h3</span><span>&gt;AWS Certified Architect&lt;/</span><span style="color:#e8bf6a;">h3</span><span>&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">p</span><span>&gt;Amazon – 2022&lt;/</span><span style="color:#e8bf6a;">p</span><span>&gt;
+</span></code></pre>
+<h3 id="8-partials-languages-html">8. <strong>partials/languages.html</strong></h3>
+<p>Change language names, levels, and progress widths:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">span</span><span>&gt;English&lt;/</span><span style="color:#e8bf6a;">span</span><span>&gt; &lt;</span><span style="color:#e8bf6a;">span</span><span>&gt;Native&lt;/</span><span style="color:#e8bf6a;">span</span><span>&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">div style</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="font-style:italic;color:#6e9cbe;">width</span><span>: </span><span style="color:#a5c261;">100</span><span style="color:#cc7833;">%</span><span>&quot;&gt;&lt;/</span><span style="color:#e8bf6a;">div</span><span>&gt;
+</span></code></pre>
+<h3 id="9-partials-awards-html">9. <strong>partials/awards.html</strong></h3>
+<p>Highlight awards with name and source:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">h3</span><span>&gt;Best Hackathon Project&lt;/</span><span style="color:#e8bf6a;">h3</span><span>&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">p</span><span>&gt;DefCon 2025&lt;/</span><span style="color:#e8bf6a;">p</span><span>&gt;
+</span></code></pre>
+<h2 id="get-in-touch">Get in Touch</h2>
+<p>Have feedback, questions, or just want to say hello?<br />
+Feel free to <a class="external" href="https://github.com/cx48/BelResume/issues">open an issue</a> or reach out directly:</p>
+<blockquote>
+<p>Check my GitHub profile for contact links</p>
+</blockquote>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

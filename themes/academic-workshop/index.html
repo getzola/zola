@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Academic Workshop | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;academic-workshop&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Academic Workshop</h1>
+            <p>A Zola theme for a website to list the schedule of your scientific workshop or seminar series</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;avt.im">Alexander Terein</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.18.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;aterenin&#x2F;academic-workshop">https:&#x2F;&#x2F;github.com&#x2F;aterenin&#x2F;academic-workshop</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;aterenin.github.io&#x2F;academic-workshop">https:&#x2F;&#x2F;aterenin.github.io&#x2F;academic-workshop</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-05-30T13:51:53-04:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="academic-workshop-a-zola-theme">Academic Workshop: a Zola theme</h1>
+<p><a class="external" href="https://aterenin.github.io/academic-workshop">Academic Workshop</a> is a Zola theme desgned for hosting a website for scientific workshop or scientific seminar series.
+A demo website built with Academic Workshop can be found at <a class="external" href="https://aterenin.github.io/academic-workshop">aterenin.github.io/academic-workshop</a>, and example repositories using this theme, for a seminar series and workshop, respectively, can be found at <a class="external" href="https://github.com/gp-seminar-series/gp-seminar-series.github.io">github.com/gp-seminar-series/gp-seminar-series.github.io</a> and <a class="external" href="https://github.com/gp-seminar-series/neurips-2024">https://github.com/gp-seminar-series/neurips-2024</a>.</p>
+<h1 id="features">Features</h1>
+<p><a class="external" href="https://github.com/aterenin/academic-workshop">Academic Workshop</a> is designed to be reasonably feature-complete. Its features include:</p>
+<ul>
+<li>An automatic header which lists the tagline, title, and subtitles, with customizable buttons, as well as a background banner image with customizable CSS.</li>
+<li>Shortcodes for various types of lists such as lists of speakers and lists of previous seminars, as well as highlighting upcoming seminars on the front page, implemented in a fully responsive way to look professional on both desktop and mobile devices.</li>
+<li>Smart image resizing in image-grid-type lists, such as for lists of speakers.</li>
+<li>Support for creating a table of accepted workshop papers from a CSV file.</li>
+<li>Metadata including Twitter Summary Card, OpenGraph, and JSON-LD, implemented similar to <a class="external" href="https://github.com/jekyll/jekyll-seo-tag">Jekyll SEO Tag</a>: these ensure pages are search-engine-fiendly and provide social media websites with links which are displayed when links are shared,</li>
+</ul>
+<h1 id="design-and-maintainability">Design and maintainability</h1>
+<p><a class="external" href="https://github.com/aterenin/academic-workshop">Academic Workshop</a> is <a class="external" href="https://jeffhuang.com/designed_to_last/">designed to last</a>.
+This means it follows a set of best practices which try to ensure websites correctly built with it will work correctly in the indefinite future with minimal maintenance, even as the internet changes and links break over time.
+As consequence, the theme has no JavaScript or CSS dependencies of any kind.</p>
+<h1 id="documentation">Documentation</h1>
+<p>The examples below document the theme's options which are available in the TOML files, which are listed as comments within each file.</p>
+<h2 id="config-toml">Config.toml</h2>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com&quot;
+</span><span style="color:#e8bf6a;">compile_sass </span><span>= </span><span style="color:#6e9cbe;">true </span><span style="color:#95815e;"># should be set to true
+</span><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">false </span><span style="color:#95815e;"># not used by the theme
+</span><span style="color:#e8bf6a;">generate_feed </span><span>= </span><span style="color:#6e9cbe;">false </span><span style="color:#95815e;"># not used by the theme
+</span><span style="color:#e8bf6a;">minify_html </span><span>= </span><span style="color:#6e9cbe;">true </span><span style="color:#95815e;"># to ensure correct rendering due to minification of whitespace, should be set to true, unless there is a reason to override it
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">markdown</span><span>]
+</span><span style="color:#e8bf6a;">highlight_code </span><span>= </span><span style="color:#6e9cbe;">false </span><span style="color:#95815e;"># should be set to false unless the page has code to highlight
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">footer_text </span><span>= </span><span style="color:#c1be91;">&quot;This website is built using [Zola](https://www.getzola.org) and the [Academic Workshop](http://github.com/aterenin/academic-workshop/) theme, which is [designed to last](https://jeffhuang.com/designed_to_last/).&quot; </span><span style="color:#95815e;"># by default this page adds a small and non-intrusive footer with some text linking to this repository - you can set this to false to remove the footer if you prefer
+</span><span style="color:#e8bf6a;">title </span><span>= {</span><span style="color:#e8bf6a;">tagline </span><span>= </span><span style="color:#c1be91;">&quot;Presenting the&quot;</span><span>, </span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Academic Workshop Zola Theme&quot;</span><span>, </span><span style="color:#e8bf6a;">subtitles </span><span>= [</span><span style="color:#c1be91;">&quot;For workshops, seminars, and academic events&quot;</span><span>]} </span><span style="color:#95815e;"># this contains the header&#39;s tagline, title, and list of subtitles, which are displayed in order
+</span><span style="color:#e8bf6a;">banner </span><span>= {</span><span style="color:#e8bf6a;">extension </span><span>= </span><span style="color:#c1be91;">&quot;svg&quot;</span><span>, </span><span style="color:#e8bf6a;">size </span><span>= </span><span style="color:#c1be91;">&quot;fixed&quot;</span><span>, </span><span style="color:#e8bf6a;">fade </span><span>= </span><span style="color:#6e9cbe;">true</span><span>} </span><span style="color:#95815e;"># this enables a banner image stored in static/banner.svg, with the CSS class bg-fixed: this CSS class is designed for users to set the background image&#39;s height and width by overriding CSS - see _main.scss for other classes like bg-contain or bg-cover - the fade option enables a CSS-based fade around the text
+</span><span style="color:#e8bf6a;">buttons </span><span>= [{</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Example&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com/&quot;</span><span>}, {</span><span style="color:#e8bf6a;">name</span><span>=</span><span style="color:#c1be91;">&quot;GitHub&quot;</span><span>, </span><span style="color:#e8bf6a;">url</span><span>=</span><span style="color:#c1be91;">&quot;http://github.com/aterenin/academic-workshop&quot;</span><span>}] </span><span style="color:#95815e;"># creates a list of buttons displayed in order, with links to the URLs
+</span><span style="color:#e8bf6a;">image </span><span>= {</span><span style="color:#e8bf6a;">resize </span><span>= </span><span style="color:#a5c261;">400</span><span>, </span><span style="color:#e8bf6a;">ext </span><span>= </span><span style="color:#a5c261;">&#39;.jpg&#39;</span><span>} </span><span style="color:#95815e;"># this sets the desired size for image resizing, as well as the default extension
+</span><span style="color:#e8bf6a;">list_page_limit </span><span>= </span><span style="color:#a5c261;">10 </span><span style="color:#95815e;"># this sets the default number of items which show up in one page in a list
+</span><span style="color:#e8bf6a;">header_pages </span><span>= [{</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/#home&quot;</span><span>},{</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Design&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/#design&quot;</span><span>}] </span><span style="color:#95815e;"># this sets the pages which show up in the navigation menu which gets displayed on mobile devices
+</span><span style="color:#e8bf6a;">button_shortcuts </span><span>= [{</span><span style="color:#e8bf6a;">variable </span><span>= </span><span style="color:#c1be91;">&quot;video&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Video&quot;</span><span>}] </span><span style="color:#95815e;"># this configuration makes it possible to add a button to a page or section in a less-verbose way, for example by writing video = &quot;/url/to/video&quot; instead of buttons = [{name = &quot;Video&quot;, url = &quot;/url/to/video&quot;}]
+</span></code></pre>
+<h2 id="page-configuration">Page configuration</h2>
+<p>If using this theme for a list of seminars, each seminar should be added as a page within a suitable section. An example configuration is given here.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Seminar Title&quot;
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;Example Author&quot; </span><span style="color:#95815e;"># name of the author goes here
+</span><span style="color:#e8bf6a;">institution </span><span>= </span><span style="color:#c1be91;">&quot;Example Institution&quot; </span><span style="color:#95815e;"># name of the institution goes here
+</span><span style="color:#e8bf6a;">author_url </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com&quot; </span><span style="color:#95815e;"># the author&#39;s webpage, which the theme will create links to
+</span><span style="color:#e8bf6a;">time </span><span>= </span><span style="color:#c1be91;">&quot;16:00 UTC&quot; </span><span style="color:#95815e;"># the time of the seminar
+</span><span style="color:#e8bf6a;">buttons </span><span>= [{</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Example&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com/&quot;</span><span>}] </span><span style="color:#95815e;"># a list of buttons displayed on the page and in lists, shown in order
+</span><span style="color:#e8bf6a;">highlight </span><span>= </span><span style="color:#6e9cbe;">true </span><span style="color:#95815e;"># whether or not the seminar gets displayed on a page using the highlight shortcode, which is designed to display a short list of upcoming seminars on the theme&#39;s front page - defaults to false
+</span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;placeholder.svg&quot; </span><span style="color:#95815e;"># optional: allows ont to override the default image URL
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span>
+</span><span style="color:#e8bf6a;">The</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">seminar</span><span style="background-color:#b90622;color:#f8f8f0;">&#39;</span><span style="color:#e8bf6a;">s</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">abstract</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">goes</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">here
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

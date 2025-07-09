@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Anpu | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;anpu&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Anpu</h1>
+            <p>A port of the Hugo Anubis theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;zbrox.com">Rostislav Raykov</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.11.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;zbrox&#x2F;anpu-zola-theme">https:&#x2F;&#x2F;github.com&#x2F;zbrox&#x2F;anpu-zola-theme</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;anpu-zola-theme.vercel.app">https:&#x2F;&#x2F;anpu-zola-theme.vercel.app</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-11-30T14:50:54+09:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="anpu-theme-for-zola">Anpu theme for Zola</h1>
+<p>This is a port of the Hugo theme <a class="external" href="https://github.com/Mitrichius/hugo-theme-anubis/tree/master/layouts">Anubis</a> for <a class="external" href="https://getzola.org">Zola</a>.</p>
+<h2 id="screenshots">Screenshots</h2>
+<table><thead><tr><th style="text-align: center">Light mode</th><th style="text-align: center">Dark mode</th></tr></thead><tbody>
+<tr><td style="text-align: center"><img src="https://www.getzola.org/themes/anpu/screenshot-light.png" alt="light mode website screenshot" /></td><td style="text-align: center"><img src="https://www.getzola.org/themes/anpu/screenshot-dark.png" alt="dark mode website screenshot" /></td></tr>
+</tbody></table>
+<h2 id="usage">Usage</h2>
+<p>In order to use the theme you need to clone this repository in your <code>themes</code> folder:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/zbrox/anpu-zola-theme.git themes/anpu
+</span></code></pre>
+<p>Then set your theme setting in <code>config.toml</code> to <code>anpu</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;anpu&quot;
+</span></code></pre>
+<p>This theme requires both the <code>tags</code> and <code>categories</code> taxonomies.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;categories&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<h2 id="how-to-customize">How To Customize</h2>
+<p>There are two things you can customize:</p>
+<ul>
+<li>The links to be included in the menu</li>
+<li>The date format of the posts</li>
+</ul>
+<h3 id="menu-links">Menu links</h3>
+<p>In your <code>config.toml</code> under the <code>[extra]</code> section you need to set the <code>anpu_menu_links</code> list.</p>
+<p>Example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">anpu_menu_links </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/about/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;About&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<p>If you include <code>$BASE_URL</code> in the url of a link it will be replaced to the base url of your site.</p>
+<h3 id="date-format">Date format</h3>
+<p>In your <code>config.toml</code> under the <code>[extra]</code> section you need to set the <code>anpu_date_format</code> value.</p>
+<p>Example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">anpu_date_format </span><span>= </span><span style="color:#c1be91;">&quot;%e %B %Y&quot;
+</span></code></pre>
+<p>The formatting uses the standart <code>date</code> filter in Tera. The date format options you can use are listed in the <a class="external" href="https://tera.netlify.app/docs/#date">chrono crate documentation</a>.</p>
+<h2 id="attributions">Attributions</h2>
+<p>The icons used are part of <a class="external" href="https://uxwing.com/license/">UXWing</a>'s collection.</p>
+<h2 id="license">License</h2>
+<p>Source code is available under <a href="https://www.getzola.org/themes/anpu/LICENSE">MIT</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

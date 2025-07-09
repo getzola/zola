@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>radion | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;radion&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>radion</h1>
+            <p>A sleek, modern blog theme.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;micahkepe.com">Micah Kepe</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.20.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;micahkepe&#x2F;radion">https:&#x2F;&#x2F;github.com&#x2F;micahkepe&#x2F;radion</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;micahkepe.com&#x2F;radion&#x2F;">https:&#x2F;&#x2F;micahkepe.com&#x2F;radion&#x2F;</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;seo&#x2F;">SEO</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;search&#x2F;">search</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;accessible&#x2F;">accessible</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2025-07-06T14:56:50-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="radion">radion</h1>
+<p>A sleek, modern blog theme for <a class="external" href="https://www.getzola.org/">Zola</a>. See the live
+site demo <a class="external" href="https://micahkepe.com/radion/">here</a>.</p>
+<blockquote>
+<p><strong>radion</strong>
+noun</p>
+<ol>
+<li>(<em>physics</em>) A scalar field in higher-dimensional spacetimes</li>
+</ol>
+</blockquote>
+<details open>
+<summary>Dark theme</summary>
+<p><img src="https://www.getzola.org/themes/radion/screenshot.png" alt="radion dark theme screenshot" /></p>
+</details>
+<details>
+<summary>Light theme</summary>
+<p><img src="https://www.getzola.org/themes/radion/screenshot-light.png" alt="radion light theme screenshot" /></p>
+</details>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Code Snippet Clipboards
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Line(s)-specific highlighting</li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Latex Support</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Light/Dark mode support</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Search functionality</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Table of Contents option</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Footnote support</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Built-in comments option (Giscus)</li>
+</ul>
+<h2 id="contents-and-configuration-guide">Contents and Configuration Guide</h2>
+<ul>
+<li>Installation</li>
+<li>Options
+<ul>
+<li>Top menu</li>
+<li>Title</li>
+<li>Author Attribution</li>
+<li>Favicon</li>
+<li>GitHub</li>
+<li>Code Snippets</li>
+<li>LaTex Support</li>
+<li>Searchbar</li>
+<li>Light and Dark Modes</li>
+<li>Table of Contents</li>
+<li>Comments</li>
+</ul>
+</li>
+<li>Acknowledgements</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> themes
+</span><span>git clone https://github.com/micahkepe/radion
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;radion&quot;
+</span></code></pre>
+<p>This theme requires your index section (<code>content/_index.md</code>) to be paginated to
+work:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">5
+</span></code></pre>
+<p>The posts should therefore be in directly under the <code>content</code> folder.</p>
+<p>The theme requires tags and categories taxonomies to be enabled in your
+<code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    </span><span style="color:#95815e;"># You can enable/disable RSS
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;categories&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>]
+</span></code></pre>
+<p>If you want to paginate taxonomies pages, you will need to overwrite the
+templates as it only works for non-paginated taxonomies by default.</p>
+<hr />
+<h2 id="options">Options</h2>
+<h3 id="top-menu">Top-menu</h3>
+<p>Set a field in <code>extra</code> with a key of <code>radion_menu</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">radion_menu </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/categories&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Categories&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/tags&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://google.com&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Google&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>If you put <code>$BASE_URL</code> in a url, it will automatically be replaced by the actual
+site URL.</p>
+<h3 id="title">Title</h3>
+<p>The site title is shown on the homepage. As it might be different from the
+<code>&lt;title&gt;</code> element that the <code>title</code> field in the config represents, you can set
+the <code>radion_title</code> instead.</p>
+<h3 id="author-attribution">Author Attribution</h3>
+<p>You may define the author(s) of a page in either the root <code>config.toml</code> file, or
+on a per-page basis in the page's frontmatter.</p>
+<p>The order of precedence for determining the author shown in a page’s footer is:</p>
+<ol>
+<li><code>page.extra.author</code> (highest precedence)</li>
+<li><code>page.authors</code></li>
+<li><code>page.config.author</code> (lowest precedence, default)</li>
+</ol>
+<h4 id="defining-a-global-default-author-in-config-toml">Defining a Global Default Author in <code>config.toml</code></h4>
+<p>In <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;John Smith&quot;
+</span></code></pre>
+<h4 id="defining-author-s-per-page">Defining Author(s) Per-Page</h4>
+<p>At the top of a page in its frontmatter (wrap this in <code>+++</code>):</p>
+<ol>
+<li>Define a single author for the page:</li>
+</ol>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;...&quot;
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#6d9cbe;">1970-01-01
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;John Smith&quot;
+</span></code></pre>
+<p>Alternatively, you can define the <code>page.authors</code> variable with a single entry:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;...&quot;
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#6d9cbe;">1970-01-01
+</span><span style="color:#e8bf6a;">authors </span><span>= [</span><span style="color:#c1be91;">&quot;John Smith&quot;</span><span>]
+</span></code></pre>
+<ol start="2">
+<li>Define multiple authors for a page:</li>
+</ol>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;...&quot;
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#6d9cbe;">1970-01-01
+</span><span style="color:#e8bf6a;">authors </span><span>= [</span><span style="color:#c1be91;">&quot;John Smith&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Joe Schmoe&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Jane Doe&quot;</span><span>]
+</span></code></pre>
+<blockquote>
+<p>[!NOTE]
+Do not define both <code>extra.author</code> and <code>authors</code> in the same page unless you
+want <code>extra.author</code> to take precedence.</p>
+</blockquote>
+<h3 id="favicon">Favicon</h3>
+<p>To change the default favicon:</p>
+<ol>
+<li>
+<p>Create your own favicon folder with the following site:
+<a class="external" href="https://realfavicongenerator.net/">RealFaviconGenerator</a></p>
+<ul>
+<li>Set the 'Favicon path' option to <code>/icons/favicon/</code></li>
+</ul>
+</li>
+<li>
+<p>Unzip the created folder</p>
+</li>
+<li>
+<p>Create a <code>static/icons/</code> directory if it does not already exist</p>
+</li>
+<li>
+<p>Place the unzipped <code>favicon/</code> directory in <code>static/icons/</code>.</p>
+</li>
+</ol>
+<p>By default, favicons are enabled, however, if for some reason you would like to
+disable favicons, set the following in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">favicon </span><span>= </span><span style="color:#6e9cbe;">false
+</span></code></pre>
+<h3 id="github">GitHub</h3>
+<p>To enable a GitHub reference link in the header, set the following in your
+<code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">github </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/your-github-link&quot;
+</span></code></pre>
+<h3 id="code-snippets">Code Snippets</h3>
+<h4 id="syntax-highlighting">Syntax Highlighting:</h4>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">markdown</span><span>]
+</span><span style="color:#95815e;"># Whether to do syntax highlighting
+</span><span style="color:#95815e;"># Theme can be customized by setting the `highlight_theme` variable to a theme
+</span><span style="color:#95815e;"># supported by Zola
+</span><span style="color:#e8bf6a;">highlight_code </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># For a complete list of themes, see:
+</span><span style="color:#95815e;"># https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting
+</span><span style="color:#e8bf6a;">highlight_theme </span><span>= </span><span style="color:#c1be91;">&quot;one-dark&quot;
+</span></code></pre>
+<h4 id="enhanced-codeblocks-clipboard-support-and-language-tags">Enhanced Codeblocks (Clipboard Support and Language Tags)</h4>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">codeblock </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<blockquote>
+<p>[!NOTE]
+Ligatures are disabled by default as defined in the
+<a href="https://www.getzola.org/themes/radion/./sass/_theme.scss">_theme.scss</a> file.</p>
+</blockquote>
+<h3 id="latex-support">LaTex Support</h3>
+<p>To enable LaTeX support with MathJax, set the following in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">latex </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h3 id="searchbar">Searchbar</h3>
+<p>To enable a searchbar at the top of the page navigation, set the following in
+your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">search</span><span>]
+</span><span style="color:#e8bf6a;">index_format </span><span>= </span><span style="color:#c1be91;">&quot;elasticlunr_json&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">enable_search </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h3 id="light-and-dark-modes">Light and Dark Modes</h3>
+<p>To set the color theme of the site, set the following in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;toggle&quot; </span><span style="color:#95815e;"># options: {light, dark, auto, toggle}
+</span></code></pre>
+<p>There are four options for the <code>theme</code> field:</p>
+<ul>
+<li><code>light</code>: Always light mode</li>
+<li><code>dark</code>: Always dark mode</li>
+<li><code>auto</code>: Automatically switch between light and dark mode based on the user's
+system preferences</li>
+<li><code>toggle</code>: Allow the user to toggle between light and dark mode</li>
+</ul>
+<h3 id="table-of-contents">Table of Contents</h3>
+<p>To enable a table of contents on a page, add the following to the front matter
+of the page:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">toc </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h3 id="comments">Comments</h3>
+<blockquote>
+<p>[!NOTE]
+Giscus comments assumes that you are hosting the blog site via GitHub Pages
+and thus have access to GitHub Discussions.</p>
+</blockquote>
+<p>First, follow the instructions at <a class="external" href="https://giscus.app/">giscus.app</a>.
+This includes installing the Giscus app and enabling discussions on the
+GitHup repository that you host the website code. Additionally, fill in the
+repository path in the prompt. Then, from the generated script, fill in the
+corresponding values in the <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">comments </span><span>= </span><span style="color:#6e9cbe;">true  </span><span style="color:#95815e;"># {true, false}; sets global enabling of comments by default
+</span><span style="color:#e8bf6a;">giscus_repo </span><span>= </span><span style="color:#c1be91;">&quot;FILL ME IN&quot;
+</span><span style="color:#e8bf6a;">giscus_repo_id </span><span>= </span><span style="color:#c1be91;">&quot;FILL ME IN&quot;
+</span><span style="color:#e8bf6a;">giscus_data_category_id </span><span>= </span><span style="color:#c1be91;">&quot;FILL ME IN&quot;
+</span></code></pre>
+<p>Comments can be enabled or disabled on a per page basis by editing the page's
+front matter. For example, to disable comments on a specific post:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">comments </span><span>= </span><span style="color:#6e9cbe;">false
+</span></code></pre>
+<p>The <code>config.toml</code> value for <code>comments</code> takes precedence and priority. For
+example, if you globally disable comments in your <code>config.toml</code> by setting
+<code>comments = false</code>, then trying to enabling comments through a page's front
+matter will have no effect.</p>
+<hr />
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>Lots of inspiration and code snippets taken from these awesome Zola themes:</p>
+<ul>
+<li>
+<p><a class="external" href="https://github.com/getzola/after-dark"><code>after-dark</code></a> by
+<a class="external" href="https://www.vincentprouillet.com/">Vincent Prouillet</a></p>
+</li>
+<li>
+<p><a class="external" href="https://github.com/not-matthias/apollo/tree/main"><code>apollo</code></a> by
+<a class="external" href="https://github.com/not-matthias">not-matthias</a></p>
+</li>
+<li>
+<p><a class="external" href="https://github.com/SeniorMars/redux"><code>redux</code></a> by
+<a class="external" href="https://github.com/SeniorMars">SeniorMars</a>.</p>
+</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

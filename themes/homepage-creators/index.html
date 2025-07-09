@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>homepage-creators | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;homepage-creators&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>homepage-creators</h1>
+            <p>A fast and beautiful personal homepage for creators, used by https:&#x2F;&#x2F;jiaxiang.wang, a port of HeoWeb.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;blog.jiaxiang.wang">Jiaxiang Wang</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.2 and above</p>
+            
+            <p><b>License:</b> AGPL</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;iWangJiaxiang&#x2F;homepage-for-creators">https:&#x2F;&#x2F;github.com&#x2F;iWangJiaxiang&#x2F;homepage-for-creators</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;jiaxiang.wang&#x2F;">https:&#x2F;&#x2F;jiaxiang.wang&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-04-16T22:26:10+08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <div align="center">
+<h1>Homepage Creators</h1>
+<p align="center">
+<p>主题预览](#-预览) | <a href="https://www.getzola.org/themes/homepage-creators/#-%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B">快速上手</a> | [加入讨论</p>
+<p><a class="external" href="https://github.com/iWangJiaxiang/Homepage-Creators/blob/main/README.md">中文</a> | <a class="external" href="https://github.com/iWangJiaxiang/Homepage-Creators/blob/main/README.en.md">English</a></p>
+</p>
+</div>
+<p><a class="external" href="https://jiaxiang.wang"><img src="https://github.com/iWangJiaxiang/Homepage-Creators/raw/refs/heads/main/screenshot.png" alt="preview" /></a></p>
+<h2 id="fire-yu-lan">🔥 预览</h2>
+<table><thead><tr><th style="text-align: center">站点名称</th><th style="text-align: left">站点地址</th></tr></thead><tbody>
+<tr><td style="text-align: center">王嘉祥 个人主页</td><td style="text-align: left"><a class="external" href="https://www.jiaxiang.wang">https://www.jiaxiang.wang</a></td></tr>
+</tbody></table>
+<h2 id="information-source-jian-jie">ℹ️ 简介</h2>
+<p><a class="external" href="https://github.com/iWangJiaxiang/Homepage-Creators">Homepage Creators</a> 是一款适用于 <a class="external" href="https://github.com/getzola/zola">Zola</a> 的个人主页主题，风格接近 Apple，美观大气。</p>
+<blockquote>
+<p>注意：本主题移植于的开源 <a class="external" href="https://github.com/zhheo/HeoWeb">HeoWeb</a> 纯静态主题，感谢 <a class="external" href="https://blog.zhheo.com/">张洪 Heo</a> 的无私分享。</p>
+</blockquote>
+<p>本主题使用简单，只需修改<code>config.toml</code>文件即可动态调整内容。无需像上游仓库一样修改 HTML 内容，极大降低用户的心智负担。</p>
+<h3 id="electric-plug-gong-neng">🔌 功能</h3>
+<p>特色功能</p>
+<blockquote>
+<p>已完成所有功能移植</p>
+</blockquote>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+基本功能
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+移动端自适应</li>
+<li><input disabled="" type="checkbox" checked=""/>
+动画滚动</li>
+<li><input disabled="" type="checkbox" checked=""/>
+AVIF / WebP自适应</li>
+<li><input disabled="" type="checkbox" checked=""/>
+动态更新底部年份</li>
+<li><input disabled="" type="checkbox" checked=""/>
+访问量统计（Umami 或自定义）</li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox" checked=""/>
+内容板块
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+导航菜单</li>
+<li><input disabled="" type="checkbox" checked=""/>
+首屏板块</li>
+<li><input disabled="" type="checkbox" checked=""/>
+作者板块</li>
+<li><input disabled="" type="checkbox" checked=""/>
+事件板块</li>
+<li><input disabled="" type="checkbox" checked=""/>
+产品板块（独立）</li>
+<li><input disabled="" type="checkbox" checked=""/>
+产品板块（清单）</li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox" checked=""/>
+日常运营
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+置顶通知</li>
+</ul>
+</li>
+<li><input disabled="" type="checkbox" checked=""/>
+合规
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+ICP备案</li>
+<li><input disabled="" type="checkbox" checked=""/>
+公安备案</li>
+</ul>
+</li>
+</ul>
+<h2 id="memo-kuai-su-shang-shou">📝 快速上手</h2>
+<p>本章节助你快速运行自己的主页网站，如果打算正式使用本主题，请参阅正式使用章节，能获得更好的主题版本更新体验</p>
+<h3 id="mian-fei-jing-tai-ye-mian-tuo-guan-fu-wu">免费静态页面托管服务</h3>
+<h4 id="github-pages">GitHub Pages</h4>
+<ol>
+<li><a class="external" href="https://github.com/iWangJiaxiang/Homepage-Creators/fork">Fork</a> 本仓库。</li>
+<li>确保仓库已经包含 <code>.github/workflows/deploy.yml</code> 文件，无需额外配置。</li>
+<li>在仓库的 <strong>Actions</strong> 页面启用 <code>Build GH Pages</code> 工作流，然后手动触发构建。</li>
+<li>提交更改后，GitHub Actions 将自动构建并部署到 <code>gh-pages</code> 分支，等待完成。</li>
+<li>在您的 GitHub 仓库中，进入 <strong>Settings</strong> -&gt; <strong>Pages</strong>，在 <strong>Source</strong> 下拉菜单中选择 <code>gh-pages</code> 分支并保存。</li>
+<li>部署完成后，您可以通过 <code>https://&lt;your-username&gt;.github.io/&lt;repository-name&gt;</code> 访问您的站点。</li>
+<li>参考定制主页章节，定制个人主页</li>
+</ol>
+<h4 id="cloudflare-pages">CloudFlare Pages</h4>
+<ol>
+<li><a class="external" href="https://github.com/iWangJiaxiang/Homepage-Creators/fork">Folk</a> 本仓库</li>
+<li>登录 <a class="external" href="https://dash.cloudflare.com/">Cloudflare</a> 并进入 <strong>Pages</strong> 页面。</li>
+<li>点击 <strong>Create a project</strong> 按钮。</li>
+<li>选择 <strong>Connect to Git</strong>，然后授权 Cloudflare 访问您的 GitHub 仓库。</li>
+<li>在仓库列表中选择您的 <code>Homepage-Creators</code> 仓库。</li>
+<li>配置构建设置：</li>
+</ol>
+<ul>
+<li><strong>Framework preset</strong>: 选择 <code>None</code>。</li>
+<li><strong>Build command 构建命令</strong>: 输入 <code>zola build</code>。</li>
+<li><strong>Build output directory 构建输出</strong>: 输入 <code>public</code>。</li>
+<li>添加环境变量<code>UNSTABLE_PRE_BUILD</code>，填写<code>asdf plugin add zola https://github.com/salasrod/asdf-zola &amp;&amp; asdf install zola $ZOLA_VERSION &amp;&amp; asdf global zola $ZOLA_VERSION</code></li>
+<li>添加环境变量<code>ZOLA_VERSION</code>，填写<code>0.20.0</code></li>
+<li>如果这里遇到问题，请参考<a class="external" href="https://www.getzola.org/documentation/deployment/cloudflare-pages/">官方文档</a></li>
+</ul>
+<ol>
+<li>点击 <strong>Save and Deploy</strong> 按钮，Cloudflare Pages 将开始构建和部署您的站点。</li>
+<li>部署完成后，您可以通过 Cloudflare 提供的域名访问您的站点，或者绑定自定义域名。</li>
+<li>参考定制主页章节，定制个人主页</li>
+</ol>
+<h3 id="ben-di-bu-shu">本地部署</h3>
+<ol>
+<li>
+<p>参考<a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">官方说明</a>安装 Zola 命令行工具</p>
+</li>
+<li>
+<p>将本仓库克隆到本地</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone</span><span style="font-style:italic;color:#fd971f;"> --depth</span><span style="color:#cc7833;">=</span><span>1 https://github.com/iWangJiaxiang/Homepage-Creators
+</span></code></pre>
+</li>
+<li>
+<p>进入本地仓库</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> Homepage-Creators
+</span></code></pre>
+</li>
+<li>
+<p>运行预览命令，然后在浏览器打开提示的预览地址</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola serve
+</span></code></pre>
+<p>此时您应该成功访问到博客网站啦</p>
+</li>
+<li>
+<p>参考官方资料进一步并定制您的主页</p>
+<ul>
+<li><a class="external" href="https://www.getzola.org/documentation/getting-started/cli-usage/">zola 命令说明</a></li>
+<li><a class="external" href="https://www.getzola.org/documentation/getting-started/directory-structure/">理解项目结构</a></li>
+<li><a class="external" href="https://www.getzola.org/documentation/getting-started/configuration/">自定义</a></li>
+</ul>
+</li>
+<li>
+<p>参考定制主页章节，根据需要修改<code>config.toml</code>配置文件内容，您需要对 TOML 格式有基本的了解。</p>
+</li>
+<li>
+<p>根据需要将自己的图片素材放到<code>static/img</code>文件夹</p>
+</li>
+</ol>
+<h2 id="zheng-shi-shi-yong">正式使用</h2>
+<p>本章节提供的方案和直接修改本仓库代码的最大区别就是内容隔离。基于 Zola 博客框架的机制，将本仓库的代码安装为主题，这样主题更新和用户自己的修改将完全隔离，能够长期使用，避免产生技术债务。</p>
+<p>正式使用时，假定你已经对 <a class="external" href="https://github.com/getzola/zola">Zola</a> 框架和 Git Submodule 具备基础的了解，具体操作步骤如下：</p>
+<ol>
+<li>本地安装 Zola 命令行工具，参考<a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">官方说明</a></li>
+<li>使用 <code>zola</code> 命令行本地初始化一个新的网站，也就是你的个人主页，并初始化为 Git 仓库。命令格式为<code>zola init &lt;site name&gt;</code></li>
+<li>将本主题仓库作为 Git Submodule 安装在你的网站<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git submodule add</span><span style="font-style:italic;color:#fd971f;"> -b</span><span> main https://github.com/iWangJiaxiang/Homepage-Creators themes
+</span></code></pre>
+此时，你的仓库应该自动创建了<code>themes/Homepage-Creators</code>文件夹</li>
+<li>下载本仓库内容<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git submodule update</span><span style="font-style:italic;color:#fd971f;"> --init
+</span></code></pre>
+此时，<code>themes/Homepage-Creators</code>文件夹应该具有内容了</li>
+<li>配置新网站使用本主题，修改<code>config.toml</code>文件的属性<code>theme = "Homepage-Creators"</code></li>
+<li>参考定制主页章节，根据需要修改<code>config.toml</code>配置文件内容，您需要对 TOML 格式有基本的了解。</li>
+</ol>
+<p>之后，你的个人主页网站就可以作为一个单独的 Git 仓库维护管理了。</p>
+<p>如果需要更新主题，只需要更新 Git Submodule 的分支/标签/代码即可。</p>
+<h2 id="ding-zhi-zhu-ye">定制主页</h2>
+<p>定制过程十分简单！无需改一行代码，因为我已经对板块进行模块化抽取，你只需要：</p>
+<ol>
+<li>将使用到的图片素材并存放在<code>static/img</code>文件夹（最费时且最难的工作其实是图片制作……）</li>
+<li>修改 <code>config.toml</code> 文件，配置板块、文字内容和引用的图片</li>
+<li>运行<code>zola serve</code>命令，本地预览主页，支持实时刷新</li>
+</ol>
+<p>要进行主页定制，你需要对 Zola 框架具有基本的了解，例如<a class="external" href="https://www.getzola.org/documentation/getting-started/directory-structure/">理解项目结构</a>和<a class="external" href="https://www.getzola.org/documentation/getting-started/configuration/">配置文件</a>，这些内容十分简单，只需要通读一遍即可。</p>
+<h3 id="ji-chu-pei-zhi">基础配置</h3>
+<p>在 <code>config.toml</code> 文件中可以对网站信息进行设置，说明如下</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.site</span><span>]
+</span><span style="color:#95815e;"># 建站年份，用于底部版权内容生成
+</span><span style="color:#e8bf6a;">start_year </span><span>= </span><span style="color:#a5c261;">2024
+</span><span style="color:#95815e;"># 网站 Logo
+</span><span style="color:#e8bf6a;">logo </span><span>= </span><span style="color:#c1be91;">&quot;/img/logo.webp&quot;
+</span><span style="color:#95815e;"># 导航栏 Logo，留空则默认为网站 Logo
+</span><span style="color:#e8bf6a;">nav_logo </span><span>= </span><span style="color:#c1be91;">&quot;/img/logo.webp&quot;
+</span><span style="color:#95815e;"># 联系邮箱
+</span><span style="color:#e8bf6a;">mail </span><span>= </span><span style="color:#c1be91;">&quot;contact@example.com&quot;
+</span><span style="color:#95815e;"># ICP 备案号
+</span><span style="color:#e8bf6a;">compliance_icp </span><span>= </span><span style="color:#c1be91;">&quot;ICP备XXXXXXXX号&quot;
+</span><span style="color:#95815e;"># 公安备案号
+</span><span style="color:#e8bf6a;">compliance_security </span><span>= </span><span style="color:#c1be91;">&quot;公网安备0000000000号&quot;
+</span><span style="color:#95815e;"># 公安备案链接
+</span><span style="color:#e8bf6a;">compliance_security_link </span><span>= </span><span style="color:#c1be91;">&quot;https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=0000000000&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.other</span><span>]
+</span><span style="color:#95815e;"># 是否启用 AVIF 图片格式转换，大幅降低图片尺寸
+</span><span style="color:#e8bf6a;">avif_enable </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h3 id="dao-hang-cai-dan">导航菜单</h3>
+<p>在 <code>config.toml</code> 文件中可以对<strong>顶部导航栏</strong>和<strong>通知</strong>的内容进行设置，说明如下</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.nav</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># 导航栏下方弹出通知
+</span><span>[</span><span style="color:#e8bf6a;">extra.nav.message</span><span>]
+</span><span style="color:#e8bf6a;">enable </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#95815e;"># support inline html
+</span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;🎉 访问作者博客&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://blog.jiaxiang.wang&quot;
+</span><span>
+</span><span style="color:#95815e;"># 中间导航栏配置
+</span><span>[</span><span style="color:#e8bf6a;">extra.nav.center</span><span>]
+</span><span style="color:#e8bf6a;">menus </span><span>= [
+</span><span>    </span><span style="color:#95815e;"># 设置 internal = true，url 为文字的表示内部导航，页面滑动到特定板块的区域
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;主页&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;主页&quot;</span><span>, </span><span style="color:#e8bf6a;">internal </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;主题&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;主题&quot;</span><span>, </span><span style="color:#e8bf6a;">internal </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;博客&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;博客&quot;</span><span>, </span><span style="color:#e8bf6a;">internal </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;媒体&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;媒体&quot;</span><span>, </span><span style="color:#e8bf6a;">internal </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    </span><span style="color:#95815e;"># 设置 internal = true，url 为链接的表示外部跳转
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;项目&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://blog.jiaxiang.wang/tags/project/&quot;</span><span>, </span><span style="color:#e8bf6a;">internal </span><span>= </span><span style="color:#6e9cbe;">false</span><span>},
+</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># 右侧导航栏配置
+</span><span>[</span><span style="color:#e8bf6a;">extra.nav.right</span><span>]
+</span><span style="color:#e8bf6a;">menus </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;作者博客&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://blog.jiaxiang.wang&quot;</span><span>, </span><span style="color:#e8bf6a;">internal </span><span>= </span><span style="color:#6e9cbe;">false</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;作者 Github&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/iWangJiaxiang&quot;</span><span>, </span><span style="color:#e8bf6a;">internal </span><span>= </span><span style="color:#6e9cbe;">false</span><span>},
+</span><span>]
+</span></code></pre>
+<h3 id="nei-rong-ban-kuai">内容板块</h3>
+<p>你可以根据需求对板块进行灵活定制，除了顶部导航栏之外，页面的任何板块都是<strong>模块化组件</strong>，可以<strong>无限自定义顺序、数量</strong>，随心所需，做你所想！</p>
+<p>板块的使用十分简单，将<strong>板块的配置代码粘贴在 <code>config.toml</code> 的最后部分</strong>，也就是 <code>[extra.other]</code> Section 的后面即可。配置代码的第一行统一为 <code>[[extra.index.widgets]]</code>，<code>[[ ]]</code>在 Toml 语法中表示数组的意思</p>
+<p><strong>板块的顺序和添加的顺序一致</strong>，也就是说，你可以在 <code>config.toml</code> 文件中通过复制粘贴调整代码顺序以达到控制页面展示顺序的目的。</p>
+<p>如果有疑惑的地方，最快的方法是参考本项目的 <a class="external" href="https://github.com/iWangJiaxiang/Homepage-Creators/blob/main/config.toml">config.toml 文件</a>，相信你会有所收获。</p>
+<p>目前支持的模块化组件如下：</p>
+<h4 id="mo-kuai-hua-zu-jian-ban-kuai-shou-ping-nei-rong">模块化组件板块：首屏内容</h4>
+<p>配置代码</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets</span><span>]]
+</span><span style="color:#95815e;"># 重要，不要修改
+</span><span style="color:#e8bf6a;">type </span><span>= </span><span style="color:#c1be91;">&quot;header&quot;
+</span><span>[</span><span style="color:#e8bf6a;">extra.index.widgets.value</span><span>]
+</span><span style="color:#e8bf6a;">title_1 </span><span>= </span><span style="color:#c1be91;">&quot;大标题1&quot;
+</span><span style="color:#e8bf6a;">title_2 </span><span>= </span><span style="color:#c1be91;">&quot;大标题2&quot;
+</span><span style="color:#e8bf6a;">bio_1 </span><span>= </span><span style="color:#c1be91;">&quot;这行描述有&lt;span class=</span><span style="color:#519f50;">\&quot;</span><span style="color:#c1be91;">inline-word</span><span style="color:#519f50;">\&quot;</span><span style="color:#c1be91;">&gt;高亮文字&lt;/span&gt;&quot;
+</span><span style="color:#e8bf6a;">bio_2 </span><span>= </span><span style="color:#c1be91;">&quot;另一行描述&quot;
+</span><span style="color:#95815e;"># “了解更多”按钮的链接
+</span><span style="color:#e8bf6a;">about_url </span><span>= </span><span style="color:#c1be91;">&quot;https://blog.jiaxiang.wang/about/&quot;
+</span><span style="color:#95815e;"># 右侧的图片
+</span><span style="color:#e8bf6a;">cover </span><span>= </span><span style="color:#c1be91;">&quot;/img/logo.svg&quot;
+</span><span style="color:#95815e;"># 下面是“了解更多”按钮旁边的小按钮，可根据需求增删，通常放社交媒体链接
+</span><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets.value.links</span><span>]]
+</span><span style="color:#e8bf6a;">class_icon </span><span>= </span><span style="color:#c1be91;">&quot; icon-github-line&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/iWangJiaxiang&quot;
+</span><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets.value.links</span><span>]]
+</span><span style="color:#e8bf6a;">class_icon </span><span>= </span><span style="color:#c1be91;">&quot; icon-github-line&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/iWangJiaxiang&quot;
+</span></code></pre>
+<p>截图（仅展示比较美观的效果，可能和配置代码内容无关）</p>
+<p><img src="https://www.getzola.org/themes/homepage-creators/./docs/header.png" alt="首屏内容截图" /></p>
+<h4 id="mo-kuai-hua-zu-jian-ban-kuai-zuo-zhe-jie-shao">模块化组件板块：作者介绍</h4>
+<p>配置代码</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets</span><span>]]
+</span><span style="color:#95815e;"># 重要，不要修改
+</span><span style="color:#e8bf6a;">type </span><span>= </span><span style="color:#c1be91;">&quot;author&quot;
+</span><span>[</span><span style="color:#e8bf6a;">extra.index.widgets.value</span><span>]
+</span><span style="color:#95815e;"># 姓名
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;站长&quot;
+</span><span style="color:#95815e;"># 头像，图片放在 /static/img 文件夹，此处格式开头为：/img/
+</span><span style="color:#e8bf6a;">avatar </span><span>= </span><span style="color:#c1be91;">&quot;/img/logo01.webp&quot;
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Team leader, architect,&quot;
+</span><span style="color:#95815e;"># 个人介绍或者个人的想法
+</span><span style="color:#e8bf6a;">bio </span><span>= </span><span style="color:#c1be91;">&quot;站长的介绍有点短哦~&quot;
+</span></code></pre>
+<p>截图（仅展示比较美观的效果，可能和配置代码内容无关）</p>
+<p><img src="https://www.getzola.org/themes/homepage-creators/./docs/author.png" alt="作者介绍截图" /></p>
+<h4 id="mo-kuai-hua-zu-jian-ban-kuai-chan-pin-dan-ye">模块化组件板块：产品单页</h4>
+<p>可用来展示个人项目、作品、成果等</p>
+<p>配置代码</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets</span><span>]]
+</span><span style="color:#95815e;"># 重要，不要修改
+</span><span style="color:#e8bf6a;">type </span><span>= </span><span style="color:#c1be91;">&quot;product-single&quot;
+</span><span>[</span><span style="color:#e8bf6a;">extra.index.widgets.value</span><span>]
+</span><span style="color:#95815e;"># 文字内容根据实际需要修改
+</span><span style="color:#e8bf6a;">tip </span><span>= </span><span style="color:#c1be91;">&quot;主页&quot;
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;个人主页&lt;br&gt;正式开源&quot;
+</span><span style="color:#e8bf6a;">bio_1 </span><span>= </span><span style="color:#c1be91;">&quot;像本页面一样，呈现美轮美奂&lt;span class=</span><span style="color:#519f50;">\&quot;</span><span style="color:#c1be91;">inline-word</span><span style="color:#519f50;">\&quot;</span><span style="color:#c1be91;">&gt;效果&lt;/span&gt;&quot;
+</span><span style="color:#e8bf6a;">bio_2 </span><span>= </span><span style="color:#c1be91;">&quot;轻松配置，快速构建你的&lt;span class=</span><span style="color:#519f50;">\&quot;</span><span style="color:#c1be91;">inline-word</span><span style="color:#519f50;">\&quot;</span><span style="color:#c1be91;">&gt;个人主页&lt;/span&gt;&quot;
+</span><span style="color:#95815e;"># 产品大图，图片放在 /static/img 文件夹，此处格式开头为：/img/
+</span><span style="color:#e8bf6a;">img </span><span>= </span><span style="color:#c1be91;">&quot;/img/homepage-single.avif&quot;
+</span><span style="color:#95815e;"># 产品按钮列表
+</span><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets.value.links</span><span>]]
+</span><span style="color:#95815e;"># 样式，支持 primary-button 和 second-link 两种
+</span><span style="color:#e8bf6a;">class </span><span>= </span><span style="color:#c1be91;">&quot;primary-button&quot;
+</span><span style="color:#95815e;"># 链接
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/iWangJiaxiang/Homepage-Creators&quot;
+</span><span style="color:#95815e;"># 显示名称
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;立刻获取源代码&quot;
+</span><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets.value.links</span><span>]]
+</span><span style="color:#e8bf6a;">class </span><span>= </span><span style="color:#c1be91;">&quot;second-link&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/iWangJiaxiang&quot;
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;开发者主页&quot;
+</span></code></pre>
+<p>截图（仅展示比较美观的效果，可能和配置代码内容无关）</p>
+<p><img src="https://www.getzola.org/themes/homepage-creators/./docs/product-single.png" alt="产品单页截图" /></p>
+<h4 id="mo-kuai-hua-zu-jian-ban-kuai-chan-pin-lie-biao">模块化组件板块：产品列表</h4>
+<p>用于展示一系列内容</p>
+<p>配置代码</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets</span><span>]]
+</span><span style="color:#95815e;"># 重要，不要修改
+</span><span style="color:#e8bf6a;">type </span><span>= </span><span style="color:#c1be91;">&quot;product-list&quot;
+</span><span>[</span><span style="color:#e8bf6a;">extra.index.widgets.value</span><span>]
+</span><span style="color:#95815e;"># 文字内容根据实际需要修改
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;媒体&quot;
+</span><span style="color:#e8bf6a;">bio </span><span>= </span><span style="color:#c1be91;">&quot;为互联网共享精神添砖加瓦&quot;
+</span><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets.value.items</span><span>]]
+</span><span style="color:#95815e;"># 产品 logo，图片放在 /static/img 文件夹，此处格式开头为：/img/
+</span><span style="color:#e8bf6a;">logo </span><span>= </span><span style="color:#c1be91;">&quot;/img/internet.svg&quot;
+</span><span style="color:#95815e;"># 文字内容根据实际需要修改
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;个人博客&quot;
+</span><span style="color:#e8bf6a;">bio </span><span>= </span><span style="color:#c1be91;">&quot;个人博客的介绍文字&quot;
+</span><span style="color:#95815e;"># 按钮配置
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://blog.jiaxiang.wang/&quot;
+</span><span style="color:#e8bf6a;">button </span><span>= </span><span style="color:#c1be91;">&quot;访问&quot;
+</span><span style="color:#95815e;"># 显示热门标签
+</span><span style="color:#e8bf6a;">hot </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets.value.items</span><span>]]
+</span><span style="color:#e8bf6a;">logo </span><span>= </span><span style="color:#c1be91;">&quot;/img/wechat.svg&quot;
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;公众号&quot;
+</span><span style="color:#e8bf6a;">bio </span><span>= </span><span style="color:#c1be91;">&quot;第一时间获取动态&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://blog.jiaxiang.wang/wechat&quot;
+</span><span style="color:#e8bf6a;">button </span><span>= </span><span style="color:#c1be91;">&quot;访问&quot;
+</span><span>
+</span></code></pre>
+<p>截图（仅展示比较美观的效果，可能和配置代码内容无关）</p>
+<p><img src="https://www.getzola.org/themes/homepage-creators/./docs/product-list.png" alt="产品列表截图" /></p>
+<h4 id="mo-kuai-hua-zu-jian-ban-kuai-zhong-yao-shi-jian">模块化组件板块：重要事件</h4>
+<p>展示重要活动、大事件等</p>
+<p>配置代码</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[[</span><span style="color:#e8bf6a;">extra.index.widgets</span><span>]]
+</span><span style="color:#95815e;"># 重要，不要修改
+</span><span style="color:#e8bf6a;">type </span><span>= </span><span style="color:#c1be91;">&quot;event&quot;
+</span><span>[</span><span style="color:#e8bf6a;">extra.index.widgets.value</span><span>]
+</span><span style="color:#95815e;"># 文字内容根据实际需要修改
+</span><span style="color:#e8bf6a;">tip </span><span>= </span><span style="color:#c1be91;">&quot;大事件&quot;
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;王嘉祥博客主题&lt;br&gt;正式开源！&quot;
+</span><span style="color:#e8bf6a;">bio </span><span>= </span><span style="color:#c1be91;">&quot;一个为创作者而构建的主题，0成本、0运维开始你的博客生涯，与各位优秀博主一同进步！&quot;
+</span><span style="color:#e8bf6a;">button </span><span>= </span><span style="color:#c1be91;">&quot;立刻获取源代码&quot;
+</span><span style="color:#e8bf6a;">note </span><span>= </span><span style="color:#c1be91;">&quot;基于 Zola 构建&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/iWangJiaxiang/zola-theme-jiaxiang.wang&quot;
+</span><span style="color:#95815e;"># 背景图，图片放在 /static/img 文件夹，此处格式开头为：/img/
+</span><span style="color:#e8bf6a;">img </span><span>= </span><span style="color:#c1be91;">&quot;/img/blog-event.avif&quot;
+</span></code></pre>
+<p>截图（仅展示比较美观的效果，可能和配置代码内容无关）</p>
+<p><img src="https://www.getzola.org/themes/homepage-creators/./docs/event.png" alt="产品列表截图" /></p>
+<h2 id="speech-balloon-tao-lun">💬 讨论</h2>
+<p>如果你对主题有什么建议或者意见，欢迎提 PR &amp; Issue。</p>
+<h2 id="closed-lock-with-key-xu-ke">🔐 许可</h2>
+<p><a class="external" href="https://github.com/iWangJiaxiang/Homepage-Creators">Homepage Creators</a> 使用 <a href="https://www.getzola.org/themes/homepage-creators/./LICENSE">AGPL</a> 协议开源，请遵守开源协议。</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

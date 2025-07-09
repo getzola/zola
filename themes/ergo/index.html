@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Ergo | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;ergo&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Ergo</h1>
+            <p>A simple blog Theme focused on writing, inspired by svbtle</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;liquidthink.net">Andrew Plaza</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.1 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;insipx&#x2F;Ergo">https:&#x2F;&#x2F;github.com&#x2F;insipx&#x2F;Ergo</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;ergo.liquidthink.net">https:&#x2F;&#x2F;ergo.liquidthink.net</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-03-17T15:01:15Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><a class="external" href="http://ergo.liquidthink.net">ergo LIVE DEMO</a></p>
+<p><img src="https://i.imgur.com/l182IYg.jpg" alt="Ergo Screenshot" /></p>
+<p>A light, simple &amp; beautiful Zola theme made with a focus on writing. Inspired by sbvtle and Pixyll.</p>
+<p>Like both those web designs, Ergo is a theme that emphasizes content, but still tries to be stylish. Frankly, the design is
+most like sbvtle (http://sbvtle.com) but without the clever svbtle Engine, Javascript, community or kudos button (kudos is on the list of additions, though! But then i'll have to use JS...)
+If you find that you like all those things, please check out <a class="external" href="http://svbtle.com">svbtle</a>; this theme is meant as a lighter (free) alternative,
+and ergo's design will most likely diverge more in the future as this theme evolves with me and it's users (if there are any).
+This is not meant as a svbtle clone.</p>
+<p>Here's a timelapse:
+<a class="external" href="https://www.youtube.com/watch?v=ogEjvM-v_-s"><img src="https://img.youtube.com/vi/ogEjvM-v_-s/0.jpg" alt="Ergo Creation Timelapse" /></a></p>
+<h2 id="installation">Installation</h2>
+<p>Get <a class="external" href="https://www.getzola.org/">Zola</a> and/or follow their guide on <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">installing a theme</a>.
+Make sure to add <code>theme = "ergo"</code> to your <code>config.toml</code></p>
+<p>Ergo relies on having <code>paginate_by</code> variable set in <code>content/_index.md</code>.</p>
+<h4 id="check-zola-version-only-0-11-0">Check zola version (only 0.11.0+)</h4>
+<p>Just to double-check to make sure you have the right version. It is not supported to use this theme with a version under 0.11.0.</p>
+<h3 id="how-to-serve">how to serve</h3>
+<p>go into your sites directory, and type <code>zola serve</code>. You should see your new site at <code>localhost:1111</code>.</p>
+<h3 id="deployment-to-github-pages-or-netlify">Deployment to Github Pages or Netlify</h3>
+<p><a class="external" href="https://www.getzola.org">Zola</a> already has great documentation for deploying to <a class="external" href="https://www.getzola.org/documentation/deployment/netlify/">Netlify</a> or <a class="external" href="https://www.getzola.org/documentation/deployment/github-pages/">Github Pages</a>. I won't bore you with a regurgitated explanation.</p>
+<h3 id="customizing-the-theme">Customizing the Theme</h3>
+<p>All colors used on the site are from <code>sass/colors.scss</code>. There's only about 5-6 colors total.
+Change them however you like! Feel free to go into theme and edit the colors. However, editing anything other than <code>sass/colors.scss</code> is strongly advised against. Continue at your own peril!</p>
+<h4 id="theme-options">Theme Options</h4>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># Specify a profile picture to use for the logos in the theme. It can be svg, png, jpg, whatever, just make sure to copy the logo you want and put it in img/${YOUR_PROFILE}.*
+</span><span style="color:#95815e;"># and update your config.toml accordingly
+</span><span style="color:#e8bf6a;">profile </span><span>= </span><span style="color:#a5c261;">&#39;profile.svg&#39;
+</span><span>
+</span><span style="color:#95815e;"># Description. This is needed for SEO/site metadata purposes
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Simple blog theme focused on writing, inspired by svbtle&quot;
+</span><span>
+</span><span style="color:#95815e;"># Color themes used by the theme (theme will use ${color_theme}.css file, generated by SASS or SCSS file with the same name). Defaults to [&quot;default&quot;]. User can choose either of them, default theme is the first in list.
+</span><span style="color:#e8bf6a;">color_themes </span><span>= [</span><span style="color:#c1be91;">&quot;my-awesome-theme&quot;</span><span>, </span><span style="color:#c1be91;">&quot;default&quot;</span><span>]
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.socials</span><span>]] </span><span style="color:#95815e;"># website
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;globe&quot;
+</span><span style="color:#e8bf6a;">icon_class </span><span>= </span><span style="color:#c1be91;">&quot;fas&quot;
+</span><span style="color:#e8bf6a;">display </span><span>= </span><span style="color:#c1be91;">&quot;code.liquidthink.net&quot;
+</span><span style="color:#e8bf6a;">uri </span><span>= </span><span style="color:#c1be91;">&quot;https://code.liquidthink.net&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.socials</span><span>]] </span><span style="color:#95815e;"># github
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;github&quot;
+</span><span style="color:#e8bf6a;">display </span><span>= </span><span style="color:#c1be91;">&quot;Insipx&quot;
+</span><span style="color:#e8bf6a;">uri </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/Insipx&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.socials</span><span>]] </span><span style="color:#95815e;"># twitter
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;twitter&quot;
+</span><span style="color:#e8bf6a;">display </span><span>= </span><span style="color:#c1be91;">&quot;@liquid_think&quot;
+</span><span style="color:#e8bf6a;">uri </span><span>= </span><span style="color:#c1be91;">&quot;https://twitter.com/liquid_think&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.socials</span><span>]] </span><span style="color:#95815e;"># email
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;envelope&quot;
+</span><span style="color:#e8bf6a;">icon_class </span><span>= </span><span style="color:#c1be91;">&quot;fas&quot;
+</span><span style="color:#e8bf6a;">display </span><span>= </span><span style="color:#c1be91;">&quot;say hello&quot;
+</span><span style="color:#e8bf6a;">uri </span><span>= </span><span style="color:#c1be91;">&quot;mailto:${MY_EMAIL}@cool_domain.com?subject=hi&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.socials</span><span>]]
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;instagram&quot;
+</span><span style="color:#e8bf6a;">display </span><span>= </span><span style="color:#c1be91;">&quot;${your_insta}&quot;
+</span><span style="color:#e8bf6a;">uri </span><span>= </span><span style="color:#c1be91;">&quot;https://instagram.com/${your_insta}&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.socials</span><span>]]
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;keybase&quot;
+</span><span style="color:#e8bf6a;">display </span><span>= </span><span style="color:#c1be91;">&quot;${your_keybase}&quot;
+</span><span style="color:#e8bf6a;">uri </span><span>= </span><span style="color:#c1be91;">&quot;https://keybase.io/${your_keybase}&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.socials</span><span>]]
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;linkedin&quot;
+</span><span style="color:#e8bf6a;">display </span><span>= </span><span style="color:#c1be91;">&quot;${your_linkedin}&quot;
+</span><span style="color:#e8bf6a;">uri </span><span>= </span><span style="color:#c1be91;">&quot;https://www.linkedin.com/in/${your_linkedin}&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.socials</span><span>]]
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;reddit&quot;
+</span><span style="color:#e8bf6a;">display </span><span>= </span><span style="color:#c1be91;">&quot;${your_reddit}&quot;
+</span><span style="color:#e8bf6a;">uri </span><span>= </span><span style="color:#c1be91;">&quot;https://www.reddit.com/u/${your_reddit}&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.socials</span><span>]]
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;youtube&quot;
+</span><span style="color:#e8bf6a;">display </span><span>= </span><span style="color:#c1be91;">&quot;${your_youtube_channel_id}&quot;
+</span><span style="color:#e8bf6a;">uri </span><span>= </span><span style="color:#c1be91;">&quot;https://youtube.com/channel/${your_youtube_channel_id}&quot;
+</span><span>
+</span><span style="color:#95815e;"># Whether to use country flags or language code
+</span><span style="color:#e8bf6a;">country_flags </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Pagination</li>
+<li><input disabled="" type="checkbox"/>
+Dynamic Color Schemes</li>
+<li><input disabled="" type="checkbox"/>
+Edit Colors in <code>config.toml</code></li>
+<li><input disabled="" type="checkbox" checked=""/>
+NoJS</li>
+<li><input disabled="" type="checkbox"/>
+Analytics</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Comments?</li>
+<li><input disabled="" type="checkbox"/>
+Like button http://kudosplease.com/</li>
+<li><input disabled="" type="checkbox"/>
+categories?</li>
+<li><input disabled="" type="checkbox"/>
+related posts? (would meaningful related posts, or unmeaningful ones, be worth it w/o database?)</li>
+<li><input disabled="" type="checkbox"/>
+user-requested: Open a Issue, or, if you're feeling up to it, a Pull Request</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

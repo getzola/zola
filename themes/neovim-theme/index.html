@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>neovim | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;neovim-theme&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>neovim</h1>
+            <p>A only keyboard theme with tabs and file browser</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;super-botman.github.io">0xb0tm4n</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;super-botman&#x2F;zola-theme">https:&#x2F;&#x2F;github.com&#x2F;super-botman&#x2F;zola-theme</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;super-botman.github.io">https:&#x2F;&#x2F;super-botman.github.io</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-05-11T01:55:06+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="neovim-like-theme">Neovim like theme</h1>
+<p>Neovim theme is a neovim like theme for zola.</p>
+<p><img src="https://github.com/user-attachments/assets/0317c951-4975-4150-ac43-7faf4c57aa8b" alt="image" /></p>
+<p>exemple: <a class="external" href="https://super-botman.github.io">https://super-botman.github.io</a></p>
+<h2 id="installation">Installation</h2>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> themes
+</span><span>git clone https://github.com/Super-Botman/neovim-theme.git
+</span><span>mv neovim-theme/content/readme.md ../content
+</span></code></pre>
+<p>then enable it in your config</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;neovim-theme&quot;
+</span></code></pre>
+<h2 id="configuration">Configuration</h2>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#95815e;">######################
+</span><span style="color:#95815e;"># Mandatory settings #
+</span><span style="color:#95815e;">######################
+</span><span>
+</span><span style="color:#95815e;"># set the name of the blog
+</span><span style="color:#e8bf6a;">blog_name </span><span>= </span><span style="color:#c1be91;">&quot;name&quot;
+</span><span>
+</span><span style="color:#95815e;">#####################
+</span><span style="color:#95815e;"># Optional settings #
+</span><span style="color:#95815e;">#####################
+</span><span>
+</span><span style="color:#95815e;"># set the background image u want
+</span><span style="color:#e8bf6a;">background-image </span><span>= </span><span style="color:#c1be91;">&quot;assets/background.jpg&quot;
+</span><span>
+</span><span style="color:#95815e;"># this parameter allow you to configure specific init functions/shortcuts and commands
+</span><span style="color:#95815e;"># the value has to be the path of you&#39;re config.js file
+</span><span style="color:#e8bf6a;">config_js </span><span>= </span><span style="color:#c1be91;">&quot;config.js&quot;
+</span><span>
+</span><span style="color:#95815e;"># allow you to include custom css into u&#39;re blog
+</span><span style="color:#e8bf6a;">custom_css </span><span>= </span><span style="color:#c1be91;">&quot;style.css&quot;
+</span></code></pre>
+<pre data-lang="js" style="background-color:#383838;color:#e6e1dc;" class="language-js "><code class="language-js" data-lang="js"><span style="font-style:italic;color:#6e9cbe;">const </span><span style="color:#da4939;">keys </span><span style="color:#cc7833;">= </span><span>{
+</span><span>  </span><span style="color:#95815e;">// &quot;normal&quot; keys are just keys typed on the page
+</span><span>  </span><span style="color:#95815e;">// for exemple &quot; &quot; is when space is typed
+</span><span>  normal: {
+</span><span>    </span><span style="color:#c1be91;">&quot; &quot;</span><span>: (</span><span style="font-style:italic;color:#fd971f;">event</span><span>, </span><span style="font-style:italic;color:#fd971f;">element</span><span>) </span><span style="font-style:italic;color:#6e9cbe;">=&gt; </span><span>{
+</span><span>      </span><span style="color:#ffc66d;">alert</span><span>(</span><span style="color:#c1be91;">&quot;u pressed space key&quot;</span><span>);
+</span><span>    },
+</span><span>  },
+</span><span>
+</span><span>  </span><span style="color:#95815e;">// this is for keys when shift is pressed
+</span><span>  shortcut: {},
+</span><span>};
+</span><span>
+</span><span style="font-style:italic;color:#6e9cbe;">const </span><span style="color:#da4939;">commands </span><span style="color:#cc7833;">= </span><span>{
+</span><span>  </span><span style="color:#95815e;">// the key is used to specify the name of the command
+</span><span>  </span><span style="color:#ffc66d;">test</span><span>: (</span><span style="font-style:italic;color:#fd971f;">command</span><span>) </span><span style="font-style:italic;color:#6e9cbe;">=&gt; </span><span>{
+</span><span>    </span><span style="color:#ffc66d;">alert</span><span>(</span><span style="color:#c1be91;">&quot;you entered &#39;test&#39; command&quot;</span><span>);
+</span><span>
+</span><span>    </span><span style="color:#95815e;">// and then the return value with type and message
+</span><span>    </span><span style="color:#cc7833;">return </span><span>{
+</span><span>      type: </span><span style="color:#c1be91;">&quot;success&quot;</span><span>, </span><span style="color:#95815e;">// &quot;success&quot; = green text, &quot;error&quot; = red text
+</span><span>      message: </span><span style="color:#c1be91;">&quot;command executed&quot;</span><span>, </span><span style="color:#95815e;">// the text to show in the command line
+</span><span>    };
+</span><span>  },
+</span><span>};
+</span><span>
+</span><span style="font-style:italic;color:#6e9cbe;">function </span><span style="color:#ffc66d;">custom_init</span><span>() {
+</span><span>  </span><span style="color:#95815e;">// here some code
+</span><span>}
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

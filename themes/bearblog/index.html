@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Bear | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;bearblog&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Bear</h1>
+            <p>Bear blog theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;alanpearce.eu">Alan Pearce</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;codeberg.org&#x2F;alanpearce&#x2F;zola-bearblog">https:&#x2F;&#x2F;codeberg.org&#x2F;alanpearce&#x2F;zola-bearblog</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-bearblog.vercel.app&#x2F;">https:&#x2F;&#x2F;zola-bearblog.vercel.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-08-18T10:29:08+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zola-bear-blog">Zola ʕ•ᴥ•ʔ Bear Blog</h1>
+<p><a class="external" href="https://app.netlify.com/sites/zola-bearblog/deploys"><img src="https://api.netlify.com/api/v1/badges/121b53ce-c913-4604-9179-eb3cca31cd2c/deploy-status" alt="Netlify Status" /></a></p>
+<p>🧸 A <a class="external" href="https://www.getzola.org/">Zola</a>-theme based on <a class="external" href="https://bearblog.dev">Bear Blog</a>.</p>
+<blockquote>
+<p>Free, no-nonsense, super-fast blogging.</p>
+</blockquote>
+<h2 id="demo">Demo</h2>
+<p>This theme has multiple demo sites, to provide examples of how to set up deployment</p>
+<ul>
+<li><a class="external" href="https://zola-bearblog.vercel.app/">Vercel</a></li>
+<li><a class="external" href="https://zola-bearblog.netlify.app/">Netlify</a></li>
+<li><a class="external" href="https://alanpearce.gitlab.io/zola-bearblog">Gitlab Pages</a></li>
+<li><a class="external" href="https://zola-bearblog.pages.dev/">Cloudflare Pages</a></li>
+</ul>
+<h2 id="screenshot">Screenshot</h2>
+<p><img src="https://codeberg.org/alanpearce/zola-bearblog/raw/branch/main/screenshot.png" alt="Screenshot" /></p>
+<p>When the user's browser is running »dark mode«, the dark color scheme will be used automatically. The default is the light/white color scheme. Check out the <a class="external" href="https://codeberg.org/alanpearce/zola-bearblog/src/branch/main/templates/style.html"><code>style.html</code></a>-file for the implementation.</p>
+<h2 id="installation">Installation</h2>
+<p>If you already have a Zola site on your machine, you can simply add this theme via</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git submodule add https://codeberg.org/alanpearce/zola-bearblog themes/zola-bearblog
+</span></code></pre>
+<p>Then, adjust the <code>config.toml</code> as detailed below.</p>
+<p>For more information, read the official <a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">setup guide</a> of Zola.</p>
+<p>Alternatively, you can quickly deploy a copy of the theme site to Netlify using this button:</p>
+<p><a class="external" href="https://app.netlify.com/start/deploy?repository=https://gitlab.com/alanpearce/zola-bearblog"><img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify" /></a></p>
+<p>(Note that this method makes it harder to keep up-to-date with theme updates, which might be necessary for newer versions of Zola.)</p>
+<h2 id="adjust-configuration-config-toml">Adjust configuration / config.toml</h2>
+<p>Please check out the included <a class="external" href="https://codeberg.org/alanpearce/zola-bearblog/src/branch/main/config.toml">config.toml</a></p>
+<h2 id="content-structure">Content &amp; structure</h2>
+<h3 id="menu">Menu</h3>
+<p>Create an array in <code>extra</code> with a key of <code>main_menu</code>. <code>url</code> is passed to <a class="external" href="https://www.getzola.org/documentation/templates/overview/#get-url"><code>get_url</code></a></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[[</span><span style="color:#e8bf6a;">extra.main_menu</span><span>]]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;@/_index.md&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.main_menu</span><span>]]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Bear&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;@/bear.md&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.main_menu</span><span>]]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Zola&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;@/zola.md&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.main_menu</span><span>]]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Blog&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;@/blog/_index.md&quot;
+</span></code></pre>
+<h3 id="adding-editing-content">Adding / editing content</h3>
+<h4 id="index-page">Index-Page</h4>
+<p>The contents of the <code>index</code>-page may be changed by editing your <code>content/_index.md</code>-file.</p>
+<h3 id="adding-your-branding-colors-css">Adding your branding / colors / css</h3>
+<p>Add a <code>custom_head.html</code>-file to your <code>templates/</code>-directory. In there you may add a <code>&lt;style&gt;</code>-tag, <em>or</em> you may add a <code>&lt;link&gt;</code>-tag referencing your own <code>custom.css</code> (in case you prefer to have a separate <code>.css</code>-file). Check out the <a class="external" href="https://codeberg.org/alanpearce/zola-bearblog/src/branch/main/templates/style.html"><code>style.html</code></a>-file to find out which CSS-styles are applied by default.</p>
+<h3 id="table-of-contents">Table of contents</h3>
+<p>Table of contents are not rendered by default. To render them, set <code>extra.table_of_contents.show = true</code> in <code>config.toml</code>.</p>
+<p>The table of contents is rendered inside a <code>details</code> element.
+If you want the section to be collapsed on page load, set <code>extra.table_of_contents.visible_on_load = false</code>.
+This defaults to <code>true</code>.</p>
+<p>In addition, <code>extra.table_of_contents.max_level</code> can limit the maximum level of headers to show.
+To show only <code>h1</code>s, set <code>max_level = 1</code>, to show <code>h1</code>s and <code>h2</code>s, set <code>max_level = 2</code>, and so on.
+By default, <code>max_level</code> is set to 6, so all headers on the page are shown.</p>
+<p>Below is an example of how to configure the table of contents in <code>config.toml</code>.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.table_of_contents</span><span>]
+</span><span style="color:#e8bf6a;">show </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">max_level </span><span>= </span><span style="color:#a5c261;">2
+</span><span style="color:#e8bf6a;">visible_on_load </span><span>= </span><span style="color:#6e9cbe;">false
+</span></code></pre>
+<p>It can also be toggled on page-by-page basis. Add <code>extra.hide_table_of_contents = true</code> to the page's frontmatter to hide the table of contents for that specific page.</p>
+<h2 id="issues-feedback-contributing">Issues / Feedback / Contributing</h2>
+<p>Please use <a class="external" href="https://codeberg.org/alanpearce/zola-bearblog/issues">Codeberg issues</a> and <a class="external" href="https://codeberg.org/alanpearce/zola-bearblog/pulls">Pull Requests</a>.</p>
+<h2 id="special-thanks-gift">Special Thanks 🎁</h2>
+<p>A special thank you goes out to <a class="external" href="https://herman.bearblog.dev">Herman</a>, for creating the original <a class="external" href="https://bearblog.dev/">ʕ•ᴥ•ʔ Bear Blog</a> and <a class="external" href="https://www.janraasch.com">Jan Raasch</a> for creating the hugo port of the Bear Blog theme.</p>
+<h2 id="license">License</h2>
+<p><a class="external" href="http://en.wikipedia.org/wiki/MIT_License">MIT License</a> © <a class="external" href="https://www.alanpearce.eu/">Alan Pearce</a></p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>hallo | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;hallo&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>hallo</h1>
+            <p>A single-page theme to introduce yourself.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;janbaudisch.dev">Jan Baudisch</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;janbaudisch&#x2F;zola-hallo">https:&#x2F;&#x2F;github.com&#x2F;janbaudisch&#x2F;zola-hallo</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-hallo.janbaudisch.dev">https:&#x2F;&#x2F;zola-hallo.janbaudisch.dev</a></p>
+            
+            
+            <p><b>Last updated:</b> 2021-09-27T13:05:37+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><a class="external" href="https://builds.sr.ht/~janbaudisch/zola-hallo"><img src="https://builds.sr.ht/~janbaudisch/zola-hallo.svg" alt="Build Status" /></a>
+<a class="external" href="https://zola-hallo.janbaudisch.dev"><img src="https://img.shields.io/badge/demo-live-green.svg" alt="Demo" /></a></p>
+<h1 id="hallo">Hallo</h1>
+<blockquote>
+<p>A single-page theme to introduce yourself.</p>
+<p><a class="external" href="https://www.getzola.org">Zola</a> port of <a class="external" href="https://github.com/EmielH/hallo-hugo">hallo-hugo</a>.</p>
+</blockquote>
+<p><img src="https://www.getzola.org/themes/hallo/screenshot.png" alt="Screenshot" /></p>
+<h2 id="original">Original</h2>
+<p>This is a port of the original <a class="external" href="https://github.com/EmielH/hallo-hugo">hallo-hugo</a> theme for Hugo (<a class="external" href="https://github.com/janbaudisch/zola-hallo/blob/master/upstream/LICENSE">License</a>).</p>
+<h2 id="installation">Installation</h2>
+<p>The easiest way to install this theme is to either clone it ...</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git clone https://github.com/janbaudisch/zola-hallo.git themes/hallo
+</span></code></pre>
+<p>... or to use it as a submodule.</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git submodule add https://github.com/janbaudisch/zola-hallo.git themes/hallo
+</span></code></pre>
+<p>Either way, you will have to enable the theme in your <code>config.toml</code>.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;hallo&quot;
+</span></code></pre>
+<h3 id="introduction">Introduction</h3>
+<p>The introduction text is made in <code>content/_index.md</code>.</p>
+<h2 id="options">Options</h2>
+<p>See <a class="external" href="https://github.com/janbaudisch/zola-hallo/blob/master/config.toml"><code>config.toml</code></a> for an example configuration.</p>
+<h3 id="author">Author</h3>
+<p>The given name will be used for the 'I am ...' text.</p>
+<p>Default: <code>Hallo</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.author</span><span>]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Hallo&quot;
+</span></code></pre>
+<h3 id="greeting">Greeting</h3>
+<p>The string will be used as a greeting.</p>
+<p>Default: <code>Hello!</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">greeting </span><span>= </span><span style="color:#c1be91;">&quot;Hello!&quot;
+</span></code></pre>
+<h3 id="iam"><code>iam</code></h3>
+<p>This variable defines the <code>I am</code> text, which you may want to swap out for another language.</p>
+<p>Default: <code>I am</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">iam </span><span>= </span><span style="color:#c1be91;">&quot;I am&quot;
+</span></code></pre>
+<h3 id="links">Links</h3>
+<p>Links show up below the introduction. They are styled with <a class="external" href="https://fontawesome.com">Font Awesome</a>, you may optionally choose the iconset (default is <a class="external" href="https://fontawesome.com/icons?d=gallery&amp;s=brands&amp;m=free">brands</a>).</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;E-Mail&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;mailto:mail@example.org&quot;</span><span>, </span><span style="color:#e8bf6a;">iconset </span><span>= </span><span style="color:#c1be91;">&quot;fas&quot;</span><span>, </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;envelope&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;GitHub&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com&quot;</span><span>, </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;github&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Twitter&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://twitter.com&quot;</span><span>, </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;twitter&quot; </span><span>}
+</span><span>]
+</span></code></pre>
+<h3 id="theme">Theme</h3>
+<p>Change the colors used.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.theme</span><span>]
+</span><span style="color:#e8bf6a;">background </span><span>= </span><span style="color:#c1be91;">&quot;#6FCDBD&quot;
+</span><span style="color:#e8bf6a;">foreground </span><span>= </span><span style="color:#c1be91;">&quot;#FFF&quot; </span><span style="color:#95815e;"># text and portrait border
+</span><span style="color:#e8bf6a;">hover </span><span>= </span><span style="color:#c1be91;">&quot;#333&quot; </span><span style="color:#95815e;"># link hover
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
