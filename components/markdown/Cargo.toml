@@ -14,6 +14,21 @@ config = { path = "../config" }
 console = { path = "../console" }
 libs = { path = "../libs" }
 
+typst = "0.13.1"
+typst-assets = { version = "0.13.1", features = ["fonts"] }
+typst-svg = "0.13.1"
+time = { version = "0.3.37", features = ["local-offset"] }
+flate2 = "1.0.35"
+tar = "0.4.43"
+ttf-parser = "0.25.1"
+urlencoding = "2.1.3"
+bincode = "1.3.3"
+serde = { version = "1.0.130", features = ["derive"] }
+dashmap = { version = "6.1.0", features = ["serde"] }
+twox-hash = "2.1.0"
+dirs = "6.0.0"
+katex = { version = "0.4.6", default-features = false, features = ["duktape"] }
+
 [dev-dependencies]
 templates = { path = "../templates" }
 insta = "1.12.0"
