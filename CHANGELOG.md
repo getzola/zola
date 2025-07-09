@@ -3,6 +3,17 @@
 ## 0.21.0 (unreleased)
 
 - Allow `github_alerts` at config.toml level
+- Add a `copy` attribute that can bet set on codeblocks to set data-copy on them
+- Empty feeds are now generated
+- Preserve the hash part of the URL for alias redirection
+- Add a new permalink sorting strategy for pages
+- Better support for port 0 for zola serve
+- Better AVIF support
+- Add Korean language support for search generation
+- Allow .json and .ics custom feeds
+- Fix footnotes semantic organization for accessibility
+- Adjust image metadata based on exif orientation data
+- Add a `zola_version` variable to the page context
 
 ## 0.20.0 (2025-02-14)
 
