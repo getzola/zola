@@ -1,4 +1,6 @@
-use std::ops::RangeInclusive;
+use crate::Result;
+use std::{ops::RangeInclusive, path::PathBuf};
+use utils::fs::read_file;
 
 fn parse_range(s: &str) -> Option<RangeInclusive<usize>> {
     match s.find('-') {
@@ -26,6 +28,7 @@ pub struct FenceSettings<'a> {
     pub hide_lines: Vec<RangeInclusive<usize>>,
     pub name: Option<&'a str>,
     pub enable_copy: bool,
+    pub include: Option<&'a str>,
 }
 
 impl<'a> FenceSettings<'a> {
@@ -38,6 +41,7 @@ impl<'a> FenceSettings<'a> {
             hide_lines: Vec::new(),
             name: None,
             enable_copy: false,
+            include: None,
         };
 
         for token in FenceIter::new(fence_info) {
@@ -49,10 +53,25 @@ impl<'a> FenceSettings<'a> {
                 FenceToken::HideLines(lines) => me.hide_lines.extend(lines),
                 FenceToken::Name(n) => me.name = Some(n),
                 FenceToken::EnableCopy => me.enable_copy = true,
+                FenceToken::Include(file) => me.include = Some(file),
             }
         }
 
         me
+    }
+
+    pub fn include(&self, base: Option<&PathBuf>) -> Result<Option<String>> {
+        if let Some(base) = base {
+            if let Some(include) = &self.include {
+                let path = base.join(include);
+                let content = read_file(&path)?;
+                return Ok(Some(content));
+            } else {
+                Ok(None)
+            }
+        } else {
+            Ok(None)
+        }
     }
 }
 
@@ -64,6 +83,7 @@ enum FenceToken<'a> {
     HighlightLines(Vec<RangeInclusive<usize>>),
     HideLines(Vec<RangeInclusive<usize>>),
     Name(&'a str),
+    Include(&'a str),
     EnableCopy,
 }
 
@@ -117,6 +137,11 @@ impl<'a> Iterator for FenceIter<'a> {
                     }
                 }
                 "copy" => return Some(FenceToken::EnableCopy),
+                "include" => {
+                    if let Some(file) = tok_split.next() {
+                        return Some(FenceToken::Include(file));
+                    }
+                }
                 lang => {
                     if tok_split.next().is_some() {
                         eprintln!("Warning: Unknown annotation {}", lang);

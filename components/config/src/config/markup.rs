@@ -32,6 +32,14 @@ pub enum MathRenderingEngine {
     Katex,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default, Hash)]
+#[serde(rename_all = "lowercase")]
+pub enum ImageFormat {
+    #[default]
+    Svg,
+    Webp,
+}
+
 struct BoolWithPathVisitor;
 
 impl<'de> de::Visitor<'de> for BoolWithPathVisitor {
@@ -92,13 +100,63 @@ impl Serialize for BoolWithPath {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Default)]
 pub struct MathRenderer {
     pub engine: MathRenderingEngine,
-    #[serde(default)]
     pub svgo: BoolWithPath,
     pub css: Option<String>,
     pub addon: Option<String>,
+    pub format: ImageFormat,
+}
+
+impl<'de> Deserialize<'de> for MathRenderer {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        // Helper struct that mirrors MathRenderer
+        #[derive(Deserialize)]
+        struct MathRendererHelper {
+            #[serde(default)]
+            engine: MathRenderingEngine,
+            #[serde(default)]
+            svgo: BoolWithPath,
+            css: Option<String>,
+            addon: Option<String>,
+            #[serde(default)]
+            format: ImageFormat,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum MathRendererConfig {
+            // String case: math = "engine"
+            Engine(MathRenderingEngine),
+            // Table case with full configuration
+            Full(MathRendererHelper),
+        }
+
+        // Parse using the helper type
+        let config = MathRendererConfig::deserialize(deserializer)?;
+
+        // Convert to MathRenderer
+        match config {
+            MathRendererConfig::Engine(engine) => Ok(MathRenderer {
+                engine,
+                svgo: BoolWithPath::default(),
+                css: None,
+                addon: None,
+                format: ImageFormat::Svg,
+            }),
+            MathRendererConfig::Full(helper) => Ok(MathRenderer {
+                engine: helper.engine,
+                svgo: helper.svgo,
+                css: helper.css,
+                addon: helper.addon,
+                format: helper.format,
+            }),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

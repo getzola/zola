@@ -228,7 +228,11 @@ impl Page {
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
-        context.set_parent_absolute(&self.file.parent);
+        context.set_parent_absolute(
+            &self.file.parent,
+            self.file.colocated_path.as_ref(),
+            &self.file.components,
+        );
 
         context.tera_context.insert("page", &SerializingPage::new(self, None, false));
 
