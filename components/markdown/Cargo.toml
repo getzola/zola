@@ -14,9 +14,9 @@ config = { path = "../config" }
 console = { path = "../console" }
 libs = { path = "../libs" }
 
-typst = "0.12.0"
-typst-assets = { version = "0.12.0", features = ["fonts"] }
-typst-svg = "0.12.0"
+typst = "0.13.1"
+typst-assets = { version = "0.13.1", features = ["fonts"] }
+typst-svg = "0.13.1"
 time = { version = "0.3.37", features = ["local-offset"] }
 flate2 = "1.0.35"
 tar = "0.4.43"

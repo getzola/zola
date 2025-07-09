@@ -3,7 +3,7 @@ use std::{
     sync::Arc,
 };
 
-use config::BoolWithPath;
+use config::{BoolWithPath, ImageFormat};
 use errors::{Context, Error};
 use libs::pulldown_cmark::CowStr;
 use twox_hash::XxHash64;
@@ -34,7 +34,13 @@ impl MathCompiler for KatexCompiler {
         Ok(())
     }
 
-    fn compile(&self, tex: &str, mode: MathRenderMode, minify: &BoolWithPath) -> Result<String> {
+    fn compile(
+        &self,
+        tex: &str,
+        mode: MathRenderMode,
+        _format: ImageFormat,
+        minify: &BoolWithPath,
+    ) -> Result<String> {
         let tex: CowStr = if let Some(addon) = self.addon.as_ref() {
             CowStr::Boxed(format!("{}{}", tex, addon).into())
         } else {

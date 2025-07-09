@@ -19,6 +19,7 @@ pub trait MathCompiler {
         &self,
         input: &str,
         mode: MathRenderMode,
+        format: config::ImageFormat,
         svgo: &config::BoolWithPath,
     ) -> Result<String>;
     fn raw_extensions(&self) -> &'static [&'static str] {

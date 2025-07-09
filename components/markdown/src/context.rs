@@ -18,7 +18,7 @@ pub struct RenderContext<'a> {
     pub config: &'a Config,
     pub tera_context: Context,
     pub current_page_path: Option<&'a str>,
-    pub parent_absolute: Option<&'a PathBuf>,
+    pub parent_absolute: Option<PathBuf>,
     pub current_page_permalink: &'a str,
     pub permalinks: Cow<'a, HashMap<String, String>>,
     pub insert_anchor: InsertAnchor,
@@ -79,8 +79,6 @@ impl<'a> RenderContext<'a> {
         }
     }
 
-    /// Set in another step so we don't add one more arg to new.
-    /// And it's only used when rendering pages/section anyway
     pub fn set_shortcode_definitions(&mut self, def: &'a HashMap<String, ShortcodeDefinition>) {
         self.shortcode_definitions = Cow::Borrowed(def);
     }
@@ -91,8 +89,20 @@ impl<'a> RenderContext<'a> {
     }
 
     /// Same as above
-    pub fn set_parent_absolute(&mut self, path: &'a PathBuf) {
-        self.parent_absolute = Some(path);
+    pub fn set_parent_absolute(
+        &mut self,
+        parent: &'a PathBuf,
+        colocated: Option<&String>,
+        components: &Vec<String>,
+    ) {
+        if let Some(colocated) = colocated {
+            let colocated = Path::new(colocated);
+            // Remove the colocated path from the colocated path and join the result with the parent
+            let parent = parent.join(colocated.strip_prefix(components.join("/")).unwrap());
+            self.parent_absolute = Some(parent);
+        } else {
+            self.parent_absolute = Some(parent.clone());
+        }
     }
 
     // In use in the markdown filter
