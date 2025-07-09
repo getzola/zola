@@ -259,6 +259,7 @@ impl Page {
         context.insert("config", &config.serialize(&self.lang));
         context.insert("current_url", &self.permalink);
         context.insert("current_path", &self.path);
+        context.insert("zola_version", env!("CARGO_PKG_VERSION"));
         context.insert("page", &self.serialize(library));
         context.insert("lang", &self.lang);
 
@@ -581,6 +582,23 @@ And here's another. [^3]
         assert_eq!(
             page.summary,
             Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n<p>Here's another. </p>".to_string())
+        );
+        assert_eq!(
+            page.content,
+            r##"<p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference"><a href="#1">1</a></sup></p>
+<p>Here's another. <sup class="footnote-reference"><a href="#2">2</a></sup></p>
+<span id="continue-reading"></span>
+<p>And here's another. <sup class="footnote-reference"><a href="#3">3</a></sup></p>
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p>This is the first footnote.</p>
+</div>
+<div class="footnote-definition" id="2"><sup class="footnote-definition-label">2</sup>
+<p>This is the second footnote.</p>
+</div>
+<div class="footnote-definition" id="3"><sup class="footnote-definition-label">3</sup>
+<p>This is the third footnote.</p>
+</div>
+"##
         );
     }
 

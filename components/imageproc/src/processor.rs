@@ -1,5 +1,4 @@
 use std::fs;
-use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 
@@ -9,11 +8,12 @@ use libs::ahash::{HashMap, HashSet};
 use libs::image::codecs::avif::AvifEncoder;
 use libs::image::codecs::jpeg::JpegEncoder;
 use libs::image::imageops::FilterType;
-use libs::image::GenericImageView;
+use libs::image::{DynamicImage, GenericImageView, ImageDecoder, ImageReader};
 use libs::image::{EncodableLayout, ImageEncoder, ImageFormat};
 use libs::rayon::prelude::*;
-use libs::{image, webp};
+use libs::webp;
 use serde::{Deserialize, Serialize};
+use tempfile::NamedTempFile;
 use utils::fs as ufs;
 
 use crate::format::Format;
@@ -41,8 +41,14 @@ impl ImageOp {
             return Ok(());
         }
 
-        let img = image::open(&self.input_path)?;
-        let mut img = fix_orientation(&img, &self.input_path).unwrap_or(img);
+        let input_permissions = fs::metadata(&self.input_path)?.permissions();
+        let reader =
+            ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
+        let mut decoder = reader.into_decoder()?;
+        let raw_metadata = decoder.exif_metadata()?;
+        let img = DynamicImage::from_decoder(decoder)?;
+
+        let mut img = fix_orientation(&img, raw_metadata).unwrap_or(img);
 
         let img = match self.instr.crop_instruction {
             Some((x, y, w, h)) => img.crop(x, y, w, h),
@@ -53,15 +59,21 @@ impl ImageOp {
             None => img,
         };
 
-        let f = File::create(&self.output_path)?;
-        let mut buffered_f = BufWriter::new(f);
+        let tmp_output_file = match self.output_path.parent() {
+            Some(parent) => Ok(NamedTempFile::new_in(parent)?),
+            None => Err(anyhow!(
+                "Image output path '{:?}' should contain a parent directory, but doesn't",
+                self.output_path
+            )),
+        }?;
+        let mut tmp_output_writer = BufWriter::new(&tmp_output_file);
 
         match self.format {
             Format::Png => {
-                img.write_to(&mut buffered_f, ImageFormat::Png)?;
+                img.write_to(&mut tmp_output_writer, ImageFormat::Png)?;
             }
             Format::Jpeg { quality } => {
-                let mut encoder = JpegEncoder::new_with_quality(&mut buffered_f, quality);
+                let mut encoder = JpegEncoder::new_with_quality(&mut tmp_output_writer, quality);
                 encoder.encode_image(&img)?;
             }
             Format::WebP { quality } => {
@@ -71,7 +83,7 @@ impl ImageOp {
                     Some(q) => encoder.encode(q as f32),
                     None => encoder.encode_lossless(),
                 };
-                buffered_f.write_all(memory.as_bytes())?;
+                tmp_output_writer.write_all(memory.as_bytes())?;
             }
             Format::Avif { quality, speed } => {
                 let mut avif: Vec<u8> = Vec::new();
@@ -82,9 +94,12 @@ impl ImageOp {
                     img.dimensions().1,
                     img.color().into(),
                 )?;
-                buffered_f.write_all(&avif.as_bytes())?;
+                tmp_output_writer.write_all(&avif.as_bytes())?;
             }
-        }
+        };
+
+        fs::set_permissions(&tmp_output_file, input_permissions)?;
+        fs::rename(&tmp_output_file, &self.output_path)?;
 
         Ok(())
     }
