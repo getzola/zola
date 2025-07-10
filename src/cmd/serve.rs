@@ -24,17 +24,17 @@
 use std::cell::Cell;
 use std::future::IntoFuture;
 use std::net::{IpAddr, SocketAddr, TcpListener};
-use std::path::{Path, PathBuf, MAIN_SEPARATOR};
-use std::sync::mpsc::channel;
+use std::path::{MAIN_SEPARATOR, Path, PathBuf};
 use std::sync::Mutex;
+use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
 
 use hyper::http::HeaderValue;
 use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{body, header};
 use hyper::{Body, Method, Request, Response, StatusCode};
+use hyper::{body, header};
 use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
@@ -45,12 +45,12 @@ use libs::serde_json;
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use ws::{Message, Sender, WebSocket};
 
-use errors::{anyhow, Context, Error, Result};
+use errors::{Context, Error, Result, anyhow};
 use site::sass::compile_sass;
-use site::{BuildMode, Site, SITE_CONTENT};
+use site::{BuildMode, SITE_CONTENT, Site};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
-use crate::fs_utils::{filter_events, ChangeKind, SimpleFileSystemEventKind};
+use crate::fs_utils::{ChangeKind, SimpleFileSystemEventKind, filter_events};
 use crate::messages;
 use std::ffi::OsStr;
 
@@ -350,11 +350,7 @@ fn construct_url(base_url: &str, no_port_append: bool, interface_port: u16) -> S
         format!("{protocol}{domain}:{interface_port}{path}")
     };
 
-    if full_address.ends_with('/') {
-        full_address
-    } else {
-        format!("{full_address}/")
-    }
+    if full_address.ends_with('/') { full_address } else { format!("{full_address}/") }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -816,7 +812,9 @@ pub fn serve(
                         }
                         ChangeKind::Config => {
                             // No need to iterate over change group since we're rebuilding the site.
-                            console::info("-> Config changed. The browser needs to be refreshed to make the changes visible.");
+                            console::info(
+                                "-> Config changed. The browser needs to be refreshed to make the changes visible.",
+                            );
 
                             if let Some(s) = recreate_site() {
                                 site = s;

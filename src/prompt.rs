@@ -2,7 +2,7 @@ use std::io::{self, BufRead, Write};
 
 use libs::url::Url;
 
-use errors::{anyhow, Result};
+use errors::{Result, anyhow};
 
 /// Wait for user input and return what they typed
 fn read_line() -> Result<String> {

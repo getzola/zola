@@ -1,7 +1,7 @@
 use std::fs::{canonicalize, create_dir};
 use std::path::Path;
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 use utils::fs::create_file;
 
 use crate::prompt::{ask_bool, ask_url};
