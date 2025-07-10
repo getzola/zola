@@ -1,5 +1,4 @@
 use std::fs;
-use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 
@@ -9,11 +8,12 @@ use libs::ahash::{HashMap, HashSet};
 use libs::image::codecs::avif::AvifEncoder;
 use libs::image::codecs::jpeg::JpegEncoder;
 use libs::image::imageops::FilterType;
-use libs::image::GenericImageView;
-use libs::image::{EncodableLayout, ExtendedColorType, ImageEncoder, ImageFormat};
+use libs::image::{DynamicImage, GenericImageView, ImageDecoder, ImageReader};
+use libs::image::{EncodableLayout, ImageEncoder, ImageFormat};
 use libs::rayon::prelude::*;
-use libs::{image, webp};
+use libs::webp;
 use serde::{Deserialize, Serialize};
+use tempfile::NamedTempFile;
 use utils::fs as ufs;
 
 use crate::format::Format;
@@ -41,8 +41,14 @@ impl ImageOp {
             return Ok(());
         }
 
-        let img = image::open(&self.input_path)?;
-        let mut img = fix_orientation(&img, &self.input_path).unwrap_or(img);
+        let input_permissions = fs::metadata(&self.input_path)?.permissions();
+        let reader =
+            ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
+        let mut decoder = reader.into_decoder()?;
+        let raw_metadata = decoder.exif_metadata()?;
+        let img = DynamicImage::from_decoder(decoder)?;
+
+        let mut img = fix_orientation(&img, raw_metadata).unwrap_or(img);
 
         let img = match self.instr.crop_instruction {
             Some((x, y, w, h)) => img.crop(x, y, w, h),
@@ -53,42 +59,47 @@ impl ImageOp {
             None => img,
         };
 
-        let f = File::create(&self.output_path)?;
-        let mut buffered_f = BufWriter::new(f);
+        let tmp_output_file = match self.output_path.parent() {
+            Some(parent) => Ok(NamedTempFile::new_in(parent)?),
+            None => Err(anyhow!(
+                "Image output path '{:?}' should contain a parent directory, but doesn't",
+                self.output_path
+            )),
+        }?;
+        let mut tmp_output_writer = BufWriter::new(&tmp_output_file);
 
         match self.format {
             Format::Png => {
-                img.write_to(&mut buffered_f, ImageFormat::Png)?;
+                img.write_to(&mut tmp_output_writer, ImageFormat::Png)?;
             }
-            Format::Jpeg(q) => {
-                let mut encoder = JpegEncoder::new_with_quality(&mut buffered_f, q);
+            Format::Jpeg { quality } => {
+                let mut encoder = JpegEncoder::new_with_quality(&mut tmp_output_writer, quality);
                 encoder.encode_image(&img)?;
             }
-            Format::WebP(q) => {
+            Format::WebP { quality } => {
                 let encoder = webp::Encoder::from_image(&img)
                     .map_err(|_| anyhow!("Unable to load this kind of image with webp"))?;
-                let memory = match q {
+                let memory = match quality {
                     Some(q) => encoder.encode(q as f32),
                     None => encoder.encode_lossless(),
                 };
-                buffered_f.write_all(memory.as_bytes())?;
+                tmp_output_writer.write_all(memory.as_bytes())?;
             }
-            Format::Avif(q) => {
+            Format::Avif { quality, speed } => {
                 let mut avif: Vec<u8> = Vec::new();
-                let color_type = match img.color().has_alpha() {
-                    true => ExtendedColorType::Rgba8,
-                    false => ExtendedColorType::Rgb8,
-                };
-                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, 10, q.unwrap_or(70));
+                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, speed, quality);
                 encoder.write_image(
                     &img.as_bytes(),
                     img.dimensions().0,
                     img.dimensions().1,
-                    color_type,
+                    img.color().into(),
                 )?;
-                buffered_f.write_all(&avif.as_bytes())?;
+                tmp_output_writer.write_all(&avif.as_bytes())?;
             }
-        }
+        };
+
+        fs::set_permissions(&tmp_output_file, input_permissions)?;
+        fs::rename(&tmp_output_file, &self.output_path)?;
 
         Ok(())
     }
@@ -162,6 +173,7 @@ impl Processor {
         input_path: PathBuf,
         format: &str,
         quality: Option<u8>,
+        speed: Option<u8>,
     ) -> Result<EnqueueResponse> {
         // First we load metadata from the cache if possible, otherwise from the file itself
         if !self.meta_cache.contains_key(&input_path) {
@@ -172,7 +184,7 @@ impl Processor {
         // We will have inserted it just above
         let meta = &self.meta_cache[&input_path];
         // We get the output format
-        let format = Format::from_args(meta.is_lossy(), format, quality)?;
+        let format = Format::from_args(meta.is_lossy(), format, quality, speed)?;
         // Now we have all the data we need to generate the output filename and the response
         let filename = get_processed_filename(&input_path, &input_src, &op, &format);
         let url = format!("{}{}", self.base_url, filename);

@@ -24,17 +24,17 @@
 use std::cell::Cell;
 use std::future::IntoFuture;
 use std::net::{IpAddr, SocketAddr, TcpListener};
-use std::path::{Path, PathBuf, MAIN_SEPARATOR};
-use std::sync::mpsc::channel;
+use std::path::{MAIN_SEPARATOR, Path, PathBuf};
 use std::sync::Mutex;
+use std::sync::mpsc::channel;
 use std::thread;
 use std::time::{Duration, Instant};
 
 use hyper::http::HeaderValue;
 use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{body, header};
 use hyper::{Body, Method, Request, Response, StatusCode};
+use hyper::{body, header};
 use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
@@ -45,12 +45,12 @@ use libs::serde_json;
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use ws::{Message, Sender, WebSocket};
 
-use errors::{anyhow, Context, Error, Result};
+use errors::{Context, Error, Result, anyhow};
 use site::sass::compile_sass;
-use site::{BuildMode, Site, SITE_CONTENT};
+use site::{BuildMode, SITE_CONTENT, Site};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
-use crate::fs_utils::{filter_events, ChangeKind, SimpleFileSystemEventKind};
+use crate::fs_utils::{ChangeKind, SimpleFileSystemEventKind, filter_events};
 use crate::messages;
 use std::ffi::OsStr;
 
@@ -215,7 +215,7 @@ async fn response_error_injector(
 
         let mut cause = error.source();
         while let Some(e) = cause {
-            error_str.push_str(&format!("Reason: {}\n", e));
+            error_str.push_str(&format!("Reason: {e}\n"));
             cause = e.source();
         }
 
@@ -345,16 +345,12 @@ fn construct_url(base_url: &str, no_port_append: bool, interface_port: u16) -> S
     };
 
     let full_address = if no_port_append {
-        format!("{}{}{}", protocol, domain, path)
+        format!("{protocol}{domain}{path}")
     } else {
-        format!("{}{}:{}{}", protocol, domain, interface_port, path)
+        format!("{protocol}{domain}:{interface_port}{path}")
     };
 
-    if full_address.ends_with('/') {
-        full_address
-    } else {
-        format!("{}/", full_address)
-    }
+    if full_address.ends_with('/') { full_address } else { format!("{full_address}/") }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -449,7 +445,7 @@ pub fn serve(
         None,
     )?;
     let base_path = match constructed_base_url.splitn(4, '/').nth(3) {
-        Some(path) => format!("/{}", path),
+        Some(path) => format!("/{path}"),
         None => "/".to_string(),
     };
 
@@ -543,11 +539,13 @@ pub fn serve(
 
                 println!(
                     "Web server is available at {} (bound to {})\n",
-                    &constructed_base_url, &bind_address
+                    &constructed_base_url
+                        .replace(&bind_address.to_string(), &server.local_addr().to_string()),
+                    &server.local_addr()
                 );
                 if open {
                     if let Err(err) = open::that(&constructed_base_url) {
-                        eprintln!("Failed to open URL in your browser: {}", err);
+                        eprintln!("Failed to open URL in your browser: {err}");
                     }
                 }
 
@@ -606,7 +604,7 @@ pub fn serve(
     ctrlc::set_handler(move || {
         match clean_site_output_folder(&output_path, preserve_dotfiles_in_output) {
             Ok(()) => (),
-            Err(e) => println!("Errored while cleaning output folder: {}", e),
+            Err(e) => println!("Errored while cleaning output folder: {e}"),
         }
         ::std::process::exit(0);
     })
@@ -615,7 +613,7 @@ pub fn serve(
     let reload_sass = |site: &Site, paths: &Vec<&PathBuf>| {
         let combined_paths =
             paths.iter().map(|p| p.display().to_string()).collect::<Vec<String>>().join(", ");
-        let msg = format!("-> Sass file(s) changed {}", combined_paths);
+        let msg = format!("-> Sass file(s) changed {combined_paths}");
         console::info(&msg);
         rebuild_done_handling(
             &broadcaster,
@@ -713,7 +711,7 @@ pub fn serve(
                     let current_time =
                         OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
                     if let Ok(time_str) = current_time {
-                        println!("Change detected @ {}", time_str);
+                        println!("Change detected @ {time_str}");
                     } else {
                         // if formatting fails for some reason
                         println!("Change detected");
@@ -779,7 +777,7 @@ pub fn serve(
                                 .map(|p| p.display().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ");
-                            let msg = format!("-> Template file(s) changed {}", combined_paths);
+                            let msg = format!("-> Template file(s) changed {combined_paths}");
                             console::info(&msg);
 
                             let shortcodes_updated = partial_paths
@@ -814,7 +812,9 @@ pub fn serve(
                         }
                         ChangeKind::Config => {
                             // No need to iterate over change group since we're rebuilding the site.
-                            console::info("-> Config changed. The browser needs to be refreshed to make the changes visible.");
+                            console::info(
+                                "-> Config changed. The browser needs to be refreshed to make the changes visible.",
+                            );
 
                             if let Some(s) = recreate_site() {
                                 site = s;
@@ -841,8 +841,8 @@ pub fn serve(
                     messages::report_elapsed_time(start);
                 }
             }
-            Ok(Err(e)) => console::error(&format!("File system event errors: {:?}", e)),
-            Err(e) => console::error(&format!("File system event receiver errors: {:?}", e)),
+            Ok(Err(e)) => console::error(&format!("File system event errors: {e:?}")),
+            Err(e) => console::error(&format!("File system event receiver errors: {e:?}")),
         };
     }
 }

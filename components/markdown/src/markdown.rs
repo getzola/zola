@@ -306,7 +306,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     }
 
     old_events
-        .push(Event::Html("<footer class=\"footnotes\">\n<ol class=\"footnotes-list\">\n".into()));
+        .push(Event::Html("<section class=\"footnotes\">\n<ol class=\"footnotes-list\">\n".into()));
 
     // Step 2: retain only footnotes which was actually referenced
     footnotes.retain(|f| match f.first() {
@@ -396,7 +396,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     });
 
     old_events.extend(footnotes);
-    old_events.push(Event::Html("</ol>\n</footer>\n".into()));
+    old_events.push(Event::Html("</ol>\n</section>\n".into()));
 }
 
 pub fn markdown_to_html(
@@ -442,6 +442,9 @@ pub fn markdown_to_html(
     }
     if context.config.markdown.definition_list {
         opts.insert(Options::ENABLE_DEFINITION_LIST);
+    }
+    if context.config.markdown.github_alerts {
+        opts.insert(Options::ENABLE_GFM);
     }
 
     // we reverse their order so we can pop them easily in order
@@ -813,14 +816,18 @@ pub fn markdown_to_html(
             }
         }
 
-        let mut events = events.into_iter();
-
-        // emit everything up to summary
-        cmark::html::push_html(&mut html, events.by_ref().take(continue_reading));
-
         if has_summary {
+            // Note: we render the summary separately, restarting from
+            // the beginning for the actual body of the page, as cmark's html
+            // renderer has internal state, such as the footnote counter,
+            // that it does not expose.
+            let mut summary_html = String::new();
+            cmark::html::push_html(
+                &mut summary_html,
+                events.iter().cloned().take(continue_reading),
+            );
             // remove footnotes
-            let mut summary_html = FOOTNOTES_RE.replace_all(&html, "").into_owned();
+            let mut summary_html = FOOTNOTES_RE.replace_all(&summary_html, "").into_owned();
 
             // truncate trailing whitespace
             summary_html.truncate(summary_html.trim_end().len());
@@ -847,7 +854,7 @@ pub fn markdown_to_html(
         }
 
         // emit everything after summary
-        cmark::html::push_html(&mut html, events);
+        cmark::html::push_html(&mut html, events.into_iter());
     }
 
     if let Some(e) = error {
