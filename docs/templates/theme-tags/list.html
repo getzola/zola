@@ -11,7 +11,7 @@
 <p><a href="{{ get_url(path = "themes") }}">All themes ({{ section.pages | length }}</a></p>
 <ul style="list-style-type: none;">
 {% for t in terms %}
-<li><a href="{{ t.permalink }}">{{ t.name }}({{ t.page_count }}</a></li>
+<li><a href="{{ t.permalink }}">{{ t.name }}({{ t.page_count }})</a></li>
 {% endfor %}
 </ul>
 {% endblock content %}
