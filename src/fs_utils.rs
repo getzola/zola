@@ -3,8 +3,8 @@
 
 use libs::ahash::HashMap;
 use libs::globset::GlobSet;
-use notify_debouncer_full::notify::event::*;
 use notify_debouncer_full::DebouncedEvent;
+use notify_debouncer_full::notify::event::*;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 use utils::fs::is_temp_file;
@@ -174,8 +174,8 @@ mod tests {
     use std::path::{Path, PathBuf};
 
     use super::{
-        detect_change_kind, get_relevant_event_kind, is_temp_file, ChangeKind,
-        SimpleFileSystemEventKind,
+        ChangeKind, SimpleFileSystemEventKind, detect_change_kind, get_relevant_event_kind,
+        is_temp_file,
     };
 
     // This test makes sure we at least have code coverage on the `notify` event kinds we care
