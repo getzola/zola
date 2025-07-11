@@ -2,9 +2,11 @@ mod fence;
 mod highlight;
 
 use std::ops::RangeInclusive;
+use std::path::PathBuf;
 
 use errors::{bail, Result};
 use libs::syntect::util::LinesWithEndings;
+use utils::fs::read_file;
 
 use crate::codeblock::highlight::SyntaxHighlighter;
 use config::highlighting::{resolve_syntax_and_theme, HighlightSource};
@@ -85,11 +87,12 @@ pub struct CodeBlock<'config> {
     line_number_start: usize,
     highlight_lines: Vec<RangeInclusive<usize>>,
     hide_lines: Vec<RangeInclusive<usize>>,
+    include: Option<String>,
 }
 
 impl<'config> CodeBlock<'config> {
     pub fn new<'fence_info>(
-        fence: FenceSettings<'fence_info>,
+        fence: &FenceSettings<'fence_info>,
         config: &'config Config,
         // path to the current file if there is one, to point where the error is
         path: Option<&'config str>,
@@ -123,11 +126,22 @@ impl<'config> CodeBlock<'config> {
                 highlighter,
                 line_numbers: fence.line_numbers,
                 line_number_start: fence.line_number_start,
-                highlight_lines: fence.highlight_lines,
-                hide_lines: fence.hide_lines,
+                highlight_lines: fence.highlight_lines.clone(),
+                hide_lines: fence.hide_lines.clone(),
+                include: fence.include.map(|s| s.to_string()),
             },
             html_start,
         ))
+    }
+
+    pub fn include(&self, base: Option<&PathBuf>) -> Result<Option<String>> {
+        if let Some(base) = base {
+            let path = base.join(&self.include.as_ref().expect("No include path"));
+            let content = read_file(&path)?;
+            Ok(Some(content))
+        } else {
+            Ok(None)
+        }
     }
 
     pub fn highlight(&mut self, content: &str) -> String {

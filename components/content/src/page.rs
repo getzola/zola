@@ -223,6 +223,7 @@ impl Page {
         );
         context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
+        context.set_parent_absolute(&self.file.parent);
         context.tera_context.insert("page", &SerializingPage::new(self, None, false));
 
         let res = render_content(&self.raw_content, &context)
