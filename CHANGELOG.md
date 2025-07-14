@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.22.0 (unreleased)
+
 ## 0.21.0 (2025-07-14)
 
 - Allow `github_alerts` at config.toml level
