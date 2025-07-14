@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-07-03T12:02:23+03:00
+date = 2025-07-12T19:55:27+03:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-07-03T12:02:23+03:00
-updated = 2025-07-03T12:02:23+03:00
+created = 2025-07-12T19:55:27+03:00
+updated = 2025-07-12T19:55:27+03:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
