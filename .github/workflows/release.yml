@@ -54,7 +54,7 @@ jobs:
       - name: Install Zig and cargo-zigbuild
         run: |
           curl -sSfL https://ziglang.org/download/0.14.0/zig-linux-x86_64-0.14.0.tar.xz | tar -xJf -
-          export PATH=$PWD/zig-linux-x86_64-0.14.0:$PATH
+          echo "$PWD/zig-linux-x86_64-0.14.0" >> $GITHUB_PATH
           cargo install --locked cargo-zigbuild
         if: ${{ endsWith(matrix.target, 'linux-musl') }}
 
