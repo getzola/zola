@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.21.0 (unreleased)
+## 0.21.0 (2025-07-14)
 
 - Allow `github_alerts` at config.toml level
 - Add a `copy` attribute that can bet set on codeblocks to set data-copy on them
@@ -13,7 +13,7 @@
 - Allow .json and .ics custom feeds
 - Fix footnotes semantic organization for accessibility
 - Adjust image metadata based on exif orientation data
-- Add a `zola_version` variable to the page context
+- Add a `zola_version` variable to the pages context
 
 ## 0.20.0 (2025-02-14)
 
