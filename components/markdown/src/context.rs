@@ -1,10 +1,15 @@
+use config::Config;
+use dirs::cache_dir;
+use libs::once_cell::sync::Lazy;
+use libs::tera::{Context, Tera};
 use std::borrow::Cow;
 use std::collections::HashMap;
-
-use config::Config;
-use libs::tera::{Context, Tera};
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use utils::templates::ShortcodeDefinition;
 use utils::types::InsertAnchor;
+
+use crate::math::MathCache;
 
 /// All the information from the zola site that is needed to render HTML from markdown
 #[derive(Debug)]
@@ -13,11 +18,36 @@ pub struct RenderContext<'a> {
     pub config: &'a Config,
     pub tera_context: Context,
     pub current_page_path: Option<&'a str>,
+    pub parent_absolute: Option<PathBuf>,
     pub current_page_permalink: &'a str,
     pub permalinks: Cow<'a, HashMap<String, String>>,
     pub insert_anchor: InsertAnchor,
     pub lang: &'a str,
     pub shortcode_definitions: Cow<'a, HashMap<String, ShortcodeDefinition>>,
+    pub caches: Option<Arc<Caches>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Caches {
+    pub typst: Arc<MathCache>,
+    pub katex: Arc<MathCache>,
+}
+
+impl Caches {
+    pub fn new(cache_path: &Path) -> Self {
+        Self {
+            typst: Arc::new(MathCache::new(cache_path, "typst").unwrap()),
+            katex: Arc::new(MathCache::new(cache_path, "katex").unwrap()),
+        }
+    }
+}
+
+pub static CACHE_DIR: Lazy<PathBuf> = Lazy::new(|| cache_dir().unwrap().join("zola"));
+
+impl Default for Caches {
+    fn default() -> Self {
+        Self::new(&CACHE_DIR)
+    }
 }
 
 impl<'a> RenderContext<'a> {
@@ -28,6 +58,7 @@ impl<'a> RenderContext<'a> {
         current_page_permalink: &'a str,
         permalinks: &'a HashMap<String, String>,
         insert_anchor: InsertAnchor,
+        caches: Option<Arc<Caches>>,
     ) -> RenderContext<'a> {
         let mut tera_context = Context::new();
         tera_context.insert("config", &config.serialize(lang));
@@ -43,11 +74,11 @@ impl<'a> RenderContext<'a> {
             config,
             lang,
             shortcode_definitions: Cow::Owned(HashMap::new()),
+            parent_absolute: None,
+            caches,
         }
     }
 
-    /// Set in another step so we don't add one more arg to new.
-    /// And it's only used when rendering pages/section anyway
     pub fn set_shortcode_definitions(&mut self, def: &'a HashMap<String, ShortcodeDefinition>) {
         self.shortcode_definitions = Cow::Borrowed(def);
     }
@@ -55,6 +86,23 @@ impl<'a> RenderContext<'a> {
     /// Same as above
     pub fn set_current_page_path(&mut self, path: &'a str) {
         self.current_page_path = Some(path);
+    }
+
+    /// Same as above
+    pub fn set_parent_absolute(
+        &mut self,
+        parent: &'a PathBuf,
+        colocated: Option<&String>,
+        components: &Vec<String>,
+    ) {
+        if let Some(colocated) = colocated {
+            let colocated = Path::new(colocated);
+            // Remove the colocated path from the colocated path and join the result with the parent
+            let parent = parent.join(colocated.strip_prefix(components.join("/")).unwrap());
+            self.parent_absolute = Some(parent);
+        } else {
+            self.parent_absolute = Some(parent.clone());
+        }
     }
 
     // In use in the markdown filter
@@ -71,6 +119,9 @@ impl<'a> RenderContext<'a> {
             config,
             lang: &config.default_language,
             shortcode_definitions: Cow::Owned(HashMap::new()),
+            parent_absolute: None,
+            // We shouldn't need caches for this use case
+            caches: None,
         }
     }
 }

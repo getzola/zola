@@ -34,6 +34,17 @@ pub struct SyntaxAndTheme<'config> {
     pub source: HighlightSource,
 }
 
+impl Default for SyntaxAndTheme<'_> {
+    fn default() -> Self {
+        SyntaxAndTheme {
+            syntax: SYNTAX_SET.find_syntax_plain_text(),
+            syntax_set: &SYNTAX_SET as &SyntaxSet,
+            theme: None,
+            source: HighlightSource::Plain,
+        }
+    }
+}
+
 pub fn resolve_syntax_and_theme<'config>(
     language: Option<&'_ str>,
     config: &'config Config,
