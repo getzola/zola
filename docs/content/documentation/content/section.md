@@ -19,7 +19,13 @@ Any non-Markdown file in a section directory is added to the `assets` collection
 Markdown file using relative links.
 
 ## Drafting
-Just like pages sections can be drafted by setting the `draft` option in the front matter. By default this is not done. When a section is drafted it's descendants like pages, subsections and assets will not be processed unless the `--drafts` flag is passed. Note that even pages that don't have a `draft` status will not be processed if one of their parent sections is drafted.
+
+Just like pages, sections can be drafted by setting the `draft` option in
+the front matter, which is unset (`false`) by default.  When a section is
+drafted, its descendants (such as pages, subsections and assets) will **not**
+be processed unless the `--drafts` flag is passed.  Note that pages will not be
+processed if any of their parent sections is drafted, regardless of their own
+`draft` status.
 
 ## Front matter
 
