@@ -24,38 +24,38 @@ Then, at build time, Zola can create pages for each taxonomy, listing all of the
 
 Imagine again we have the following movies:
 ```
-- Shape of water                   <--- Value
-  - Director                         <--- Taxonomy
-    - Guillermo Del Toro                 <--- Term
-  - Genres                            <--- Taxonomy
-    - Thriller                           <--- Term
-    - Drama                              <--- Term
-  - Awards                           <--- Taxonomy
-    - Golden globe                         <--- Term
-    - Academy award                        <--- Term
-    - BAFTA                                <--- Term
-  - Release year                      <--- Taxonomy
-    - 2017                                <--- Term
+- Shape of water                             Value
+  - Director ............................ Taxonomy
+    - Guillermo Del Toro                      Term
+  - Genres .............................. Taxonomy
+    - Thriller                                Term
+    - Drama                                   Term
+  - Awards .............................. Taxonomy
+    - Golden globe                            Term
+    - Academy award                           Term
+    - BAFTA                                   Term
+  - Release year ........................ Taxonomy
+    - 2017                                    Term
 
-- The Room                          <--- Value
-  - Director                           <--- Taxonomy
-    - Tommy Wiseau                         <--- Term
-  - Genres                              <--- Taxonomy
-    - Romance                              <--- Term
-    - Drama                                <--- Term
-  - Release Year                       <--- Taxonomy
-    - 2003                                 <--- Term
+- The Room                                   Value
+  - Director ............................ Taxonomy
+    - Tommy Wiseau                            Term
+  - Genres .............................. Taxonomy
+    - Romance                                 Term
+    - Drama                                   Term
+  - Release Year ........................ Taxonomy
+    - 2003                                    Term
 
-- Bright                           <--- Value
-  - Director                           <--- Taxonomy
-    - David Ayer                           <--- Term
-  - Genres                              <--- Taxonomy
-    - Fantasy                              <--- Term
-    - Action                               <--- Term
-  - Awards                             <--- Taxonomy
-    - California on Location Awards        <--- Term
-  - Release Year                       <--- Taxonomy
-    - 2017                                 <--- Term
+- Bright                                     Value
+  - Director ............................ Taxonomy
+    - David Ayer                              Term
+  - Genres .............................. Taxonomy
+    - Fantasy                                 Term
+    - Action                                  Term
+  - Awards .............................. Taxonomy
+    - California on Location Awards           Term
+  - Release Year ........................ Taxonomy
+    - 2017                                    Term
 ```
 
 In this example, the page for `Release year` would include links to pages for both 2003 and 2017, whereas the page for 2017 would list both Shape of Water and Bright.
