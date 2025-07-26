@@ -100,6 +100,11 @@ a hard refresh if possible. If you are using WSL2 on Windows, make sure to store
 Some changes cannot be handled automatically and thus live reload may not always work. If you
 fail to see your change or get an error, try restarting `zola serve`.
 
+By default, the live reload will be debounced by one full second so as to more
+gracefully handle multiple changes to your input files in rapid succession. You
+have control over that debouncing duration with the debounce flag. You may use
+`-d0` to disable it altogether.
+
 You can also point to a config file other than `config.toml` like so (note that the position of the `config` option is important):
 
 ```bash
