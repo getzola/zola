@@ -429,6 +429,7 @@ pub fn serve(
     no_port_append: bool,
     utc_offset: UtcOffset,
     extra_watch_paths: Vec<String>,
+    debounce: u64,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, bind_address, constructed_base_url) = create_new_site(
@@ -481,7 +482,7 @@ pub fn serve(
 
     // Setup watchers
     let (tx, rx) = channel();
-    let mut debouncer = new_debouncer(Duration::from_secs(1), /*tick_rate=*/ None, tx).unwrap();
+    let mut debouncer = new_debouncer(Duration::from_millis(debounce), /*tick_rate=*/ None, tx).unwrap();
 
     // We watch for changes on the filesystem for every entry in watch_this
     // Will fail if either:

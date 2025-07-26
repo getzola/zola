@@ -101,6 +101,10 @@ pub enum Command {
         /// Extra path to watch for changes, relative to the project root.
         #[clap(long)]
         extra_watch_path: Vec<String>,
+
+        /// Debounce time in milliseconds for the file watcher
+        #[clap(short = 'd', long, default_value_t = 1000)]
+        debounce: u64,
     },
 
     /// Try to build the project without rendering it. Checks links
