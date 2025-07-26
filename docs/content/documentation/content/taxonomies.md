@@ -23,7 +23,8 @@ Imagine that you want to make a website to display information about various mov
 Then, at build time, Zola can create pages for each taxonomy, listing all of the known terms and linking it to all associated pieces of content.
 
 Imagine again we have the following movies:
-```
+
+```txt
 - Shape of water                             Value
   - Director ............................ Taxonomy
     - Guillermo Del Toro                      Term
@@ -128,6 +129,7 @@ release-year = ["2017"]
 ## Output paths
 
 In a similar manner to how section and pages calculate their output path:
+
 - the taxonomy name is never slugified
 - the taxonomy term (e.g. as specific tag) is slugified when `slugify.taxonomies` is enabled (`"on"`, the default) in the configuration
 
@@ -137,4 +139,5 @@ The taxonomy pages are then available at the following paths:
 $BASE_URL/$NAME/ (taxonomy)
 $BASE_URL/$NAME/$SLUG (taxonomy entry)
 ```
+
 Note that taxonomies are case-insensitive, so terms that have the same slug will get merged: sections and pages containing the tag "example" will be shown in the same taxonomy page as those containing "Example".
