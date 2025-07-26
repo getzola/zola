@@ -58,7 +58,7 @@ Imagine again we have the following movies:
     - 2017                                    Term
 ```
 
-In this example, the page for `Release year` would include links to pages for both 2003 and 2017, whereas the page for 2017 would list both Shape of Water and Bright.
+In this example, the page for `Release year` would include links to pages for both 2003 and 2017, whereas the page for 2017 would list both *Shape of Water* and *Bright*.
 
 ## Configuration
 
