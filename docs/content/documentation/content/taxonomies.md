@@ -3,7 +3,7 @@ title = "Taxonomies"
 weight = 90
 +++
 
-Zola has built-in support for taxonomies. Taxonomies are a way for users to group content according to user-defined categories.
+Zola has built-in support for taxonomies, a way to group content according to user-defined categories.
 
 ## Definitions
 
@@ -13,14 +13,14 @@ Zola has built-in support for taxonomies. Taxonomies are a way for users to grou
 
 ## Example: a movie website
 
-Imagine that you want to make a website to display information about various movies. In that case you could use the following taxonomies:
+Imagine that you want to make a website to display information about various movies. In that case, you could use the following taxonomies:
 
 - Director
 - Genres
 - Awards
 - Release year
 
-Then at build time Zola can create pages for each taxonomy listing all of the known terms as well as pages for each term in a taxonomy, listing all of the pieces of content associated with that term. 
+Then, at build time, Zola can create pages for each taxonomy, listing all of the known terms and linking it to all associated pieces of content. 
 
 Imagine again we have the following movies: 
 ```
@@ -58,13 +58,13 @@ Imagine again we have the following movies:
     - 2017                                 <--- Term
 ```
 
-In this example the page for `Release year` would include links to pages for both 2003 and 2017, where the page for 2017 would list both Shape of Water and Bright.
+In this example, the page for `Release year` would include links to pages for both 2003 and 2017, whereas the page for 2017 would list both Shape of Water and Bright.
 
 ## Configuration
 
 A taxonomy has six variables:
 
-- `name`: a required string that will be used in the URLs, usually the plural version (i.e., tags, categories, etc.)
+- `name`: a required string that will be used in the URLs, usually the plural version (i.e. tags, categories, etc.)
 - `paginate_by`: if this is set to a number, each term page will be paginated by this much.
 - `paginate_path`: if set, this path will be used by the paginated page and the page number will be appended after it.
 For example the default would be page/1.
@@ -137,4 +137,4 @@ The taxonomy pages are then available at the following paths:
 $BASE_URL/$NAME/ (taxonomy)
 $BASE_URL/$NAME/$SLUG (taxonomy entry)
 ```
-Note that taxonomies are case insensitive so terms that have the same slug will get merged, e.g. sections and pages containing the tag "example" will be shown in the same taxonomy page as ones containing "Example" 
+Note that taxonomies are case-insensitive, so terms that have the same slug will get merged: sections and pages containing the tag "example" will be shown in the same taxonomy page as those containing "Example".
