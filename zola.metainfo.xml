@@ -5,7 +5,9 @@
 
   <name>Zola</name>
   <summary>A fast static site generator in a single binary with everything built-in</summary>
-  <developer_name>Vincent Prouillet and contributors</developer_name>
+  <developer>
+    <name>Vincent Prouillet and contributors</name>
+  </developer>
 
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
