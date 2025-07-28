@@ -3,14 +3,14 @@
 title = "homepage-creators"
 description = "A fast and beautiful personal homepage for creators, used by https://jiaxiang.wang, a port of HeoWeb."
 template = "theme.html"
-date = 2025-04-16T22:26:10+08:00
+date = 2025-07-17T10:58:57+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-04-16T22:26:10+08:00
-updated = 2025-04-16T22:26:10+08:00
+created = 2025-07-17T10:58:57+08:00
+updated = 2025-07-17T10:58:57+08:00
 repository = "https://github.com/iWangJiaxiang/Homepage-Creators.git"
 homepage = "https://github.com/iWangJiaxiang/homepage-for-creators"
 minimum_version = "0.19.2"
@@ -411,5 +411,12 @@ img = "/img/blog-event.avif"
 
 [Homepage Creators](https://github.com/iWangJiaxiang/Homepage-Creators) 使用 [AGPL](./LICENSE) 协议开源，请遵守开源协议。
 
+## 📝 致谢
+
+该项目的CDN加速和安全防护由[腾讯EdgeOne](https://edgeone.ai/?from=github)赞助。
+
+CDN acceleration and security protection for this project are sponsored by [Tencent EdgeOne](https://edgeone.ai/?from=github).
+
+[![Edge One](https://edgeone.ai/media/34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b.png)](https://edgeone.ai/?from=github)
 
         

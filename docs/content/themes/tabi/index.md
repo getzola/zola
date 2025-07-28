@@ -3,14 +3,14 @@
 title = "tabi"
 description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2025-07-09T23:19:46+02:00
+date = 2025-07-20T20:56:09Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-07-09T23:19:46+02:00
-updated = 2025-07-09T23:19:46+02:00
+created = 2025-07-20T20:56:09Z
+updated = 2025-07-20T20:56:09Z
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -230,7 +230,6 @@ git pull
 | Website | Creator | Description  | Site Source   |
 | - | - | - | - |
 | [osc.garden](https://osc.garden) | Óscar Fernández ([welpo](https://github.com/welpo)) | Data science, psychology, and Zola | [Source](https://github.com/welpo/osc.garden) |
-| [sandip.live](https://sandip.live) | Sandip G ([sandman](https://github.com/sandman)) | Startups, tech and the good life | [Source](https://github.com/sandman/sandman.github.io) |
 | [seadve.github.io](https://seadve.github.io/) | Dave Patrick Caberto ([SeaDve](https://github.com/SeaDve/)) | Personal blog and portfolio with custom CSS | [Source](https://github.com/SeaDve/seadve.github.io) |
 | [mikufan.page](https://mikufan.page) | [Nadia](https://github.com/nyadiia) | Personal blog | [Source](https://github.com/nyadiia/mikufan.page) |
 | [tim-boettcher.online](https://tim-boettcher.online/) | [Tim Böttcher](https://codeberg.org/Tim-Boettcher/) | Insights and ramblings of a deafblind programmer | [Source](https://codeberg.org/Tim-Boettcher/tim-boettcher-online/) |
