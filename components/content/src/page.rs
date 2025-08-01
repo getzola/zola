@@ -27,7 +27,7 @@ use utils::fs::read_file;
 // A regex parsing RFC3339 date followed by {_,-} and some characters
 static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
-        r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)\s?(_|-)(?P<slug>.+$)"
+        r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)(\s?(_|-)(?P<slug>.+$))?"
     ).unwrap()
 });
 
@@ -124,8 +124,11 @@ impl Page {
         };
 
         if let Some(ref caps) = RFC3339_DATE.captures(&file_path_for_slug) {
-            if !config.slugify.paths_keep_dates {
-                slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
+            if caps.name("slug").is_some() {
+                if !config.slugify.paths_keep_dates {
+                    slug_from_dated_filename =
+                        Some(caps.name("slug").unwrap().as_str().to_string());
+                }
             }
             if page.meta.date.is_none() {
                 page.meta.date = Some(caps.name("datetime").unwrap().as_str().to_string());
