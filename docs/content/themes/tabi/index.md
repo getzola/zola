@@ -3,14 +3,14 @@
 title = "tabi"
 description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2025-07-09T23:19:46+02:00
+date = 2025-08-01T23:40:15+03:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-07-09T23:19:46+02:00
-updated = 2025-07-09T23:19:46+02:00
+created = 2025-08-01T23:40:15+03:00
+updated = 2025-08-01T23:40:15+03:00
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -80,6 +80,7 @@ tabi has a perfect score on Google's Lighthouse audit:
 - [X] [Mermaid support](https://welpo.github.io/tabi/blog/shortcodes/#mermaid-diagrams) to create diagrams and charts with text.
 - [X] [Local search](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#search) with an accessible, multi-lingual interface.
 - [X] [Custom Twitter card](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#social-media-cards) and automatic Open Graph tags.
+- [X] Anonymous [like buttons](https://welpo.github.io/tabi/blog/mastering-tabi-settings/#iine) powered by [iine](https://iine.to).
 - [X] [KaTeX](https://katex.org/) support for mathematical notation.
 - [X] [Stylized and human readable Atom feed](https://welpo.github.io/tabi/atom.xml).
 - [X] [Stylized and human readable sitemap](https://welpo.github.io/tabi/sitemap.xml).
@@ -230,7 +231,6 @@ git pull
 | Website | Creator | Description  | Site Source   |
 | - | - | - | - |
 | [osc.garden](https://osc.garden) | Óscar Fernández ([welpo](https://github.com/welpo)) | Data science, psychology, and Zola | [Source](https://github.com/welpo/osc.garden) |
-| [sandip.live](https://sandip.live) | Sandip G ([sandman](https://github.com/sandman)) | Startups, tech and the good life | [Source](https://github.com/sandman/sandman.github.io) |
 | [seadve.github.io](https://seadve.github.io/) | Dave Patrick Caberto ([SeaDve](https://github.com/SeaDve/)) | Personal blog and portfolio with custom CSS | [Source](https://github.com/SeaDve/seadve.github.io) |
 | [mikufan.page](https://mikufan.page) | [Nadia](https://github.com/nyadiia) | Personal blog | [Source](https://github.com/nyadiia/mikufan.page) |
 | [tim-boettcher.online](https://tim-boettcher.online/) | [Tim Böttcher](https://codeberg.org/Tim-Boettcher/) | Insights and ramblings of a deafblind programmer | [Source](https://codeberg.org/Tim-Boettcher/tim-boettcher-online/) |

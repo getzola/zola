@@ -3,14 +3,14 @@
 title = "anemone"
 description = "A minimalist Zola theme that prioritizes clean CSS and avoids heavy JavaScript. Enjoy a seamless user experience with lightning-fast load times. Let your content take center stage in a clutter-free, elegant design that enhances readability. Responsive and efficient, anemone brings focus to your ideas."
 template = "theme.html"
-date = 2025-06-06T00:08:40+01:00
+date = 2025-07-21T00:15:08+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-06-06T00:08:40+01:00
-updated = 2025-06-06T00:08:40+01:00
+created = 2025-07-21T00:15:08+01:00
+updated = 2025-07-21T00:15:08+01:00
 repository = "https://github.com/Speyll/anemone.git"
 homepage = "https://github.com/Speyll/anemone"
 minimum_version = "0.4.0"
@@ -160,6 +160,6 @@ Add a webring with a shortcode:
 
 ### License
 
-The Anemone theme is available as open source under the terms of the [MIT License](LICENSE).
+The Anemone theme is available as open source under the terms of the [GPLv3 License](LICENSE).
 
         
