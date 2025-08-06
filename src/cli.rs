@@ -102,8 +102,8 @@ pub enum Command {
         #[clap(long)]
         extra_watch_path: Vec<String>,
 
-        /// Debounce time in milliseconds for the file watcher
-        #[clap(short = 'd', long, default_value_t = 1000)]
+        /// Debounce time in milliseconds for the file watcher (at least 1ms)
+        #[clap(short = 'd', long, default_value_t = 1000, value_parser = clap::value_parser!(u64).range(1..))]
         debounce: u64,
     },
 

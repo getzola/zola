@@ -102,8 +102,10 @@ fail to see your change or get an error, try restarting `zola serve`.
 
 By default, the live reload will be debounced by one full second so as to more
 gracefully handle multiple changes to your input files in rapid succession. You
-have control over that debouncing duration with the debounce flag. You may use
-`-d0` to disable it altogether.
+have control over that debouncing duration with the `--debounce <duration_ms>`
+flag.  
+You may use `-d1` to (virtually) disable it altogether: for technical reasons
+(and keeping things simple), a "debounce" of 0 is not supported.
 
 You can also point to a config file other than `config.toml` like so (note that the position of the `config` option is important):
 
