@@ -5,7 +5,9 @@
 
   <name>Zola</name>
   <summary>A fast static site generator in a single binary with everything built-in</summary>
-  <developer_name>Vincent Prouillet and contributors</developer_name>
+  <developer>
+    <name>Vincent Prouillet and contributors</name>
+  </developer>
 
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
@@ -51,6 +53,9 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.21.0" date="2025-07-14">
+      <url>https://github.com/getzola/zola/releases/tag/v0.21.0</url>
+    </release>
     <release version="0.20.0" date="2025-02-15">
       <url>https://github.com/getzola/zola/releases/tag/v0.20.0</url>
     </release>
