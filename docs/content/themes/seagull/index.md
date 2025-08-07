@@ -3,16 +3,16 @@
 title = "Seagull"
 description = "A Zola theme."
 template = "theme.html"
-date = 2025-06-28T17:25:23+02:00
+date = 2025-08-02T22:39:19+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-06-28T17:25:23+02:00
-updated = 2025-06-28T17:25:23+02:00
+created = 2025-08-02T22:39:19+02:00
+updated = 2025-08-02T22:39:19+02:00
 repository = "https://git.42l.fr/HugoTrentesaux/seagull.git"
-homepage = "https://git.42l.fr/HugoTrentesaux/seagull"
+homepage = "https://git.lacontrevoie.fr/HugoTrentesaux/seagull"
 minimum_version = "0.17.0"
 license = "AGPL"
 demo = "https://seagull.coinduf.eu/"
@@ -33,7 +33,7 @@ A Zola theme.
 Add the theme as a git submodule
 
 ```bash
-git submodule add --name seagull https://git.42l.fr/HugoTrentesaux/seagull.git themes/seagull
+git submodule add --name seagull https://git.lacontrevoie.fr/HugoTrentesaux/seagull.git themes/seagull
 ```
 
 Enable the theme in your `config.toml`
@@ -56,6 +56,12 @@ Add a `_index.md` file in your `content` folder.
 Features can be seen on the demo website: https://seagull.coinduf.eu/.
 
 You can customize the theme with the `/sass/_variables.sass` file.
+
+Examples of websites built with this theme:
+
+- https://scientifiquesenrebellion.fr/
+- https://labasetoulouse.fr/
+- https://trentesaux.fr/
 
 ## Support
 

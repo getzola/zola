@@ -3,14 +3,14 @@
 title = "Kita"
 description = "Kita is a clean, elegant and simple blog theme for Zola."
 template = "theme.html"
-date = 2025-05-22T21:24:19+08:00
+date = 2025-07-20T17:06:03+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-05-22T21:24:19+08:00
-updated = 2025-05-22T21:24:19+08:00
+created = 2025-07-20T17:06:03+08:00
+updated = 2025-07-20T17:06:03+08:00
 repository = "https://github.com/st1020/kita.git"
 homepage = "https://github.com/st1020/kita"
 minimum_version = "0.17.0"
