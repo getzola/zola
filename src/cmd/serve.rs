@@ -247,6 +247,7 @@ fn in_memory_content(path: &RelativePathBuf, content: &str) -> Response<Body> {
         Some(ext) => match ext {
             "xml" => "text/xml",
             "json" => "application/json",
+            "txt" => "text/plain",
             _ => "text/html",
         },
         None => "text/html",
