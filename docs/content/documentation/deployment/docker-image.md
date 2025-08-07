@@ -23,6 +23,7 @@ COPY --from=zola /project/public /public
 ```
 
 To build your website as a docker image, you then run:
+
 ```bash
 docker build -t my_website:latest .
 ```

@@ -170,7 +170,10 @@ If your site source is laid out as follows:
 
 you would set your `extra_syntaxes_and_themes` to `["syntaxes", "syntaxes/Sublime-Language1"]` to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.
 
-You can see the list of available themes on the [configuration page](@/documentation/getting-started/configuration/index.md#syntax-highlighting).
+
+Note that some newer syntax features, such as [inheritance](https://www.sublimetext.com/docs/syntax.html#inheritance), do not currently work. You may have to make modifications to any custom syntax files you choose to install. To find more information, including workarounds, search the project for [open issues](https://github.com/getzola/zola/issues).
+
+You can see the list of available themes on the [configuration page](@/documentation/getting-started/configuration.md#syntax-highlighting).
 
 
 ## Inline VS classed highlighting
