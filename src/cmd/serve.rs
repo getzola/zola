@@ -482,7 +482,7 @@ pub fn serve(
 
     // Setup watchers
     let (tx, rx) = channel();
-    let mut debouncer = new_debouncer(Duration::from_millis(debounce), /*tick_rate=*/ None, tx).unwrap();
+    let mut debouncer = new_debouncer(Duration::from_millis(debounce), None, tx).unwrap();
 
     // We watch for changes on the filesystem for every entry in watch_this
     // Will fail if either:
