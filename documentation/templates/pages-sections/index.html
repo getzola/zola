@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Sections and Pages | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+
+<div class="documentation">
+    <aside class="documentation__sidebar">
+        <ul>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Getting Started</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;installation&#x2F;">Installation</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;cli-usage&#x2F;">CLI usage</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;directory-structure&#x2F;">Directory structure</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;configuration&#x2F;">Configuration</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Content</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;section&#x2F;">Section</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;page&#x2F;">Page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;shortcodes&#x2F;">Shortcodes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;linking&#x2F;">Internal links &amp; deep linking</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;table-of-contents&#x2F;">Table of Contents</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;syntax-highlighting&#x2F;">Syntax Highlighting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;search&#x2F;">Search</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;sass&#x2F;">Sass</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;image-processing&#x2F;">Image processing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;multilingual&#x2F;">Multilingual sites</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Templates</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pages-sections&#x2F;">Sections and Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pagination&#x2F;">Pagination</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;feeds&#x2F;">Feeds</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;sitemap&#x2F;">Sitemap</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;robots&#x2F;">Robots.txt</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;404&#x2F;">404 error page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;archive&#x2F;">Archive</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Themes</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;installing-and-using-themes&#x2F;">Installing &amp; using themes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;creating-a-theme&#x2F;">Creating a theme</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;extending-a-theme&#x2F;">Customizing a theme</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Deployment</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;sourcehut&#x2F;">Sourcehut Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;netlify&#x2F;">Netlify</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;github-pages&#x2F;">GitHub Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;gitlab-pages&#x2F;">GitLab Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;codeberg-pages&#x2F;">Codeberg Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;edgio&#x2F;">Edgio</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;vercel&#x2F;">Vercel</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;zeabur&#x2F;">Zeabur</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;cloudflare-pages&#x2F;">Cloudflare Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;flyio&#x2F;">Fly.io</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;aws-s3&#x2F;">AWS S3 Bucket</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;docker-image&#x2F;">Docker image</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+        </ul>
+    </aside>
+    <div class="documentation__content">
+        
+    <h1>Sections and Pages</h1>
+    <p>Templates for pages and sections are very similar.</p>
+<h2 id="page-variables"><a class="zola-anchor" href="#page-variables" aria-label="Anchor link for: page-variables">🔗</a>Page variables</h2>
+<p>Zola will try to load the <code>templates/page.html</code> template, the <code>page.html</code> template of the theme if one is used
+or render the built-in template (a blank page).</p>
+<p>Whichever template you decide to render, you will get a <code>page</code> variable in your template
+with the following fields:</p>
+<pre data-lang="ts" style="background-color:#383838;color:#e6e1dc;" class="language-ts "><code class="language-ts" data-lang="ts"><span style="color:#95815e;">// The HTML output of the Markdown content
+</span><span>content: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span>title: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#d0d0ff;">description</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#d0d0ff;">date</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#d0d0ff;">updated</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#d0d0ff;">slug</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span>path: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span>authors: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span>draft: </span><span style="color:#d0d0ff;">Bool</span><span>;
+</span><span style="color:#95815e;">// the path, split on &#39;/&#39;
+</span><span>components: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span>permalink: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span>summary: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#d0d0ff;">taxonomies</span><span style="color:#cc7833;">: </span><span style="color:#d0d0ff;">HashMap</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span>, </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">&gt;&gt;</span><span>;
+</span><span>extra: </span><span style="color:#d0d0ff;">HashMap</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span>, </span><span style="color:#d0d0ff;">Any</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span>toc: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="color:#d0d0ff;">Header</span><span style="color:#cc7833;">&gt;</span><span>,
+</span><span style="color:#95815e;">// Naive word count, will not work for languages without whitespace
+</span><span>word_count: </span><span style="font-style:italic;color:#6e9cbe;">Number</span><span>;
+</span><span style="color:#95815e;">// Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
+</span><span>reading_time: </span><span style="font-style:italic;color:#6e9cbe;">Number</span><span>;
+</span><span style="color:#95815e;">// earlier / lighter
+</span><span>lower: </span><span style="color:#d0d0ff;">Page</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#95815e;">// later / heavier
+</span><span style="color:#d0d0ff;">higher</span><span style="color:#cc7833;">: </span><span style="color:#d0d0ff;">Page</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#95815e;">// Year/month/day is only set if the page has a date and month/day are 1-indexed
+</span><span style="color:#d0d0ff;">year</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">Number</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#d0d0ff;">month</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">Number</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#d0d0ff;">day</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">Number</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#95815e;">// Paths of colocated assets, relative to the content directory
+</span><span style="color:#d0d0ff;">assets</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span style="color:#95815e;">// The relative paths of the parent sections until the index one, for use with the `get_section` Tera function
+</span><span style="color:#95815e;">// The first item is the index section and the last one is the parent section
+</span><span style="color:#95815e;">// This is filled after rendering a page content so it will be empty in shortcodes
+</span><span>ancestors: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span style="color:#95815e;">// The relative path from the `content` directory to the markdown file
+</span><span>relative_path: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span style="color:#95815e;">// The relative path from the `content` directory to the directory of a colocated index.md markdown file
+</span><span style="color:#95815e;">// Null if the file is not colocated.
+</span><span>colocated_path: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#95815e;">// The language for the page if there is one. Default to the config `default_language`
+</span><span style="color:#d0d0ff;">lang</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span style="color:#95815e;">// Information about all the available languages for that content, including the current page
+</span><span>translations: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="color:#d0d0ff;">TranslatedContent</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span style="color:#95815e;">// All the pages/sections linking this page: their permalink and a title if there is one
+</span><span>backlinks: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span>{permalink: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>, title: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>}</span><span style="color:#cc7833;">&gt;</span><span>;
+</span></code></pre>
+<h2 id="section-variables"><a class="zola-anchor" href="#section-variables" aria-label="Anchor link for: section-variables">🔗</a>Section variables</h2>
+<p>By default, Zola will try to load <code>templates/index.html</code> for <code>content/_index.md</code>
+and <code>templates/section.html</code> for other <code>_index.md</code> files. If there isn't
+one, it will render the built-in template (a blank page).</p>
+<p>Whichever template you decide to render, you will get a <code>section</code> variable in your template
+with the following fields:</p>
+<pre data-lang="ts" style="background-color:#383838;color:#e6e1dc;" class="language-ts "><code class="language-ts" data-lang="ts"><span style="color:#95815e;">// The HTML output of the Markdown content
+</span><span>content: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span>title: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#d0d0ff;">description</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span style="color:#95815e;">// the path, split on &#39;/&#39;
+</span><span>components: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span>permalink: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span>extra: </span><span style="color:#d0d0ff;">HashMap</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span>, </span><span style="color:#d0d0ff;">Any</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span style="color:#95815e;">// Pages directly in this section. By default, the pages are not sorted. Please set the &quot;sort_by&quot;
+</span><span style="color:#95815e;">// variable in the _index.md file of the corresponding section to &quot;date&quot; or &quot;weight&quot; for sorting by
+</span><span style="color:#95815e;">// date and weight, respectively.
+</span><span>pages: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="color:#d0d0ff;">Page</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span style="color:#95815e;">// Direct subsections to this section, sorted by subsections weight
+</span><span style="color:#95815e;">// This only contains the path to use in the `get_section` built-in function to get
+</span><span style="color:#95815e;">// the actual section object if you need it
+</span><span>subsections: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span>toc: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="color:#d0d0ff;">Header</span><span style="color:#cc7833;">&gt;</span><span>,
+</span><span style="color:#95815e;">// Unicode word count
+</span><span>word_count: </span><span style="font-style:italic;color:#6e9cbe;">Number</span><span>;
+</span><span style="color:#95815e;">// Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
+</span><span>reading_time: </span><span style="font-style:italic;color:#6e9cbe;">Number</span><span>;
+</span><span style="color:#95815e;">// Paths of colocated assets, relative to the content directory
+</span><span>assets: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span style="color:#95815e;">// The relative paths of the parent sections until the index one, for use with the `get_section` Tera function
+</span><span style="color:#95815e;">// The first item is the index section and the last one is the parent section
+</span><span style="color:#95815e;">// This is filled after rendering a page content so it will be empty in shortcodes
+</span><span>ancestors: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span style="color:#95815e;">// The relative path from the `content` directory to the markdown file
+</span><span>relative_path: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span style="color:#95815e;">// The language for the section if there is one. Default to the config `default_language`
+</span><span>lang: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span style="color:#95815e;">// Information about all the available languages for that content
+</span><span>translations: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="color:#d0d0ff;">TranslatedContent</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span style="color:#95815e;">// All the pages/sections linking this page: their permalink and a title if there is one
+</span><span>backlinks: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span>{permalink: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>, title: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>}</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span style="color:#95815e;">// Whether this section generates feeds or not. Taken from the front-matter if set
+</span><span style="color:#d0d0ff;">generate_feeds</span><span style="color:#cc7833;">: </span><span style="color:#d0d0ff;">bool</span><span>;
+</span><span style="color:#95815e;">// Whether this section is transparent. Taken from the front-matter if set
+</span><span>transparent: </span><span style="color:#d0d0ff;">bool</span><span>;
+</span><span style="color:#95815e;">// How many items per pager (if defined)
+</span><span>paginate_by: </span><span style="font-style:italic;color:#6e9cbe;">Number</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#95815e;">// If items order is reversed in the pagination (defaults to false)
+</span><span style="color:#d0d0ff;">paginate_reversed</span><span style="color:#cc7833;">: </span><span style="color:#d0d0ff;">bool</span><span>;
+</span></code></pre>
+<p>Information about pagination is useful when using the <code>get_section</code> Tera function for which the <code>paginator</code> is not available.</p>
+<p>See <a href="https://www.getzola.org/documentation/templates/pagination/">pagination template documentation</a> for more information on the <code>paginator</code> variable.</p>
+<h2 id="table-of-contents"><a class="zola-anchor" href="#table-of-contents" aria-label="Anchor link for: table-of-contents">🔗</a>Table of contents</h2>
+<p>Both page and section templates have a <code>toc</code> variable that corresponds to an array of <code>Header</code>.
+A <code>Header</code> has the following fields:</p>
+<pre data-lang="ts" style="background-color:#383838;color:#e6e1dc;" class="language-ts "><code class="language-ts" data-lang="ts"><span style="color:#95815e;">// The hX level
+</span><span>level: </span><span style="color:#a5c261;">1 </span><span style="color:#cc7833;">| </span><span style="color:#a5c261;">2 </span><span style="color:#cc7833;">| </span><span style="color:#a5c261;">3 </span><span style="color:#cc7833;">| </span><span style="color:#a5c261;">4 </span><span style="color:#cc7833;">| </span><span style="color:#a5c261;">5 </span><span style="color:#cc7833;">| </span><span style="color:#a5c261;">6</span><span>;
+</span><span style="color:#95815e;">// The generated slug id
+</span><span>id: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span style="color:#95815e;">// The text of the header
+</span><span>title: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span style="color:#95815e;">// A link pointing directly to the header, using the inserted anchor
+</span><span>permalink: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span style="color:#95815e;">// All lower level headers below this header
+</span><span>children: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="color:#d0d0ff;">Header</span><span style="color:#cc7833;">&gt;</span><span>;
+</span></code></pre>
+<h2 id="translated-content"><a class="zola-anchor" href="#translated-content" aria-label="Anchor link for: translated-content">🔗</a>Translated content</h2>
+<p>Both pages and sections have a <code>translations</code> field that corresponds to an array of <code>TranslatedContent</code>. If your
+site is not using multiple languages, this will always be an empty array.
+<code>TranslatedContent</code> has the following fields:</p>
+<pre data-lang="ts" style="background-color:#383838;color:#e6e1dc;" class="language-ts "><code class="language-ts" data-lang="ts"><span style="color:#95815e;">// The language code for that content, empty if it is the default language
+</span><span>lang: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#95815e;">// The title of that content if there is one
+</span><span style="color:#d0d0ff;">title</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span style="color:#cc7833;">?</span><span>;
+</span><span style="color:#95815e;">// A permalink to that content
+</span><span style="color:#d0d0ff;">permalink</span><span style="color:#cc7833;">: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span style="color:#95815e;">// The path to the markdown file; useful for retrieving the full page through
+</span><span style="color:#95815e;">// the `get_page` function.
+</span><span>path: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span></code></pre>
+
+
+    </div>
+</div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

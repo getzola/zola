@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>sam | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;sam&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>sam</h1>
+            <p>A Simple and Minimalist theme with a focus on typography and content.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;janbaudisch.dev">Jan Baudisch</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> AGPL-3.0</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;janbaudisch&#x2F;zola-sam">https:&#x2F;&#x2F;github.com&#x2F;janbaudisch&#x2F;zola-sam</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-sam.janbaudisch.dev">https:&#x2F;&#x2F;zola-sam.janbaudisch.dev</a></p>
+            
+            
+            <p><b>Last updated:</b> 2021-02-10T17:52:11+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><a class="external" href="https://builds.sr.ht/~janbaudisch/zola-sam"><img src="https://builds.sr.ht/~janbaudisch/zola-sam.svg" alt="Build Status" /></a>
+<a class="external" href="https://zola-sam.janbaudisch.dev"><img src="https://img.shields.io/badge/demo-live-green.svg" alt="Demo" /></a></p>
+<h1 id="sam">Sam</h1>
+<blockquote>
+<p>A Simple and Minimalist theme with a focus on typography and content.</p>
+<p><a class="external" href="https://getzola.org">Zola</a> port of <a class="external" href="https://github.com/victoriadotdev/hugo-theme-sam">hugo-theme-sam</a>.</p>
+</blockquote>
+<p><img src="https://www.getzola.org/themes/sam/screenshot.png" alt="Screenshot" /></p>
+<h2 id="original">Original</h2>
+<p>This is a port of the original <a class="external" href="https://github.com/victoriadotdev/hugo-theme-sam">hugo-theme-sam</a> theme for Hugo (<a class="external" href="https://github.com/janbaudisch/zola-sam/blob/master/upstream/LICENSE">License</a>).</p>
+<p>See <a class="external" href="https://github.com/janbaudisch/zola-sam/blob/master/upstream"><code>upstream</code></a> for source code take from there.</p>
+<h2 id="installation">Installation</h2>
+<p>The easiest way to install this theme is to either clone it ...</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git clone https://github.com/janbaudisch/zola-sam.git themes/sam
+</span></code></pre>
+<p>... or to use it as a submodule.</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git submodule add https://github.com/janbaudisch/zola-sam.git themes/sam
+</span></code></pre>
+<p>Either way, you will have to enable the theme in your <code>config.toml</code>.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;sam&quot;
+</span></code></pre>
+<h2 id="taxonomies">Taxonomies</h2>
+<p>Sam supports the <code>tags</code> and <code>authors</code> taxonomies.</p>
+<p>To use them, declare them in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">rss </span><span>= </span><span style="color:#6e9cbe;">true </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;authors&quot;</span><span>, </span><span style="color:#e8bf6a;">rss </span><span>= </span><span style="color:#6e9cbe;">true </span><span>}
+</span><span>]
+</span></code></pre>
+<p>Set them in your page's frontmatter:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span style="color:#e8bf6a;">tags </span><span>= [</span><span style="color:#c1be91;">&quot;some&quot;</span><span>, </span><span style="color:#c1be91;">&quot;tag&quot;</span><span>]
+</span><span style="color:#e8bf6a;">authors </span><span>= [</span><span style="color:#c1be91;">&quot;Alice&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Sam&quot;</span><span>]
+</span></code></pre>
+<p>See <a class="external" href="https://www.getzola.org/documentation/content/taxonomies">Zola's documentation</a> for more details.</p>
+<h2 id="options">Options</h2>
+<p>See <a class="external" href="https://github.com/janbaudisch/zola-sam/blob/master/config.toml"><code>config.toml</code></a> for an example configuration.</p>
+<h3 id="menu">Menu</h3>
+<p>The menu on the index page is created as follows: If the <code>sam_menu</code> variable is set, it gets used.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">sam_menu </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;posts&quot;</span><span>, </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;/posts&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;about&quot;</span><span>, </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;/about&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;github&quot;</span><span>, </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com&quot; </span><span>}
+</span><span>]
+</span></code></pre>
+<p>If it is not set, all sections under <code>content</code> will get linked.</p>
+<h4 id="bottom-menu">Bottom menu</h4>
+<p>This variable decides wether the menu - as mentioned above - will also be displayed at the bottom of pages.</p>
+<p>Default: <code>false</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">sam_bottom_menu </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h3 id="home"><code>home</code></h3>
+<p>Sets the name for all links referring to the home page in the menus and the 404 page.</p>
+<p>Default: <code>home</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">home </span><span>= </span><span style="color:#c1be91;">&quot;home&quot;
+</span></code></pre>
+<h3 id="date-format">Date format</h3>
+<p>Specifies how to display dates. The format is described <a class="external" href="https://docs.rs/chrono/latest/chrono/format/strftime/index.html">here</a>.</p>
+<p>Default: <code>%a %b %e, %Y</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%a %b %e, %Y&quot;
+</span></code></pre>
+<h3 id="word-count-and-reading-time">Word count and reading time</h3>
+<p>You can enable or disable word count and reading time for posts across the whole site:</p>
+<p>Default: <code>true</code> (both)</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">show_word_count </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">show_reading_time </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>If enabled, you can opt-out per page via front-matter:</p>
+<p>Default: <code>false</code> (both)</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>+++
+</span><span>[extra]
+</span><span>hide_word_count = true
+</span><span>hide_reading_time = true
+</span><span>+++
+</span></code></pre>
+<h3 id="disable-page-header">Disable page header</h3>
+<p>If you want to disable the complete header of a page (for example a page which is explicitly not a post), you can do so via front-matter:</p>
+<p>Default: <code>false</code></p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>+++
+</span><span>[extra]
+</span><span>no_header = true
+</span><span>+++
+</span></code></pre>
+<h3 id="footer">Footer</h3>
+<p>To place some text at the end of pages, set the following:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.sam_footer</span><span>]
+</span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;Some footer text.&quot;
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

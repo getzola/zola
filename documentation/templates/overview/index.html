@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Overview | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+
+<div class="documentation">
+    <aside class="documentation__sidebar">
+        <ul>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Getting Started</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;installation&#x2F;">Installation</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;cli-usage&#x2F;">CLI usage</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;directory-structure&#x2F;">Directory structure</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;configuration&#x2F;">Configuration</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Content</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;section&#x2F;">Section</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;page&#x2F;">Page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;shortcodes&#x2F;">Shortcodes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;linking&#x2F;">Internal links &amp; deep linking</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;table-of-contents&#x2F;">Table of Contents</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;syntax-highlighting&#x2F;">Syntax Highlighting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;search&#x2F;">Search</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;sass&#x2F;">Sass</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;image-processing&#x2F;">Image processing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;multilingual&#x2F;">Multilingual sites</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Templates</span>
+                <ul>
+                    
+                        <li class="active">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pages-sections&#x2F;">Sections and Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pagination&#x2F;">Pagination</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;feeds&#x2F;">Feeds</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;sitemap&#x2F;">Sitemap</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;robots&#x2F;">Robots.txt</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;404&#x2F;">404 error page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;archive&#x2F;">Archive</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Themes</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;installing-and-using-themes&#x2F;">Installing &amp; using themes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;creating-a-theme&#x2F;">Creating a theme</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;extending-a-theme&#x2F;">Customizing a theme</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Deployment</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;sourcehut&#x2F;">Sourcehut Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;netlify&#x2F;">Netlify</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;github-pages&#x2F;">GitHub Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;gitlab-pages&#x2F;">GitLab Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;codeberg-pages&#x2F;">Codeberg Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;edgio&#x2F;">Edgio</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;vercel&#x2F;">Vercel</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;zeabur&#x2F;">Zeabur</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;cloudflare-pages&#x2F;">Cloudflare Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;flyio&#x2F;">Fly.io</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;aws-s3&#x2F;">AWS S3 Bucket</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;docker-image&#x2F;">Docker image</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+        </ul>
+    </aside>
+    <div class="documentation__content">
+        
+    <h1>Overview</h1>
+    <p>Zola uses the <a class="external" href="https://keats.github.io/tera">Tera</a> template engine, which is very similar
+to Jinja2, Liquid and Twig.</p>
+<p>As this documentation will only talk about how templates work in Zola, please read
+the <a class="external" href="https://keats.github.io/tera/docs/#templates">Tera template documentation</a> if you want
+to learn more about it first.</p>
+<p>All templates live in the <code>templates</code> directory.  If you are not sure what variables are available in a template,
+you can place <code>{{ __tera_context }}</code> in the template to print the whole context.</p>
+<p>A few variables are available on all templates except feeds and the sitemap:</p>
+<ul>
+<li><code>config</code>: the language aware <a href="https://www.getzola.org/documentation/getting-started/configuration/">configuration</a></li>
+<li><code>current_path</code>: the path (full URL without <code>base_url</code>) of the current page, always starting with a <code>/</code></li>
+<li><code>current_url</code>: the full URL for the current page</li>
+<li><code>lang</code>: the language for the current page</li>
+</ul>
+<p>Config variables can be accessed like <code>config.variable</code>, in HTML for example with <code>{{ config.base_url }}</code>.
+The 404 template does not get <code>current_path</code> and <code>current_url</code> (this information cannot be determined).</p>
+<p>On top of the <code>config</code> attributes mentioned above, it also gets <code>config.mode</code> which is whether it's run in <code>build</code>, <code>serve</code> or <code>check</code>.</p>
+<h2 id="standard-templates"><a class="zola-anchor" href="#standard-templates" aria-label="Anchor link for: standard-templates">🔗</a>Standard templates</h2>
+<p>By default, Zola will look for three templates: <code>index.html</code>, which is applied
+to the site homepage; <code>section.html</code>, which is applied to all sections (any HTML
+page generated by creating a directory within your <code>content</code> directory); and
+<code>page.html</code>, which is applied to all pages (any HTML page generated by creating an
+<code>.md</code> file within your <code>content</code> directory).</p>
+<p>The homepage is always a section (regardless of whether it contains other pages).
+Thus, the <code>index.html</code> and <code>section.html</code> templates both have access to the
+section variables.  The <code>page.html</code> template has access to the page variables.
+The page and section variables are described in more detail in the next section.</p>
+<h2 id="built-in-templates"><a class="zola-anchor" href="#built-in-templates" aria-label="Anchor link for: built-in-templates">🔗</a>Built-in templates</h2>
+<p>Zola comes with four built-in templates: <code>atom.xml</code> and <code>rss.xml</code> (described in
+<a href="https://www.getzola.org/documentation/templates/feeds/">Feeds</a>), <code>sitemap.xml</code> (described in <a href="https://www.getzola.org/documentation/templates/sitemap/">Sitemap</a>),
+and <code>robots.txt</code> (described in <a href="https://www.getzola.org/documentation/templates/robots/">Robots.txt</a>).
+Additionally, themes can add their own templates, which will be applied if not
+overridden.  You can override built-in or theme templates by creating a template with
+the same name in the correct path. For example, you can override the Atom template by
+creating a <code>templates/atom.xml</code> file.</p>
+<h2 id="custom-templates"><a class="zola-anchor" href="#custom-templates" aria-label="Anchor link for: custom-templates">🔗</a>Custom templates</h2>
+<p>In addition to the standard <code>index.html</code>, <code>section.html</code> and <code>page.html</code> templates,
+you may also create custom templates by creating an <code>.html</code> file in the <code>templates</code>
+directory.  These custom templates will not be used by default.  Instead, a custom template will <em>only</em> be used if you apply it by setting the <code>template</code> front-matter variable to the path for that template (or if you <code>include</code> it in another template that is applied).  For example, if you created a custom template for your site's About page called <code>about.html</code>, you could apply it to your <code>about.md</code> page by including the following front matter in your <code>about.md</code> page:</p>
+<pre data-lang="md" style="background-color:#383838;color:#e6e1dc;" class="language-md "><code class="language-md" data-lang="md"><span>+++
+</span><span>title = &quot;About Us&quot;
+</span><span>template = &quot;about.html&quot;
+</span><span>+++
+</span></code></pre>
+<p>Custom templates are not required to live at the root of your <code>templates</code> directory.
+For example, <code>product_pages/with_pictures.html</code> is a valid template.</p>
+<h2 id="built-in-filters"><a class="zola-anchor" href="#built-in-filters" aria-label="Anchor link for: built-in-filters">🔗</a>Built-in filters</h2>
+<p>Zola adds a few filters in addition to <a class="external" href="https://keats.github.io/tera/docs/#filters">those</a> already present
+in Tera.</p>
+<h3 id="markdown"><a class="zola-anchor" href="#markdown" aria-label="Anchor link for: markdown">🔗</a>markdown</h3>
+<p>Converts the given variable to HTML using Markdown. There are a few differences compared to page/section Markdown rendering:</p>
+<ul>
+<li>shortcodes evaluated by this filter cannot access the current rendering context: <code>config</code> will be available, but accessing <code>section</code> or <code>page</code> (among others) from a shortcode called within the <code>markdown</code> filter will prevent your site from building (see <a class="external" href="https://github.com/getzola/zola/pull/1358">this discussion</a>)</li>
+<li><code>lang</code> in shortcodes will always be equal to the site's <code>config.default_language</code> (or <code>en</code> otherwise) ; it should not be a problem, but if it is in most cases, but if you need to use language-aware shortcodes in this filter, please refer to the <a href="https://www.getzola.org/documentation/content/shortcodes/#shortcode-context">Shortcode context</a> section of the docs.</li>
+</ul>
+<p>By default, the filter will wrap all text in a paragraph. To disable this behaviour, you can
+pass <code>true</code> to the inline argument:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">some_text </span><span>| </span><span style="color:#d0d0ff;">markdown</span><span>(</span><span style="color:#d0d0ff;">inline</span><span style="color:#cc7833;">=</span><span style="color:#6e9cbe;">true</span><span>) }}
+</span></code></pre>
+<p>You do not need to use this filter with <code>page.content</code> or <code>section.content</code>, the content is already rendered.</p>
+<h3 id="base64-encode"><a class="zola-anchor" href="#base64-encode" aria-label="Anchor link for: base64-encode">🔗</a>base64_encode</h3>
+<p>Encode the variable to base64.</p>
+<h3 id="base64-decode"><a class="zola-anchor" href="#base64-decode" aria-label="Anchor link for: base64-decode">🔗</a>base64_decode</h3>
+<p>Decode the variable from base64.</p>
+<h3 id="regex-replace"><a class="zola-anchor" href="#regex-replace" aria-label="Anchor link for: regex-replace">🔗</a>regex_replace</h3>
+<p>Replace text via regular expressions.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#c1be91;">&quot;World Hello&quot; </span><span>| </span><span style="color:#d0d0ff;">regex_replace</span><span>(</span><span style="color:#d0d0ff;">pattern</span><span style="color:#cc7833;">=</span><span>`(?</span><span style="color:#d0d0ff;">P</span><span style="color:#cc7833;">&lt;</span><span style="color:#d0d0ff;">subject</span><span style="color:#cc7833;">&gt;</span><span>\</span><span style="color:#d0d0ff;">w</span><span style="color:#cc7833;">+</span><span>), (?</span><span style="color:#d0d0ff;">P</span><span style="color:#cc7833;">&lt;</span><span style="color:#d0d0ff;">greeting</span><span style="color:#cc7833;">&gt;</span><span>\</span><span style="color:#d0d0ff;">w</span><span style="color:#cc7833;">+</span><span>)`, </span><span style="color:#d0d0ff;">rep</span><span style="color:#cc7833;">=</span><span>`$</span><span style="color:#d0d0ff;">greeting</span><span> $</span><span style="color:#d0d0ff;">subject</span><span>`) }}
+</span><span>&lt;!-- Hello World --&gt;
+</span></code></pre>
+<h3 id="num-format"><a class="zola-anchor" href="#num-format" aria-label="Anchor link for: num-format">🔗</a>num_format</h3>
+<p>Format a number into its string representation.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ 1000000 | </span><span style="color:#d0d0ff;">num_format </span><span>}}
+</span><span>&lt;!-- 1,000,000 --&gt;
+</span></code></pre>
+<p>By default this will format the number using the locale set by <code>config.default_language</code> in config.toml.</p>
+<p>To format a number for a specific locale, you can use the <code>locale</code> argument and pass the name of the desired locale:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ 1000000 | </span><span style="color:#d0d0ff;">num_format</span><span>(</span><span style="color:#d0d0ff;">locale</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;en-IN&quot;</span><span>) }}
+</span><span>&lt;!-- 10,00,000 --&gt;
+</span></code></pre>
+<h2 id="built-in-functions"><a class="zola-anchor" href="#built-in-functions" aria-label="Anchor link for: built-in-functions">🔗</a>Built-in functions</h2>
+<p>Zola adds a few Tera functions to <a class="external" href="https://keats.github.io/tera/docs#built-in-functions">those built-in in Tera</a>
+to make it easier to develop complex sites.</p>
+<h3 id="file-searching-logic"><a class="zola-anchor" href="#file-searching-logic" aria-label="Anchor link for: file-searching-logic">🔗</a>File searching logic</h3>
+<p>For functions that are searching for a file on disk other than through <code>get_page</code> and <code>get_section</code>, the following
+logic applies.</p>
+<ol>
+<li>The base directory is the Zola root directory, where the <code>config.toml</code> is</li>
+<li>For the given path: if it starts with <code>@/</code>, replace that with <code>content/</code> instead and trim any leading <code>/</code></li>
+<li>Search in the following locations in this order, returning the first where the file exists:
+<ol>
+<li><code>$base_directory</code> + <code>$path</code></li>
+<li><code>$base_directory</code> + <code>"static/"</code> + <code>$path</code></li>
+<li><code>$base_directory</code> + <code>"content/"</code> + <code>$path</code></li>
+<li><code>$base_directory</code> + <code>$output_path</code> + <code>$path</code></li>
+<li><code>$base_directory</code> + <code>"themes"</code> + <code>$theme</code> + <code>"static/"</code> + <code>$path</code> (only if using a theme)</li>
+</ol>
+</li>
+</ol>
+<p>In practice this means that <code>@/some/image.jpg</code>, <code>/content/some/image.jpg</code> and <code>content/some/image.jpg</code> will point to the
+same thing.</p>
+<p>It will error if the path is outside the Zola directory.</p>
+<h3 id="get-page"><a class="zola-anchor" href="#get-page" aria-label="Anchor link for: get-page">🔗</a><code>get_page</code></h3>
+<p>Takes a path to an <code>.md</code> file and returns the associated page. The base path is the <code>content</code> directory.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">page </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_page</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blog/page2.md&quot;</span><span>) %}
+</span></code></pre>
+<p>If selecting a specific language for the page, you can pass <code>lang</code> with the language code to the function:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">page </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_page</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blog/page2.md&quot;</span><span>, </span><span style="color:#d0d0ff;">lang</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;fr&quot;</span><span>) %}
+</span><span>
+</span><span style="color:#95815e;">{# If &quot;fr&quot; is the default language, this is equivalent to #}
+</span><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">page </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_page</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blog/page2.md&quot;</span><span>) %}
+</span><span>
+</span><span style="color:#95815e;">{# If &quot;fr&quot; is not the default language, this is equivalent to #}
+</span><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">page </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_page</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blog/page2.fr.md&quot;</span><span>) %}
+</span></code></pre>
+<h3 id="get-section"><a class="zola-anchor" href="#get-section" aria-label="Anchor link for: get-section">🔗</a><code>get_section</code></h3>
+<p>Takes a path to an <code>_index.md</code> file and returns the associated section. The base path is the <code>content</code> directory.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">section </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_section</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blog/_index.md&quot;</span><span>) %}
+</span></code></pre>
+<p>If you only need the metadata of the section, you can pass <code>metadata_only=true</code> to the function:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">section </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_section</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blog/_index.md&quot;</span><span>, </span><span style="color:#d0d0ff;">metadata_only</span><span style="color:#cc7833;">=</span><span style="color:#6e9cbe;">true</span><span>) %}
+</span></code></pre>
+<p>If selecting a specific language for the section, you can pass <code>lang</code> with the language code to the function:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">section </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_section</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blog/_index.md&quot;</span><span>, </span><span style="color:#d0d0ff;">lang</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;fr&quot;</span><span>) %}
+</span><span>
+</span><span style="color:#95815e;">{# If &quot;fr&quot; is the default language, this is equivalent to #}
+</span><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">section </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_section</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blog/_index.md&quot;</span><span>) %}
+</span><span>
+</span><span style="color:#95815e;">{# If &quot;fr&quot; is not the default language, this is equivalent to #}
+</span><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">section </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_section</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blog/_index.fr.md&quot;</span><span>) %}
+</span></code></pre>
+<h3 id="get-taxonomy-url"><a class="zola-anchor" href="#get-taxonomy-url" aria-label="Anchor link for: get-taxonomy-url">🔗</a><code>get_taxonomy_url</code></h3>
+<p>Gets the permalink for the taxonomy item found.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">url </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_taxonomy_url</span><span>(</span><span style="color:#d0d0ff;">kind</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;categories&quot;</span><span>, </span><span style="color:#d0d0ff;">name</span><span style="color:#cc7833;">=</span><span style="color:#d0d0ff;">page</span><span>.</span><span style="color:#d0d0ff;">taxonomies</span><span>.</span><span style="color:#d0d0ff;">category</span><span>, </span><span style="color:#d0d0ff;">lang</span><span style="color:#cc7833;">=</span><span style="color:#d0d0ff;">page</span><span>.</span><span style="color:#d0d0ff;">lang</span><span>) %}
+</span></code></pre>
+<p><code>name</code> will almost always come from a variable but in case you want to do it manually,
+the value should be the same as the one in the front matter, not the slugified version.</p>
+<p><code>lang</code> (optional) default to <code>config.default_language</code> in config.toml</p>
+<p><code>required</code> (optional) if a taxonomy is defined but there isn't any content that uses it then throw an error. Defaults to true.</p>
+<h3 id="get-taxonomy"><a class="zola-anchor" href="#get-taxonomy" aria-label="Anchor link for: get-taxonomy">🔗</a><code>get_taxonomy</code></h3>
+<p>Gets the whole taxonomy of a specific kind.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">categories </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_taxonomy</span><span>(</span><span style="color:#d0d0ff;">kind</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;categories&quot;</span><span>) %}
+</span></code></pre>
+<p>The type of the output is:</p>
+<pre data-lang="ts" style="background-color:#383838;color:#e6e1dc;" class="language-ts "><code class="language-ts" data-lang="ts"><span>kind: </span><span style="color:#d0d0ff;">TaxonomyConfig</span><span>;
+</span><span>items: </span><span style="font-style:italic;color:#6e9cbe;">Array</span><span style="color:#cc7833;">&lt;</span><span style="color:#d0d0ff;">TaxonomyTerm</span><span style="color:#cc7833;">&gt;</span><span>;
+</span><span>lang: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span><span>permalink: </span><span style="font-style:italic;color:#6e9cbe;">String</span><span>;
+</span></code></pre>
+<p><code>lang</code> (optional) default to <code>config.default_language</code> in config.toml</p>
+<p><code>required</code> (optional) if a taxonomy is defined but there isn't any content that uses it then throw an error. Defaults to true.</p>
+<p>See the <a href="https://www.getzola.org/documentation/templates/taxonomies/">Taxonomies documentation</a> for a full documentation of those types.</p>
+<h3 id="get-taxonomy-term"><a class="zola-anchor" href="#get-taxonomy-term" aria-label="Anchor link for: get-taxonomy-term">🔗</a><code>get_taxonomy_term</code></h3>
+<p>Gets a single term from a taxonomy of a specific kind.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">categories </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_taxonomy_term</span><span>(</span><span style="color:#d0d0ff;">kind</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;categories&quot;</span><span>, </span><span style="color:#d0d0ff;">term</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;term_name&quot;</span><span>) %}
+</span></code></pre>
+<p>The type of the output is a single <code>TaxonomyTerm</code> item.</p>
+<p><code>lang</code> (optional) default to <code>config.default_language</code> in config.toml</p>
+<p><code>include_pages</code> (optional) default to true. If false, the <code>pages</code> item in the <code>TaxonomyTerm</code> will be empty, regardless of what pages may actually exist for this term. <code>page_count</code> will correctly reflect the number of pages for this term in both cases.</p>
+<p><code>required</code> (optional) if a taxonomy or term is not found`.</p>
+<p>See the <a href="https://www.getzola.org/documentation/templates/taxonomies/">Taxonomies documentation</a> for a full documentation of those types.</p>
+<h3 id="get-url"><a class="zola-anchor" href="#get-url" aria-label="Anchor link for: get-url">🔗</a><code>get_url</code></h3>
+<p>Gets the permalink for the given path.
+If the path starts with <code>@/</code>, it will be treated as an <a href="https://www.getzola.org/documentation/content/linking/#internal-links">internal link</a> to a Markdown file,
+starting from the root <code>content</code> directory as well as validated.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">url </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_url</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;@/blog/_index.md&quot;</span><span>) %}
+</span></code></pre>
+<p>It accepts an optional parameter <code>lang</code> in order to compute a <em>language-aware URL</em> in multilingual websites. Assuming <code>config.base_url</code> is <code>"http://example.com"</code>, the following snippet will:</p>
+<ul>
+<li>return <code>"http://example.com/blog/"</code> if <code>config.default_language</code> is <code>"en"</code></li>
+<li>return <code>"http://example.com/en/blog/"</code> if <code>config.default_language</code> is <strong>not</strong> <code>"en"</code> and <code>"en"</code> appears in <code>config.languages</code></li>
+<li>fail otherwise, with the error message <code>"'en' is not an authorized language (check config.languages)."</code></li>
+</ul>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">url </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_url</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;@/blog/_index.md&quot;</span><span>, </span><span style="color:#d0d0ff;">lang</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;en&quot;</span><span>) %}
+</span></code></pre>
+<p>This can also be used to get the permalink for a static file, for example if
+you want to link to the file that is located at <code>static/css/app.css</code>:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">get_url</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;css/app.css&quot;</span><span>) }}
+</span></code></pre>
+<p>By default, the link will not have a trailing slash. You can force one by passing <code>trailing_slash=true</code> to the <code>get_url</code> function.
+An example is:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">get_url</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;css/app.css&quot;</span><span>, </span><span style="color:#d0d0ff;">trailing_slash</span><span style="color:#cc7833;">=</span><span style="color:#6e9cbe;">true</span><span>) }}
+</span></code></pre>
+<p>In the case of a non-internal link, you can also add a cachebust of the format <code>?h=&lt;sha256&gt;</code> at the end of a URL
+by passing <code>cachebust=true</code> to the <code>get_url</code> function. In this case, the path will need to resolve to an actual file.
+See <a href="https://www.getzola.org/documentation/templates/overview/#file-searching-logic">File Searching Logic</a> for details.</p>
+<h3 id="get-hash"><a class="zola-anchor" href="#get-hash" aria-label="Anchor link for: get-hash">🔗</a><code>get_hash</code></h3>
+<p>Returns the hash digest (SHA-256, SHA-384 or SHA-512) of a file or a string literal.</p>
+<p>It can take the following arguments:</p>
+<ul>
+<li><code>path</code>: mandatory, see <a href="https://www.getzola.org/documentation/templates/overview/#file-searching-logic">File Searching Logic</a> for details</li>
+<li><strong>or</strong> <code>literal</code>: mandatory, the string value to be hashed</li>
+<li><code>sha_type</code>: optional, one of <code>256</code>, <code>384</code> or <code>512</code>, defaults to <code>384</code></li>
+<li><code>base64</code>: optional, <code>true</code> or <code>false</code>, defaults to <code>true</code>. Whether to encode the hash as base64</li>
+</ul>
+<p>Either <code>path</code> or <code>literal</code> must be given.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">get_hash</span><span>(</span><span style="color:#d0d0ff;">literal</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;Hello World&quot;</span><span>, </span><span style="color:#d0d0ff;">sha_type</span><span style="color:#cc7833;">=</span><span>256) }}
+</span><span>{{ </span><span style="color:#d0d0ff;">get_hash</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;static/js/app.js&quot;</span><span>, </span><span style="color:#d0d0ff;">sha_type</span><span style="color:#cc7833;">=</span><span>256) }}
+</span></code></pre>
+<p>The function can also output a base64-encoded hash value when its <code>base64</code>
+parameter is set to <code>true</code>. This can be used to implement <a class="external" href="https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity">subresource
+integrity</a>.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>&lt;script src=&quot;{{ </span><span style="color:#d0d0ff;">get_url</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;static/js/app.js&quot;</span><span>) }}&quot;
+</span><span>  integrity=&quot;sha384-{{ </span><span style="color:#d0d0ff;">get_hash</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;static/js/app.js&quot;</span><span>, </span><span style="color:#d0d0ff;">sha_type</span><span style="color:#cc7833;">=</span><span>384, </span><span style="color:#d0d0ff;">base64</span><span style="color:#cc7833;">=</span><span style="color:#6e9cbe;">true</span><span>) | </span><span style="color:#d0d0ff;">safe </span><span>}}&quot;&gt;&lt;/script&gt;
+</span></code></pre>
+<p>Do note that subresource integrity is typically used when using external scripts, which <code>get_hash</code> does not support.</p>
+<h3 id="get-image-metadata"><a class="zola-anchor" href="#get-image-metadata" aria-label="Anchor link for: get-image-metadata">🔗</a><code>get_image_metadata</code></h3>
+<p>Gets metadata for an image. This supports common formats like JPEG, PNG, WebP, BMP, GIF as well as SVG.</p>
+<p>It can take the following arguments:</p>
+<ul>
+<li><code>path</code>: mandatory, see <a href="https://www.getzola.org/documentation/templates/overview/#file-searching-logic">File Searching Logic</a> for details</li>
+<li><code>allow_missing</code>: optional, <code>true</code> or <code>false</code>, defaults to <code>false</code>. Whether a missing file should raise an error or not.</li>
+</ul>
+<p>The method returns a map containing <code>width</code>, <code>height</code>, <code>format</code>, and <code>mime</code>. The <code>format</code> returned is the most common file extension for the file format, which may not match the one used for the image.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>  {% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">meta </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_image_metadata</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;...&quot;</span><span>) %}
+</span><span>  Our image (.{{</span><span style="color:#d0d0ff;">meta</span><span>.</span><span style="color:#d0d0ff;">format</span><span>}}) has format is {{ </span><span style="color:#d0d0ff;">meta</span><span>.</span><span style="color:#d0d0ff;">width </span><span>}}x{{ </span><span style="color:#d0d0ff;">meta</span><span>.</span><span style="color:#d0d0ff;">height </span><span>}}
+</span></code></pre>
+<h3 id="load-data"><a class="zola-anchor" href="#load-data" aria-label="Anchor link for: load-data">🔗</a><code>load_data</code></h3>
+<p>Loads data from a file, URL, or string literal. Supported file types include <em>toml</em>, <em>json</em>, <em>csv</em>, <em>bibtex</em>, <em>yaml</em>/<em>yml</em>,
+and <em>xml</em> and only supports UTF-8 encoding.</p>
+<p>Any other file type will be loaded as plain text.</p>
+<p>The <code>path</code> argument specifies the path to a local data file, according to the <a href="https://www.getzola.org/documentation/templates/overview/#file-searching-logic">File Searching Logic</a>.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">data </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;content/blog/story/data.toml&quot;</span><span>) %}
+</span></code></pre>
+<p>Alternatively, the <code>url</code> argument specifies the location of a remote URL to load.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">data </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">url</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;https://en.wikipedia.org/wiki/Commune_of_Paris&quot;</span><span>) %}
+</span></code></pre>
+<p>Alternatively, the <code>literal</code> argument specifies an object literal. Note: if the <code>format</code> argument is not specified, then plain text will be what is assumed.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">data </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">literal</span><span style="color:#cc7833;">=</span><span style="color:#a5c261;">&#39;{&quot;name&quot;: &quot;bob&quot;}&#39;</span><span>, </span><span style="color:#d0d0ff;">format</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;json&quot;</span><span>) %}
+</span><span>{{ </span><span style="color:#d0d0ff;">data</span><span>[</span><span style="color:#c1be91;">&quot;name&quot;</span><span>] }}
+</span></code></pre>
+<p><em>Note: the <code>required</code> parameter has no effect when used in combination with the <code>literal</code> argument.</em></p>
+<p>The optional <code>required</code> boolean argument can be set to false so that missing data (HTTP error or local file not found) does not produce an error, but returns a null value instead. However, permission issues with a local file and invalid data that could not be parsed to the requested data format will still produce an error even with <code>required=false</code>.</p>
+<p>The snippet below outputs the HTML from a Wikipedia page, or "No data found" if the page was not reachable, or did not return a successful HTTP code:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">data </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">url</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;https://en.wikipedia.org/wiki/Commune_of_Paris&quot;</span><span>, </span><span style="color:#d0d0ff;">required</span><span style="color:#cc7833;">=</span><span style="color:#6e9cbe;">false</span><span>) %}
+</span><span>{% </span><span style="color:#cc7833;">if </span><span style="color:#d0d0ff;">data </span><span>%}{{ </span><span style="color:#d0d0ff;">data </span><span>| </span><span style="color:#d0d0ff;">safe </span><span>}}{% </span><span style="color:#cc7833;">else </span><span>%}No data found{% </span><span style="color:#cc7833;">endif </span><span>%}
+</span></code></pre>
+<p>The optional <code>format</code> argument allows you to specify and override which data type is contained within the specified file or URL.
+Valid entries are <code>toml</code>, <code>json</code>, <code>csv</code>, <code>bibtex</code>, <code>yaml</code>, <code>xml</code> or <code>plain</code>. If the <code>format</code> argument isn't specified, then the
+path extension is used. In the case of a literal, <code>plain</code> is assumed if <code>format</code> is unspecified.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">data </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;content/blog/story/data.txt&quot;</span><span>, </span><span style="color:#d0d0ff;">format</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;json&quot;</span><span>) %}
+</span></code></pre>
+<p>Use the <code>plain</code> format for when your file has a supported extension but you want to load it as plain text.</p>
+<p>For <em>toml</em>, <em>json</em>, <em>yaml</em> and <em>xml</em>, the data is loaded into a structure matching the original data file;
+however, for <em>csv</em> there is no native notion of such a structure. Instead, the data is separated
+into a data structure containing <em>headers</em> and <em>records</em>. See the example below to see
+how this works.</p>
+<p>In the template:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">data </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;content/blog/story/data.csv&quot;</span><span>) %}
+</span></code></pre>
+<p>In the <em>content/blog/story/data.csv</em> file:</p>
+<pre data-lang="csv" style="background-color:#383838;color:#e6e1dc;" class="language-csv "><code class="language-csv" data-lang="csv"><span style="font-style:italic;color:#6e9cbe;">Number</span><span style="color:#cc7833;">, </span><span style="font-style:italic;color:#6e9cbe;">Title
+</span><span style="color:#a5c261;">1</span><span style="color:#cc7833;">,</span><span style="font-style:italic;color:#6e9cbe;">Gutenberg
+</span><span style="color:#a5c261;">2</span><span style="color:#cc7833;">,</span><span style="font-style:italic;color:#6e9cbe;">Printing
+</span></code></pre>
+<p>The equivalent json value of the parsed data would be stored in the <code>data</code> variable in the
+template:</p>
+<pre data-lang="json" style="background-color:#383838;color:#e6e1dc;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>    </span><span style="color:#c1be91;">&quot;headers&quot;</span><span>: [</span><span style="color:#c1be91;">&quot;Number&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Title&quot;</span><span>],
+</span><span>    </span><span style="color:#c1be91;">&quot;records&quot;</span><span>: [
+</span><span>        [</span><span style="color:#c1be91;">&quot;1&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Gutenberg&quot;</span><span>],
+</span><span>        [</span><span style="color:#c1be91;">&quot;2&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Printing&quot;</span><span>]
+</span><span>    ],
+</span><span>}
+</span></code></pre>
+<p>The <code>bibtex</code> format loads data into a structure matching the format used by the
+<a class="external" href="https://crates.io/crates/nom-bibtex">nom-bibtex crate</a>. The following is an example of data
+in bibtex format:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>@preamble{&quot;A bibtex preamble&quot; # &quot; this is.&quot;}
+</span><span>
+</span><span>@Comment{
+</span><span>    Here is a comment.
+</span><span>}
+</span><span>
+</span><span>Another comment!
+</span><span>
+</span><span>@string(name = &quot;Vincent Prouillet&quot;)
+</span><span>@string(github = &quot;https://github.com/getzola/zola&quot;)
+</span><span>
+</span><span>@misc {my_citation_key,
+</span><span>    author= name,
+</span><span>    title = &quot;Zola&quot;,
+</span><span>    note = &quot;github: &quot; # github
+</span><span>}                                                    }
+</span></code></pre>
+<p>The following is the json-equivalent format of the produced bibtex data structure:</p>
+<pre data-lang="json" style="background-color:#383838;color:#e6e1dc;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>    </span><span style="color:#c1be91;">&quot;preambles&quot;</span><span>: [</span><span style="color:#c1be91;">&quot;A bibtex preamble this is.&quot;</span><span>],
+</span><span>    </span><span style="color:#c1be91;">&quot;comments&quot;</span><span>: [</span><span style="color:#c1be91;">&quot;Here is a comment.&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Another comment!&quot;</span><span>],
+</span><span>    </span><span style="color:#c1be91;">&quot;variables&quot;</span><span>: {
+</span><span>        </span><span style="color:#c1be91;">&quot;name&quot;</span><span>: </span><span style="color:#c1be91;">&quot;Vincent Prouillet&quot;</span><span>,
+</span><span>        </span><span style="color:#c1be91;">&quot;github&quot;</span><span>: </span><span style="color:#c1be91;">&quot;https://github.com/getzola/zola&quot;
+</span><span>    },
+</span><span>    </span><span style="color:#c1be91;">&quot;bibliographies&quot;</span><span>: [
+</span><span>        {
+</span><span>            </span><span style="color:#c1be91;">&quot;entry_type&quot;</span><span>: </span><span style="color:#c1be91;">&quot;misc&quot;</span><span>,
+</span><span>            </span><span style="color:#c1be91;">&quot;citation_key&quot;</span><span>: </span><span style="color:#c1be91;">&quot;my_citation_key&quot;</span><span>,
+</span><span>            </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>: {
+</span><span>                </span><span style="color:#c1be91;">&quot;author&quot;</span><span>: </span><span style="color:#c1be91;">&quot;Vincent Prouillet&quot;</span><span>,
+</span><span>                </span><span style="color:#c1be91;">&quot;title&quot;</span><span>: </span><span style="color:#c1be91;">&quot;Zola&quot;</span><span>,
+</span><span>                </span><span style="color:#c1be91;">&quot;note&quot;</span><span>: </span><span style="color:#c1be91;">&quot;github: https://github.com/getzola/zola&quot;
+</span><span>            }
+</span><span>        }
+</span><span>    ]
+</span><span>}
+</span></code></pre>
+<p>Finally, the bibtex data can be accessed from the template as follows:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">tags </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">data</span><span>.</span><span style="color:#d0d0ff;">bibliographies</span><span>[0].</span><span style="color:#d0d0ff;">tags </span><span>%}
+</span><span>This was generated using {{ </span><span style="color:#d0d0ff;">tags</span><span>.</span><span style="color:#d0d0ff;">title </span><span>}}, authored by {{ </span><span style="color:#d0d0ff;">tags</span><span>.</span><span style="color:#d0d0ff;">author </span><span>}}.
+</span></code></pre>
+<h4 id="remote-content"><a class="zola-anchor" href="#remote-content" aria-label="Anchor link for: remote-content">🔗</a>Remote content</h4>
+<p>Instead of using a file, you can load data from a remote URL. This can be done by specifying a <code>url</code> parameter
+to <code>load_data</code> rather than <code>path</code>.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">response </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">url</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;https://api.github.com/repos/getzola/zola&quot;</span><span>) %}
+</span><span>{{ </span><span style="color:#d0d0ff;">response </span><span>}}
+</span></code></pre>
+<p>By default, the response body will be returned with no parsing. This can be changed by using the <code>format</code> argument
+as below.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">response </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">url</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;https://api.github.com/repos/getzola/zola&quot;</span><span>, </span><span style="color:#d0d0ff;">format</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;json&quot;</span><span>) %}
+</span><span>{{ </span><span style="color:#d0d0ff;">response </span><span>}}
+</span></code></pre>
+<p>When no other parameters are specified the URL will always be retrieved using a HTTP GET request.
+Using the parameter <code>method</code>, since version 0.14.0, you can also choose to retrieve the URL using a POST request.</p>
+<p>When using <code>method="POST"</code> you can also use the parameters <code>body</code> and <code>content_type</code>.
+The parameter body is the actual contents sent in the POST request.
+The parameter <code>content_type</code> should be the mimetype of the body.</p>
+<p>This example will make a POST request to the kroki service to generate a SVG.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">postdata </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">url</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;https://kroki.io/blockdiag/svg&quot;</span><span>, </span><span style="color:#d0d0ff;">format</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;plain&quot;</span><span>, </span><span style="color:#d0d0ff;">method</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;POST&quot; </span><span>,</span><span style="color:#d0d0ff;">content_type</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;text/plain&quot;</span><span>, </span><span style="color:#d0d0ff;">body</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;blockdiag {
+</span><span style="color:#c1be91;">  &#39;Doing POST&#39; -&gt; &#39;using load_data&#39;
+</span><span style="color:#c1be91;">  &#39;using load_data&#39; -&gt; &#39;can generate&#39; -&gt; &#39;block diagrams&#39;;
+</span><span style="color:#c1be91;">  &#39;using load_data&#39; -&gt; is -&gt; &#39;very easy!&#39;;
+</span><span style="color:#c1be91;">
+</span><span style="color:#c1be91;">  &#39;Doing POST&#39; [color = &#39;greenyellow&#39;];
+</span><span style="color:#c1be91;">  &#39;block diagrams&#39; [color = &#39;pink&#39;];
+</span><span style="color:#c1be91;">  &#39;very easy!&#39; [color = &#39;orange&#39;];
+</span><span style="color:#c1be91;">}&quot;</span><span>)%}
+</span><span>{{</span><span style="color:#d0d0ff;">postdata</span><span>|</span><span style="color:#d0d0ff;">safe</span><span>}}
+</span></code></pre>
+<p>If you need additional handling for the HTTP headers, you can use the <code>headers</code> parameter.
+You might need this parameter when the resource requires authentication or require passing additional
+parameters via special headers.
+Please note that the headers will be appended to the default headers set by Zola itself instead of replacing them.</p>
+<p>This example will make a POST request to the GitHub markdown rendering service.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">postdata </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">url</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;https://api.github.com/markdown&quot;</span><span>, </span><span style="color:#d0d0ff;">format</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;plain&quot;</span><span>, </span><span style="color:#d0d0ff;">method</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;POST&quot;</span><span>, </span><span style="color:#d0d0ff;">content_type</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;application/json&quot;</span><span>, </span><span style="color:#d0d0ff;">headers</span><span style="color:#cc7833;">=</span><span>[</span><span style="color:#c1be91;">&quot;accept=application/vnd.github.v3+json&quot;</span><span>], </span><span style="color:#d0d0ff;">body</span><span style="color:#cc7833;">=</span><span style="color:#a5c261;">&#39;{&quot;text&quot;:&quot;headers support added in #1710, commit before it: b3918f124d13ec1bedad4860c15a060dd3751368&quot;,&quot;context&quot;:&quot;getzola/zola&quot;,&quot;mode&quot;:&quot;gfm&quot;}&#39;</span><span>)%}
+</span><span>{{</span><span style="color:#d0d0ff;">postdata</span><span>|</span><span style="color:#d0d0ff;">safe</span><span>}}
+</span></code></pre>
+<p>The following example shows how to send a GraphQL query to GitHub (requires authentication).
+If you want to try this example on your own machine, you need to provide a GitHub PAT (Personal Access Token),
+you can acquire the access token at this link: https://github.com/settings/tokens and then set <code>GITHUB_TOKEN</code>
+environment variable to the access token you have obtained.</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">token </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">get_env</span><span>(</span><span style="color:#d0d0ff;">name</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;GITHUB_TOKEN&quot;</span><span>) %}
+</span><span>{% </span><span style="color:#cc7833;">set </span><span style="color:#d0d0ff;">postdata </span><span style="color:#cc7833;">= </span><span style="color:#d0d0ff;">load_data</span><span>(</span><span style="color:#d0d0ff;">url</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;https://api.github.com/graphql&quot;</span><span>, </span><span style="color:#d0d0ff;">format</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;json&quot;</span><span>, </span><span style="color:#d0d0ff;">method</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;POST&quot; </span><span>,</span><span style="color:#d0d0ff;">content_type</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;application/json&quot;</span><span>, </span><span style="color:#d0d0ff;">headers</span><span style="color:#cc7833;">=</span><span>[</span><span style="color:#c1be91;">&quot;accept=application/vnd.github.v4.idl&quot;</span><span>, </span><span style="color:#c1be91;">&quot;authorization=Bearer &quot;</span><span> ~ </span><span style="color:#d0d0ff;">token</span><span>], </span><span style="color:#d0d0ff;">body</span><span style="color:#cc7833;">=</span><span style="color:#a5c261;">&#39;{&quot;query&quot;:&quot;query { viewer { login }}&quot;}&#39;</span><span>)%}
+</span><span>{{</span><span style="color:#d0d0ff;">postdata</span><span>|</span><span style="color:#d0d0ff;">safe</span><span>}}
+</span></code></pre>
+<p>In case you need to specify multiple headers with the same name, you can specify them like this:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>headers=[&quot;accept=application/json,text/html&quot;]
+</span></code></pre>
+<p>Which is equivalent to two <code>Accept</code> headers with <code>application/json</code> and <code>text/html</code>.</p>
+<p>If it doesn't work, you can instead specify the headers multiple times to achieve a similar effect:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>headers=[&quot;accept=application/json&quot;, &quot;accept=text/html&quot;]
+</span></code></pre>
+<h4 id="data-caching"><a class="zola-anchor" href="#data-caching" aria-label="Anchor link for: data-caching">🔗</a>Data caching</h4>
+<p>Data file loading and remote requests are cached in memory during the build, so multiple requests aren't made
+to the same endpoint.
+URLs are cached based on the URL, and data files are cached based on the file modified time.
+The format is also taken into account when caching, so a request will be sent twice if it's loaded with two
+different formats.</p>
+<h3 id="trans"><a class="zola-anchor" href="#trans" aria-label="Anchor link for: trans">🔗</a><code>trans</code></h3>
+<p>Gets the translation of the given <code>key</code>, for the <code>default_language</code>, the <code>lang</code>uage given or the active language:</p>
+<pre data-lang="jinja2" style="background-color:#383838;color:#e6e1dc;" class="language-jinja2 "><code class="language-jinja2" data-lang="jinja2"><span>{{ </span><span style="color:#d0d0ff;">trans</span><span>(</span><span style="color:#d0d0ff;">key</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;title&quot;</span><span>) }}
+</span><span>{{ </span><span style="color:#d0d0ff;">trans</span><span>(</span><span style="color:#d0d0ff;">key</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;title&quot;</span><span>, </span><span style="color:#d0d0ff;">lang</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;fr&quot;</span><span>) }}
+</span><span>{{</span><span style="color:#cc7833;">/* </span><span style="color:#d0d0ff;">trans</span><span>(</span><span style="color:#d0d0ff;">key</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;title&quot;</span><span>, </span><span style="color:#d0d0ff;">lang</span><span style="color:#cc7833;">=</span><span style="color:#d0d0ff;">lang</span><span>) </span><span style="color:#cc7833;">*/</span><span>}}
+</span></code></pre>
+<h3 id="resize-image"><a class="zola-anchor" href="#resize-image" aria-label="Anchor link for: resize-image">🔗</a><code>resize_image</code></h3>
+<p>Resizes an image file.
+Please refer to <a href="https://www.getzola.org/documentation/content/image-processing/"><em>Content / Image Processing</em></a> for complete documentation.</p>
+
+
+    </div>
+</div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

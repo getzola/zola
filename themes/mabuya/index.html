@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Mabuya | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;mabuya&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Mabuya</h1>
+            <p>🦎 A minimal Zola theme for building light and SEO-ready blogs.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;semanticdata">Miguel Pimentel</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.18.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;semanticdata&#x2F;mabuya">https:&#x2F;&#x2F;github.com&#x2F;semanticdata&#x2F;mabuya</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;mabuya.vercel.app&#x2F;">https:&#x2F;&#x2F;mabuya.vercel.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-10-31T08:52:24-05:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <div align="center">
+<h1>🦎 Mabuya</h1>
+  <img src="https://img.shields.io/github/languages/code-size/semanticdata/mabuya" />
+  <img src="https://img.shields.io/github/repo-size/semanticdata/mabuya" />
+  <img src="https://img.shields.io/github/commit-activity/t/semanticdata/mabuya" />
+  <img src="https://img.shields.io/github/last-commit/semanticdata/mabuya" />
+  <img src="https://img.shields.io/website/https/mabuya.vercel.app.svg" />
+<br />
+<p><a class="external" href="https://mabuya.vercel.app/">Mabuya</a> is a lightweight <a class="external" href="https://www.getzola.org">Zola</a> theme for creating fast, SEO-optimized blogs.<br />
+Put your work front and center with Mabuya as the base of your project.</p>
+<a href="https://mabuya.vercel.app/">
+<img src="https://img.shields.io/badge/Check out the Demo-F0E68C?style=for-the-badge&link=https://semanticdata.github.io/nullboard/" alt="demo" height="32px"; /></a>
+<br />
+<br />
+<img alt="screenshot" src="screenshot.png" />
+</div>
+<h2 id="background">ⓘ Background</h2>
+<p>While searching for themes, I stumbled upon <a class="external" href="https://github.com/aaranxu/tale-zola">Tale</a>. Unfortunately, the last update was on December, 2021. Soon after, I decided to fork the project and add my own touches to it.</p>
+<p>The name <strong>Mabuya</strong> comes from the <a class="external" href="https://en.wikipedia.org/wiki/Mabuya_hispaniolae?useskin=vector">Mabuya hispaniolae</a>, a possibly extinct<sup class="footnote-reference"><a href="#1">1</a></sup> species of skink endemic to the Dominican Republic, my home country.</p>
+<h2 id="sparkles-features">✨ Features</h2>
+<ul>
+<li>✅ Simple Blog</li>
+<li>✅ Pagination</li>
+<li>✅ Tags</li>
+<li>✅ Dark Theme and Toggle</li>
+<li>✅ Back-to-Top Button</li>
+</ul>
+<h2 id="chart-with-upwards-trend-improvements">📈 Improvements</h2>
+<p>While working on the theme, I have added new functionality and made many quality of life improvements. Here's a short list:</p>
+<ul>
+<li>Refactored stylesheets to make it easier to <a class="external" href="https://www.merriam-webster.com/dictionary/grok">grok</a>.</li>
+<li>Added a dark theme and toggle.</li>
+<li>Added new footer navigation.</li>
+<li>Created a custom GitHub Action to deploy Zola sites faster than any other GitHub Actions without using Docker.</li>
+<li>Refined page transitions from desktop to mobile and viceversa.</li>
+<li>Centralized custom variables to make it easier to customize the site's colors.</li>
+<li>Addressed PR <a class="external" href="https://github.com/aaranxu/tale-zola/pull/7">#7</a> fixing the pagination problem present in the original Zola theme.</li>
+<li>Addressed Issue <a class="external" href="https://github.com/aaranxu/tale-zola/issues/4">#4</a> fixing custom text not being used correctly.</li>
+<li>Addressed (temporarily) Issue <a class="external" href="https://github.com/aaranxu/tale-zola/issues/1">#1</a> by removing the erroneous pinned marker.</li>
+<li>Optimized for speed and accessibility. Subtle color changes to make the text more readable, etc.</li>
+<li>Many other small improvements eventually resulting in a perfect <a class="external" href="https://developers.google.com/speed/docs/insights/v5/about">PageSpeed Insights</a> score:</li>
+</ul>
+<div align=center>
+<table><thead><tr><th><img src="https://www.getzola.org/themes/mabuya/pagespeed-results.svg" alt="PageSpeed Insights Results" /></th></tr></thead><tbody>
+</tbody></table>
+</div>
+<h2 id="rocket-quick-start">🚀 Quick Start</h2>
+<p>Before using the theme, you need to install <a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">Zola</a> ≥ v0.18.0. After which you'll need to:</p>
+<ol>
+<li>Clone the repository:</li>
+</ol>
+<pre data-lang="shell" style="background-color:#383838;color:#e6e1dc;" class="language-shell "><code class="language-shell" data-lang="shell"><span>git clone git@github.com:semanticdata/mabuya.git
+</span></code></pre>
+<ol start="2">
+<li>Change directory into new cloned repository:</li>
+</ol>
+<pre data-lang="shell" style="background-color:#383838;color:#e6e1dc;" class="language-shell "><code class="language-shell" data-lang="shell"><span>cd mabuya
+</span></code></pre>
+<ol start="3">
+<li>Serve the site locally:</li>
+</ol>
+<pre data-lang="shell" style="background-color:#383838;color:#e6e1dc;" class="language-shell "><code class="language-shell" data-lang="shell"><span>zola serve
+</span></code></pre>
+<p>For more detailed instructions, visit the <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">documentation</a> page about installing and using themes.</p>
+<h2 id="art-customization">🎨 Customization</h2>
+<p>You can change the configuration, templates and content yourself. Refer to the <a href="https://www.getzola.org/themes/mabuya/config.toml">config.toml</a>, and <a href="https://www.getzola.org/themes/mabuya/templates">templates</a> for ideas. In most cases you only need to modify the contents of <a href="https://www.getzola.org/themes/mabuya/config.toml">config.toml</a> to customize the appearance of your blog. Make sure to visit the Zola <a class="external" href="https://www.getzola.org/documentation/getting-started/overview/">Documentation</a>.</p>
+<p>Adding custom CSS is as easy as adding your styles to <a href="https://www.getzola.org/themes/mabuya/sass/_custom.scss">sass/_custom.scss</a>. This is made possible because SCSS files are backwards compatible with CSS. This means you can type normal CSS code into a SCSS file and it will be valid.</p>
+<h2 id="arrows-counterclockwise-workflows">🔄 Workflows</h2>
+<h3 id="hammer-build-only">🔨 Build only</h3>
+<pre data-lang="yml" style="background-color:#383838;color:#e6e1dc;" class="language-yml "><code class="language-yml" data-lang="yml"><span style="color:#e8bf6a;">steps</span><span>:
+</span><span>  - </span><span style="color:#e8bf6a;">name</span><span>: </span><span style="color:#a5c261;">Checkout
+</span><span>    </span><span style="color:#e8bf6a;">uses</span><span>: </span><span style="color:#a5c261;">actions/checkout@v4
+</span><span>  - </span><span style="color:#e8bf6a;">name</span><span>: </span><span style="color:#a5c261;">Install Zola
+</span><span>    </span><span style="color:#e8bf6a;">uses</span><span>: </span><span style="color:#a5c261;">taiki-e/install-action@zola
+</span><span>  - </span><span style="color:#e8bf6a;">name</span><span>: </span><span style="color:#a5c261;">Build Zola
+</span><span>    </span><span style="color:#e8bf6a;">run</span><span>: </span><span style="color:#a5c261;">zola check --drafts
+</span><span>    </span><span style="color:#e8bf6a;">env</span><span>:
+</span><span>      </span><span style="color:#e8bf6a;">BUILD_ONLY</span><span>: </span><span style="color:#6e9cbe;">true
+</span><span>      </span><span style="color:#e8bf6a;">GITHUB_TOKEN</span><span>: </span><span style="color:#a5c261;">${{/* secrets.GITHUB_TOKEN */}}
+</span></code></pre>
+<h3 id="loudspeaker-deployment">📢 Deployment</h3>
+<pre data-lang="yml" style="background-color:#383838;color:#e6e1dc;" class="language-yml "><code class="language-yml" data-lang="yml"><span style="color:#e8bf6a;">steps</span><span>:
+</span><span>  - </span><span style="color:#e8bf6a;">name</span><span>: </span><span style="color:#a5c261;">Checkout
+</span><span>    </span><span style="color:#e8bf6a;">uses</span><span>: </span><span style="color:#a5c261;">actions/checkout@v4
+</span><span>  - </span><span style="color:#e8bf6a;">name</span><span>: </span><span style="color:#a5c261;">Install Zola
+</span><span>    </span><span style="color:#e8bf6a;">uses</span><span>: </span><span style="color:#a5c261;">taiki-e/install-action@zola
+</span><span>  - </span><span style="color:#e8bf6a;">name</span><span>: </span><span style="color:#a5c261;">Build site
+</span><span>    </span><span style="color:#e8bf6a;">run</span><span>: </span><span style="color:#a5c261;">zola build
+</span><span>    </span><span style="color:#e8bf6a;">env</span><span>:
+</span><span>      </span><span style="color:#e8bf6a;">GITHUB_TOKEN</span><span>: </span><span style="color:#a5c261;">${{/* secrets.GITHUB_TOKEN */}}
+</span><span>  - </span><span style="color:#e8bf6a;">name</span><span>: </span><span style="color:#a5c261;">Upload site artifact
+</span><span>    </span><span style="color:#e8bf6a;">uses</span><span>: </span><span style="color:#a5c261;">actions/upload-pages-artifact@v3
+</span><span>    </span><span style="color:#e8bf6a;">with</span><span>:
+</span><span>      </span><span style="color:#e8bf6a;">path</span><span>: </span><span style="color:#a5c261;">public
+</span><span>  - </span><span style="color:#e8bf6a;">name</span><span>: </span><span style="color:#a5c261;">Deploy to GitHub Pages
+</span><span>    </span><span style="color:#e8bf6a;">id</span><span>: </span><span style="color:#a5c261;">deployment
+</span><span>    </span><span style="color:#e8bf6a;">uses</span><span>: </span><span style="color:#a5c261;">actions/deploy-pages@v4
+</span></code></pre>
+<h2 id="triangular-flag-on-post-reporting-issues">🚩 Reporting Issues</h2>
+<p>We use GitHub Issues as the official bug tracker for <strong>Mabuya</strong>. Please search <a class="external" href="https://github.com/semanticdata/mabuya/issues">existing issues</a>. It’s possible someone has already reported the same problem. If your problem or idea is not addressed yet, <a class="external" href="https://github.com/semanticdata/mabuya/issues/new">open a new issue</a>.</p>
+<h2 id="handshake-contributing">🤝 Contributing</h2>
+<p>We'd love your help! Please see <a href="https://www.getzola.org/themes/mabuya/./CONTRIBUTING.md">CONTRIBUTING</a> and our <a href="https://www.getzola.org/themes/mabuya/.github/CODE_OF_CONDUCT.md">Code of Conduct</a> before submitting a Pull Request.</p>
+<h2 id="purple-heart-acknowledgements">💜 Acknowledgements</h2>
+<p>Mabuya is a <em>fork</em> of <a class="external" href="https://github.com/aaranxu/tale-zola">Tale</a>, which itself is a <em>port</em> of the Jekyll theme <a class="external" href="https://github.com/chesterhow/tale">Tale</a> which is now archived.</p>
+<p>The icons used throughout the site are kindly provided by <a class="external" href="https://uxwing.com/license/">UXWing</a>. Read their <a class="external" href="https://uxwing.com/license/">license</a>.</p>
+<h2 id="c-license">©️ License</h2>
+<p>Source code in this repository is available under the <a href="https://www.getzola.org/themes/mabuya/LICENSE">MIT License</a>.</p>
+<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+<p><em>Mabuya hispaniolae</em>'s conservation status is <em>Critically endangered, possibly extinct</em>.</p>
+</div>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

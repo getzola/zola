@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>parchment | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;parchment&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>parchment</h1>
+            <p>Parchemnt theme, by jasonfry.co.uk</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;jasonfry.co.uk">Jason Fry</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;json&#x2F;parchment">https:&#x2F;&#x2F;github.com&#x2F;json&#x2F;parchment</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;whispers-on-parchment.jasonfry.co.uk">https:&#x2F;&#x2F;whispers-on-parchment.jasonfry.co.uk</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-05-03T22:07:01+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="parchment-zola-theme">Parchment Zola Theme</h1>
+<p>A website theme for the static site generator <a class="external" href="https://getzola.org">Zola</a>.</p>
+<p>Written to produce clean, semantic, simple-to-read HTML and CSS. The aim is for a novice to press <code>F12</code> and be able to understand what is going on. No div-soup, No javascript, no third party frameworks.</p>
+<p>Used at <a class="external" href="https://jasonfry.co.uk">jasonfry.co.uk</a>.</p>
+<p>Demo available at <a class="external" href="https://whispers-on-parchment.jasonfry.co.uk">whispers-on-parchment.jasonfry.co.uk</a></p>
+<p><img src="https://www.getzola.org/themes/parchment/screenshot.png" alt="Parchment screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> themes
+</span><span>git clone https://github.com/jsonfry/parchment.git
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;parchment&quot;
+</span></code></pre>
+<h2 id="zola-features">Zola Features</h2>
+<p>No support for taxonomy.</p>
+<h2 id="customization">Customization</h2>
+<h3 id="base-template">Base Template</h3>
+<ul>
+<li>Adding in your own things to <code>&lt;head&gt;</code> (e.g. favicons), your own CSS.</li>
+<li>Adding some content to the footer</li>
+<li>Adding something to the end of the body, like analytics. Create a file like the following in <code>templates/index.html</code>.</li>
+</ul>
+<p>If you don't want to include the default CSS, then remove the line <code>{{ super() }}</code></p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* extends &quot;parchment/templates/index.html&quot; */%}
+</span><span>
+</span><span>{%/* block head */%}
+</span><span>    {{ super() }}
+</span><span>    &lt;</span><span style="color:#e8bf6a;">link </span><span style="color:#86c20e;">rel=</span><span>&quot;</span><span style="color:#c1be91;">apple-touch-icon</span><span>&quot; </span><span style="color:#86c20e;">sizes=</span><span>&quot;</span><span style="color:#c1be91;">180x180</span><span>&quot; </span><span style="color:#86c20e;">href=</span><span>&quot;</span><span style="color:#c1be91;">/apple-touch-icon.png</span><span>&quot; /&gt;
+</span><span>    &lt;</span><span style="color:#e8bf6a;">link </span><span style="color:#86c20e;">rel=</span><span>&quot;</span><span style="color:#c1be91;">icon</span><span>&quot; </span><span style="color:#86c20e;">type=</span><span>&quot;</span><span style="color:#c1be91;">image/png</span><span>&quot; </span><span style="color:#86c20e;">sizes=</span><span>&quot;</span><span style="color:#c1be91;">32x32</span><span>&quot; </span><span style="color:#86c20e;">href=</span><span>&quot;</span><span style="color:#c1be91;">/favicon-32x32.png</span><span>&quot; /&gt;
+</span><span>    &lt;</span><span style="color:#e8bf6a;">link </span><span style="color:#86c20e;">rel=</span><span>&quot;</span><span style="color:#c1be91;">icon</span><span>&quot; </span><span style="color:#86c20e;">type=</span><span>&quot;</span><span style="color:#c1be91;">image/png</span><span>&quot; </span><span style="color:#86c20e;">sizes=</span><span>&quot;</span><span style="color:#c1be91;">16x16</span><span>&quot; </span><span style="color:#86c20e;">href=</span><span>&quot;</span><span style="color:#c1be91;">/favicon-16x16.png</span><span>&quot; /&gt;
+</span><span>    &lt;</span><span style="color:#e8bf6a;">link </span><span style="color:#86c20e;">rel=</span><span>&quot;</span><span style="color:#c1be91;">manifest</span><span>&quot; </span><span style="color:#86c20e;">href=</span><span>&quot;</span><span style="color:#c1be91;">/site.webmanifest</span><span>&quot; /&gt;
+</span><span>
+</span><span>    &lt;</span><span style="color:#e8bf6a;">style</span><span>&gt;
+</span><span>        </span><span style="color:#e8bf6a;">body </span><span>{
+</span><span>            </span><span style="font-style:italic;color:#6e9cbe;">font-family</span><span>: </span><span style="color:#c1be91;">&quot;Comic Sans MS&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Comic Sans&quot;</span><span>, </span><span style="color:#86c20e;">cursive</span><span>;
+</span><span>        }
+</span><span>    &lt;</span><span style="color:#e8bf6a;">style</span><span>&gt;
+</span><span>{%</span><span style="color:#95815e;">/* endblock head */</span><span>%}
+</span><span>
+</span><span>{%</span><span style="color:#95815e;">/* block footer */</span><span>%}
+</span><span>    &lt;</span><span style="color:#e8bf6a;">p</span><span>&gt;Created by </span><span style="color:#e8bf6a;">a</span><span> human&lt;/</span><span style="color:#e8bf6a;">p</span><span>&gt;
+</span><span>    {%</span><span style="color:#95815e;">/* if config.generate_feed */</span><span>%}
+</span><span>    &lt;</span><span style="color:#e8bf6a;">p</span><span>&gt;
+</span><span>        &lt;</span><span style="color:#e8bf6a;">a
+</span><span>        href=&quot;/rss</span><span style="color:#86c20e;">.xml</span><span>&quot;
+</span><span>        </span><span style="color:#e8bf6a;">title</span><span>=&quot;subscribe - rss feed&quot;
+</span><span>        &gt;rss&lt;/</span><span style="color:#e8bf6a;">a
+</span><span>        &gt;
+</span><span>    &lt;/</span><span style="color:#e8bf6a;">p</span><span>&gt;
+</span><span>    {%</span><span style="color:#95815e;">/* endif */</span><span>%}
+</span><span>{%</span><span style="color:#95815e;">/* endblock footer */</span><span>%}
+</span><span>
+</span><span>{%</span><span style="color:#95815e;">/* block body_end */</span><span>%}
+</span><span>    &lt;</span><span style="color:#e8bf6a;">script
+</span><span>      src=&quot;https://tinylytics</span><span style="color:#86c20e;">.app</span><span>/</span><span style="color:#e8bf6a;">embed</span><span>/</span><span style="color:#e8bf6a;">your-code</span><span style="color:#86c20e;">.js</span><span>&quot;
+</span><span>      defer
+</span><span>    &gt;&lt;/</span><span style="color:#e8bf6a;">script</span><span>&gt;
+</span><span>{%</span><span style="color:#95815e;">/* endblock body_end */</span><span>%}
+</span></code></pre>
+<h3 id="colors">Colors</h3>
+<p>The color scheme is based on <a class="external" href="https://ethanschoonover.com/solarized/">Solarized</a> and has both a dark and light theme included, that will follow the browser / OS setting. The colors are set with CSS variables, which you can override by setting your own CSS in <code>head</code> block.</p>
+<pre data-lang="css" style="background-color:#383838;color:#e6e1dc;" class="language-css "><code class="language-css" data-lang="css"><span>    :root {
+</span><span>        </span><span style="font-style:italic;color:#6e9cbe;">--background</span><span>: </span><span style="color:#86c20e;">white</span><span>;
+</span><span>        </span><span style="font-style:italic;color:#6e9cbe;">--background-highlights</span><span>: </span><span style="color:#86c20e;">white</span><span>;
+</span><span>        </span><span style="font-style:italic;color:#6e9cbe;">--primary</span><span>: </span><span style="color:#86c20e;">black</span><span>;
+</span><span>        </span><span style="font-style:italic;color:#6e9cbe;">--secondary</span><span>: </span><span style="color:#86c20e;">blue</span><span>;
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#cc7833;">@media </span><span>(prefers-</span><span style="font-style:italic;color:#6e9cbe;">color</span><span>-scheme: dark) {
+</span><span>        :root {
+</span><span>            </span><span style="font-style:italic;color:#6e9cbe;">--background</span><span>: </span><span style="color:#86c20e;">black</span><span>;
+</span><span>            </span><span style="font-style:italic;color:#6e9cbe;">--background-highlights</span><span>: </span><span style="color:#86c20e;">black</span><span>;
+</span><span>            </span><span style="font-style:italic;color:#6e9cbe;">--primary</span><span>: </span><span style="color:#86c20e;">white</span><span>;
+</span><span>            </span><span style="font-style:italic;color:#6e9cbe;">--secondary</span><span>: </span><span style="color:#86c20e;">cyan</span><span>;
+</span><span>        }
+</span><span>    }
+</span></code></pre>
+<h3 id="toml-config-options">TOML config options</h3>
+<p>The following optional things are available to set in the <code>config.toml</code> file.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span> </span><span style="color:#e8bf6a;">head_title </span><span>= </span><span style="color:#c1be91;">&quot;My Custom &lt;head&gt; Title&quot;
+</span><span> [[</span><span style="color:#e8bf6a;">extra.footer_menu</span><span>]]
+</span><span>    [[</span><span style="color:#e8bf6a;">extra.footer_menu.links</span><span>]]
+</span><span>      </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;Parchment theme, by Jason Fry&quot;
+</span><span>      </span><span style="color:#e8bf6a;">href </span><span>= </span><span style="color:#c1be91;">&quot;https://jasonfry.co.uk&quot;
+</span><span>    [[</span><span style="color:#e8bf6a;">extra.footer_menu.links</span><span>]]
+</span><span>      </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;Made With Zola&quot;
+</span><span>      </span><span style="color:#e8bf6a;">href </span><span>= </span><span style="color:#c1be91;">&quot;https://getzola.org&quot;
+</span></code></pre>
+<h3 id="after-post-nav">After Post Nav</h3>
+<p>There is a block to add things after the nav that appears at the bottom of posts.</p>
+<p><code>templates/page.html</code></p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* extends &quot;parchment/templates/page.html&quot; */%}
+</span><span>
+</span><span>{%/* block after_post_nav */%}
+</span><span>    &lt;</span><span style="color:#e8bf6a;">p</span><span>&gt;Reply via email - my first name @ my website address&lt;/</span><span style="color:#e8bf6a;">p</span><span>&gt;
+</span><span>{%/* endblock after_post_nav */%}
+</span></code></pre>
+<h3 id="everything-looks-too-small-big">Everything looks too small/big</h3>
+<p>Everything is set with CSS REMs, so just change the HTML element's font size using CSS:</p>
+<pre data-lang="css" style="background-color:#383838;color:#e6e1dc;" class="language-css "><code class="language-css" data-lang="css"><span style="color:#e8bf6a;">html </span><span>{ </span><span style="font-style:italic;color:#6e9cbe;">font-size</span><span>: </span><span style="color:#a5c261;">32</span><span style="color:#cc7833;">px</span><span>; }
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

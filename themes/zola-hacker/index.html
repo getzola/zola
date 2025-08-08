@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>zola-hacker | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zola-hacker&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>zola-hacker</h1>
+            <p>Hacker is a theme for Zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;en9inerd">Vladimir Loskutov</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.1 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;en9inerd&#x2F;zola-hacker">https:&#x2F;&#x2F;github.com&#x2F;en9inerd&#x2F;zola-hacker</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-hacker.enginerd.io&#x2F;">https:&#x2F;&#x2F;zola-hacker.enginerd.io&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-02-04T22:11:22-05:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="hacker-theme-for-zola">Hacker theme for Zola</h1>
+<p>Zola Hacker is a minimalistic theme for Zola, inspired by the <a class="external" href="https://pages-themes.github.io/hacker/">Hacker theme</a> for Jekyll. It is designed for developers who want to write blogs.</p>
+<h2 id="demo">Demo</h2>
+<p><a class="external" href="https://zola-hacker.enginerd.io/">Live Preview</a>.</p>
+<h2 id="requirements">Requirements</h2>
+<p>Before using the theme, you need to install the <a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">Zola</a> ≥ 0.19.1.</p>
+<h2 id="quick-start">Quick Start</h2>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone git@github.com:en9inerd/zola-hacker.git
+</span><span style="color:#da4939;">cd</span><span> zola-hacker
+</span><span>zola serve
+</span><span style="font-style:italic;color:#7c7865;"># open http://127.0.0.1:1111/ in the browser
+</span></code></pre>
+<h2 id="installation">Installation</h2>
+<p>Just earlier we showed you how to run the theme directly. Now we start to
+install the theme in an existing site step by step.</p>
+<h3 id="step-1-create-a-new-zola-site">Step 1: Create a new zola site</h3>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola init mysite
+</span></code></pre>
+<h3 id="step-2-install-zola-hacker-theme">Step 2: Install Zola Hacker Theme</h3>
+<p>Download this theme to your themes directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> mysite/themes
+</span><span>git clone git@github.com:en9inerd/zola-hacker.git
+</span></code></pre>
+<p>Or install as a submodule:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> mysite
+</span><span>git init  </span><span style="font-style:italic;color:#7c7865;"># if your project is a git repository already, ignore this command
+</span><span>git submodule add git@github.com:en9inerd/zola-hacker.git themes/hacker
+</span></code></pre>
+<h3 id="step-3-configuration">Step 3: Configuration</h3>
+<p>Enable the theme in your <code>config.toml</code> in the site directory:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;hacker&quot;
+</span></code></pre>
+<p>Or copy the <code>config.toml</code> from the theme directory to your project's
+root directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>cp themes/hacker/config.toml config.toml
+</span></code></pre>
+<h3 id="step-4-add-new-content">Step 4: Add new content</h3>
+<p>You can copy the content from the theme directory to your project:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>cp</span><span style="font-style:italic;color:#fd971f;"> -r</span><span> themes/hacker/content .
+</span></code></pre>
+<p>You can modify or add new posts in the <code>content/posts</code>, <code>content/pages</code> or other
+content directories as needed.</p>
+<h3 id="step-5-run-the-project">Step 5: Run the project</h3>
+<p>Just run <code>zola serve</code> in the root path of the project:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola serve
+</span></code></pre>
+<p>Command will start the Zola development web server accessible by default at
+<code>http://127.0.0.1:1111</code>. Saved changes will live reload in the browser.</p>
+<h2 id="customisation">Customisation</h2>
+<p>You can customize your configurations, templates and content for yourself. Look
+at the <code>config.toml</code>, <code>theme.toml</code>, <code>content</code> files and templates files in this
+repo for an idea.</p>
+<h3 id="global-configuration">Global Configuration</h3>
+<p>There are some configuration options that you can customize in <code>config.toml</code>.</p>
+<h4 id="configuration-options-before-extra-options">Configuration options before <code>extra</code> options</h4>
+<p>Set the tags taxonomy in the <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<h4 id="configuration-options-under-the-extra">Configuration options under the <code>extra</code></h4>
+<p>The following options should be under the <code>[extra]</code> in <code>config.toml</code></p>
+<ul>
+<li><code>language_code</code> - set HTML file language (default to <code>en-US</code>)</li>
+<li><code>title_separator</code> - the separator to your site title, like <code>|</code> and <code>-</code> (defaults to <code>|</code>)</li>
+<li><code>logo</code> - path to the logo image</li>
+<li><code>google_analytics</code> - Google Analytics tracking ID</li>
+<li><code>timeformat</code> - the timeformat for the blog article published date</li>
+<li><code>timezone</code> - the timezone for the blog article published date</li>
+<li><code>edit_page</code> - whether to show the edit page in the github repo for your posts</li>
+<li><code>menu</code> - set the menu items for your site</li>
+<li><code>contact_form_script_id</code> - the script id for the contact form based on <a class="external" href="https://github.com/en9inerd/learn-to-send-email-via-google-script-html-no-server">Google Script</a></li>
+<li><code>[extra.github]</code> - set the GitHub metadata for your site</li>
+<li><code>[extra.giscus]</code> - set the Giscus settings for your site to enable the comments. Please use own settings from the <a class="external" href="https://giscus.app/">Giscus</a> website</li>
+<li><code>[extra.opengraph]</code> - set the Open Graph metadata for your site</li>
+<li><code>[extra.pgp_key]</code> - set pgp key in the footer for certain pages</li>
+<li><code>social_links</code> - set the social media links in the footer
+...</li>
+</ul>
+<h3 id="templates">Templates</h3>
+<p>All pages are extend to the <code>base.html</code>, and you can customize them as need.</p>
+<h3 id="shortcodes">Shortcodes</h3>
+<p>The theme provides some shortcodes to help you write your content:</p>
+<p><code>contact_form</code>
+The <code>contact_form</code> shortcode is based on <a class="external" href="https://github.com/en9inerd/learn-to-send-email-via-google-script-html-no-server">Google Apps Mail</a> to send emails without a server.
+It depends on <code>contact_form_script_id</code> in the <code>config.toml</code>.</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>{{ contact_form() }}
+</span></code></pre>
+<p><code>cv</code>
+The <code>cv</code> shortcode is used to display the CV in the page. Data for CV is stored in yaml format in the <code>data/cv</code> directory.</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>{{ cv() }}
+</span></code></pre>
+<p><code>github_avatar</code>
+The <code>github_avatar</code> shortcode is used to display the GitHub avatar image. It depends on <code>extra.github.username</code> in the <code>config.toml</code>. Also, you can pass size as an argument.</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>{{ github_avatar(size=100) }}
+</span></code></pre>
+<p><code>projects</code>
+The <code>projects</code> shortcode is used to display repositories from GitHub. It depends on <code>extra.github.username</code> in the <code>config.toml</code> and <code>extra.repo_names</code> in page front matter to filter the repositories.</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>{{ projects() }}
+</span></code></pre>
+<h2 id="reporting-issues">Reporting Issues</h2>
+<p>We use GitHub Issues as the official bug tracker for the <strong>Zola Hacker Theme</strong>. Please
+search <a class="external" href="https://github.com/en9inerd/zola-hacker/issues">existing issues</a>. It’s
+possible someone has already reported the same problem.</p>
+<p>If your problem or idea is not addressed yet, <a class="external" href="https://github.com/en9inerd/zola-hacker/issues/new">open a new issue</a>.</p>
+<h2 id="license">License</h2>
+<p><strong>Zola Hacker Theme</strong> is distributed under the terms of the
+<a class="external" href="https://github.com/en9inerd/zola-hacker/blob/master/LICENSE">MIT license</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>halve-z | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;halve-z&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>halve-z</h1>
+            <p>Retro two-column theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;failsafe.monster&#x2F;">-k</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.2 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;charlesrocket&#x2F;halvez">https:&#x2F;&#x2F;github.com&#x2F;charlesrocket&#x2F;halvez</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;halve-z.netlify.app&#x2F;">https:&#x2F;&#x2F;halve-z.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-07-12T12:05:48-04:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="halve-z"><code>halve-z</code></h1>
+<p><a class="external" href="https://app.netlify.com/sites/halve-z/deploys"><img src="https://api.netlify.com/api/v1/badges/352a12ed-cdba-4545-9256-9fb698f5a94f/deploy-status?branch=trunk" alt="Netlify Status" /></a></p>
+<p>A two-column theme for <strong>Zola</strong>.</p>
+<p><img src="https://raw.githubusercontent.com/charlesrocket/halve-z/trunk/static/favicon-32x32.png" alt="logo" /></p>
+<h2 id="features">Features</h2>
+<p>This is a <em>retro</em> port of <a class="external" href="https://github.com/TaylanTatli/Halve">Halve</a> (<strong>Jekyll</strong>). It features:</p>
+<ul>
+<li>search</li>
+<li>taxonomies</li>
+<li>PWA (dynamic cache/offline mode)</li>
+<li>notifications</li>
+<li>auto color schemes</li>
+<li>ToC</li>
+<li>pagination</li>
+<li>media shortcodes</li>
+<li>SEO</li>
+<li>CSP</li>
+<li>project cards</li>
+<li>comments (<a class="external" href="https://gitlab.com/cactus-comments/">Cactus</a>/<a class="external" href="https://github.com/giscus/giscus">Giscus</a>)</li>
+<li>read time</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>Add theme submodule using <code>git</code>:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>git submodule add https://github.com/charlesrocket/halve-z themes/halve-z
+</span></code></pre>
+<h3 id="updates">Updates</h3>
+<p>Use the following command to update theme to the latest version:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git submodule update --recursive --remote
+</span></code></pre>
+<h2 id="configuration">Configuration</h2>
+<ol>
+<li>Copy theme's <a class="external" href="https://github.com/charlesrocket/halve-z/blob/trunk/config.toml">config.toml</a> into your project's root directory. Set variables as required and add <code>theme = "halve-z"</code> at the <strong>top</strong> of the config file.</li>
+<li>Copy the content to get started:</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>cp -R -f themes/halve-z/content/ content/
+</span></code></pre>
+<h2 id="usage">Usage</h2>
+<p>See demo <a class="external" href="https://halve-z.netlify.app/posts/">posts</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

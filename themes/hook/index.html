@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Hook | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;hook&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Hook</h1>
+            <p>Clean and simple personal site&#x2F;blog theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;koen.bolhu.is">Koen Bolhuis</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;InputUsername&#x2F;zola-hook">https:&#x2F;&#x2F;github.com&#x2F;InputUsername&#x2F;zola-hook</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;inputusername.github.io&#x2F;zola-hook&#x2F;">https:&#x2F;&#x2F;inputusername.github.io&#x2F;zola-hook&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-03-04T16:12:57+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="hook">Hook</h1>
+<p>A clean and simple personal site/blog theme for <a class="external" href="https://getzola.org">Zola</a>.</p>
+<p><a class="external" href="https://inputusername.github.io/zola-hook/">Demo</a></p>
+<h2 id="setup">Setup</h2>
+<p>Clone this repo into your <code>themes</code> folder:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#da4939;">cd</span><span> themes
+</span><span>git clone https://github.com/InputUsername/zola-hook.git hook
+</span></code></pre>
+<p>Then, enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;hook&quot;
+</span></code></pre>
+<h2 id="features">Features</h2>
+<p>The following templates are built-in:</p>
+<ul>
+<li><code>index.html</code> - the homepage;</li>
+<li><code>page.html</code> - pages and posts (extends <code>index.html</code>);</li>
+<li><code>section.html</code> - archive of pages in a section, mostly for a blog (extends <code>page.html</code>);</li>
+<li><code>404.html</code> - 404 page (extends <code>page.html</code>).</li>
+</ul>
+<p>Templates have the following Tera blocks:</p>
+<ul>
+<li><code>title</code> - to override the default <code>&lt;title&gt;</code> (<code>config.title</code>);</li>
+<li><code>description</code> - to override the <code>&lt;meta name="description"&gt;</code>'s content (<code>config.description</code>);</li>
+<li><code>extra_head</code> - to override styles and anything else in <code>&lt;head&gt;</code>;</li>
+<li><code>header</code> - to change the header (best to put this in a <code>&lt;header&gt;</code>);</li>
+<li><code>content</code> - to change the content (best to put this in a <code>&lt;main&gt;</code>).</li>
+</ul>
+<p>You can set a section or page description using <code>description</code> in your front matter.
+By default, the <code>description</code> in <code>config.toml</code> is used.</p>
+<p>You can define links to include in the header on the homepage in <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Link display text&quot;</span><span>, </span><span style="color:#e8bf6a;">href </span><span>= </span><span style="color:#c1be91;">&quot;http://example.com&quot; </span><span>},
+</span><span>    </span><span style="color:#95815e;"># ...
+</span><span>]
+</span></code></pre>
+<p>Pages in the root section can define <code>extra.in_header = true</code> to be included in the header links on the homepage.</p>
+<p>The content in the root <code>_index.md</code> is included in the homepage if present.</p>
+<p>Below that is a list of the 20 most recent posts. For this, the <code>blog/_index.md</code> section is expected to exist
+(will error if it doesn't exist). There is also a link to an archive of all blog posts by year.</p>
+<p>Hook supports light/dark mode based on the user's preference. There is also a manual toggle button
+(requires JavaScript).</p>
+<h2 id="screenshots">Screenshots</h2>
+<h3 id="homepage">Homepage</h3>
+<p><img src="https://www.getzola.org/themes/hook/screenshot.png" alt="Homepage" /></p>
+<h3 id="blog-post">Blog post</h3>
+<p><img src="https://www.getzola.org/themes/hook/screenshot2.png" alt="Blog post" /></p>
+<h3 id="blog-archive">Blog archive</h3>
+<p><img src="https://www.getzola.org/themes/hook/screenshot3.png" alt="Blog archive" /></p>
+<h3 id="dark-mode">Dark mode</h3>
+<p><img src="https://www.getzola.org/themes/hook/screenshot4.png" alt="Dark mode" /></p>
+<h2 id="license">License</h2>
+<p>MIT license, see <a class="external" href="https://github.com/InputUsername/zola-hook/blob/main/LICENSE"><code>LICENSE</code></a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

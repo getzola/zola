@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Installation | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+
+<div class="documentation">
+    <aside class="documentation__sidebar">
+        <ul>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Getting Started</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;installation&#x2F;">Installation</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;cli-usage&#x2F;">CLI usage</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;directory-structure&#x2F;">Directory structure</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;configuration&#x2F;">Configuration</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Content</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;section&#x2F;">Section</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;page&#x2F;">Page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;shortcodes&#x2F;">Shortcodes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;linking&#x2F;">Internal links &amp; deep linking</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;table-of-contents&#x2F;">Table of Contents</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;syntax-highlighting&#x2F;">Syntax Highlighting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;search&#x2F;">Search</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;sass&#x2F;">Sass</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;image-processing&#x2F;">Image processing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;multilingual&#x2F;">Multilingual sites</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Templates</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pages-sections&#x2F;">Sections and Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pagination&#x2F;">Pagination</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;feeds&#x2F;">Feeds</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;sitemap&#x2F;">Sitemap</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;robots&#x2F;">Robots.txt</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;404&#x2F;">404 error page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;archive&#x2F;">Archive</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Themes</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;installing-and-using-themes&#x2F;">Installing &amp; using themes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;creating-a-theme&#x2F;">Creating a theme</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;extending-a-theme&#x2F;">Customizing a theme</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Deployment</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;sourcehut&#x2F;">Sourcehut Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;netlify&#x2F;">Netlify</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;github-pages&#x2F;">GitHub Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;gitlab-pages&#x2F;">GitLab Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;codeberg-pages&#x2F;">Codeberg Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;edgio&#x2F;">Edgio</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;vercel&#x2F;">Vercel</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;zeabur&#x2F;">Zeabur</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;cloudflare-pages&#x2F;">Cloudflare Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;flyio&#x2F;">Fly.io</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;aws-s3&#x2F;">AWS S3 Bucket</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;docker-image&#x2F;">Docker image</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+        </ul>
+    </aside>
+    <div class="documentation__content">
+        
+    <h1>Installation</h1>
+    <p>Zola provides pre-built binaries for MacOS, Linux and Windows on the
+<a class="external" href="https://github.com/getzola/zola/releases">GitHub release page</a>.</p>
+<h3 id="macos"><a class="zola-anchor" href="#macos" aria-label="Anchor link for: macos">🔗</a>macOS</h3>
+<p>Zola is available on <a class="external" href="https://brew.sh">Brew</a>:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ brew install zola
+</span></code></pre>
+<p>Zola is also available on <a class="external" href="https://www.macports.org">MacPorts</a>:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ sudo port install zola
+</span></code></pre>
+<h3 id="arch-linux"><a class="zola-anchor" href="#arch-linux" aria-label="Anchor link for: arch-linux">🔗</a>Arch Linux</h3>
+<p>Zola is available in the official Arch Linux repositories.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ pacman</span><span style="font-style:italic;color:#fd971f;"> -S</span><span> zola
+</span></code></pre>
+<h3 id="alpine-linux"><a class="zola-anchor" href="#alpine-linux" aria-label="Anchor link for: alpine-linux">🔗</a>Alpine Linux</h3>
+<p>Zola is available in the official Alpine Linux community repository since Alpine v3.13.</p>
+<p>See this section of the Alpine Wiki explaining how to enable the community repository if necessary: https://wiki.alpinelinux.org/wiki/Repositories#Enabling_the_community_repository</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ apk add zola
+</span></code></pre>
+<h3 id="debian"><a class="zola-anchor" href="#debian" aria-label="Anchor link for: debian">🔗</a>Debian</h3>
+<p>Zola is available over at <a class="external" href="https://github.com/barnumbirr/zola-debian">barnumbirr/zola-debian</a>.
+Grab the latest <code>.deb</code> for your Debian version then simply run:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ sudo dpkg</span><span style="font-style:italic;color:#fd971f;"> -i</span><span> zola_</span><span style="color:#cc7833;">&lt;</span><span>version</span><span style="color:#cc7833;">&gt;</span><span>_amd64_debian_</span><span style="color:#cc7833;">&lt;</span><span>debian_version</span><span style="color:#cc7833;">&gt;</span><span>.deb
+</span></code></pre>
+<h3 id="gentoo"><a class="zola-anchor" href="#gentoo" aria-label="Anchor link for: gentoo">🔗</a>Gentoo</h3>
+<p>Zola is available via <a class="external" href="https://wiki.gentoo.org/wiki/Project:GURU">GURU</a>.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ sudo eselect repository enable guru
+</span><span>$ sudo emaint sync</span><span style="font-style:italic;color:#fd971f;"> --repo</span><span> guru
+</span><span>$ sudo emerge</span><span style="font-style:italic;color:#fd971f;"> --ask</span><span> www-apps/zola
+</span></code></pre>
+<h3 id="void-linux"><a class="zola-anchor" href="#void-linux" aria-label="Anchor link for: void-linux">🔗</a>Void Linux</h3>
+<p>Zola is available in the official Void Linux repositories.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ sudo xbps-install zola
+</span></code></pre>
+<h3 id="freebsd"><a class="zola-anchor" href="#freebsd" aria-label="Anchor link for: freebsd">🔗</a>FreeBSD</h3>
+<p>Zola is available in the official package repository.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ pkg install zola
+</span></code></pre>
+<h3 id="openbsd"><a class="zola-anchor" href="#openbsd" aria-label="Anchor link for: openbsd">🔗</a>OpenBSD</h3>
+<p>Zola is available in the official package repository.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ doas pkg_add zola
+</span></code></pre>
+<h3 id="opensuse"><a class="zola-anchor" href="#opensuse" aria-label="Anchor link for: opensuse">🔗</a>openSUSE</h3>
+<h4 id="opensuse-tumbleweed"><a class="zola-anchor" href="#opensuse-tumbleweed" aria-label="Anchor link for: opensuse-tumbleweed">🔗</a>openSUSE Tumbleweed</h4>
+<p>Zola is <a class="external" href="https://software.opensuse.org/package/zola?baseproject=ALL">available</a> in the official openSUSE Tumbleweed main OSS repository.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ sudo zypper install zola
+</span></code></pre>
+<h4 id="opensuse-leap"><a class="zola-anchor" href="#opensuse-leap" aria-label="Anchor link for: opensuse-leap">🔗</a>openSUSE Leap</h4>
+<p>Zola is <a class="external" href="https://software.opensuse.org/package/zola?baseproject=ALL">available</a> in the official experimental <em>utilities</em> repository.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ sudo zypper addrepo https://download.opensuse.org/repositories/utilities/15.6/utilities.repo
+</span><span>$ sudo zypper refresh
+</span><span>$ sudo zypper install zola
+</span></code></pre>
+<h3 id="pkgsrc"><a class="zola-anchor" href="#pkgsrc" aria-label="Anchor link for: pkgsrc">🔗</a>pkgsrc</h3>
+<p>Zola is available in the official package repository, with <a class="external" href="https://pkgin.net/">pkgin</a>.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ pkgin install zola
+</span></code></pre>
+<h3 id="snapcraft"><a class="zola-anchor" href="#snapcraft" aria-label="Anchor link for: snapcraft">🔗</a>Snapcraft</h3>
+<p>Zola is available on snapcraft:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ snap install</span><span style="font-style:italic;color:#fd971f;"> --edge</span><span> zola
+</span></code></pre>
+<h3 id="flatpak"><a class="zola-anchor" href="#flatpak" aria-label="Anchor link for: flatpak">🔗</a>Flatpak</h3>
+<p>Zola is available as a flatpak on <a class="external" href="https://flathub.org">flathub</a>:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ flatpak install flathub org.getzola.zola
+</span></code></pre>
+<p>To use zola:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ flatpak run org.getzola.zola </span><span style="color:#cc7833;">[</span><span>command</span><span style="color:#cc7833;">]
+</span></code></pre>
+<p>To avoid having to type this every time, an alias can be created in <code>~/.bashrc</code>:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ alias zola=</span><span style="color:#c1be91;">&quot;flatpak run org.getzola.zola&quot;
+</span></code></pre>
+<h3 id="nixos-nixpkgs"><a class="zola-anchor" href="#nixos-nixpkgs" aria-label="Anchor link for: nixos-nixpkgs">🔗</a>NixOS / Nixpkgs</h3>
+<p>Zola is <a class="external" href="https://search.nixos.org/packages?show=zola&amp;query=zola">available</a>
+in the nixpkgs repository. If you're using NixOS, you can install Zola
+by adding the following to <code>/etc/nixos/configuration.nix</code>:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>environment.systemPackages = [
+</span><span>  pkgs.zola
+</span><span>];
+</span></code></pre>
+<p>If you're using Nix as a package manager in another OS, you can install it using:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>nix-env -iA nixpkgs.zola
+</span></code></pre>
+<h3 id="via-github-actions"><a class="zola-anchor" href="#via-github-actions" aria-label="Anchor link for: via-github-actions">🔗</a>Via Github Actions</h3>
+<p>Zola can be installed in a GHA workflow with <a class="external" href="https://github.com/taiki-e/install-action">taiki-e/install-action</a>.
+Simply add it in your CI config, for example:</p>
+<pre data-lang="yaml" style="background-color:#383838;color:#e6e1dc;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#e8bf6a;">jobs</span><span>:
+</span><span>  </span><span style="color:#e8bf6a;">foo</span><span>:
+</span><span>    </span><span style="color:#e8bf6a;">steps</span><span>:
+</span><span>      - </span><span style="color:#e8bf6a;">uses</span><span>: </span><span style="color:#a5c261;">taiki-e/install-action@v2
+</span><span>        </span><span style="color:#e8bf6a;">with</span><span>:
+</span><span>          </span><span style="color:#e8bf6a;">tool</span><span>: </span><span style="color:#a5c261;">zola@0.19.1
+</span><span>      </span><span style="color:#95815e;"># ...
+</span></code></pre>
+<p>See the action repo for docs and more examples.</p>
+<h3 id="docker"><a class="zola-anchor" href="#docker" aria-label="Anchor link for: docker">🔗</a>Docker</h3>
+<p>Zola is available on <a class="external" href="https://github.com/getzola/zola/pkgs/container/zola">the GitHub registry</a>.
+It has no <code>latest</code> tag, you will need to specify a <a class="external" href="https://github.com/getzola/zola/pkgs/container/zola/versions">specific version to pull</a>.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ docker pull ghcr.io/getzola/zola:v0.19.1
+</span></code></pre>
+<h4 id="build"><a class="zola-anchor" href="#build" aria-label="Anchor link for: build">🔗</a>Build</h4>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ docker run</span><span style="font-style:italic;color:#fd971f;"> -u </span><span style="color:#c1be91;">&quot;$(id</span><span style="font-style:italic;color:#fd971f;"> -u</span><span style="color:#c1be91;">):$(id</span><span style="font-style:italic;color:#fd971f;"> -g</span><span style="color:#c1be91;">)&quot;</span><span style="font-style:italic;color:#fd971f;"> -v </span><span>$</span><span style="color:#d0d0ff;">PWD</span><span>:/app</span><span style="font-style:italic;color:#fd971f;"> --workdir</span><span> /app ghcr.io/getzola/zola:v0.19.1 build
+</span></code></pre>
+<h4 id="serve"><a class="zola-anchor" href="#serve" aria-label="Anchor link for: serve">🔗</a>Serve</h4>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ docker run</span><span style="font-style:italic;color:#fd971f;"> -u </span><span style="color:#c1be91;">&quot;$(id</span><span style="font-style:italic;color:#fd971f;"> -u</span><span style="color:#c1be91;">):$(id</span><span style="font-style:italic;color:#fd971f;"> -g</span><span style="color:#c1be91;">)&quot;</span><span style="font-style:italic;color:#fd971f;"> -v </span><span>$</span><span style="color:#d0d0ff;">PWD</span><span>:/app</span><span style="font-style:italic;color:#fd971f;"> --workdir</span><span> /app</span><span style="font-style:italic;color:#fd971f;"> -p</span><span> 8080:8080 ghcr.io/getzola/zola:v0.19.1 serve</span><span style="font-style:italic;color:#fd971f;"> --interface</span><span> 0.0.0.0</span><span style="font-style:italic;color:#fd971f;"> --port</span><span> 8080</span><span style="font-style:italic;color:#fd971f;"> --base-url</span><span> localhost
+</span></code></pre>
+<p>You can now browse http://localhost:8080.</p>
+<blockquote>
+<p>To enable live browser reload, you may have to bind to port 1024. Zola searches for an open
+port between 1024 and 9000 for live reload. The new docker command would be
+<code>$ docker run -u "$(id -u):$(id -g)" -v $PWD:/app --workdir /app -p 8080:8080 -p 1024:1024 ghcr.io/getzola/zola:v0.19.1 serve --interface 0.0.0.0 --port 8080 --base-url localhost</code></p>
+</blockquote>
+<h4 id="multi-stage-build"><a class="zola-anchor" href="#multi-stage-build" aria-label="Anchor link for: multi-stage-build">🔗</a>Multi-stage build</h4>
+<p>Since there is no shell in the Zola docker image, if you want to use it from inside a Dockerfile, you have to use the
+exec form of <code>RUN</code>, like:</p>
+<pre data-lang="Dockerfile" style="background-color:#383838;color:#e6e1dc;" class="language-Dockerfile "><code class="language-Dockerfile" data-lang="Dockerfile"><span style="color:#cc7833;">FROM</span><span> ghcr.io/getzola/zola:v0.19.1 </span><span style="color:#cc7833;">as </span><span>zola
+</span><span>
+</span><span style="color:#cc7833;">COPY</span><span> . /project
+</span><span style="color:#cc7833;">WORKDIR </span><span>/project
+</span><span style="color:#cc7833;">RUN </span><span>[</span><span style="color:#c1be91;">&quot;zola&quot;</span><span>, </span><span style="color:#c1be91;">&quot;build&quot;</span><span>]
+</span></code></pre>
+<h2 id="windows"><a class="zola-anchor" href="#windows" aria-label="Anchor link for: windows">🔗</a>Windows</h2>
+<p>Zola could be installed using official Winget command:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ winget install getzola.zola
+</span></code></pre>
+<p>Also it is available on <a class="external" href="https://scoop.sh">Scoop</a>:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ scoop install zola
+</span></code></pre>
+<p>and <a class="external" href="https://chocolatey.org/">Chocolatey</a>:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ choco install zola
+</span></code></pre>
+<p>Zola does not work in PowerShell ISE.</p>
+<h2 id="from-source"><a class="zola-anchor" href="#from-source" aria-label="Anchor link for: from-source">🔗</a>From source</h2>
+<p>To build Zola from source, you will need to have <a class="external" href="https://www.rust-lang.org/">Rust and Cargo</a>
+installed.</p>
+<p>From a terminal, you can now run the following commands:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ cargo install</span><span style="font-style:italic;color:#fd971f;"> --locked --git</span><span> https://github.com/getzola/zola
+</span><span>$ zola</span><span style="font-style:italic;color:#fd971f;"> --version
+</span></code></pre>
+<p>If you encountered compilation errors like <code>error: failed to run custom build command for 'ring v0.16.20'</code>, you can try the command below instead:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ cargo install</span><span style="font-style:italic;color:#fd971f;"> --locked --no-default-features --features</span><span style="color:#cc7833;">=</span><span>native-tls</span><span style="font-style:italic;color:#fd971f;"> --git</span><span> https://github.com/getzola/zola
+</span></code></pre>
+<p>Cargo will install the <code>zola</code> binary in <code>~/.cargo/bin/</code>.
+You can move it into the repository of your site if you want.</p>
+
+
+    </div>
+</div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

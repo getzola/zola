@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>abridge | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;abridge&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>abridge</h1>
+            <p>A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;jieiku&#x2F;">Jake G (jieiku)</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.1 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;jieiku&#x2F;abridge">https:&#x2F;&#x2F;github.com&#x2F;jieiku&#x2F;abridge</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;abridge.pages.dev&#x2F;">https:&#x2F;&#x2F;abridge.pages.dev&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-06-01T18:21:52+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <div align="center">
+<img src="https://raw.githubusercontent.com/Jieiku/abridge/master/abridge.svg"/>
+<h1 id="abridge-zola-theme">Abridge Zola Theme</h1>
+<p>A fast, lightweight, and modern <a class="external" href="https://getzola.org">Zola</a> theme utilizing <a class="external" href="https://github.com/Jieiku/abridge.css">abridge.css</a> (a class-light semantic HTML CSS Framework). Perfect <a class="external" href="https://pagespeed.web.dev/report?url=abridge.pages.dev">Lighthouse</a>, <a class="external" href="https://yellowlab.tools/">YellowLabTools</a>, and <a class="external" href="https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.netlify.app">Observatory</a> scores. Here is a <a class="external" href="https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md">Zola Themes Benchmarks</a> Page.</p>
+<p><img src="https://raw.githubusercontent.com/Jieiku/abridge/master/content/overview-abridge/lighthouse.png" alt="Lighthouse Score" /></p>
+<p>Maintenance of this project is made possible by all the <a href="https://github.com/Jieiku/abridge/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/Jieiku">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/Jieiku">click here</a>. 💖</p>
+<!-- sponsors --><a href="https://github.com/yugfletcher"><img src="https:&#x2F;&#x2F;github.com&#x2F;yugfletcher.png" width="60px" alt="User avatar: " /></a><a href="https://github.com/samueloph"><img src="https:&#x2F;&#x2F;github.com&#x2F;samueloph.png" width="60px" alt="User avatar: Samuel Henrique" /></a><a href="https://github.com/bensuperpc"><img src="https:&#x2F;&#x2F;github.com&#x2F;bensuperpc.png" width="60px" alt="User avatar: Bensuperpc" /></a><!-- sponsors -->
+<hr />
+<p><strong><a class="external" href="https://abridge.pages.dev/overview-abridge/">View Abridge demo</a></strong></p>
+<p><strong><a class="external" href="https://abridge-css.pages.dev/overview-abridge/">View Abridge.css demo</a></strong> [<a class="external" href="https://github.com/Jieiku/abridge.css/tree/master/dist">abridge.css framework</a>]</p>
+<p>The Abridge.css demo is simply using Abridge theme as a submodule: <a class="external" href="https://github.com/Jieiku/abridge.css/blob/master/config.toml">config.toml</a>, <a class="external" href="https://github.com/Jieiku/abridge.css/blob/master/sass/abridge.scss">sass/abridge.scss</a></p>
+</div>
+<h2 id="features">Features</h2>
+<ul>
+<li>Perfect <a class="external" href="https://pagespeed.web.dev/report?url=abridge.pages.dev">Lighthouse</a>, <a class="external" href="https://yellowlab.tools/">YellowLabTools</a>, and <a class="external" href="https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.netlify.app">Observatory</a> scores.</li>
+<li><a class="external" href="https://abridge.pages.dev/overview-abridge/#pwa-progressive-web-app">PWA support</a> (Progressive Web Application).</li>
+<li>All JavaScript can be <a class="external" href="https://abridge.pages.dev/overview-abridge/#javascript-files">fully disabled</a>.</li>
+<li>Dark, Light, Auto, and Switcher themes. (colors can be customized, css variables)</li>
+<li>Code <a class="external" href="https://abridge.pages.dev/overview-code-blocks/">syntax highlighting</a>. (colors can be customized, css variables)</li>
+<li>Numbered code blocks with <a class="external" href="https://abridge.pages.dev/overview-code-blocks/#toml">line highlighting</a>.</li>
+<li>Entirely Offline Site by using the PWA <strong>or</strong> by setting <code>search_library = "offline"</code> in <code>config.toml</code>.</li>
+<li>Multi-language support.</li>
+<li>Search support. (<a class="external" href="https://abridge.pages.dev/">elasticlunr</a>, <a class="external" href="https://abridge-pagefind.pages.dev/">pagefind</a>, <a class="external" href="https://abridge-tinysearch.pages.dev/">tinysearch</a>)</li>
+<li>Search Suggestions navigation keys, <code>/</code> focus, <code>arrow</code> move, <code>enter</code> select, <code>escape</code> close.</li>
+<li>Search Results Page, type search query then hit <code>Enter Key</code> or <code>click</code> the search button icon.</li>
+<li><a class="external" href="https://abridge.pages.dev/overview-abridge/#seo-and-header-tags">SEO</a> support. (Search Engine Optimization)</li>
+<li><a class="external" href="https://abridge.pages.dev/overview-abridge/#pagination">Pagination</a> with numbered paginator on index.</li>
+<li>Title Based Previous and Next Article links at bottom of Article.</li>
+<li>Table of Contents in page Index (Optional, clickable links)</li>
+<li>Recent Posts Block. (Optional)</li>
+<li>Back to Top button. (uses css only)</li>
+<li>Code Blocks copy button.</li>
+<li>Email link in footer obfuscation. (anti-spam)</li>
+<li><a class="external" href="https://katex.org/">KaTeX</a> support.</li>
+<li><a class="external" href="https://abridge.pages.dev/archive/">Archive page</a>.</li>
+<li><a class="external" href="https://abridge.pages.dev/tags/">Tags</a>.</li>
+<li>Categories. (similar to Tags, disabled/commented out by default)</li>
+<li>Social icon links in footer.</li>
+<li>Responsive design. (mobile first)</li>
+<li>Video Shortcodes: <a class="external" href="https://abridge.pages.dev/video-streaming-sites/overview-embed-youtube/">Youtube</a>, <a class="external" href="https://abridge.pages.dev/video-streaming-sites/overview-embed-vimeo/">Vimeo</a>, <a class="external" href="https://abridge.pages.dev/video-streaming-sites/overview-embed-streamable/">Streamable</a>.</li>
+<li>Media Shortcodes: <a class="external" href="https://abridge.pages.dev/overview-rich-content/#video">video</a>, <a class="external" href="https://abridge.pages.dev/overview-images/#img-shortcode">img</a>, <a class="external" href="https://abridge.pages.dev/overview-images/#imgswap-shortcode">imgswap</a>, <a class="external" href="https://abridge.pages.dev/overview-rich-content/#image">image</a>, <a class="external" href="https://abridge.pages.dev/overview-rich-content/#gif">gif</a>, <a class="external" href="https://abridge.pages.dev/overview-rich-content/#audio">audio</a>.</li>
+<li>Other Shortcodes: <a class="external" href="https://abridge.pages.dev/overview-showdata/">showdata</a>, <a class="external" href="https://abridge.pages.dev/overview-math/#usage-1">katex</a>.</li>
+</ul>
+<p><strong><a class="external" href="https://abridge.pages.dev/overview-abridge/">Complete Documentation is available here</a></strong></p>
+<h2 id="quick-start">Quick Start</h2>
+<p>This theme requires version 0.19.1 or later of <a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">Zola</a></p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/jieiku/abridge.git
+</span><span style="color:#da4939;">cd</span><span> abridge
+</span><span>zola serve
+</span><span style="font-style:italic;color:#7c7865;"># open http://127.0.0.1:1111/ in the browser
+</span></code></pre>
+<h2 id="installation">Installation</h2>
+<p>The Quick Start shows how to run the theme directly. Next we will use abridge as a theme to a NEW site.</p>
+<h3 id="1-create-a-new-zola-site">1: Create a new zola site</h3>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>yes </span><span style="color:#c1be91;">&quot;&quot; </span><span style="color:#cc7833;">| </span><span>zola init mysite
+</span><span style="color:#da4939;">cd</span><span> mysite
+</span></code></pre>
+<h3 id="2-install-abridge">2: Install Abridge</h3>
+<p>Add the theme as a git submodule:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git init  </span><span style="font-style:italic;color:#7c7865;"># if your project is a git repository already, ignore this command
+</span><span>git submodule add https://github.com/jieiku/abridge.git themes/abridge
+</span><span>git submodule update</span><span style="font-style:italic;color:#fd971f;"> --init --recursive
+</span><span>git submodule update</span><span style="font-style:italic;color:#fd971f;"> --remote --merge
+</span></code></pre>
+<p>Or clone the theme into your themes directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/jieiku/abridge.git themes/abridge
+</span></code></pre>
+<h3 id="3-configuration">3: Configuration</h3>
+<p>Copy some files from the theme directory to your project's root directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>rsync themes/abridge/.gitignore .gitignore
+</span><span>rsync themes/abridge/config.toml config.toml
+</span><span>rsync themes/abridge/content/_index.md content/
+</span><span>rsync</span><span style="font-style:italic;color:#fd971f;"> -r</span><span> themes/abridge/COPY-TO-ROOT-SASS/</span><span style="color:#cc7833;">*</span><span> sass/
+</span><span>rsync themes/abridge/netlify.toml netlify.toml
+</span><span>rsync themes/abridge/package_abridge.js package_abridge.js
+</span><span>rsync themes/abridge/package.json package.json
+</span></code></pre>
+<ul>
+<li><code>config.toml</code> base configuration with all config values.</li>
+<li><code>content/_index.md</code> required to set pagination.</li>
+<li><code>COPY-TO-ROOT-SASS/abridge.scss</code> overrides to customize Abridge variables.</li>
+<li><code>netlify.toml</code> settings to deploy your repo with netlfiy.</li>
+<li><code>package_abridge.js</code> node script to: update cache files list in PWA, minify js, bundle js</li>
+<li><code>package.json</code> to facilitate use of package_abridge.js</li>
+</ul>
+<p>Uncomment the theme line in your project's root config.toml:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>sed</span><span style="font-style:italic;color:#fd971f;"> -i </span><span style="color:#a5c261;">&#39;s/^#theme = &quot;abridge&quot;/theme = &quot;abridge&quot;/&#39;</span><span> config.toml
+</span></code></pre>
+<h3 id="4-add-new-content">4: Add new content</h3>
+<p>Copy the content from the theme directory to your project or make a new post:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>rsync</span><span style="font-style:italic;color:#fd971f;"> -r</span><span> themes/abridge/content .
+</span></code></pre>
+<h3 id="5-run-the-project">5: Run the project</h3>
+<p>Just run <code>zola serve</code> in the root path of the project:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola serve
+</span></code></pre>
+<p>Zola will start the dev web server, accessible by default at <code>http://127.0.0.1:1111</code>.</p>
+<p>Saved changes will live reload in the browser. (press <code>ctrl+f5</code>, or while developing set <code>pwa=false</code> in <code>config.toml</code>)</p>
+<h2 id="customization">Customization</h2>
+<p>For further customization be sure to <a class="external" href="https://abridge.pages.dev/overview-abridge/">check the docs</a>.</p>
+<h2 id="sponsor">Sponsor</h2>
+<p>Do you love this theme? Was it useful to you? Please leave a github star, and if you feel inclined to donate you can make a donation to me through <a class="external" href="https://github.com/sponsors/Jieiku/">github sponsors</a>.</p>
+<h2 id="contributing-and-philosophy">Contributing and Philosophy</h2>
+<p>We'd love your help! Especially with fixes to issues, or improvements to existing features.</p>
+<p>The goal is for Abridge to be lightweight, fast, and to work properly even if javascript is disabled or blocked.</p>
+<p>The only feature that may be considered a necessity that relies on javascript is the Search.</p>
+<h2 id="license">License</h2>
+<p><strong>Abridge</strong> is distributed under the terms of the <a class="external" href="https://github.com/jieiku/abridge/blob/master/LICENSE">MIT license</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Page | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+
+<div class="documentation">
+    <aside class="documentation__sidebar">
+        <ul>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Getting Started</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;installation&#x2F;">Installation</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;cli-usage&#x2F;">CLI usage</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;directory-structure&#x2F;">Directory structure</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;configuration&#x2F;">Configuration</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Content</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;section&#x2F;">Section</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;page&#x2F;">Page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;shortcodes&#x2F;">Shortcodes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;linking&#x2F;">Internal links &amp; deep linking</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;table-of-contents&#x2F;">Table of Contents</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;syntax-highlighting&#x2F;">Syntax Highlighting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;search&#x2F;">Search</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;sass&#x2F;">Sass</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;image-processing&#x2F;">Image processing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;multilingual&#x2F;">Multilingual sites</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Templates</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pages-sections&#x2F;">Sections and Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pagination&#x2F;">Pagination</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;feeds&#x2F;">Feeds</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;sitemap&#x2F;">Sitemap</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;robots&#x2F;">Robots.txt</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;404&#x2F;">404 error page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;archive&#x2F;">Archive</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Themes</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;installing-and-using-themes&#x2F;">Installing &amp; using themes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;creating-a-theme&#x2F;">Creating a theme</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;extending-a-theme&#x2F;">Customizing a theme</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Deployment</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;sourcehut&#x2F;">Sourcehut Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;netlify&#x2F;">Netlify</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;github-pages&#x2F;">GitHub Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;gitlab-pages&#x2F;">GitLab Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;codeberg-pages&#x2F;">Codeberg Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;edgio&#x2F;">Edgio</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;vercel&#x2F;">Vercel</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;zeabur&#x2F;">Zeabur</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;cloudflare-pages&#x2F;">Cloudflare Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;flyio&#x2F;">Fly.io</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;aws-s3&#x2F;">AWS S3 Bucket</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;docker-image&#x2F;">Docker image</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+        </ul>
+    </aside>
+    <div class="documentation__content">
+        
+    <h1>Page</h1>
+    <p>A page is any file ending with <code>.md</code> in the <code>content</code> directory, except files
+named <code>_index.md</code>. <strong>Note:</strong> page file names must not contain <code>_index.</code> <a class="external" href="https://github.com/getzola/zola/pull/1694">at all</a>.</p>
+<p>If a file ending with <code>.md</code> is named <code>index.md</code>, it will generate a page
+with the name of its directory (for example, <code>/content/about/index.md</code> would
+create a page at <code>[base_url]/about</code>). (Note the lack of an underscore; if the file
+were named <code>_index.md</code>, then it would create a <strong>section</strong> at <code>[base_url]/about</code>, as
+discussed in a previous part of this documentation. In contrast, naming the file <code>index.md</code> will
+create a <strong>page</strong> at <code>[base_url]/about</code>).</p>
+<p>If the file is given any name <em>other</em> than <code>index.md</code> or <code>_index.md</code>, then it will
+create a page with that name (without the <code>.md</code>). For example, naming a file in the root of your
+content directory <code>about.md</code> would create a page at <code>[base_url]/about</code>.</p>
+<p>Another exception to this rule is that a filename starting with a datetime (YYYY-mm-dd or <a class="external" href="https://www.ietf.org/rfc/rfc3339.txt">an RFC3339 datetime</a>) followed by
+an underscore (<code>_</code>) or a dash (<code>-</code>) will use that date as the page date, unless already set
+in the front matter. The page name will be anything after <code>_</code>/<code>-</code>, so the file <code>2018-10-10-hello-world.md</code> will
+be available at <code>[base_url]/hello-world</code>. Note that the full RFC3339 datetime contains colons, which is not a valid
+character in a filename on Windows.
+This behavior can be disabled by setting <code>slugify.paths_keep_dates</code> to <code>true</code> (the default is <code>false</code>). Note that a <code>_</code> separating the date would be slugified into a <code>-</code> with the default value for <code>slugify.paths</code> of <code>"on"</code>.</p>
+<p>As you can see, creating an <code>about.md</code> file is equivalent to creating an
+<code>about/index.md</code> file. The only difference between the two methods is that creating
+the <code>about</code> directory allows you to use asset co-location, as discussed in the
+<a href="https://www.getzola.org/documentation/content/overview/#asset-colocation">overview</a> section.</p>
+<h2 id="output-paths"><a class="zola-anchor" href="#output-paths" aria-label="Anchor link for: output-paths">🔗</a>Output paths</h2>
+<p>For any page within your content folder, its output path will be defined by either:</p>
+<ul>
+<li>its <code>slug</code> frontmatter key</li>
+<li>its filename</li>
+</ul>
+<p>Either way, these proposed path will be sanitized before being used.
+If <code>slugify.paths</code> is set to <code>"on"</code> in the site's config - the default - paths are <a class="external" href="https://en.wikipedia.org/wiki/Clean_URL#Slug">slugified</a>.
+If it is set to <code>"safe"</code>, only sanitation is performed, with the following characters being removed: <code>&lt;</code>, <code>&gt;</code>, <code>:</code>, <code>/</code>, <code>|</code>, <code>?</code>, <code>*</code>, <code>#</code>, <code>\\</code>, <code>(</code>, <code>)</code>, <code>[</code>, <code>]</code> as well as newlines and tabulations. This ensures that the path can be represented on all operating systems.
+Additionally, trailing whitespace and dots are removed and whitespaces are replaced by <code>_</code>.</p>
+<p>If <code>slugify.paths</code> is set to <code>"off"</code>, no modifications are made.</p>
+<p>If you want URLs containing non-ASCII characters, <code>slugify.paths</code> needs to be set to <code>"safe"</code> or <code>"off"</code>.</p>
+<h3 id="path-from-frontmatter"><a class="zola-anchor" href="#path-from-frontmatter" aria-label="Anchor link for: path-from-frontmatter">🔗</a>Path from frontmatter</h3>
+<p>The output path for the page will first be read from the <code>slug</code> key in the page's frontmatter.</p>
+<p><strong>Example:</strong> (file <code>content/zines/élevage-chèvre.md</code>)</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>+++
+</span><span>title = &quot;L&#39;élevage de chèvres, la carrière alternative de tous dévelopeurs&#39;&quot;
+</span><span>slug = &quot;élevage-chèvre-carrière-alternative&quot;
+</span><span>+++
+</span><span>This is my article.
+</span></code></pre>
+<p>This frontmatter will output the article to <code>[base_url]/zines/élevage-chèvre-carrière-alternative</code> with <code>slugify.paths</code> set to <code>"safe"</code> or <code>"off"</code>, and to <code>[base_url]/zines/elevage-chevre-carriere-alternative</code> with the default value for <code>slugify.paths</code> of <code>"on"</code>.</p>
+<h3 id="path-from-filename"><a class="zola-anchor" href="#path-from-filename" aria-label="Anchor link for: path-from-filename">🔗</a>Path from filename</h3>
+<p>When the article's output path is not specified in the frontmatter, it is extracted from the file's path in the content folder. Consider a file <code>content/foo/bar/thing.md</code>. The output path is constructed:</p>
+<ul>
+<li>if the filename is <code>index.md</code>, its parent folder name (<code>bar</code>) is used as output path</li>
+<li>otherwise, the output path is extracted from <code>thing</code> (the filename without the <code>.md</code> extension)</li>
+</ul>
+<p>If the path found starts with a datetime string (<code>YYYY-mm-dd</code> or <a class="external" href="https://www.ietf.org/rfc/rfc3339.txt">a RFC3339 datetime</a>) followed by optional whitespace and then an underscore (<code>_</code>) or a dash (<code>-</code>), this date is removed from the output path and will be used as the page date (unless already set in the front-matter). Note that the full RFC3339 datetime contains colons, which is not a valid character in a filename on Windows.</p>
+<p>The output path extracted from the file path is then slugified or not, depending on the <code>slugify.paths</code> config, as explained previously.</p>
+<p><strong>Example:</strong>
+The file <code>content/blog/2018-10-10-hello-world.md</code> will yield a page at <code>[base_url]/blog/hello-world</code>. With optional whitespace, the file <code>content/blog/2021-01-23 -hello new world.md</code> will yield a page at <code>[base_url]/blog/hello-new-world</code></p>
+<h2 id="front-matter"><a class="zola-anchor" href="#front-matter" aria-label="Anchor link for: front-matter">🔗</a>Front matter</h2>
+<p>The TOML front matter is a set of metadata embedded in a file at the beginning of the file enclosed
+by triple pluses (<code>+++</code>).</p>
+<p>Although none of the front matter variables are mandatory, the opening and closing <code>+++</code> are required.</p>
+<p>Note that even though the use of TOML is encouraged, YAML front matter is also supported to ease porting
+legacy content. In this case the embedded metadata must be enclosed by triple minuses (<code>---</code>).</p>
+<p>Here is an example page with all the available variables. The values provided below are the
+default values.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># The date of the post.
+</span><span style="color:#95815e;"># Two formats are allowed: YYYY-MM-DD (2012-10-02) and RFC3339 (2002-10-02T15:00:00Z).
+</span><span style="color:#95815e;"># Do not wrap dates in quotes; the line below only indicates that there is no default date.
+</span><span style="color:#95815e;"># If the section variable `sort_by` is set to `date`, then any page that lacks a `date`
+</span><span style="color:#95815e;"># will not be rendered.
+</span><span style="color:#95815e;"># Setting this overrides a date set in the filename.
+</span><span style="color:#e8bf6a;">date </span><span>=
+</span><span>
+</span><span style="color:#95815e;"># The last updated date of the post, if different from the date.
+</span><span style="color:#95815e;"># Same format as `date`.
+</span><span style="color:#e8bf6a;">updated </span><span>=
+</span><span>
+</span><span style="color:#95815e;"># The weight as defined on the Section page of the documentation.
+</span><span style="color:#95815e;"># If the section variable `sort_by` is set to `weight`, then any page that lacks a `weight`
+</span><span style="color:#95815e;"># will not be rendered.
+</span><span style="color:#e8bf6a;">weight </span><span>= </span><span style="color:#a5c261;">0
+</span><span>
+</span><span style="color:#95815e;"># A draft page is only loaded if the `--drafts` flag is passed to `zola build`, `zola serve` or `zola check`.
+</span><span style="color:#e8bf6a;">draft </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># When set to &quot;false&quot; Zola will not create a separate folder with index.html inside for this page.
+</span><span style="color:#e8bf6a;">render </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># If set, this slug will be used instead of the filename to make the URL.
+</span><span style="color:#95815e;"># The section path will still be used.
+</span><span style="color:#e8bf6a;">slug </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># The path the content will appear at.
+</span><span style="color:#95815e;"># If set, it cannot be an empty string and will override both `slug` and the filename.
+</span><span style="color:#95815e;"># The sections&#39; path won&#39;t be used.
+</span><span style="color:#95815e;"># It should not start with a `/` and the slash will be removed if it does.
+</span><span style="color:#e8bf6a;">path </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Use aliases if you are moving content but want to redirect previous URLs to the
+</span><span style="color:#95815e;"># current one. This takes an array of paths, not URLs.
+</span><span style="color:#e8bf6a;">aliases </span><span>= []
+</span><span>
+</span><span style="color:#95815e;"># A list of page authors. If a site feed is enabled, the first author (if any)
+</span><span style="color:#95815e;"># will be used as the page&#39;s author in the default feed template.
+</span><span style="color:#e8bf6a;">authors </span><span>= []
+</span><span>
+</span><span style="color:#95815e;"># When set to &quot;true&quot;, the page will be in the search index. This is only used if
+</span><span style="color:#95815e;"># `build_search_index` is set to &quot;true&quot; in the Zola configuration and the parent section
+</span><span style="color:#95815e;"># hasn&#39;t set `in_search_index` to &quot;false&quot; in its front matter.
+</span><span style="color:#e8bf6a;">in_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># Template to use to render this page.
+</span><span style="color:#e8bf6a;">template </span><span>= </span><span style="color:#c1be91;">&quot;page.html&quot;
+</span><span>
+</span><span style="color:#95815e;"># The taxonomies for this page. The keys need to be the same as the taxonomy
+</span><span style="color:#95815e;"># names configured in `config.toml` and the values are an array of String objects. For example,
+</span><span style="color:#95815e;"># tags = [&quot;rust&quot;, &quot;web&quot;].
+</span><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Your own data.
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span></code></pre>
+<h2 id="summary"><a class="zola-anchor" href="#summary" aria-label="Anchor link for: summary">🔗</a>Summary</h2>
+<p>You can ask Zola to create a summary if, for example, you only want to show the first
+paragraph of the page content in a list.</p>
+<p>To do so, add <code>&lt;!-- more --&gt;</code> in your content at the point
+where you want the summary to end. The content up to that point will be
+available separately in the
+<a href="https://www.getzola.org/documentation/templates/pages-sections/#page-variables">template</a> via <code>page.summary</code>.</p>
+<p>A span element in this position with a <code>continue-reading</code> id is created, so you can link directly to it if needed. For example:
+<code>&lt;a href="{{ page.permalink }}#continue-reading"&gt;Continue Reading&lt;/a&gt;</code>.</p>
+<p>The <code>&lt;!-- more --&gt;</code> marker can also exist in the middle of a line, and it will ensure that this does not emit unclosed HTML tags.
+You can use the <code>summary-cutoff.html</code> to show text after the summary (but before these closing tags) based
+upon the summary before the cutoff.</p>
+<p>By default, it will show an ellipsis (…) regardless of the content of the summary, but you can use a different template if you want to only show an ellipsis if the summary does not end in any punctuation:</p>
+<pre data-lang="jinja" style="background-color:#383838;color:#e6e1dc;" class="language-jinja "><code class="language-jinja" data-lang="jinja"><span>{% </span><span style="color:#cc7833;">if </span><span style="color:#d0d0ff;">summary </span><span style="color:#cc7833;">is </span><span style="color:#d0d0ff;">matching</span><span>(</span><span style="color:#c1be91;">&quot;\PP$&quot;</span><span>) %}&amp;hellip;{% </span><span style="color:#cc7833;">endif </span><span>%}
+</span></code></pre>
+
+
+    </div>
+</div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

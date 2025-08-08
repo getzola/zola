@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Seje2 | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;seje2&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Seje2</h1>
+            <p>A beautiful zola theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;blog.utopiosphere.net">Mag Mell</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.15.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;eatradish&#x2F;Seje2">https:&#x2F;&#x2F;github.com&#x2F;eatradish&#x2F;Seje2</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;blog.miraclemilk.me&#x2F;Seje2">https:&#x2F;&#x2F;blog.miraclemilk.me&#x2F;Seje2</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-04-02T10:52:01+08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="seje2">Seje2</h1>
+<p><img src="https://www.getzola.org/themes/seje2/screenshot.png" alt="screenshot" /></p>
+<p><a class="external" href="https://eatradish.github.io/Seje2">Demo</a>
+<a class="external" href="https://github.com/eatradish/Seje2/blob/main/README_zh_cn.md">简体中文</a></p>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> themes
+</span><span>git clone https://github.com/eatradish/Seje2
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;Seje2&quot;
+</span></code></pre>
+<p>This theme requires your index section (<code>content/_index.md</code>) to be paginated to work:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">5
+</span></code></pre>
+<p>The posts should therefore be in directly under the <code>content</code> folder.</p>
+<p>and requires your index section (<code>about/_index.md</code>) to be paginated to work:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;...&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">year </span><span>= </span><span style="color:#a5c261;">2019
+</span><span style="color:#e8bf6a;">month </span><span>= </span><span style="color:#a5c261;">11
+</span><span style="color:#e8bf6a;">day </span><span>= </span><span style="color:#a5c261;">3
+</span></code></pre>
+<h2 id="options">Options</h2>
+<h3 id="top-menu">Top-menu</h3>
+<p>Set a field in <code>extra</code> with a key of <code>seje2_menu_links</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">seje2_menu_links </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/categories&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Categories&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/tags&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://google.com&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Google&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>If you put <code>$BASE_URL</code> in a url, it will automatically be replaced by the actual
+site URL.</p>
+<h3 id="mathjax-latex-support">MathJax Latex Support</h3>
+<p>Set a field in <code>extra</code> with a bool key of <code>seje_mathjax</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">seje_mathjax </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h3 id="license">License</h3>
+<p>Set a field in <code>extra</code> with a key of <code>license</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">license </span><span>= </span><span style="color:#c1be91;">&quot;@ 宇宙眼镜人&quot;
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>boring | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;boring&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>boring</h1>
+            <p>A minimal theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;ssiyad.com">Sabu Siyad</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.16.0 and above</p>
+            
+            <p><b>License:</b> GPLv3</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;ssiyad&#x2F;boring">https:&#x2F;&#x2F;github.com&#x2F;ssiyad&#x2F;boring</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;boring-zola.netlify.app&#x2F;">https:&#x2F;&#x2F;boring-zola.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-11-16T12:53:23+05:30</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="boring">Boring</h1>
+<p>Minimal theme for <a class="external" href="https://www.getzola.org/">Zola</a>, powered by
+<a class="external" href="https://tailwindcss.com/">TailwindCSS</a></p>
+<h3 id="demo">Demo</h3>
+<p>https://boring-zola.netlify.app/</p>
+<p><img src="https://www.getzola.org/themes/boring/./screenshot.png" alt="sreenshot" /></p>
+<h3 id="setup">Setup</h3>
+<p>In your zola site directory</p>
+<ul>
+<li>
+<p>Get theme</p>
+<pre data-lang="shell" style="background-color:#383838;color:#e6e1dc;" class="language-shell "><code class="language-shell" data-lang="shell"><span>git submodule add https://github.com/ssiyad/boring themes/boring
+</span></code></pre>
+</li>
+<li>
+<p>Build CSS</p>
+<pre data-lang="shell" style="background-color:#383838;color:#e6e1dc;" class="language-shell "><code class="language-shell" data-lang="shell"><span>cd themes/boring
+</span><span>yarn install --frozen-lockfile
+</span><span>yarn build
+</span></code></pre>
+</li>
+<li>
+<p>Change theme specific variables. They are listed in <code>extra</code> section of
+<a href="https://www.getzola.org/themes/boring/./config.toml">config.toml</a></p>
+</li>
+</ul>
+<p>Refer <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/#using-a-theme">Zola Docs</a>
+for further instructions</p>
+<h3 id="license">License</h3>
+<p><a href="https://www.getzola.org/themes/boring/./LICENSE">GPLv3</a></p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
