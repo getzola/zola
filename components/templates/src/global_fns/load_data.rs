@@ -1,15 +1,15 @@
-use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use libs::csv::Reader;
-use libs::reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE};
+use libs::reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderName, HeaderValue};
 use libs::reqwest::{blocking::Client, header};
 use libs::tera::{
-    from_value, to_value, Error, Error as TeraError, Function as TeraFn, Map, Result, Value,
+    Error, Error as TeraError, Function as TeraFn, Map, Result, Value, from_value, to_value,
 };
 use libs::url::Url;
 use libs::{nom_bibtex, serde_json, serde_yaml, toml};
@@ -267,10 +267,7 @@ impl TeraFn for LoadData {
         );
 
         let method = match method_arg {
-            Some(ref method_str) => match Method::from_str(method_str) {
-                Ok(m) => m,
-                Err(e) => return Err(e),
-            },
+            Some(ref method_str) => Method::from_str(method_str)?,
             _ => Method::Get,
         };
         let headers = optional_arg!(
@@ -578,7 +575,7 @@ mod tests {
 
     use crate::global_fns::load_data::Method;
     use libs::serde_json::json;
-    use libs::tera::{self, to_value, Function};
+    use libs::tera::{self, Function, to_value};
     use std::fs::{copy, create_dir_all};
     use tempfile::tempdir;
 
@@ -601,10 +598,12 @@ mod tests {
         args.insert("method".to_string(), to_value("illegalmethod").unwrap());
         let result = static_fn.call(&args);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("`load_data` method must either be POST or GET."));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("`load_data` method must either be POST or GET.")
+        );
     }
 
     #[test]

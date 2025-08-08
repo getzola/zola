@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use errors::{bail, Context, Result};
+use errors::{Context, Result, bail};
 use libs::once_cell::sync::Lazy;
 use libs::regex::Regex;
 use libs::{serde_yaml, toml};

@@ -3,7 +3,7 @@ use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 
 use config::Config;
-use errors::{anyhow, Context, Result};
+use errors::{Context, Result, anyhow};
 use libs::ahash::{HashMap, HashSet};
 use libs::image::codecs::avif::AvifEncoder;
 use libs::image::codecs::jpeg::JpegEncoder;
@@ -18,7 +18,7 @@ use utils::fs as ufs;
 
 use crate::format::Format;
 use crate::helpers::get_processed_filename;
-use crate::{fix_orientation, ImageMeta, ResizeInstructions, ResizeOperation};
+use crate::{ImageMeta, ResizeInstructions, ResizeOperation, fix_orientation};
 
 pub const RESIZED_SUBDIR: &str = "processed_images";
 
@@ -89,12 +89,12 @@ impl ImageOp {
                 let mut avif: Vec<u8> = Vec::new();
                 let encoder = AvifEncoder::new_with_speed_quality(&mut avif, speed, quality);
                 encoder.write_image(
-                    &img.as_bytes(),
+                    img.as_bytes(),
                     img.dimensions().0,
                     img.dimensions().1,
                     img.color().into(),
                 )?;
-                tmp_output_writer.write_all(&avif.as_bytes())?;
+                tmp_output_writer.write_all(avif.as_bytes())?;
             }
         };
 

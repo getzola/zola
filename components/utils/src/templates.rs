@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use libs::tera::{Context, Tera};
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 
 const DEFAULT_TPL: &str = include_str!("default_tpl.html");
 
@@ -45,7 +45,7 @@ impl ShortcodeInvocationCounter {
     pub fn get(&mut self, str: &str) -> usize {
         let nth = self.amounts.entry(str.into()).or_insert(0);
         *nth += 1;
-        return *nth;
+        *nth
     }
     pub fn reset(&mut self) {
         self.amounts.clear();
