@@ -1,4 +1,4 @@
-use libs::tera::{from_value, to_value, Error, Function as TeraFn, Result, Value};
+use libs::tera::{Error, Function as TeraFn, Result, Value, from_value, to_value};
 
 use config::Config;
 use std::collections::HashMap;

@@ -1,7 +1,7 @@
 use libs::percent_encoding::percent_decode;
 use std::collections::HashMap;
 
-use errors::{anyhow, Result};
+use errors::{Result, anyhow};
 
 /// Result of a successful resolution of an internal link.
 #[derive(Debug, PartialEq, Eq, Clone)]

@@ -13,7 +13,7 @@ use libs::toml::Value as Toml;
 use serde::{Deserialize, Serialize};
 
 use crate::theme::Theme;
-use errors::{anyhow, bail, Result};
+use errors::{Result, anyhow, bail};
 use utils::fs::read_file;
 use utils::globs::build_ignore_glob_set;
 use utils::slugs::slugify_paths;
@@ -245,8 +245,11 @@ impl Config {
             if base_language_options == languages::LanguageOptions::default() {
                 return Ok(());
             }
-            println!("Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
-                which may cause merge conflicts. Please use only one to specify language specific information", self.default_language);
+            println!(
+                "Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
+                which may cause merge conflicts. Please use only one to specify language specific information",
+                self.default_language
+            );
             base_language_options.merge(section_language_options)?;
         }
         self.languages.insert(self.default_language.clone(), base_language_options);
@@ -335,7 +338,7 @@ impl Config {
         }
     }
 
-    pub fn serialize(&self, lang: &str) -> SerializedConfig {
+    pub fn serialize(&self, lang: &str) -> SerializedConfig<'_> {
         let options = &self.languages[lang];
 
         SerializedConfig {
@@ -384,7 +387,11 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
         }
         _ => {
             // Trying to merge a table with something else
-            Err(anyhow!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from))
+            Err(anyhow!(
+                "Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}",
+                into,
+                from
+            ))
         }
     }
 }

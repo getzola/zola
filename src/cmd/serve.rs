@@ -499,7 +499,7 @@ pub fn serve(
         };
         if should_watch {
             debouncer
-                .watch(&root_dir.join(entry), recursive_mode)
+                .watch(root_dir.join(entry), recursive_mode)
                 .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
             watchers.push(entry.to_string());
         }
@@ -544,10 +544,8 @@ pub fn serve(
                         .replace(&bind_address.to_string(), &server.local_addr().to_string()),
                     &server.local_addr()
                 );
-                if open {
-                    if let Err(err) = open::that(&constructed_base_url) {
-                        eprintln!("Failed to open URL in your browser: {err}");
-                    }
+                if open && let Err(err) = open::that(&constructed_base_url) {
+                    eprintln!("Failed to open URL in your browser: {err}");
                 }
 
                 server.await.expect("Could not start web server");
@@ -633,10 +631,10 @@ pub fn serve(
 
     let copy_static = |site: &Site, path: &Path, partial_path: &Path| {
         // Do nothing if the file/dir is on the ignore list
-        if let Some(gs) = &site.config.ignored_static_globset {
-            if gs.is_match(partial_path) {
-                return;
-            }
+        if let Some(gs) = &site.config.ignored_static_globset
+            && gs.is_match(partial_path)
+        {
+            return;
         }
         // Do nothing if the file/dir was deleted
         if !path.exists() {
@@ -916,9 +914,9 @@ mod tests {
             &root_dir,
             interface,
             interface_port,
-            output_dir.as_deref(),
+            output_dir,
             force,
-            base_url.as_deref(),
+            base_url,
             &config_file,
             include_drafts,
             false,

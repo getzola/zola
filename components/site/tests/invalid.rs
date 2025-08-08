@@ -13,6 +13,9 @@ fn errors_on_index_md_page_in_section() {
     let res = site.load();
     assert!(res.is_err());
     let err = res.unwrap_err();
-    assert!(format!("{:?}", err)
-        .contains("We can't have a page called `index.md` in the same folder as an index section"));
+    assert!(
+        format!("{:?}", err).contains(
+            "We can't have a page called `index.md` in the same folder as an index section"
+        )
+    );
 }

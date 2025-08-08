@@ -41,15 +41,15 @@ pub fn resolve_syntax_and_theme<'config>(
     let theme = config.markdown.get_highlight_theme();
 
     if let Some(ref lang) = language {
-        if let Some(ref extra_syntaxes) = config.markdown.extra_syntax_set {
-            if let Some(syntax) = extra_syntaxes.find_syntax_by_token(lang) {
-                return SyntaxAndTheme {
-                    syntax,
-                    syntax_set: extra_syntaxes,
-                    theme,
-                    source: HighlightSource::Extra,
-                };
-            }
+        if let Some(ref extra_syntaxes) = config.markdown.extra_syntax_set
+            && let Some(syntax) = extra_syntaxes.find_syntax_by_token(lang)
+        {
+            return SyntaxAndTheme {
+                syntax,
+                syntax_set: extra_syntaxes,
+                theme,
+                source: HighlightSource::Extra,
+            };
         }
         // The JS syntax hangs a lot... the TS syntax is probably better anyway.
         // https://github.com/getzola/zola/issues/1241
