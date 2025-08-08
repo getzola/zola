@@ -7,7 +7,9 @@ edition = "2021"
 ahash = "0.8"
 ammonia = "4"
 atty = "0.2.11"
+avif-parse = "1.3.2"
 base64 = "0.22"
+chrono = {version = "0.4.27", default-features = false, features = ["std", "clock"]}
 csv = "1"
 elasticlunr-rs = { version = "3.0.2", features = ["da", "no", "de", "du", "es", "fi", "fr", "hu", "it", "pt", "ro", "ru", "sv", "tr", "ko"] }
 filetime = "0.2"
@@ -44,7 +46,6 @@ unicode-segmentation = "1.2"
 url = "2"
 walkdir = "2"
 webp = "0.3"
-avif-parse = "1.3.2"
 
 [features]
 # TODO: fix me, it doesn't pick up the reqwuest feature if not set as default
