@@ -39,11 +39,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             SortBy::None => unreachable!(),
         };
 
-        if ord == Ordering::Equal {
-            a.permalink.cmp(&b.permalink)
-        } else {
-            ord
-        }
+        if ord == Ordering::Equal { a.permalink.cmp(&b.permalink) } else { ord }
     });
 
     (

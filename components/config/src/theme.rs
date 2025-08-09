@@ -4,7 +4,7 @@ use std::path::Path;
 use libs::toml::Value as Toml;
 use serde::{Deserialize, Serialize};
 
-use errors::{bail, Context, Result};
+use errors::{Context, Result, bail};
 use utils::fs::read_file;
 
 /// Holds the data from a `theme.toml` file.
@@ -26,10 +26,10 @@ impl Theme {
 
         let mut extra = HashMap::new();
         if let Some(theme_table) = theme.as_table() {
-            if let Some(ex) = theme_table.get("extra") {
-                if ex.is_table() {
-                    extra = ex.clone().try_into().unwrap();
-                }
+            if let Some(ex) = theme_table.get("extra")
+                && ex.is_table()
+            {
+                extra = ex.clone().try_into().unwrap();
             }
         } else {
             bail!("Expected the `theme.toml` to be a TOML table")

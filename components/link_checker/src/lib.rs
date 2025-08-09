@@ -3,8 +3,8 @@ use std::result;
 use std::sync::{Arc, RwLock};
 
 use libs::once_cell::sync::Lazy;
-use libs::reqwest::header::{HeaderMap, ACCEPT};
-use libs::reqwest::{blocking::Client, StatusCode};
+use libs::reqwest::header::{ACCEPT, HeaderMap};
+use libs::reqwest::{StatusCode, blocking::Client};
 
 use config::LinkChecker;
 use errors::anyhow;
@@ -15,15 +15,15 @@ pub type Result = result::Result<StatusCode, String>;
 
 pub fn is_valid(res: &Result) -> bool {
     match res {
-        Ok(ref code) => code.is_success() || *code == StatusCode::NOT_MODIFIED,
+        Ok(code) => code.is_success() || *code == StatusCode::NOT_MODIFIED,
         Err(_) => false,
     }
 }
 
 pub fn message(res: &Result) -> String {
     match res {
-        Ok(ref code) => format!("{}", code),
-        Err(ref error) => error.clone(),
+        Ok(code) => format!("{}", code),
+        Err(error) => error.clone(),
     }
 }
 
@@ -121,7 +121,7 @@ fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::{
-        check_page_for_anchor, check_url, has_anchor, is_valid, message, LinkChecker, LINKS,
+        LINKS, LinkChecker, check_page_for_anchor, check_url, has_anchor, is_valid, message,
     };
     use libs::reqwest::StatusCode;
 
@@ -263,8 +263,10 @@ mod tests {
         let res = check_url("https://t6l5cn9lpm.lxizfnzckd", &LinkChecker::default());
         assert!(!is_valid(&res));
         assert!(res.is_err());
-        assert!(message(&res)
-            .starts_with("error sending request for url (https://t6l5cn9lpm.lxizfnzckd/)"));
+        assert!(
+            message(&res)
+                .starts_with("error sending request for url (https://t6l5cn9lpm.lxizfnzckd/)")
+        );
     }
 
     #[test]

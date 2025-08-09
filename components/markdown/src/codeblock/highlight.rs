@@ -1,13 +1,13 @@
 use std::fmt::Write;
 
-use config::highlighting::{SyntaxAndTheme, CLASS_STYLE};
+use config::highlighting::{CLASS_STYLE, SyntaxAndTheme};
 use libs::syntect::easy::HighlightLines;
 use libs::syntect::highlighting::{Color, Theme};
 use libs::syntect::html::{
-    line_tokens_to_classed_spans, styled_line_to_highlighted_html, ClassStyle, IncludeBackground,
+    ClassStyle, IncludeBackground, line_tokens_to_classed_spans, styled_line_to_highlighted_html,
 };
 use libs::syntect::parsing::{
-    ParseState, Scope, ScopeStack, SyntaxReference, SyntaxSet, SCOPE_REPO,
+    ParseState, SCOPE_REPO, Scope, ScopeStack, SyntaxReference, SyntaxSet,
 };
 use libs::tera::escape_html;
 
@@ -210,8 +210,8 @@ impl<'config> SyntaxHighlighter<'config> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use config::highlighting::resolve_syntax_and_theme;
     use config::Config;
+    use config::highlighting::resolve_syntax_and_theme;
     use libs::syntect::util::LinesWithEndings;
 
     #[test]

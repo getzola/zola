@@ -1,8 +1,8 @@
 use std::env;
-use std::path::{PathBuf, MAIN_SEPARATOR as SLASH};
+use std::path::{MAIN_SEPARATOR as SLASH, PathBuf};
 
 use config::Config;
-use imageproc::{fix_orientation, get_rotated_size, ImageMetaResponse, Processor, ResizeOperation};
+use imageproc::{ImageMetaResponse, Processor, ResizeOperation, fix_orientation, get_rotated_size};
 use libs::image::{self, DynamicImage, GenericImageView, ImageDecoder, ImageReader, Pixel};
 use libs::once_cell::sync::Lazy;
 
@@ -47,7 +47,7 @@ fn image_op_test(
     orig_height: u32,
 ) {
     let source_path = TEST_IMGS.join(source_img);
-    let tmpdir = tempfile::tempdir().unwrap().into_path();
+    let tmpdir = tempfile::tempdir().unwrap().keep();
     let config = Config::parse(CONFIG).unwrap();
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args(op, width, height).unwrap();
@@ -64,7 +64,7 @@ fn image_op_test(
     proc.do_process().unwrap();
 
     let processed_path = PathBuf::from(&resp.static_path);
-    let processed_size = imageproc::read_image_metadata(&tmpdir.join(processed_path))
+    let processed_size = imageproc::read_image_metadata(tmpdir.join(processed_path))
         .map(|meta| (meta.width, meta.height))
         .unwrap();
     assert_eq!(processed_size, (expect_width, expect_height));
@@ -519,7 +519,7 @@ fn get_rotated_size_test() {
         let path = TEST_IMGS.join(img_name);
         let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
         let (mut w, mut h) = decoder.dimensions();
-        w = w + 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
+        w += 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
         let metadata = decoder.exif_metadata().unwrap();
         (w, h) = get_rotated_size(w, h, metadata).unwrap_or((w, h));
         w > h
@@ -582,7 +582,7 @@ fn resize_image_applies_exif_rotation() {
 
 fn resize_and_check(source_img: &str) -> bool {
     let source_path = TEST_IMGS.join(source_img);
-    let tmpdir = tempfile::tempdir().unwrap().into_path();
+    let tmpdir = tempfile::tempdir().unwrap().keep();
     let config = Config::parse(CONFIG).unwrap();
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args("scale", Some(16), Some(16)).unwrap();
@@ -591,7 +591,7 @@ fn resize_and_check(source_img: &str) -> bool {
 
     proc.do_process().unwrap();
     let processed_path = PathBuf::from(&resp.static_path);
-    let img = image::open(&tmpdir.join(processed_path)).unwrap();
+    let img = image::open(tmpdir.join(processed_path)).unwrap();
     check_img(img)
 }
 

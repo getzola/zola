@@ -7,7 +7,7 @@ use libs::syntect::{
 };
 use serde::{Deserialize, Serialize};
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 use utils::types::InsertAnchor;
 
 use crate::highlighting::{CLASS_STYLE, THEME_SET};
@@ -72,10 +72,10 @@ pub struct Markdown {
 impl Markdown {
     pub fn validate_external_links_class(&self) -> Result<()> {
         // Validate external link class doesn't contain quotes which would break HTML and aren't valid in CSS
-        if let Some(class) = &self.external_links_class {
-            if class.contains('"') || class.contains('\'') {
-                bail!("External link class '{}' cannot contain quotes", class)
-            }
+        if let Some(class) = &self.external_links_class
+            && (class.contains('"') || class.contains('\''))
+        {
+            bail!("External link class '{}' cannot contain quotes", class)
         }
         Ok(())
     }
@@ -169,14 +169,14 @@ impl Markdown {
             let theme_name = &theme.theme;
             if !THEME_SET.themes.contains_key(theme_name) {
                 // Check extra themes
-                if let Some(extra) = &*self.extra_theme_set {
-                    if !extra.themes.contains_key(theme_name) {
-                        bail!(
-                            "Can't export highlight theme {}, as it does not exist.\n\
+                if let Some(extra) = &*self.extra_theme_set
+                    && !extra.themes.contains_key(theme_name)
+                {
+                    bail!(
+                        "Can't export highlight theme {}, as it does not exist.\n\
                         Make sure it's spelled correctly, or your custom .tmTheme' is defined properly.",
-                            theme_name
-                        )
-                    }
+                        theme_name
+                    )
                 }
             }
         }
