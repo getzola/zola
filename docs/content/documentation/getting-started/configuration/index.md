@@ -253,51 +253,178 @@ index_format = "elasticlunr_javascript"
 
 Zola currently has the following highlight themes available:
 
-![](./images/1337.png)
-
-- [1337](https://tmtheme-editor.glitch.me/#!/editor/theme/1337)
-- [agola-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Agola%20Dark)
-- [ascetic-white](https://tmtheme-editor.glitch.me/#!/editor/theme/Ascetic%20White)
-- [axar](https://tmtheme-editor.glitch.me/#!/editor/theme/Axar)
-- [ayu-dark](https://github.com/dempfi/ayu)
-- [ayu-light](https://github.com/dempfi/ayu)
-- [ayu-mirage](https://github.com/dempfi/ayu)
-- [base16-atelierdune-light](https://atelierbram.github.io/syntax-highlighting/atelier-schemes/dune/)
-- [base16-ocean-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Base16%20Ocean%20Dark)
-- [base16-ocean-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Base16%20Ocean%20Light)
-- [bbedit](https://tmtheme-editor.glitch.me/#!/editor/theme/BBEdit)
-- [boron](https://tmtheme-editor.glitch.me/#!/editor/theme/Boron)
-- [charcoal](https://tmtheme-editor.glitch.me/#!/editor/theme/Charcoal)
-- [cheerfully-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Cheerfully%20Light)
-- [classic-modified](https://tmtheme-editor.glitch.me/#!/editor/theme/Classic%20Modified)
-- [demain](https://tmtheme-editor.glitch.me/#!/editor/theme/Demain)
-- [dimmed-fluid](https://tmtheme-editor.glitch.me/#!/editor/theme/Dimmed%20Fluid)
-- [dracula](https://draculatheme.com/)
-- [gray-matter-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Gray%20Matter%20Dark)
-- [green](https://github.com/kristopherjohnson/MonochromeSublimeText)
-- [gruvbox-dark](https://github.com/morhetz/gruvbox)
-- [gruvbox-light](https://github.com/morhetz/gruvbox)
-- [idle](https://tmtheme-editor.glitch.me/#!/editor/theme/IDLE)
-- [inspired-github](https://tmtheme-editor.glitch.me/#!/editor/theme/Inspiredgithub)
-- [ir-white](https://tmtheme-editor.glitch.me/#!/editor/theme/IR_White)
-- [kronuz](https://tmtheme-editor.glitch.me/#!/editor/theme/Kronuz)
-- [material-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Material%20Dark)
-- [material-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Material%20Light)
-- [monokai](https://tmtheme-editor.glitch.me/#!/editor/theme/Monokai)
-- [nord](https://github.com/crabique/Nord-plist/tree/0d655b23d6b300e691676d9b90a68d92b267f7ec)
-- [nyx-bold](https://github.com/GalAster/vscode-theme-nyx)
-- [one-dark](https://github.com/andresmichel/one-dark-theme)
-- [OneHalfDark](https://github.com/sonph/onehalf)
-- [OneHalfLight](https://github.com/sonph/onehalf)
-- [railsbase16-green-screen-dark](https://github.com/tompave/rails_base_16)
-- [solarized-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(dark))
-- [solarized-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(light))
-- [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
-- [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
-- [Tomorrow](https://tmtheme-editor.glitch.me/#!/editor/theme/Tomorrow)
-- [two-dark](https://github.com/erremauro/TwoDark)
-- [visual-studio-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Visual%20Studio%20Dark)
-- [zenburn](https://github.com/colinta/zenburn)
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/1337">1337</a></summary>
+    <img src="./images/1337.png" alt="1337 preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Agola%20Dark">agola-dark</a></summary>
+    <img src="./images/agola-dark.png" alt="agola-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Ascetic%20White">ascetic-white</a></summary>
+    <img src="./images/ascetic-white.png" alt="ascetic-white preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Axar">axar</a></summary>
+    <img src="./images/axar.png" alt="axar preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/dempfi/ayu">ayu-dark</a></summary>
+    <img src="./images/ayu-dark.png" alt="ayu-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/dempfi/ayu">ayu-light</a></summary>
+    <img src="./images/ayu-light.png" alt="ayu-light preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/dempfi/ayu">ayu-mirage</a></summary>
+    <img src="./images/ayu-mirage.png" alt="ayu-mirage preview">
+</details>
+<details>
+    <summary><a class="external" href="https://atelierbram.github.io/syntax-highlighting/atelier-schemes/dune/">base16-atelierdune-light</a></summary>
+    <img src="./images/base16-atelierdune-light.png" alt="base16-atelierdune-light preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Base16%20Ocean%20Dark">base16-ocean-dark</a></summary>
+    <img src="./images/base16-ocean-dark.png" alt="base16-ocean-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Base16%20Ocean%20Light">base16-ocean-light</a></summary>
+    <img src="./images/base16-ocean-light.png" alt="base16-ocean-light preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/BBEdit">bbedit</a></summary>
+    <img src="./images/bbedit.png" alt="bbedit preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Boron">boron</a></summary>
+    <img src="./images/boron.png" alt="boron preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Charcoal">charcoal</a></summary>
+    <img src="./images/charcoal.png" alt="charcoal preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Cheerfully%20Light">cheerfully-light</a></summary>
+    <img src="./images/cheerfully-light.png" alt="cheerfully-light preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Classic%20Modified">classic-modified</a></summary>
+    <img src="./images/classic-modified.png" alt="classic-modified preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Demain">demain</a></summary>
+    <img src="./images/demain.png" alt="demain preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Dimmed%20Fluid">dimmed-fluid</a></summary>
+    <img src="./images/dimmed-fluid.png" alt="dimmed-fluid preview">
+</details>
+<details>
+    <summary><a class="external" href="https://draculatheme.com/">dracula</a></summary>
+    <img src="./images/dracula.png" alt="dracula preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Gray%20Matter%20Dark">gray-matter-dark</a></summary>
+    <img src="./images/gray-matter-dark.png" alt="gray-matter-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/kristopherjohnson/MonochromeSublimeText">green</a></summary>
+    <img src="./images/green.png" alt="green preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/morhetz/gruvbox">gruvbox-dark</a></summary>
+    <img src="./images/gruvbox-dark.png" alt="gruvbox-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/morhetz/gruvbox">gruvbox-light</a></summary>
+    <img src="./images/gruvbox-light.png" alt="gruvbox-light preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/IDLE">idle</a></summary>
+    <img src="./images/idle.png" alt="idle preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Inspiredgithub">inspired-github</a></summary>
+    <img src="./images/inspired-github.png" alt="inspired-github preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/IR_White">ir-white</a></summary>
+    <img src="./images/ir-white.png" alt="ir-white preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Kronuz">kronuz</a></summary>
+    <img src="./images/kronuz.png" alt="kronuz preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Material%20Dark">material-dark</a></summary>
+    <img src="./images/material-dark.png" alt="material-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Material%20Light">material-light</a></summary>
+    <img src="./images/material-light.png" alt="material-light preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Monokai">monokai</a></summary>
+    <img src="./images/monokai.png" alt="monokai preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/crabique/Nord-plist/tree/0d655b23d6b300e691676d9b90a68d92b267f7ec">nord</a></summary>
+    <img src="./images/nord.png" alt="nord preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/GalAster/vscode-theme-nyx">nyx-bold</a></summary>
+    <img src="./images/nyx-bold.png" alt="nyx-bold preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/andresmichel/one-dark-theme">one-dark</a></summary>
+    <img src="./images/one-dark.png" alt="one-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/sonph/onehalf">OneHalfDark</a></summary>
+    <img src="./images/OneHalfDark.png" alt="OneHalfDark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/sonph/onehalf">OneHalfLight</a></summary>
+    <img src="./images/OneHalfLight.png" alt="OneHalfLight preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/tompave/rails_base_16">railsbase16-green-screen-dark</a></summary>
+    <img src="./images/railsbase16-green-screen-dark.png" alt="railsbase16-green-screen-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(dark)">solarized-dark</a></summary>
+    <img src="./images/solarized-dark.png" alt="solarized-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(light)">solarized-light</a></summary>
+    <img src="./images/solarized-light.png" alt="solarized-light preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/idleberg/Subway.tmTheme">subway-madrid</a></summary>
+    <img src="./images/subway-madrid.png" alt="subway-madrid preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/idleberg/Subway.tmTheme">subway-moscow</a></summary>
+    <img src="./images/subway-moscow.png" alt="subway-moscow preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Tomorrow">Tomorrow</a></summary>
+    <img src="./images/Tomorrow.png" alt="Tomorrow preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/erremauro/TwoDark">two-dark</a></summary>
+    <img src="./images/two-dark.png" alt="two-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://tmtheme-editor.glitch.me/#!/editor/theme/Visual%20Studio%20Dark">visual-studio-dark</a></summary>
+    <img src="./images/visual-studio-dark.png" alt="visual-studio-dark preview">
+</details>
+<details>
+    <summary><a class="external" href="https://github.com/colinta/zenburn">zenburn</a></summary>
+    <img src="./images/zenburn.png" alt="zenburn preview">
+</details>
 
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
