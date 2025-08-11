@@ -2293,6 +2293,7 @@ dependencies = [
  "atty",
  "avif-parse",
  "base64",
+ "chrono",
  "csv",
  "elasticlunr-rs",
  "filetime",
