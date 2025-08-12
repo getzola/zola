@@ -95,6 +95,7 @@ fn bench_render_content_with_highlighting(b: &mut test::Bencher) {
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
+        None,
     );
     let shortcode_def = utils::templates::get_shortcodes(&tera);
     context.set_shortcode_definitions(&shortcode_def);
@@ -116,6 +117,7 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
+        None,
     );
     let shortcode_def = utils::templates::get_shortcodes(&tera);
     context.set_shortcode_definitions(&shortcode_def);
@@ -137,6 +139,7 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
+        None,
     );
 
     b.iter(|| render_content(&content2, &context).unwrap());
@@ -159,6 +162,7 @@ fn bench_render_content_with_emoji(b: &mut test::Bencher) {
         current_page_permalink,
         &permalinks_ctx,
         InsertAnchor::None,
+        None,
     );
 
     b.iter(|| render_content(&content2, &context).unwrap());

@@ -1,7 +1,9 @@
-mod codeblock;
-mod context;
-mod markdown;
-mod shortcode;
+pub mod cache;
+pub mod codeblock;
+pub mod context;
+pub mod markdown;
+pub mod math;
+pub mod shortcode;
 
 use shortcode::{extract_shortcodes, insert_md_shortcodes};
 

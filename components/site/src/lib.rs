@@ -20,6 +20,7 @@ use config::{get_config, Config, IndexFormat};
 use content::{Library, Page, Paginator, Section, Taxonomy};
 use errors::{anyhow, bail, Result};
 use libs::relative_path::RelativePathBuf;
+use markdown::context::Caches;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
@@ -64,6 +65,8 @@ pub struct Site {
     pub permalinks: HashMap<String, String>,
     /// Contains all pages and sections of the site
     pub library: Arc<RwLock<Library>>,
+    /// The caches for rendered content
+    pub caches: Option<Arc<Caches>>,
     /// Whether to load draft pages
     include_drafts: bool,
     build_mode: BuildMode,
@@ -95,6 +98,17 @@ impl Site {
         let imageproc = imageproc::Processor::new(path.to_path_buf(), &config);
         let output_path = path.join(config.output_dir.clone());
 
+        let caches = match config.markdown.cache {
+            config::BoolWithPath::True(ref maybe_path) => Some(Arc::new(match maybe_path {
+                Some(p) => {
+                    let cache_path = path.join(p);
+                    create_directory(&cache_path)?;
+                    Caches::new(&cache_path)
+                }
+                None => Caches::default(),
+            })),
+            config::BoolWithPath::False => None,
+        };
         let site = Site {
             base_path: path.to_path_buf(),
             config,
@@ -114,6 +128,7 @@ impl Site {
             build_mode: BuildMode::Disk,
             shortcode_definitions,
             check_external_links: true,
+            caches,
         };
 
         Ok(site)
@@ -448,6 +463,7 @@ impl Site {
         }
 
         let mut library = self.library.write().expect("Get lock for render_markdown");
+
         library
             .pages
             .values_mut()
@@ -461,6 +477,7 @@ impl Site {
                     config,
                     insert_anchor,
                     &self.shortcode_definitions,
+                    self.caches.clone(),
                 )
             })
             .collect::<Result<()>>()?;
@@ -471,7 +488,13 @@ impl Site {
             .collect::<Vec<_>>()
             .par_iter_mut()
             .map(|section| {
-                section.render_markdown(permalinks, tera, config, &self.shortcode_definitions)
+                section.render_markdown(
+                    permalinks,
+                    tera,
+                    config,
+                    &self.shortcode_definitions,
+                    self.caches.clone(),
+                )
             })
             .collect::<Result<()>>()?;
 
@@ -501,6 +524,7 @@ impl Site {
                 &self.config,
                 insert_anchor,
                 &self.shortcode_definitions,
+                self.caches.clone(),
             )?;
         }
 
@@ -533,6 +557,7 @@ impl Site {
                 &self.tera,
                 &self.config,
                 &self.shortcode_definitions,
+                self.caches.clone(),
             )?;
         }
         let mut library = self.library.write().expect("Get lock for add_section");

@@ -1,11 +1,11 @@
-use std::{path::Path, sync::Arc};
+use std::{fmt, path::Path, sync::Arc};
 
 use libs::syntect::{
     highlighting::{Theme, ThemeSet},
     html::css_for_theme_with_class_style,
     parsing::{SyntaxSet, SyntaxSetBuilder},
 };
-use serde::{Deserialize, Serialize};
+use serde::{de, Deserialize, Deserializer, Serialize};
 
 use errors::{bail, Result};
 use utils::types::InsertAnchor;
@@ -21,6 +21,142 @@ pub struct ThemeCss {
     pub theme: String,
     /// In which file are we going to output the CSS
     pub filename: String,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum MathRenderingEngine {
+    #[default]
+    None,
+    Typst,
+    Katex,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default, Hash)]
+#[serde(rename_all = "lowercase")]
+pub enum ImageFormat {
+    #[default]
+    Svg,
+    Webp,
+}
+
+struct BoolWithPathVisitor;
+
+impl<'de> de::Visitor<'de> for BoolWithPathVisitor {
+    type Value = BoolWithPath;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a boolean or string")
+    }
+
+    fn visit_bool<E>(self, value: bool) -> Result<BoolWithPath, E>
+    where
+        E: de::Error,
+    {
+        Ok(if value { BoolWithPath::True(None) } else { BoolWithPath::False })
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<BoolWithPath, E>
+    where
+        E: de::Error,
+    {
+        Ok(BoolWithPath::True(Some(value.to_string())))
+    }
+
+    fn visit_string<E>(self, value: String) -> Result<BoolWithPath, E>
+    where
+        E: de::Error,
+    {
+        Ok(BoolWithPath::True(Some(value)))
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Default, Hash)]
+pub enum BoolWithPath {
+    #[default]
+    False,
+    True(Option<String>),
+}
+
+impl<'de> Deserialize<'de> for BoolWithPath {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_any(BoolWithPathVisitor)
+    }
+}
+
+impl Serialize for BoolWithPath {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            BoolWithPath::False => serializer.serialize_bool(false),
+            BoolWithPath::True(None) => serializer.serialize_bool(true),
+            BoolWithPath::True(Some(s)) => serializer.serialize_str(s),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Default)]
+pub struct MathRenderer {
+    pub engine: MathRenderingEngine,
+    pub svgo: BoolWithPath,
+    pub css: Option<String>,
+    pub addon: Option<String>,
+    pub format: ImageFormat,
+}
+
+impl<'de> Deserialize<'de> for MathRenderer {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        // Helper struct that mirrors MathRenderer
+        #[derive(Deserialize)]
+        struct MathRendererHelper {
+            #[serde(default)]
+            engine: MathRenderingEngine,
+            #[serde(default)]
+            svgo: BoolWithPath,
+            css: Option<String>,
+            addon: Option<String>,
+            #[serde(default)]
+            format: ImageFormat,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum MathRendererConfig {
+            // String case: math = "engine"
+            Engine(MathRenderingEngine),
+            // Table case with full configuration
+            Full(MathRendererHelper),
+        }
+
+        // Parse using the helper type
+        let config = MathRendererConfig::deserialize(deserializer)?;
+
+        // Convert to MathRenderer
+        match config {
+            MathRendererConfig::Engine(engine) => Ok(MathRenderer {
+                engine,
+                svgo: BoolWithPath::default(),
+                css: None,
+                addon: None,
+                format: ImageFormat::Svg,
+            }),
+            MathRendererConfig::Full(helper) => Ok(MathRenderer {
+                engine: helper.engine,
+                svgo: helper.svgo,
+                css: helper.css,
+                addon: helper.addon,
+                format: helper.format,
+            }),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -65,6 +201,12 @@ pub struct Markdown {
     /// Whether to insert a link for each header like the ones you can see in this site if you hover one
     /// The default template can be overridden by creating a `anchor-link.html` in the `templates` directory
     pub insert_anchor_links: InsertAnchor,
+    /// Whether to enable GitHub-style alerts
+    pub github_alerts: bool,
+    /// Whether to enable math rendering in markdown files
+    pub math: MathRenderer,
+    /// Whether to cache the rendered math
+    pub cache: BoolWithPath,
     /// Whether to enable GitHub-style alerts
     pub github_alerts: bool,
 }
@@ -242,6 +384,9 @@ impl Default for Markdown {
             extra_theme_set: Arc::new(None),
             lazy_async_image: false,
             insert_anchor_links: InsertAnchor::None,
+            github_alerts: false,
+            math: MathRenderer::default(),
+            cache: BoolWithPath::True(None),
             github_alerts: false,
         }
     }

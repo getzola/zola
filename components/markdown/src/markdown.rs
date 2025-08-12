@@ -1,13 +1,22 @@
 use std::collections::HashMap;
 use std::fmt::Write;
+use std::path::Path;
+use std::sync::Arc;
 
+use crate::cache::GenericCache;
 use crate::markdown::cmark::CowStr;
+
+use crate::math::{
+    katex::KatexCompiler, svgo::Svgo, typst::TypstCompiler, MathCompiler, MathRenderMode,
+};
+use config::{BoolWithPath, MathRenderingEngine};
 use errors::bail;
 use libs::gh_emoji::Replacer as EmojiReplacer;
 use libs::once_cell::sync::Lazy;
 use libs::pulldown_cmark as cmark;
 use libs::pulldown_cmark_escape as cmark_escape;
 use libs::tera;
+use utils::fs::read_file;
 use utils::net::is_external_link;
 
 use crate::context::RenderContext;
@@ -409,6 +418,7 @@ pub fn markdown_to_html(
         .get("page")
         .or_else(|| context.tera_context.get("section"))
         .map(|x| x.as_object().unwrap().get("relative_path").unwrap().as_str().unwrap());
+
     // the rendered html
     let mut html = String::with_capacity(content.len());
     let mut summary = None;
@@ -416,6 +426,8 @@ pub fn markdown_to_html(
     let mut error = None;
 
     let mut code_block: Option<CodeBlock> = None;
+    let mut should_render_code_block = false;
+
     // Indicates whether we're in the middle of parsing a text node which will be placed in an HTML
     // attribute, and which hence has to be escaped using escape_html rather than push_html's
     // default HTML body escaping for text nodes.
@@ -436,6 +448,9 @@ pub fn markdown_to_html(
     opts.insert(Options::ENABLE_STRIKETHROUGH);
     opts.insert(Options::ENABLE_TASKLISTS);
     opts.insert(Options::ENABLE_HEADING_ATTRIBUTES);
+    if context.config.markdown.math.engine != config::MathRenderingEngine::None {
+        opts.insert(Options::ENABLE_MATH);
+    }
 
     if context.config.markdown.smart_punctuation {
         opts.insert(Options::ENABLE_SMART_PUNCTUATION);
@@ -451,6 +466,57 @@ pub fn markdown_to_html(
     let mut html_shortcodes: Vec<_> = html_shortcodes.into_iter().rev().collect();
     let mut next_shortcode = html_shortcodes.pop();
     let contains_shortcode = |txt: &str| -> bool { txt.contains(SHORTCODE_PLACEHOLDER) };
+    let addon = context
+        .config
+        .markdown
+        .math
+        .addon
+        .as_ref()
+        .map(|path| read_file(Path::new(&path)).ok())
+        .flatten();
+
+    let styles = context
+        .config
+        .markdown
+        .math
+        .css
+        .as_ref()
+        .map(|path| read_file(Path::new(&path)).ok())
+        .flatten();
+
+    let (mut compiler, cache): (
+        Option<Box<dyn MathCompiler>>,
+        Option<Arc<GenericCache<String, String>>>,
+    ) = match context.config.markdown.math.engine {
+        MathRenderingEngine::Typst => (
+            Some(Box::new(TypstCompiler::new(
+                context.caches.as_ref().map(|e| e.typst.dir().to_path_buf()),
+                addon,
+                styles,
+            ))),
+            context.caches.as_ref().map(|e| e.typst.clone()),
+        ),
+        MathRenderingEngine::Katex => (
+            Some(Box::new(KatexCompiler::new(addon))),
+            context.caches.as_ref().map(|e| e.katex.clone()),
+        ),
+        MathRenderingEngine::None => (None, None),
+    };
+
+    if let Some(ref mut compiler) = compiler {
+        if let Some(cache) = cache {
+            compiler.set_cache(cache);
+        }
+    }
+
+    if matches!(context.config.markdown.math.svgo, BoolWithPath::True(_)) {
+        Svgo::default().check_bin().map_err(|e| {
+            Error::msg(format!(
+                "Error checking svgo installation, make sure it's installed and in your PATH: {}",
+                e
+            ))
+        })?;
+    }
 
     {
         let mut events = Vec::new();
@@ -513,10 +579,14 @@ pub fn markdown_to_html(
         }
 
         let mut accumulated_block = String::new();
+
         for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
             match event {
                 Event::Text(text) => {
-                    if let Some(ref mut _code_block) = code_block {
+                    if should_render_code_block {
+                        accumulated_block += &text;
+                        continue;
+                    } else if let Some(ref mut _code_block) = code_block {
                         if contains_shortcode(text.as_ref()) {
                             // mark the start of the code block events
                             let stack_start = events.len();
@@ -567,26 +637,68 @@ pub fn markdown_to_html(
                         cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
                         _ => FenceSettings::new(""),
                     };
-                    let (block, begin) = match CodeBlock::new(fence, context.config, path) {
-                        Ok(cb) => cb,
+                    should_render_code_block = match (fence.language.as_deref(), &compiler) {
+                        (Some(lang), Some(compiler))
+                            if compiler.raw_extensions().contains(&lang) =>
+                        {
+                            true
+                        }
+                        _ => false,
+                    };
+
+                    match fence.include(context.parent_absolute.as_ref()) {
+                        Ok(Some(i)) => accumulated_block = i,
                         Err(e) => {
                             error = Some(e);
                             break;
                         }
+                        _ => accumulated_block.clear(),
                     };
-                    code_block = Some(block);
-                    events.push(Event::Html(begin.into()));
+
+                    if !should_render_code_block {
+                        let (block, begin) = match CodeBlock::new(&fence, context.config, path) {
+                            Ok(cb) => cb,
+                            Err(e) => {
+                                error = Some(e);
+                                break;
+                            }
+                        };
+                        code_block = Some(block);
+                        events.push(Event::Html(begin.into()));
+                    }
                 }
                 Event::End(TagEnd::CodeBlock { .. }) => {
-                    if let Some(ref mut code_block) = code_block {
+                    if should_render_code_block {
+                        if let Some(compiler) = compiler.as_mut() {
+                            let res = compiler.compile(
+                                &accumulated_block,
+                                MathRenderMode::Raw,
+                                context.config.markdown.math.format,
+                                &context.config.markdown.math.svgo,
+                            );
+                            match res {
+                                Ok(html) => {
+                                    events.push(Event::Html(html.into()));
+                                }
+                                Err(e) => {
+                                    error = Some(Error::msg(format!(
+                                        "Failed to render code block: {}",
+                                        e
+                                    )));
+                                    events.push(Event::Html("".into()));
+                                }
+                            }
+                        }
+                    } else if let Some(ref mut code_block) = code_block {
                         let html = code_block.highlight(&accumulated_block);
                         events.push(Event::Html(html.into()));
-                        accumulated_block.clear();
+                        events.push(Event::Html("</code></pre>".into()));
                     }
 
-                    // reset highlight and close the code block
+                    // reset code block state
+                    should_render_code_block = false;
                     code_block = None;
-                    events.push(Event::Html("</code></pre>\n".into()));
+                    accumulated_block.clear();
                 }
                 Event::Start(Tag::Image { link_type, dest_url, title, id }) => {
                     let link = if is_colocated_asset_link(&dest_url) {
@@ -698,6 +810,33 @@ pub fn markdown_to_html(
                         event
                     });
                 }
+
+                Event::InlineMath(ref content) | Event::DisplayMath(ref content) => {
+                    if let Some(ref compiler) = compiler {
+                        let render_mode = if matches!(event, Event::InlineMath(_)) {
+                            MathRenderMode::Inline
+                        } else {
+                            MathRenderMode::Display
+                        };
+
+                        let rendered = compiler.compile(
+                            content,
+                            render_mode,
+                            context.config.markdown.math.format,
+                            &context.config.markdown.math.svgo,
+                        );
+
+                        match rendered {
+                            Ok(svg) => {
+                                events.push(Event::Html(svg.into()));
+                            }
+                            Err(e) => {
+                                error = Some(Error::msg(format!("Failed to render math: {}", e)));
+                            }
+                        }
+                    }
+                }
+
                 Event::Html(text) | Event::InlineHtml(text)
                     if !has_summary && MORE_DIVIDER_RE.is_match(text.as_ref()) =>
                 {
@@ -851,6 +990,10 @@ pub fn markdown_to_html(
             cmark::html::push_html(&mut summary_html, tags.into_iter().rev().map(Event::End));
 
             summary = Some(summary_html);
+        }
+
+        if let Some(ref compiler) = compiler {
+            compiler.write_cache()?;
         }
 
         // emit everything after summary

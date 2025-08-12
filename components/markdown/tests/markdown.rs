@@ -120,6 +120,7 @@ fn can_customise_anchor_template() {
         "",
         &permalinks_ctx,
         InsertAnchor::Right,
+        None,
     );
     let body = render_content("# Hello", &context).unwrap().body;
     insta::assert_snapshot!(body);
@@ -139,6 +140,7 @@ fn can_customise_summary_template() {
         "",
         &permalinks_ctx,
         InsertAnchor::Right,
+        None,
     );
     let summary = render_content("Hello <!-- more --> World!", &context).unwrap().summary.unwrap();
     insta::assert_snapshot!(summary);
