@@ -1,0 +1,15 @@
+<div class="gallery-with-name" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; justify-items: center;">
+  {% for asset in page.assets -%}
+  {%- if asset is matching("[.](jpg|png)$") -%}
+    {% set image = resize_image(path=asset, width=360, height=270) %}
+    {% set filename = asset | split(pat="/") | last %}
+    {% set name = filename | split(pat=".") | slice(end=-1) | join(sep=".") %}
+    <div style="width: 100%; max-width: 360px; text-align: center;">
+      <a href="{{ get_url(path=asset) }}" target="_blank">
+        <img src="{{ image.url }}" alt="{{ name }}" style="width: 100%; height: 200px; object-fit: cover;" />
+      </a>
+      <div style="margin-top: 8px; font-size: 1rem;">{{ name }}</div>
+    </div>
+  {%- endif %}
+  {%- endfor %}
+</div>
