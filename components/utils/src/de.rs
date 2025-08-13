@@ -1,5 +1,5 @@
 use core::convert::TryFrom;
-use errors::{anyhow, Result};
+use errors::{Result, anyhow};
 use libs::regex::Regex;
 use libs::tera::{Map, Value};
 use libs::time;
@@ -26,7 +26,7 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     let fraction_intermediate = fraction_raw.trim_end_matches("0");
     //
     // Prepare for eventual conversion into nanoseconds
-    let fraction = if fraction_intermediate.len() > 0 { fraction_intermediate } else { "0" };
+    let fraction = if !fraction_intermediate.is_empty() { fraction_intermediate } else { "0" };
     let maybe_timezone_hour = captures.name("offset_hour");
     let maybe_timezone_minute = captures.name("offset_minute");
 

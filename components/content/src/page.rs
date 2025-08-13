@@ -8,14 +8,14 @@ use libs::tera::{Context as TeraContext, Tera};
 
 use config::Config;
 use errors::{Context, Result};
-use markdown::{render_content, RenderContext};
+use markdown::{RenderContext, render_content};
 use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
-use utils::templates::{render_template, ShortcodeDefinition};
+use utils::templates::{ShortcodeDefinition, render_template};
 use utils::types::InsertAnchor;
 
 use crate::file_info::FileInfo;
-use crate::front_matter::{split_page_content, PageFrontMatter};
+use crate::front_matter::{PageFrontMatter, split_page_content};
 use crate::library::Library;
 use crate::ser::SerializingPage;
 use crate::utils::get_reading_analytics;
@@ -146,11 +146,7 @@ impl Page {
         page.path = if let Some(ref p) = page.meta.path {
             let path = p.trim();
 
-            if path.starts_with('/') {
-                path.into()
-            } else {
-                format!("/{}", path)
-            }
+            if path.starts_with('/') { path.into() } else { format!("/{}", path) }
         } else {
             let mut path = if page.file.components.is_empty() {
                 if page.file.name == "index" && page.file.colocated_path.is_none() {
@@ -269,7 +265,7 @@ impl Page {
                 path.pop();
                 path.push(filename);
                 path = path
-                    .strip_prefix(&base_path.join("content"))
+                    .strip_prefix(base_path.join("content"))
                     .expect("Should be able to stripe prefix")
                     .to_path_buf();
                 path
@@ -298,7 +294,7 @@ impl Page {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-    use std::fs::{create_dir, File};
+    use std::fs::{File, create_dir};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 

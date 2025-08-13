@@ -7,7 +7,7 @@ use libs::globset::GlobSet;
 use libs::rayon::prelude::*;
 
 use crate::Site;
-use errors::{bail, Result};
+use errors::{Result, bail};
 use libs::rayon;
 use libs::url::Url;
 use utils::anchors::is_special_anchor;
@@ -113,13 +113,13 @@ fn should_skip_by_file(file_path: &Path, glob_set: &GlobSet) -> bool {
 }
 
 fn get_link_domain(link: &str) -> Result<String> {
-    return match Url::parse(link) {
+    match Url::parse(link) {
         Ok(url) => match url.host_str().map(String::from) {
             Some(domain_str) => Ok(domain_str),
             None => bail!("could not parse domain `{}` from link", link),
         },
         Err(err) => bail!("could not parse domain `{}` from link: `{}`", link, err),
-    };
+    }
 }
 
 /// Checks all external links and returns all the errors that were encountered.
