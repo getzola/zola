@@ -42,7 +42,7 @@ jobs:
           lfs: false
       - uses: taiki-e/install-action@v2
         with:
-          tool: zola@0.19.1
+          tool: zola@0.21.0
       - name: Build Static Site
         run: zola build
       - name: Build And Deploy
