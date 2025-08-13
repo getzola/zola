@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 use utils::fs::is_path_in_directory;
 
 /// This is used by a few Tera functions to search for files on the filesystem.
@@ -11,6 +11,7 @@ use utils::fs::is_path_in_directory;
 /// 3. base_path + content + path
 /// 4. base_path + {output dir} + path
 /// 5. base_path + themes + {current_theme} + static + path
+///
 /// A path starting with @/ will replace it with `content/` and a path starting with `/` will have
 /// it removed.
 /// It also returns the unified path so it can be used as unique hash for a given file.
@@ -51,9 +52,5 @@ pub fn search_for_file(
         }
     }
 
-    if file_exists {
-        Ok(Some((file_path, actual_path.into_owned())))
-    } else {
-        Ok(None)
-    }
+    if file_exists { Ok(Some((file_path, actual_path.into_owned()))) } else { Ok(None) }
 }
