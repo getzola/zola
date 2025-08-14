@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>minimal-dark | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;minimal-dark&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>minimal-dark</h1>
+            <p>Clean and minimalistic dark theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;viku.me">Vitaliy Kuznetsov</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.18.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;kuznetsov17&#x2F;minimal-dark">https:&#x2F;&#x2F;github.com&#x2F;kuznetsov17&#x2F;minimal-dark</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;kuznetsov17.github.io&#x2F;minimal-dark&#x2F;">https:&#x2F;&#x2F;kuznetsov17.github.io&#x2F;minimal-dark&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-02-07T14:01:03+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><a class="external" href="https://github.com/kuznetsov17/minimal-dark/actions/workflows/zola-build.yml"><img src="https://github.com/kuznetsov17/minimal-dark/actions/workflows/zola-build.yml/badge.svg" alt="Deploy Zola with GitHub Pages" /></a></p>
+<h1 id="general">General</h1>
+<p>I am not the best webmaster, but should be somewhat responsive.
+I intentionally using the bigger fonts to make, feel free to change it in main.scss</p>
+<h1 id="light-mode">Light mode</h1>
+<p>Now light mode also supported.</p>
+<h1 id="important">Important</h1>
+<p>Please make sure to set up your base_url with trailing slash:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;https://kuznetsov17.github.io/minimal-dark/&quot;
+</span></code></pre>
+<h1 id="comments">Comments</h1>
+<p>Theme supports <a class="external" href="https://giscuss.app">Giscuss</a> for comments. The configuration is done via config.toml. Here you can see the example section used for this page deployment:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.giscus</span><span>]
+</span><span style="color:#e8bf6a;">data_repo</span><span>=</span><span style="color:#c1be91;">&quot;kuznetsov17/minimal-dark&quot;
+</span><span style="color:#e8bf6a;">data_repo_id</span><span>=</span><span style="color:#c1be91;">&quot;R_kgDOLIfXYA&quot;
+</span><span style="color:#e8bf6a;">data_category</span><span>=</span><span style="color:#c1be91;">&quot;General&quot;
+</span><span style="color:#e8bf6a;">data_category_id</span><span>=</span><span style="color:#c1be91;">&quot;DIC_kwDOLIfXYM4Ccn56&quot;
+</span><span style="color:#e8bf6a;">data_mapping</span><span>=</span><span style="color:#c1be91;">&quot;title&quot;
+</span><span style="color:#e8bf6a;">data_strict</span><span>=</span><span style="color:#c1be91;">&quot;0&quot;
+</span><span style="color:#e8bf6a;">data_reactions_enabled</span><span>=</span><span style="color:#c1be91;">&quot;0&quot;
+</span><span style="color:#e8bf6a;">data_emit_metadata</span><span>=</span><span style="color:#c1be91;">&quot;0&quot;
+</span><span style="color:#e8bf6a;">data_input_position</span><span>=</span><span style="color:#c1be91;">&quot;top&quot;
+</span><span style="color:#e8bf6a;">data_theme</span><span>=</span><span style="color:#c1be91;">&quot;//kuznetsov17.github.io/minimal-dark/css/gs_dark.css&quot;
+</span><span style="color:#e8bf6a;">data_lang</span><span>=</span><span style="color:#c1be91;">&quot;en&quot;
+</span><span style="color:#e8bf6a;">crossorigin</span><span>=</span><span style="color:#c1be91;">&quot;anonymous&quot;
+</span><span style="color:#e8bf6a;">nonce</span><span>=</span><span style="color:#c1be91;">&quot;&quot;
+</span></code></pre>
+<h1 id="page-onfigurations">Page onfigurations</h1>
+<p>Customize the page blocks by setting configuration in <strong>[extra]</strong> section:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">copyright_string </span><span>= </span><span style="color:#c1be91;">&quot;Сreated in %YEAR% for fun.&quot; </span><span style="color:#95815e;"># the string displayed in footer. %YEAR% is replaced by current year on build
+</span><span style="color:#e8bf6a;">show_copyright </span><span>= </span><span style="color:#6e9cbe;">true</span><span style="background-color:#b90622;color:#f8f8f0;"> / false # enables / disables footer with copyright</span><span>
+</span><span style="color:#e8bf6a;">show_comments </span><span>= </span><span style="color:#6e9cbe;">true</span><span style="background-color:#b90622;color:#f8f8f0;"> / false # enables / disables comments</span><span>
+</span><span style="color:#e8bf6a;">show_shares </span><span>= </span><span style="color:#6e9cbe;">true</span><span style="background-color:#b90622;color:#f8f8f0;"> / false # enables / disables section with social share buttons</span><span>
+</span><span style="color:#e8bf6a;">show_toc </span><span>= </span><span style="color:#6e9cbe;">true</span><span style="background-color:#b90622;color:#f8f8f0;"> / false # enables / disable TOC</span><span>
+</span><span style="color:#e8bf6a;">show_date </span><span>= </span><span style="color:#6e9cbe;">true</span><span style="background-color:#b90622;color:#f8f8f0;"> / false # displays publication date in page</span><span>
+</span></code></pre>
+<h1 id="blog">Blog</h1>
+<p>I am using this theme for my <a class="external" href="https://viku.me/notes/">notes</a>, or probably blog.
+The section template supports pagination, tags, sorts the pages by publication date. You may see the working example <a href="/notes/">here</a></p>
+<h1 id="config-toml-extras">config.toml extras</h1>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;John Doe&quot; </span><span style="color:#95815e;"># author. Will be puth in page metadata
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Some description, if you somehow didn&#39;t set it in page / section settings&quot;
+</span><span style="color:#e8bf6a;">logo_src </span><span>= </span><span style="color:#c1be91;">&quot;images/logo.svg&quot; </span><span style="color:#95815e;"># logo src
+</span><span style="color:#e8bf6a;">avatar_src </span><span>= </span><span style="color:#c1be91;">&quot;images/avatar.png&quot; </span><span style="color:#95815e;"># avatar src
+</span><span style="color:#e8bf6a;">index_page</span><span>=</span><span style="color:#c1be91;">&quot;index&quot; </span><span style="color:#95815e;"># name of the index page. Should be one of top_menu to make things work
+</span><span style="color:#e8bf6a;">top_menu </span><span>= [</span><span style="color:#c1be91;">&quot;index&quot;</span><span>,</span><span style="color:#c1be91;">&quot;features&quot;</span><span>,</span><span style="color:#c1be91;">&quot;notes&quot;</span><span>] </span><span style="color:#95815e;"># Menu items
+</span><span style="color:#e8bf6a;">copyright_string </span><span>= </span><span style="color:#c1be91;">&quot;Сreated by John Doe in 2024 – %YEAR% for fun.&quot; </span><span style="color:#95815e;"># footer content. %YEAR% will be replaced with current year
+</span><span style="color:#e8bf6a;">nonce </span><span>= </span><span style="color:#c1be91;">&quot;${SOME_HASH_VALUE}&quot; </span><span style="color:#95815e;"># used for JavaScript src nonce
+</span></code></pre>
+<h1 id="shortcodes">Shortcodes</h1>
+<h2 id="callouts">Callouts</h2>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% callout(type = &#39;warning&#39;) %}
+</span><span>This is an example of **Warning** callout. [Some link](#)
+</span><span>{% end %}
+</span><span>{% callout(type = &#39;alert&#39;) %}
+</span><span>This is an example of **Alert** callout. [Some link](#)
+</span><span>{% end %}
+</span><span>{% callout(type = &#39;info&#39;) %}
+</span><span>This is an example of **Info** callout. [Some link](#)
+</span><span>{% end %}
+</span></code></pre>
+<h2 id="timeline">Timeline</h2>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% timeline() %}
+</span><span>[{
+</span><span>    &quot;title&quot;:&quot;Lorem Ipsum Event&quot;,
+</span><span>    &quot;body&quot;:&quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry.&quot;,
+</span><span>    &quot;date&quot;:&quot;Jul-2023&quot;
+</span><span>},
+</span><span>{
+</span><span>    &quot;title&quot;:&quot;Lorem Ipsum event 2&quot;,
+</span><span>    &quot;body&quot;:&quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry&#39;s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.&quot;,
+</span><span>    &quot;date&quot;:&quot;Jun-2022&quot;
+</span><span>}]
+</span><span>{% end %}
+</span></code></pre>
+<h1 id="thanks-to">Thanks to</h1>
+<ul>
+<li><a class="external" href="https://giscuss.app">Giscuss</a> for excellent comments system</li>
+<li><a class="external" href="https://icons.getbootstrap.com">bootstrap icons</a> for great social icons</li>
+</ul>
+<h1 id="screenshot">Screenshot</h1>
+<p><img src="https://github.com/kuznetsov17/minimal-dark/blob/main/screenshot.png?raw=true" alt="Screenshot" /></p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

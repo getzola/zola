@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Zhuia | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zhuia&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Zhuia</h1>
+            <p>An elegant but still playful theme for Zola.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;gicrisf">Giovanni Crisalfi</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.15.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;gicrisf&#x2F;zhuia">https:&#x2F;&#x2F;github.com&#x2F;gicrisf&#x2F;zhuia</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zhuia.netlify.app">https:&#x2F;&#x2F;zhuia.netlify.app</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-03-31T13:23:52+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zhuia">Zhuia</h1>
+<p><img src="https://www.getzola.org/themes/zhuia/static/logo.png" alt="logo-zhuia" /></p>
+<p>An elegant but still playful theme for <a class="external" href="https://getzola.org/">Zola</a> powered by <a class="external" href="https://picturepan2.github.io/spectre/">Spectre.css</a>.</p>
+<p>It is especially optimized for mobile navigation (optionally without JavaScript, if you don't like fancy stuff).</p>
+<p><strong>DEMO</strong>: <a class="external" href="https://zhuia.netlify.app/">https://zhuia.netlify.app/</a></p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li>Installation</li>
+<li>Features</li>
+<li>Options
+<ul>
+<li>Title</li>
+<li>SEO</li>
+<li>Menu</li>
+<li>Social</li>
+<li>Footer</li>
+</ul>
+</li>
+<li>Name</li>
+<li>Genesis</li>
+<li>Donate</li>
+<li>License</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/gicrisf/zhuia.git
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;zhuia&quot;
+</span></code></pre>
+<p>Posts should be placed directly in the <code>content</code> folder.</p>
+<p>To sort the post index by date, enable sort in your index section <code>content/_index.md</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">sort_by </span><span>= </span><span style="color:#c1be91;">&quot;date&quot;
+</span></code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Lightweight and minimal</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Spectre CSS classes to manage content. <a class="external" href="https://picturepan2.github.io/spectre/">Look at the docs</a></li>
+<li><input disabled="" type="checkbox" checked=""/>
+Responsive for mobile support (with full-page mobile menu)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+SCSS based CSS source files for easy customization</li>
+<li><input disabled="" type="checkbox" checked=""/>
+HTML based sidebar widget</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Author card sidebar widget with customizable avatar</li>
+<li><input disabled="" type="checkbox"/>
+Multi-author support</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Optional twitter sidebar widget</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Feed RSS/Atom</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Open Graph and Twitter Cards support</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Social buttons with icons</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Deploy via Netlify (config already included)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Tags AND categories</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Granular image optimization for a really faster loading on mobile</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Pagination</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Easily extendable menu</li>
+<li><input disabled="" type="checkbox"/>
+Inter-page pagination</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Optional NoJs</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Hamburger animation</li>
+<li><input disabled="" type="checkbox"/>
+Comments</li>
+<li><input disabled="" type="checkbox"/>
+Related posts (not sure about this)</li>
+<li><input disabled="" type="checkbox"/>
+Search bar</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Math rendering</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Other shortcodes</li>
+<li><input disabled="" type="checkbox"/>
+Multilanguage support</li>
+<li><input disabled="" type="checkbox"/>
+Dark mode</li>
+<li><input disabled="" type="checkbox"/>
+Table of Contents</li>
+<li><input disabled="" type="checkbox"/>
+Image + text title option</li>
+</ul>
+<h2 id="options">Options</h2>
+<h3 id="title">Title</h3>
+<p>Set a title and description in the config to appear in the site header and on the RSS feed:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Der Prozess&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;a novel written by Franz Kafka in 1914&quot;
+</span></code></pre>
+<h3 id="seo">SEO</h3>
+<p>Most SEO tags are populated by the page metadata, but you can set the <code>author</code> and for the <code>og:image</code> tag provide the path to an image:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;Timothy Morton&quot;
+</span><span style="color:#e8bf6a;">og_image </span><span>= </span><span style="color:#c1be91;">&quot;Hyperobjects.png&quot;
+</span></code></pre>
+<h3 id="menu">Menu</h3>
+<p>You can choose between two modes:</p>
+<ul>
+<li>With a small script for an elegant overlay menu</li>
+<li>Without any scripts at all (it just your show menu underneath)</li>
+</ul>
+<p><img src="https://www.getzola.org/themes/zhuia/screenshot-mobile-menus.png" alt="mobile menus" /></p>
+<h3 id="social">Social</h3>
+<p>Set a field in <code>extra</code> with a key of <code>footer_links</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Freely comment out or delete every field
+</span><span style="color:#e8bf6a;">social_links </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://t.me/yourname&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;telegram&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://twitter.com/gicrisf&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;twitter&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/gicrisf&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;github&quot;</span><span>},
+</span><span>    </span><span style="color:#95815e;"># {url = &quot;&quot;, name = &quot;facebook&quot;},
+</span><span>    </span><span style="color:#95815e;"># {url = &quot;&quot;, name = &quot;instagram&quot;},
+</span><span>    </span><span style="color:#95815e;"># {url = &quot;&quot;, name = &quot;bookstack&quot;},
+</span><span>    </span><span style="color:#95815e;"># {url = &quot;&quot;, name = &quot;dokuwiki&quot;},
+</span><span>]
+</span></code></pre>
+<p><img src="https://www.getzola.org/themes/zhuia/social-buttons.png" alt="social buttons" /></p>
+<p>The theme automatically picks up the right icons.
+We can expand the support to other social, for sure: make a PR or open an enhancement issue to ask a new implementation.</p>
+<h3 id="footer">Footer</h3>
+<p>You can add your own copyright or whatever to the footer with a through a simple option on the config file:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">footer_tagline </span><span>= </span><span style="color:#c1be91;">&quot;What if everything is an illusion and nothing exists? In that case, I definitely overpaid for my carpet.&quot;
+</span></code></pre>
+<h2 id="name">Name</h2>
+<p>The name arise from two parts:</p>
+<ul>
+<li>The generator, Zola, gives the "Z";</li>
+<li>An extinct species of New Zealand wattlebird, the huia, provide the second part.</li>
+</ul>
+<p>The theme is built on <strong>Spectre</strong> CSS framework, so I found reasonable evoking a <strong>spectral species</strong>.</p>
+<h2 id="genesis">Genesis</h2>
+<p>This theme is based on a Pelican theme I originally made for my blog, which was in turn based on the
+Grav theme <a class="external" href="https://github.com/getgrav/grav-theme-quark">Quark</a>.</p>
+<h2 id="donate">Donate</h2>
+<p>Did you liked this theme? Make a donation and support new features!</p>
+<p><a class="external" href="https://ko-fi.com/V7V425BFU"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="ko-fi" /></a></p>
+<h2 id="license">License</h2>
+<p>Open sourced under the <a href="https://www.getzola.org/themes/zhuia/LICENSE.md">MIT license</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

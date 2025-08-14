@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Project Portfolio | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;project-portfolio&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Project Portfolio</h1>
+            <p>Theme for a project portfolio (based on Tailwind CSS).</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;www.winterstein.biz">Adrian Winterstein</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;codeberg.org&#x2F;winterstein&#x2F;zola-theme-project-portfolio">https:&#x2F;&#x2F;codeberg.org&#x2F;winterstein&#x2F;zola-theme-project-portfolio</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;awinterstein.github.io&#x2F;zola-theme-project-portfolio-example&#x2F;">https:&#x2F;&#x2F;awinterstein.github.io&#x2F;zola-theme-project-portfolio-example&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-05-26T15:46:04+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="project-portfolio">Project Portfolio</h1>
+<blockquote>
+<p>You can find this theme on <a class="external" href="https://codeberg.org/winterstein/zola-theme-project-portfolio">Codeberg</a> and <a class="external" href="https://github.com/awinterstein/zola-theme-project-portfolio">Github</a>.</p>
+</blockquote>
+<p>A <a class="external" href="https://www.getzola.org/">Zola</a> theme built with <a class="external" href="https://tailwindcss.com/">Tailwind CSS</a> and <a class="external" href="https://daisyui.com">DaisyUI</a> for presenting the project portfolio of a freelancer, for example. The theme is based on the <a class="external" href="https://www.getzola.org/themes/blow/">Blow</a> theme that was created by Thomas Chartron and on my generic <a class="external" href="https://codeberg.org/winterstein/zola-theme-daisy">Daisy</a> theme. It extends the <a class="external" href="https://codeberg.org/winterstein/zola-theme-daisy">Daisy</a> with specific pages, taxonomies and shortcodes for managing a project portfolio and supports all color schemes of the <a class="external" href="https://codeberg.org/winterstein/zola-theme-daisy">Daisy</a> as well.</p>
+<p><img src="https://www.getzola.org/themes/project-portfolio/screenshot.png" alt="Screenshot of a project page example" /></p>
+<p>Check out the <a class="external" href="https://awinterstein.github.io/zola-theme-project-portfolio-example/">live demo of the example project</a>  or a <a class="external" href="https://www.winterstein.biz/">real-world implementation</a> of this theme.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Responsive design (looks good on desktop and mobile)</li>
+<li>Automatically selected dark / light modes</li>
+<li>37 color schemes included</li>
+<li>Customizable navbar and footer (with social links)</li>
+<li>Project types and skills taxonomies</li>
+<li>Search functionality</li>
+<li>Multi-language support</li>
+<li>Pagination</li>
+<li>Customizable favicon</li>
+<li>Error 404 page</li>
+</ul>
+<h2 id="quick-start">Quick Start</h2>
+<p>For starting to create a new Zola website using this theme, the easiest approach is to just checkout / fork the <a class="external" href="https://codeberg.org/winterstein/zola-theme-project-portfolio-example">example repository</a> and adapt it to your needs. That repository already contains a minimal structure and configuration for the Zola-based website and can directly be built and deployed to <a class="external" href="https://www.netlify.com/">Netlify</a> and Github pages.</p>
+<h2 id="configuration">Configuration</h2>
+<p>The minimal <code>config.toml</code> file for using the theme looks like this:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;https://www.example.com&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;project-portfolio&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;projects&quot;</span><span>, </span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">5</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;skills&quot;</span><span>, </span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">5</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>]
+</span></code></pre>
+<h3 id="color-schemes">Color Schemes</h3>
+<p>Set a light and dark color scheme:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">daisyui_theme_light </span><span>= </span><span style="color:#c1be91;">&quot;light&quot;
+</span><span style="color:#e8bf6a;">daisyui_theme_dark </span><span>= </span><span style="color:#c1be91;">&quot;dark&quot;
+</span></code></pre>
+<p>See the <code>themes</code> list in the <a href="https://www.getzola.org/themes/project-portfolio/theme.toml"><code>theme.toml</code></a> for all possible identifiers. You can also set only a light or a dark color scheme, if you do not want the automatic dark mode switching based on the browser settings of your visitors.</p>
+<p>If you want to allow your visitors to change the used color scheme, just set the following variable in the <code>[extra]</code> section of your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">enable_theme_switching </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>There will be a dropdown in the navbar then, for the visitors to select form the color schemes.</p>
+<h3 id="languages">Languages</h3>
+<p>To enable support for multiple languages, simply set the default language and add language settings for all your additional languages:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">default_language </span><span>= </span><span style="color:#c1be91;">&quot;en&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.de</span><span>]
+</span><span style="color:#95815e;"># title and description in the additional language
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Projekt-Portfolio&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Beispiel- und Demoseite des Projekt-Portfolio-Themas für Zola.&quot;
+</span><span>
+</span><span style="color:#95815e;"># don&#39;t forget to enable features like search or feed
+</span><span style="color:#95815e;"># generation for the additional language as well
+</span><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">generate_feeds </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># also any taxonomies of your default language need to
+</span><span style="color:#95815e;"># be defined for the additional language as well
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;projects&quot;</span><span>, </span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">5</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;skills&quot;</span><span>, </span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">5</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>]
+</span></code></pre>
+<p>Taxonomies should have exactly the same (not translated) name in all languages, for the language switching to work best.</p>
+<p>You need to create an i18n file containing the translations for all theme variables for all the languages of your website, if they are not included in the theme. Right now, <a href="https://www.getzola.org/themes/project-portfolio/i18n/en.toml">English</a>, <a href="https://www.getzola.org/themes/project-portfolio/i18n/de.toml">German</a> and <a href="https://www.getzola.org/themes/project-portfolio/i18n/hu.toml">Hungarian</a> are included. You can create a the directory <code>i18n</code> in your website root directory and the language files in there will be picked up by the theme. It would be great, however, if you create a pull-request on the theme repository to add your translations to the theme.</p>
+<h3 id="search">Search</h3>
+<p>Integrating a search into your website is as easy as adding the following to your configuration:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># enable it globally for the default language
+</span><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">search</span><span>]
+</span><span style="color:#95815e;"># only this format is supported by the theme
+</span><span style="color:#e8bf6a;">index_format </span><span>= </span><span style="color:#c1be91;">&quot;elasticlunr_json&quot;
+</span><span>
+</span><span style="color:#95815e;"># you need to enable search at all your language sections as well
+</span><span>[</span><span style="color:#e8bf6a;">languages.de</span><span>]
+</span><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>As soon as <code>build_search_index</code> is enabled, the search indices are created for all languages that have this variable enabled in their section in the <code>config.toml</code> and the search bar is shown in the navbar of the website.</p>
+<p>Just be aware, that you need to add an <a class="external" href="http://elasticlunr.com/">Elasticlunr.js</a>-compatible <a class="external" href="https://github.com/weixsong/lunr-languages">Lunr Languages</a> file to your <code>static</code> directory, if you are using other languages than English and German. See the corresponding repository for the <a class="external" href="https://github.com/weixsong/lunr-languages/tree/master/min"><code>min</code> files</a>. Feel free to add support for your languages to the theme as well, via a pull-request.</p>
+<h3 id="navbar">Navbar</h3>
+<p>Arbitrary links can be added to the footer by defining the following list in the <code>[extra.navbar]</code> section:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.navbar</span><span>]
+</span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;projects&quot;</span><span>, </span><span style="color:#e8bf6a;">i18n_key </span><span>= </span><span style="color:#c1be91;">&quot;projects&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;skills&quot;</span><span>, </span><span style="color:#e8bf6a;">i18n_key </span><span>= </span><span style="color:#c1be91;">&quot;skills&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;blog&quot;</span><span>, </span><span style="color:#e8bf6a;">i18n_key </span><span>= </span><span style="color:#c1be91;">&quot;blog&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<p>The value of the <code>i18n_key</code> must be in the <code>i18n</code> files for your languages (see <a href="https://www.getzola.org/themes/project-portfolio/i18n/en.toml">en.toml</a>, for example).</p>
+<h3 id="footer">Footer</h3>
+<p>All three parts of the footer can be adapted: the links, the social icons, and the copyright notice.</p>
+<h4 id="links">Links</h4>
+<p>Arbitrary links can be added to the footer by defining the following list in the <code>[extra.footer]</code> section:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.footer</span><span>]
+</span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;about&quot;</span><span>, </span><span style="color:#e8bf6a;">i18n_key </span><span>= </span><span style="color:#c1be91;">&quot;about&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;sitemap.xml&quot;</span><span>, </span><span style="color:#e8bf6a;">i18n_key </span><span>= </span><span style="color:#c1be91;">&quot;sitemap&quot;</span><span>, </span><span style="color:#e8bf6a;">no_translation </span><span>= </span><span style="color:#6e9cbe;">true </span><span>},
+</span><span>]
+</span></code></pre>
+<p>The value of the <code>i18n_key</code> must be in the <code>i18n</code> files for your languages (see <a href="https://www.getzola.org/themes/project-portfolio/i18n/en.toml">en.toml</a>, for example). If the parameter <code>no_translation</code> is set to true, than the URL is not adapted to contain the current language code. This is needed for external links or something like the <code>sitemap.xml</code> in the example, that is not translated within your website.</p>
+<h4 id="social-icons">Social Icons</h4>
+<p>The social icons in the footer can be adapted by setting any of the following variables:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.social</span><span>]
+</span><span style="color:#e8bf6a;">codeberg </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">github </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">gitlab </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">stackoverflow </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">mastodon </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">linkedin </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">instagram </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">youtube </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">signal </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">telegram </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">email </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">phone </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span></code></pre>
+<p>For every non-empty variable, the corresponding icon is shown in the footer.</p>
+<h4 id="copyright-notice">Copyright Notice</h4>
+<p>The copyright notice in the footer can be set by adding the following variable in the configuration:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.footer</span><span>]
+</span><span style="color:#e8bf6a;">notice </span><span>= </span><span style="color:#c1be91;">&quot;This is my &lt;b&gt;copyright&lt;/b&gt; notice.&quot;
+</span></code></pre>
+<p>HTML can be used there.</p>
+<h3 id="syntax-highlighting">Syntax Highlighting</h3>
+<p>The theme makes use of Zola code highlighting feature and supports setting a different color scheme depending on whether a light or dark theme is active. Just enable syntax highlighting the following way:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">highlight_code </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">highlight_theme </span><span>= </span><span style="color:#c1be91;">&quot;css&quot;
+</span></code></pre>
+<h3 id="index-page">Index Page</h3>
+<p>A title and text can be added to the index page by creating a file <code>_index.md</code> in the <code>content</code> directory. Additionally, a slogan and an image an be configured in the <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.index</span><span>]
+</span><span style="color:#e8bf6a;">slogan </span><span>= </span><span style="color:#c1be91;">&quot;Slogan text that is shown under the title&quot;
+</span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;portrait.png&quot;
+</span><span style="color:#e8bf6a;">image_alt </span><span>= </span><span style="color:#c1be91;">&quot;Placeholder text describing the index&#39;s image.&quot;
+</span></code></pre>
+<p>You can also created a completely different index page, by overwriting the <code>index.html</code> template in the template directory of your site. Just inherit from the <code>page.html</code> template of the theme.</p>
+<h2 id="details-on-using-the-theme">Details on Using the Theme</h2>
+<p>The installation of the theme works the same as for other Zola themes. As it is described in the <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">official documentation</a>. Hence, it fist needs to be added as a git submodule:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> my-zola-website
+</span><span>git submodule add</span><span style="font-style:italic;color:#fd971f;"> -b</span><span> main \
+</span><span>    https://codeberg.org/winterstein/zola-theme-project-portfolio.git \
+</span><span>    themes/project-portfolio
+</span></code></pre>
+<p>Please make sure to add it at the path <code>themes/project-portfolio</code> in your Zola directory. The translations and the icons won't work if added to a different directory.</p>
+<p>In the <code>config.toml</code> file it needs to be selected then:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;project-portfolio&quot;
+</span></code></pre>
+<p>Create the files <code>projects.md</code> and <code>skills.md</code> in your <code>content</code> directory that are used to show the "Projects" and "Skills" <a class="external" href="https://www.getzola.org/documentation/content/taxonomies/">taxonomies</a>. They both need a title and can optionally get a descriptive text that will be shown above the terms of the taxonomy. See the following <code>projects.md</code> file as an example:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>title = &quot;Projects&quot;
+</span><span>+++
+</span><span>
+</span><span>The title and the text of this page can be adapted by changing the
+</span><span style="color:#ec3533;">`projects.md`</span><span> file in the </span><span style="color:#ec3533;">`content`</span><span> directory.
+</span><span>
+</span><span>Check out the amazing projects, by browsing through the industrial
+</span><span>sectors. The project do not need to be categorized by industries, but
+</span><span>could be distinguished by other topics instead. For example by frontend
+</span><span>and backend projects or by main responsibilities, like developer or
+</span><span>lead. Whatever makes most sense for your project portfolio.
+</span></code></pre>
+<p>It would be shown with the configured title and content like this above the terms:</p>
+<p><img src="https://codeberg.org/winterstein/zola-theme-project-portfolio/raw/branch/main/screenshot-projects-taxonomy.png" alt="Screenshot of the projects taxonomy page" /></p>
+<p>The <code>skills.md</code> file can be created the same way. The corresponding page will just show the terms of the skills taxonomy instead of the terms of the projects taxonomy then.</p>
+<p>Finally, create the first project page in the <code>content</code> directory:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span></code></pre>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Project Title&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Here is a short description of the project.&quot;
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#6d9cbe;">2022-05-31 </span><span style="color:#95815e;"># The date when the project finished
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">date_start </span><span>= </span><span style="color:#6d9cbe;">2021-01-01 </span><span style="color:#95815e;"># Optional date when the project was started
+</span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;water.jpg&quot; </span><span style="color:#95815e;"># Optional filename to an image in the `static/images` directory
+</span><span style="color:#e8bf6a;">top_project </span><span>= </span><span style="color:#6e9cbe;">true </span><span style="color:#95815e;"># Optional parameter to show the project on the projects overview page as well
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span style="color:#e8bf6a;">projects</span><span>=[</span><span style="color:#c1be91;">&quot;Consumer&quot;</span><span>] </span><span style="color:#95815e;"># The category of the project (could be industry, type etc.)
+</span><span style="color:#e8bf6a;">skills</span><span>=[</span><span style="color:#c1be91;">&quot;Thinking&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Hype Technology&quot;</span><span>] </span><span style="color:#95815e;"># The skills &amp; technologies used for the project
+</span></code></pre>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>
+</span><span>The content of the project description page follows here.
+</span></code></pre>
+<p>The generated project site would then look like this:</p>
+<p><img src="https://codeberg.org/winterstein/zola-theme-project-portfolio/raw/branch/main/screenshot-project-example.png" alt="Screenshot of the project example page" /></p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

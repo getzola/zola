@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Slim | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;slim&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Slim</h1>
+            <p>Slim is a minimal, clean and beautiful theme for Zola.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;jamesclark.dev">James Clark</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.8.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;jameshclrk&#x2F;zola-slim">https:&#x2F;&#x2F;github.com&#x2F;jameshclrk&#x2F;zola-slim</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-slim.netlify.com">https:&#x2F;&#x2F;zola-slim.netlify.com</a></p>
+            
+            
+            <p><b>Last updated:</b> 2020-10-31T23:26:58Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="slim">Slim</h1>
+<p>Slim is a minimal, clean and beautiful theme for <a class="external" href="http://getzola.org/">Zola</a>.</p>
+<p>This theme was ported to Zola, the original is available at <a class="external" href="https://github.com/zhe/hugo-theme-slim">zhe/hugo-theme-slim</a>. It is excellent, thank you <a class="external" href="https://github.com/zhe">zhe</a>!</p>
+<p><img src="https://github.com/jameshclrk/zola-slim/blob/master/screenshot.png" alt="Slim screenshot" /></p>
+<p><a class="external" href="http://zola-slim.netlify.com">Demo</a>.</p>
+<h2 id="installation">Installation</h2>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>cd themes
+</span><span>git clone https://github.com/jameshclrk/zola-slim slim
+</span></code></pre>
+<p>See the <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">official docs</a> for more information.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Slim supports a <code>tags</code> taxonomy by default. This can be enabled by setting it in your <code>config.toml</code>:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>taxonomies = [
+</span><span>    {name = &quot;tags&quot;, paginate_by = 5, rss = true}
+</span><span>]
+</span></code></pre>
+<p>There are a couple of extra options supported:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>[extra]
+</span><span># Show a summary of a post in a list
+</span><span>slim_summary = false
+</span><span># Show the content of a post in a list
+</span><span>slim_content = false
+</span><span># Links to show at the top of the menu
+</span><span>slim_menu = [
+</span><span>    {url = &quot;$BASE_URL/tags&quot;, name = &quot;Tags&quot;}
+</span><span>]
+</span><span># Links to show at the bottom of the menu
+</span><span>slim_social = [
+</span><span>    {url = &quot;https://github.com/jameshclrk&quot;, name = &quot;Github&quot;}
+</span><span>]
+</span></code></pre>
+<h2 id="license">License</h2>
+<p>Open sourced under <a class="external" href="https://github.com/zhe/hugo-theme-slim/blob/master/LICENSE.md">MIT license</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

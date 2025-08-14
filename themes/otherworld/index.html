@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>otherworld | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;otherworld&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>otherworld</h1>
+            <p>Vaporwave aesthetic theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;blek.codes">blek!</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.1.0 and above</p>
+            
+            <p><b>License:</b> GPL-3-only</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;git.blek.codes&#x2F;blek&#x2F;otherworld">https:&#x2F;&#x2F;git.blek.codes&#x2F;blek&#x2F;otherworld</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;world.blek.codes">https:&#x2F;&#x2F;world.blek.codes</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-03-24T14:05:03+10:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p align='center'>
+    <img src='banner.webp'>
+</p>
+<h1 align='center'>
+    otherworld - a zola theme
+</h1>
+<p>you can see the demo <a class="external" href="https://world.blek.codes">here</a></p>
+<h2 id="how-to-use">how to use</h2>
+<h3 id="prerequisities">prerequisities</h3>
+<ol>
+<li>a linux system. you can use windows for that, but this guide centers itself on linux based systems.</li>
+<li>you need to have these programs installed: <code>git</code> and <code>zola</code></li>
+<li>some creativity, html and scss skills</li>
+</ol>
+<h3 id="steps">steps</h3>
+<h4 id="1-clone-the-repo">1. clone the repo</h4>
+<p>(aka download the theme)</p>
+<p>lets assume that your website's directory name in <code>daftpunk</code>. it will appear in commands a few times, and you should replace it with your website's name.</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ git clone git@git.blek.codes:blek/otherworld.git daftpunk
+</span><span>$ cd daftpunk
+</span></code></pre>
+<h4 id="2-open-an-another-terminal">2. open an another terminal</h4>
+<p>in the same directory, run</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ zola serve
+</span></code></pre>
+<h4 id="3-edit-files-in-the-content-directory">3. edit files in the <code>content</code> directory...</h4>
+<p>...as per <a class="external" href="https://www.getzola.org/documentation/getting-started/overview">zola docs</a></p>
+<h2 id="how-to-disable-loading">how to disable loading</h2>
+<p>go to <code>content/index.md</code>, and in the <code>+++</code> blocks, set <code>extra.noload</code> to <code>true</code>.</p>
+<p>like this:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Welcome&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">noload </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

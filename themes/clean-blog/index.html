@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Clean Blog | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;clean-blog&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Clean Blog</h1>
+            <p>A port of Start Bootstrap Clean Blog for Zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;dtucker.co.uk">Dave Tucker</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;dave-tucker&#x2F;zola-clean-blog">https:&#x2F;&#x2F;github.com&#x2F;dave-tucker&#x2F;zola-clean-blog</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-clean-blog.netlify.app&#x2F;">https:&#x2F;&#x2F;zola-clean-blog.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-04-17T13:28:42+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zola-clean-blog">zola-clean-blog</h1>
+<p><img src="https://www.getzola.org/themes/clean-blog/screenshot.png" alt="screenshot" /></p>
+<p>A port of the StartBootstrap Clean Blog theme, for Zola.</p>
+<h2 id="demo">Demo</h2>
+<p><a class="external" href="https://zola-clean-blog.netlify.com">Live Demo</a></p>
+<h2 id="usage">Usage</h2>
+<p>To use the theme, clone this repository to your <code>themes</code> directory.
+It requires that you use the categories and tags taxonomies.
+This can be done with the following additions to <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;zola-clean-blog&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;categories&quot;</span><span>, </span><span style="color:#e8bf6a;">rss </span><span>= </span><span style="color:#6e9cbe;">true</span><span>, </span><span style="color:#e8bf6a;">paginate_by</span><span>=</span><span style="color:#a5c261;">5</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">rss </span><span>= </span><span style="color:#6e9cbe;">true</span><span>, </span><span style="color:#e8bf6a;">paginate_by</span><span>=</span><span style="color:#a5c261;">5</span><span>},
+</span><span>]
+</span></code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li>Paginated Home/Categories/Tag Pages</li>
+<li>Customizable Menu</li>
+<li>Customizable Social Links</li>
+</ul>
+<h2 id="how-to-customize">How To Customize</h2>
+<ul>
+<li>
+<p>To replace header images, add a new image to <code>static/img/$page-bg.jpg</code> where <code>$page</code> is one of <code>about</code>, <code>home</code>, <code>post</code> or <code>contact</code>.</p>
+</li>
+<li>
+<p>To replace the copyright field, create your own <code>templates/index.html</code> to extend the template and add a <code>copyright</code> block:</p>
+</li>
+</ul>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{%/* extends &quot;zola-clean-blog/templates/index.html&quot; */%}
+</span><span>{%/* block copyright */%}
+</span><span>Copyright %copy; Example, Inc. 2016-2019
+</span><span>{%/* endblock copyright */%}
+</span></code></pre>
+<ul>
+<li>
+<p>To add a new menu item, override <code>clean_blog_menu</code> in your <code>config.toml</code>. You can use <code>$BASE_URL</code> to reference your own site.</p>
+</li>
+<li>
+<p>To add a new social link, override <code>clean_blog_social</code> in your <code>config.toml</code>. You can use <code>$BASE_URL</code> to reference your own site.</p>
+</li>
+<li>
+<p>To add Google Analytics, you may add your script to the <code>extrascripts</code> block using your own <code>index.html</code></p>
+</li>
+</ul>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{%/* extends &quot;zola-clean-blog/templates/index.html&quot; */%}
+</span><span>{%/* block analytics */%}
+</span><span>&lt;script&gt;
+</span><span>...
+</span><span>&lt;/script&gt;
+</span><span>{%/* endblock analytics */%}
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

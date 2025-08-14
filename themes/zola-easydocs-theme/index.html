@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>EasyDocs | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zola-easydocs-theme&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>EasyDocs</h1>
+            <p>An easy way to create docs for your project</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;codeandmedia.com">Roman Soldatenkov</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.13.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;codeandmedia&#x2F;zola_easydocs_theme">https:&#x2F;&#x2F;github.com&#x2F;codeandmedia&#x2F;zola_easydocs_theme</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;easydocs.codeandmedia.com">https:&#x2F;&#x2F;easydocs.codeandmedia.com</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-10-30T16:28:49+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h2 id="an-easy-way-to-create-a-document-library-for-your-project">An easy way to create a document library for your project</h2>
+<p>Demo: <a class="external" href="https://easydocs.codeandmedia.com/">https://easydocs.codeandmedia.com/</a></p>
+<p>This theme for <a class="external" href="https://getzola.org">Zola</a> (static site engine) helps you build and publish your project docs easily and fast. Zola is just one binary that outputs html-pages and additional static assets after building your docs written in Markdown. Thus, you can take the theme, your md-files, Zola and gain flexible and simple website for documentation.</p>
+<h3 id="step-by-step">Step-by-step</h3>
+<p>As you may have heard Zola is quite flexible :) So, the scenario below is one of hundreds possible ways to make things done, feel free to find your best. Also, Zola provides their own mechanism to install and use themes, see <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">the docs</a>.</p>
+<ol>
+<li>Fork the repo and replace demo-content inside content folder with yours. But take a look to _index.md files. It contains <code>title</code> and when you want to have anchor right of your headers add <code>insert_anchor_links = "right"</code> to each index. <code>theme.toml</code>, screenshot and readme may be deleted too.</li>
+<li>Inside <code>config.toml</code> change URL and title on your own. In extra section you can specify path to your GitHub API for version below the logo on nav, favicon and logo itself. Or just remove the lines if you don't need it. Also, you can configure or turn on some additional settings related to Zola. <a class="external" href="https://www.getzola.org/documentation/getting-started/configuration/">Specification is here</a>.</li>
+<li>In sass/_variables.scss you may change font, color or background if you want.</li>
+<li>Almost done. Now, you should decide how you want to build and where will be hosted your website. You can build it locally and upload to somewhere. Or build in GitHub Actions and host on GitHub Pages / Netlify / CloudFlare Pages / AnyS3CloudStorage. <a class="external" href="https://www.getzola.org/documentation/deployment/github-pages/">Howto for GitHub Pages</a>. <a class="external" href="https://github.com/o365hq/o365hq.com/blob/main/.github/workflows/main.yml">My example</a> of GitHub workflow with 2-steps build (the first checks for links and spelling errors, the second uploads to Azure). <a class="external" href="https://github.com/codeandmedia/zola_docsascode_theme/blob/master/Dockerfile">Dockerfile</a> to make Docker image.</li>
+</ol>
+<h2 id="provided-configurations-options">Provided configurations options</h2>
+<p>These options can be configured in the <code>extra</code> section of the <a href="https://www.getzola.org/themes/zola-easydocs-theme/config.toml">config.toml</a>.
+If any are not present it has the same behaviour as the default which is shown in the starter <a href="https://www.getzola.org/themes/zola-easydocs-theme/config.toml">config.toml</a>.</p>
+<ul>
+<li><strong>easydocs_logo_always_clickable</strong> controls if the logo is always clickable. By default the logo is only clickable if you are not on the home page. If this is enabled it will make the logo clickable when you are on the home page as well. Thus on the home page it will basically just refresh the page as it will take you to the same page.</li>
+<li><strong>easydocs_uglyurls</strong> provides support for offline sites that do not use a webserver. If set to true links in the nav are generated with the full path indcluding <code>index.html</code>. This functionality was  insired by <a class="external" href="https://www.getzola.org/themes/abridge/">Abridge theme</a>. Note that for this to work it also requries the base URL to be set to the local folder where the site will be stored eg. <code>base_url = file:///home/user/mysite/public/</code>. Therefore this is not portable and only works with a specific local folder, but does not require a webserver to navigate the site.</li>
+<li><strong>easydocs_heading_threshold</strong> controls minimum number of headings needed on a page before the headings show in the navigation on the left. Defaults to 5. Can be used for example to always show headings on each page by setting it to 1.</li>
+</ul>
+<p>Enjoy your docs!</p>
+<ul>
+<li><em>Icons: <a class="external" href="https://uifabricicons.azurewebsites.net/">Office UI Fabric Icons</a></em></li>
+<li><em>Copy-code-button: <a class="external" href="https://aaronluna.dev/blog/add-copy-button-to-code-blocks-hugo-chroma/">Aaron Luna</a></em></li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

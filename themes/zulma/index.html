@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Zulma | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zulma&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Zulma</h1>
+            <p>A zola theme based off bulma.css</p>
+            <p><b>Author:</b>
+            
+              Worble
+              
+            </p>
+            
+              <p>This theme requires Zola version 0.6.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;Worble&#x2F;Zulma">https:&#x2F;&#x2F;github.com&#x2F;Worble&#x2F;Zulma</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;festive-morse-47d46c.netlify.com&#x2F;">https:&#x2F;&#x2F;festive-morse-47d46c.netlify.com&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2020-05-10T10:53:40Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zulma">Zulma</h1>
+<p>A Bulma theme for Zola. See a live preview <a class="external" href="https://festive-morse-47d46c.netlify.com/">here</a></p>
+<p><img src="/screenshot.png" alt="Zulma Screenshot" /></p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li>Zulma
+<ul>
+<li>Contents</li>
+<li>Installation</li>
+<li>Javascript
+<ul>
+<li>Sources</li>
+<li>Building</li>
+</ul>
+</li>
+<li>Options
+<ul>
+<li>Pagination</li>
+<li>Taxonomies</li>
+<li>Menu Links</li>
+<li>Brand</li>
+<li>Search</li>
+<li>Title</li>
+<li>Theming</li>
+</ul>
+</li>
+<li>Original</li>
+<li>Known Bugs</li>
+</ul>
+</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> themes
+</span><span>git clone https://github.com/Worble/Zulma
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;Zulma&quot;
+</span></code></pre>
+<p>That's it! No more configuration should be required, however it might look a little basic. Head to the Options section to see what you can set for more customizability.</p>
+<h2 id="javascript">Javascript</h2>
+<h3 id="sources">Sources</h3>
+<p>All the source javascript files live in <code>javascript/src</code>. Following is a list of the javascript files, their purpose, and their sources. All files are prefixed with <code>zulma_</code> to avoid any name clashes.</p>
+<ul>
+<li><code>zulma_search.js</code> - Used when a user types into the search box on the navbar (if enabled). Taken from <a class="external" href="https://github.com/getzola/zola/blob/6100a43/docs/static/search.js">Zola's site</a>.</li>
+<li><code>zulma_navbar.js</code> - Used for the mobile navbar toggle. Taken from the <a class="external" href="https://github.com/dansup/bulma-templates/blob/6263eb7/js/bulma.js">bulma template</a> at Bulmaswatch</li>
+<li><code>zulma_switchcss.js</code> - Used for swapping themes (if enabled).</li>
+</ul>
+<h3 id="building">Building</h3>
+<p>The JavaScript files are transpiled by babel, minified by webpack, sourcemaps are generated and then everything placed in <code>static/js</code>. The repo already contains the transpiled and minified files along with their corrosponding sourcemaps so you don't need to do anything to use these. If you would prefer to build it yourself, feel free to inspect the js files and then run the build process (please ensure that you have <a class="external" href="https://nodejs.org/en/">node, npm</a> and optionally <a class="external" href="https://yarnpkg.com/lang/en/">yarn</a> installed):</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> javascript
+</span><span>yarn
+</span><span>yarn webpack
+</span></code></pre>
+<h3 id="github-warnings">Github warnings</h3>
+<p>You may get warnings about vulnerabilities from the JavaScript dependencies. These shouldn't be an issue since we only have dev-dependencies and none of the them reach the end-user, but if you don't want to run the buld process yourself, and to stop Github pestering you about security warnings, feel free to delete the top level <code>javascript</code> folder when committing.</p>
+<h2 id="options">Options</h2>
+<h3 id="pagination">Pagination</h3>
+<p>Zulma makes no assumptions about your project. You can freely paginate your content folder or your taxonomies and it will adapt accordingly. For example, editing or creating section (<code>content/_index.md</code>) and setting pagination:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">5
+</span></code></pre>
+<p>This is handled internally, no input is needed from the user.</p>
+<h3 id="taxonomies">Taxonomies</h3>
+<p>Zulma has 3 taxonomies already set internally: <code>tags</code>, <code>cateogories</code> and <code>authors</code>. Setting of any these three in your config.toml like so:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;categories&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">5</span><span>, </span><span style="color:#e8bf6a;">rss </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;authors&quot;</span><span>, </span><span style="color:#e8bf6a;">rss </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>]
+</span></code></pre>
+<p>and setting any of them in a content file:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span style="color:#e8bf6a;">categories </span><span>= [</span><span style="color:#c1be91;">&quot;Hello world&quot;</span><span>]
+</span><span style="color:#e8bf6a;">tags </span><span>= [</span><span style="color:#c1be91;">&quot;rust&quot;</span><span>, </span><span style="color:#c1be91;">&quot;ssg&quot;</span><span>, </span><span style="color:#c1be91;">&quot;other&quot;</span><span>, </span><span style="color:#c1be91;">&quot;test&quot;</span><span>]
+</span><span style="color:#e8bf6a;">authors </span><span>= [</span><span style="color:#c1be91;">&quot;Joe Bloggs&quot;</span><span>]
+</span></code></pre>
+<p>will cause that metadata to appear on the post, either on the header for the name, or at the bottom for tags and categories, and enable those pages.</p>
+<p>Making your own taxonomies is also designed to be as easy as possible. First, add it to your cargo.toml</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;links&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>and make the corrosponding folder in your templates, in this case: <code>templates\links</code>, and the necessary files: <code>templates\links\list.html</code> and <code>templates\links\single.html</code></p>
+<p>And then for each, just inherit the taxonomy master page for that page. Before rendering the content block, you may optionally set a variable called <code>title</code> for the hero to display on that page, otherwise it will use the default for that taxonomy.</p>
+<p>In <code>single.html</code>:</p>
+<pre data-lang="jinja" style="background-color:#383838;color:#e6e1dc;" class="language-jinja "><code class="language-jinja" data-lang="jinja"><span>{%</span><span style="color:#cc7833;">/* </span><span style="color:#d0d0ff;">extends </span><span style="color:#c1be91;">&quot;Zulma/templates/taxonomy_single.html&quot; </span><span style="color:#cc7833;">*/</span><span>%}
+</span></code></pre>
+<p>In <code>list.html</code>:</p>
+<pre data-lang="jinja" style="background-color:#383838;color:#e6e1dc;" class="language-jinja "><code class="language-jinja" data-lang="jinja"><span>{%</span><span style="color:#cc7833;">/* </span><span style="color:#d0d0ff;">extends </span><span style="color:#c1be91;">&quot;Zulma/templates/taxonomy_list.html&quot; </span><span style="color:#cc7833;">*/</span><span>%}
+</span><span>
+</span><span>{%</span><span style="color:#cc7833;">/* block </span><span style="color:#d0d0ff;">content </span><span style="color:#cc7833;">*/</span><span>%}
+</span><span>{%</span><span style="color:#cc7833;">/* </span><span style="color:#d0d0ff;">set title </span><span style="color:#cc7833;">= </span><span style="color:#c1be91;">&quot;These are all the Links&quot;</span><span style="color:#cc7833;">*/</span><span>%}
+</span><span>{{ </span><span style="color:#d0d0ff;">super</span><span>() }}
+</span><span>{%</span><span style="color:#cc7833;">/* </span><span style="color:#d0d0ff;">endblock content </span><span style="color:#cc7833;">*/</span><span>%}
+</span></code></pre>
+<h3 id="menu-links">Menu Links</h3>
+<p>In extra, setting <code>zulma_menu</code> with a list of items will cause them to render to the top menu bar. It has two paramers, <code>url</code> and <code>name</code>. These <em>must</em> be set. If you put $BASE_URL in a url, it will automatically be replaced by the actual site URL. This is the easiest way to allow users to navigate to your taxonomies:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">zulma_menu </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/categories&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Categories&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/tags&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/authors&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Authors&quot;</span><span>}
+</span><span>]
+</span></code></pre>
+<p>On mobile, a dropdown burger is rendered using javascript. If the page detects javascript is disabled on the clients machine, it will gracefully degrade to always showing the menu (which isn't pretty, but keeps the site functional).</p>
+<h3 id="brand">Brand</h3>
+<p>In extra, setting <code>zulma_brand</code> will cause a brand image to display in the upper left of the top menu bar. This link will always lead back to the homepage. It has two parameters, <code>image</code>(optional) and <code>text</code>(required). <code>image</code> will set the brand to an image at the location specified, and <code>text</code> will provide the alt text for this image. If you put $BASE_URL in a url, it will automatically be replaced by the actual site URL. If <code>image</code> is not set, the brand will simply be the text specified.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">zulma_brand </span><span>= {</span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/images/bulma.png&quot;</span><span>, </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot;</span><span>}
+</span></code></pre>
+<h3 id="search">Search</h3>
+<p>Zulma provides search built in. So long as <code>build_search_index</code> is set to <code>true</code> in <code>config.toml</code> then a search input will appear on the top navigation bar. This requires javascript to be enabled to function; if the page detects javascript is disabled on the clients machine, it will hide itself.</p>
+<p>The search is shamefully stolen from <a class="external" href="https://github.com/getzola/zola/blob/master/docs/static/search.js">Zola's site</a>. Thanks, Vincent!</p>
+<h3 id="title">Title</h3>
+<p>In extra, setting <code>zulma_title</code> will set a hero banner on the index page to appear with that title inside.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">zulma_title </span><span>= </span><span style="color:#c1be91;">&quot;Blog&quot;
+</span></code></pre>
+<p>If you want to get fancy with it, you can set an image behind using sass like so:</p>
+<pre data-lang="scss" style="background-color:#383838;color:#e6e1dc;" class="language-scss "><code class="language-scss" data-lang="scss"><span style="color:#86c20e;">.index .hero-body </span><span>{
+</span><span>  </span><span style="font-style:italic;color:#6e9cbe;">background-image</span><span>: </span><span style="color:#da4939;">url</span><span>(</span><span style="color:#a5c261;">https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Plum_trees_Kitano_Tenmangu.jpg/1200px-Plum_trees_Kitano_Tenmangu.jpg</span><span>);
+</span><span>  </span><span style="font-style:italic;color:#6e9cbe;">background-position</span><span>: </span><span style="color:#86c20e;">center</span><span>;
+</span><span>  </span><span style="font-style:italic;color:#6e9cbe;">background-size</span><span>: </span><span style="color:#86c20e;">cover</span><span>;
+</span><span>  </span><span style="font-style:italic;color:#6e9cbe;">background-repeat</span><span>: </span><span style="color:#86c20e;">no-repeat</span><span>;
+</span><span>  </span><span style="font-style:italic;color:#6e9cbe;">background-color</span><span>: </span><span style="color:#da4939;">rgba</span><span>(</span><span style="color:#a5c261;">0</span><span>, </span><span style="color:#a5c261;">0</span><span>, </span><span style="color:#a5c261;">0</span><span>, </span><span style="color:#a5c261;">0.6</span><span>);
+</span><span>  </span><span style="font-style:italic;color:#6e9cbe;">background-blend-mode</span><span>: </span><span style="color:#86c20e;">overlay</span><span>;
+</span><span>}
+</span></code></pre>
+<p>This will set the image behind the hero, and darken it so the main text can still be easily read.</p>
+<h3 id="theming">Theming</h3>
+<p>In extra, setting <code>zulma_theme</code> to a valid value will change the current colour scheme to that one. All themes were taken from <a class="external" href="https://jenil.github.io/bulmaswatch/">Bulmaswatch</a>. Valid theme values are:</p>
+<ul>
+<li>default</li>
+<li>darkly</li>
+<li>flatly</li>
+<li>pulse</li>
+<li>simplex</li>
+<li>lux</li>
+<li>slate</li>
+<li>solar</li>
+<li>superhero</li>
+</ul>
+<p>All valid themes can also be found under the <code>extra.zulma_themes</code> variable in the <code>theme.toml</code>. Choosing no theme will set default as the theme. Setting an invalid theme value will cause the site to render improperly.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">zulma_theme </span><span>= </span><span style="color:#c1be91;">&quot;darkly&quot;
+</span></code></pre>
+<p>Additionally, in extra, you can also set the <code>zulma_allow_theme_selection</code> boolean. Setting this to <code>true</code> will allow a menu in the footer to allow users to select their own theme. This option will store their theme choice in their localstorage and apply it on every page, assuming <code>zulma_allow_theme_selection</code> is still true. This requires javascript to be enabled to function; if the page detects javascript is disabled on the clients machine, it will hide itself.</p>
+<p>Each theme contains the entirety of Bulma, and will weigh in at ~180kb. If you're running on a server severely limited on space, then I'd recommend you delete each theme you're not using, either from the source or from <code>/public</code>. Obviously, doing this will cause <code>zulma_allow_theme_selection</code> to work improperly, so make sure you either override <code>extra.zulma_themes</code> in <code>config.toml</code> to only show themes you have left or to not enable this option at all.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">zulma_allow_theme_selection </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h2 id="original">Original</h2>
+<p>This template is based on the <a class="external" href="https://bulmatemplates.github.io/bulma-templates/templates/blog.html">blog template</a> over at <a class="external" href="https://bulmatemplates.github.io/bulma-templates/">Free Bulma Templates</a>. All themes were taken from <a class="external" href="https://jenil.github.io/bulmaswatch/">Bulmaswatch</a>. The code behind from originally adapted from the <a class="external" href="https://github.com/getzola/after-dark/blob/master/README.md">after-dark</a> zola template.</p>
+<h2 id="known-bugs">Known Bugs</h2>
+<ul>
+<li>If user theme swapping is enabled and the user selects a theme different to the default, a slight delay will be introduced in page rendering as the css gets swapped out and in by the javascript. This is particularly pronounced when using the dark theme, since it will flash white before going back to black. This is better than the alternative flashes of unstyled content or old theme, but still annoying. I don't know any way around this, but with browser caching it should be fast enough to not cause serious issues.</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
