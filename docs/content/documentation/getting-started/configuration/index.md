@@ -86,7 +86,7 @@ feed_filenames = ["atom.xml"]
 hard_link_static = false
 
 # The default author for pages
-author = 
+author =
 
 # The taxonomies to be rendered for the site and their configuration of the default languages
 # Example:
@@ -129,7 +129,7 @@ highlight_theme = "base16-ocean-dark"
 render_emoji = false
 
 # CSS class to add to external links (e.g. "external-link")
-external_links_class = 
+external_links_class =
 
 # Whether external links are to be opened in a new tab
 # If this is true, a `rel="noopener"` will always automatically be added for security reasons
@@ -224,7 +224,7 @@ index_format = "elasticlunr_javascript"
 [translations]
 
 # Additional languages definition
-# You can define language specific config values and translations: 
+# You can define language specific config values and translations:
 # title, description, generate_feeds, feed_filenames, taxonomies, build_search_index
 # as well as its own search configuration and translations (see above for details on those)
 [languages]
@@ -252,6 +252,12 @@ index_format = "elasticlunr_javascript"
 ## Syntax highlighting
 
 Zola currently has the following highlight themes available:
+
+{{ grid_gallery() }}
+
+<details>
+
+<summary>Links</summary>
 
 - [1337](https://tmtheme-editor.glitch.me/#!/editor/theme/1337)
 - [agola-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Agola%20Dark)
@@ -296,6 +302,8 @@ Zola currently has the following highlight themes available:
 - [two-dark](https://github.com/erremauro/TwoDark)
 - [visual-studio-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Visual%20Studio%20Dark)
 - [zenburn](https://github.com/colinta/zenburn)
+
+</details>
 
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
