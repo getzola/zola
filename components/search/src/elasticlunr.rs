@@ -1,9 +1,9 @@
 use config::{Config, Search};
 use content::{Library, Section};
-use errors::{bail, Result};
-use libs::elasticlunr::{lang, Index, IndexBuilder};
-use libs::time::format_description::well_known::Rfc3339;
+use errors::{Result, bail};
+use libs::elasticlunr::{Index, IndexBuilder, lang};
 use libs::time::OffsetDateTime;
+use libs::time::format_description::well_known::Rfc3339;
 
 use crate::clean_and_truncate_body;
 
@@ -58,12 +58,11 @@ fn fill_index(
         row.push(description.clone().unwrap_or_default());
     }
 
-    if search_config.include_date {
-        if let Some(date) = datetime {
-            if let Ok(d) = date.format(&Rfc3339) {
-                row.push(d);
-            }
-        }
+    if search_config.include_date
+        && let Some(date) = datetime
+        && let Ok(d) = date.format(&Rfc3339)
+    {
+        row.push(d);
     }
 
     if search_config.include_path {
@@ -115,7 +114,7 @@ fn add_section_to_index(
     if section.meta.redirect_to.is_none() {
         index.add_doc(
             &section.permalink,
-            &fill_index(
+            fill_index(
                 search_config,
                 &section.meta.title,
                 &section.meta.description,
@@ -134,7 +133,7 @@ fn add_section_to_index(
 
         index.add_doc(
             &page.permalink,
-            &fill_index(
+            fill_index(
                 search_config,
                 &page.meta.title,
                 &page.meta.description,

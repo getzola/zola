@@ -183,7 +183,7 @@ mod tests {
     // event mapping and filtering don't cause us to accidentally ignore things we care about.
     #[test]
     fn test_get_relative_event_kind() {
-        let cases = vec![
+        let cases = [
             (EventKind::Create(CreateKind::File), Some(SimpleFileSystemEventKind::Create)),
             (EventKind::Create(CreateKind::Folder), Some(SimpleFileSystemEventKind::Create)),
             (EventKind::Modify(ModifyKind::Any), Some(SimpleFileSystemEventKind::Modify)),
@@ -223,7 +223,7 @@ mod tests {
             (EventKind::Remove(RemoveKind::Folder), Some(SimpleFileSystemEventKind::Remove)),
         ];
         for (case, expected) in cases.iter() {
-            let ek = get_relevant_event_kind(&case);
+            let ek = get_relevant_event_kind(case);
             assert_eq!(ek, *expected, "case: {case:?}");
         }
     }

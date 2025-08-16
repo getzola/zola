@@ -1,5 +1,5 @@
-use libs::regex::escape;
 use libs::regex::Regex;
+use libs::regex::escape;
 
 pub fn has_anchor_id(content: &str, anchor: &str) -> bool {
     let checks = anchor_id_checks(anchor);

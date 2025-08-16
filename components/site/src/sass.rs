@@ -2,11 +2,11 @@ use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 
 use libs::globset::Glob;
-use libs::grass::{from_path as compile_file, Options, OutputStyle};
+use libs::grass::{Options, OutputStyle, from_path as compile_file};
 use libs::walkdir::{DirEntry, WalkDir};
 
 use crate::anyhow;
-use errors::{bail, Result};
+use errors::{Result, bail};
 use utils::fs::{create_directory, create_file};
 
 pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {

@@ -9,6 +9,7 @@ pub use ammonia;
 pub use atty;
 pub use avif_parse;
 pub use base64;
+pub use chrono;
 pub use csv;
 pub use elasticlunr;
 pub use filetime;

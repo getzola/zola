@@ -42,7 +42,7 @@
 	url = https://github.com/skozlovf/Sublime-GenericConfig.git
 [submodule "sublime/syntaxes/sublime-jinja2"]
 	path = components/config/sublime/syntaxes/extra/sublime-jinja2
-	url = https://github.com/Martin819/sublime-jinja2.git
+	url = https://github.com/senekor/sublime-jinja2.git
 [submodule "sublime/syntaxes/Julia-sublime"]
 	path = components/config/sublime/syntaxes/extra/Julia-sublime
 	url = https://github.com/JuliaEditorSupport/Julia-sublime.git

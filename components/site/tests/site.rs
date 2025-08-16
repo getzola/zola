@@ -8,8 +8,8 @@ use common::{build_site, build_site_with_setup};
 use config::TaxonomyConfig;
 use content::Page;
 use libs::ahash::AHashMap;
-use site::sitemap;
 use site::Site;
+use site::sitemap;
 use utils::types::InsertAnchor;
 
 #[test]
@@ -827,8 +827,11 @@ fn can_ignore_markdown_content() {
 #[test]
 fn can_cachebust_static_files() {
     let (_, _tmp_dir, public) = build_site("test_site");
-    assert!(file_contains!(public, "index.html",
-        "<link href=\"https://replace-this-with-your-url.com/site.css?h=83bd983e8899946ee33d\" rel=\"stylesheet\">"));
+    assert!(file_contains!(
+        public,
+        "index.html",
+        "<link href=\"https://replace-this-with-your-url.com/site.css?h=83bd983e8899946ee33d\" rel=\"stylesheet\">"
+    ));
 }
 
 #[test]
@@ -934,7 +937,7 @@ fn can_find_site_and_page_authors() {
 
     // Only the first page has had an author added.
     assert_eq!(1, p1.meta.authors.len());
-    assert_eq!("page@example.com (Page Author)", p1.meta.authors.get(0).unwrap());
+    assert_eq!("page@example.com (Page Author)", p1.meta.authors.first().unwrap());
     assert_eq!(0, p2.meta.authors.len());
 }
 

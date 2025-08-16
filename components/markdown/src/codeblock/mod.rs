@@ -3,12 +3,12 @@ mod highlight;
 
 use std::ops::RangeInclusive;
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 use libs::syntect::util::LinesWithEndings;
 
 use crate::codeblock::highlight::SyntaxHighlighter;
-use config::highlighting::{resolve_syntax_and_theme, HighlightSource};
 use config::Config;
+use config::highlighting::{HighlightSource, resolve_syntax_and_theme};
 pub(crate) use fence::FenceSettings;
 
 fn opening_html(
