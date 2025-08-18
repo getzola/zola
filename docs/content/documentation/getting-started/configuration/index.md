@@ -255,56 +255,6 @@ Zola currently has the following highlight themes available:
 
 {{ grid_gallery() }}
 
-<details>
-
-<summary>Links</summary>
-
-- [1337](https://tmtheme-editor.glitch.me/#!/editor/theme/1337)
-- [agola-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Agola%20Dark)
-- [ascetic-white](https://tmtheme-editor.glitch.me/#!/editor/theme/Ascetic%20White)
-- [axar](https://tmtheme-editor.glitch.me/#!/editor/theme/Axar)
-- [ayu-dark](https://github.com/dempfi/ayu)
-- [ayu-light](https://github.com/dempfi/ayu)
-- [ayu-mirage](https://github.com/dempfi/ayu)
-- [base16-atelierdune-light](https://atelierbram.github.io/syntax-highlighting/atelier-schemes/dune/)
-- [base16-ocean-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Base16%20Ocean%20Dark)
-- [base16-ocean-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Base16%20Ocean%20Light)
-- [bbedit](https://tmtheme-editor.glitch.me/#!/editor/theme/BBEdit)
-- [boron](https://tmtheme-editor.glitch.me/#!/editor/theme/Boron)
-- [charcoal](https://tmtheme-editor.glitch.me/#!/editor/theme/Charcoal)
-- [cheerfully-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Cheerfully%20Light)
-- [classic-modified](https://tmtheme-editor.glitch.me/#!/editor/theme/Classic%20Modified)
-- [demain](https://tmtheme-editor.glitch.me/#!/editor/theme/Demain)
-- [dimmed-fluid](https://tmtheme-editor.glitch.me/#!/editor/theme/Dimmed%20Fluid)
-- [dracula](https://draculatheme.com/)
-- [gray-matter-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Gray%20Matter%20Dark)
-- [green](https://github.com/kristopherjohnson/MonochromeSublimeText)
-- [gruvbox-dark](https://github.com/morhetz/gruvbox)
-- [gruvbox-light](https://github.com/morhetz/gruvbox)
-- [idle](https://tmtheme-editor.glitch.me/#!/editor/theme/IDLE)
-- [inspired-github](https://tmtheme-editor.glitch.me/#!/editor/theme/Inspiredgithub)
-- [ir-white](https://tmtheme-editor.glitch.me/#!/editor/theme/IR_White)
-- [kronuz](https://tmtheme-editor.glitch.me/#!/editor/theme/Kronuz)
-- [material-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Material%20Dark)
-- [material-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Material%20Light)
-- [monokai](https://tmtheme-editor.glitch.me/#!/editor/theme/Monokai)
-- [nord](https://github.com/crabique/Nord-plist/tree/0d655b23d6b300e691676d9b90a68d92b267f7ec)
-- [nyx-bold](https://github.com/GalAster/vscode-theme-nyx)
-- [one-dark](https://github.com/andresmichel/one-dark-theme)
-- [OneHalfDark](https://github.com/sonph/onehalf)
-- [OneHalfLight](https://github.com/sonph/onehalf)
-- [railsbase16-green-screen-dark](https://github.com/tompave/rails_base_16)
-- [solarized-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(dark))
-- [solarized-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(light))
-- [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
-- [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
-- [Tomorrow](https://tmtheme-editor.glitch.me/#!/editor/theme/Tomorrow)
-- [two-dark](https://github.com/erremauro/TwoDark)
-- [visual-studio-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Visual%20Studio%20Dark)
-- [zenburn](https://github.com/colinta/zenburn)
-
-</details>
-
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
 
