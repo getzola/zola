@@ -86,7 +86,7 @@ feed_filenames = ["atom.xml"]
 hard_link_static = false
 
 # The default author for pages
-author = 
+author =
 
 # The taxonomies to be rendered for the site and their configuration of the default languages
 # Example:
@@ -129,7 +129,7 @@ highlight_theme = "base16-ocean-dark"
 render_emoji = false
 
 # CSS class to add to external links (e.g. "external-link")
-external_links_class = 
+external_links_class =
 
 # Whether external links are to be opened in a new tab
 # If this is true, a `rel="noopener"` will always automatically be added for security reasons
@@ -224,7 +224,7 @@ index_format = "elasticlunr_javascript"
 [translations]
 
 # Additional languages definition
-# You can define language specific config values and translations: 
+# You can define language specific config values and translations:
 # title, description, generate_feeds, feed_filenames, taxonomies, build_search_index
 # as well as its own search configuration and translations (see above for details on those)
 [languages]
@@ -253,49 +253,7 @@ index_format = "elasticlunr_javascript"
 
 Zola currently has the following highlight themes available:
 
-- [1337](https://tmtheme-editor.glitch.me/#!/editor/theme/1337)
-- [agola-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Agola%20Dark)
-- [ascetic-white](https://tmtheme-editor.glitch.me/#!/editor/theme/Ascetic%20White)
-- [axar](https://tmtheme-editor.glitch.me/#!/editor/theme/Axar)
-- [ayu-dark](https://github.com/dempfi/ayu)
-- [ayu-light](https://github.com/dempfi/ayu)
-- [ayu-mirage](https://github.com/dempfi/ayu)
-- [base16-atelierdune-light](https://atelierbram.github.io/syntax-highlighting/atelier-schemes/dune/)
-- [base16-ocean-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Base16%20Ocean%20Dark)
-- [base16-ocean-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Base16%20Ocean%20Light)
-- [bbedit](https://tmtheme-editor.glitch.me/#!/editor/theme/BBEdit)
-- [boron](https://tmtheme-editor.glitch.me/#!/editor/theme/Boron)
-- [charcoal](https://tmtheme-editor.glitch.me/#!/editor/theme/Charcoal)
-- [cheerfully-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Cheerfully%20Light)
-- [classic-modified](https://tmtheme-editor.glitch.me/#!/editor/theme/Classic%20Modified)
-- [demain](https://tmtheme-editor.glitch.me/#!/editor/theme/Demain)
-- [dimmed-fluid](https://tmtheme-editor.glitch.me/#!/editor/theme/Dimmed%20Fluid)
-- [dracula](https://draculatheme.com/)
-- [gray-matter-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Gray%20Matter%20Dark)
-- [green](https://github.com/kristopherjohnson/MonochromeSublimeText)
-- [gruvbox-dark](https://github.com/morhetz/gruvbox)
-- [gruvbox-light](https://github.com/morhetz/gruvbox)
-- [idle](https://tmtheme-editor.glitch.me/#!/editor/theme/IDLE)
-- [inspired-github](https://tmtheme-editor.glitch.me/#!/editor/theme/Inspiredgithub)
-- [ir-white](https://tmtheme-editor.glitch.me/#!/editor/theme/IR_White)
-- [kronuz](https://tmtheme-editor.glitch.me/#!/editor/theme/Kronuz)
-- [material-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Material%20Dark)
-- [material-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Material%20Light)
-- [monokai](https://tmtheme-editor.glitch.me/#!/editor/theme/Monokai)
-- [nord](https://github.com/crabique/Nord-plist/tree/0d655b23d6b300e691676d9b90a68d92b267f7ec)
-- [nyx-bold](https://github.com/GalAster/vscode-theme-nyx)
-- [one-dark](https://github.com/andresmichel/one-dark-theme)
-- [OneHalfDark](https://github.com/sonph/onehalf)
-- [OneHalfLight](https://github.com/sonph/onehalf)
-- [railsbase16-green-screen-dark](https://github.com/tompave/rails_base_16)
-- [solarized-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(dark))
-- [solarized-light](https://tmtheme-editor.glitch.me/#!/editor/theme/Solarized%20(light))
-- [subway-madrid](https://github.com/idleberg/Subway.tmTheme)
-- [subway-moscow](https://github.com/idleberg/Subway.tmTheme)
-- [Tomorrow](https://tmtheme-editor.glitch.me/#!/editor/theme/Tomorrow)
-- [two-dark](https://github.com/erremauro/TwoDark)
-- [visual-studio-dark](https://tmtheme-editor.glitch.me/#!/editor/theme/Visual%20Studio%20Dark)
-- [zenburn](https://github.com/colinta/zenburn)
+{{ grid_gallery() }}
 
 Zola uses the Sublime Text themes, making it very easy to add more.
 If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
