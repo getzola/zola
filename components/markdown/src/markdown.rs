@@ -38,7 +38,8 @@ static MORE_DIVIDER_RE: Lazy<Regex> = Lazy::new(|| {
 });
 
 static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap()
+    Regex::new(r#"<sup class="footnote-reference"( id=\s*.*?)?><a href=\s*.*?>\s*.*?</a></sup>"#)
+        .unwrap()
 });
 
 /// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
