@@ -5,13 +5,13 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use errors::{Context as ErrorContext, Result};
-use libs::tera::{to_value, Context, Tera, Value};
+use libs::tera::{Context, Tera, Value, to_value};
 use utils::templates::{check_template_fallbacks, render_template};
 
+use crate::Section;
 use crate::library::Library;
 use crate::ser::{SectionSerMode, SerializingPage, SerializingSection};
 use crate::taxonomies::{Taxonomy, TaxonomyTerm};
-use crate::Section;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum PaginationRoot<'a> {

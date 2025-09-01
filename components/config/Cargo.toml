@@ -1,11 +1,11 @@
 [package]
 name = "config"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 include = ["src/**/*"]
 
 [dependencies]
-serde = {version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
 
 errors = { path = "../errors" }
 utils = { path = "../utils" }

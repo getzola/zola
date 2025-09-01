@@ -1,4 +1,4 @@
-use errors::{anyhow, Result};
+use errors::{Result, anyhow};
 
 /// De-serialized & sanitized arguments of `resize_image`
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

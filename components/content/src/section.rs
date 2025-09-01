@@ -5,14 +5,14 @@ use libs::tera::{Context as TeraContext, Tera};
 
 use config::Config;
 use errors::{Context, Result};
-use markdown::{render_content, RenderContext};
+use markdown::{RenderContext, render_content};
 use utils::fs::read_file;
 use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
-use utils::templates::{render_template, ShortcodeDefinition};
+use utils::templates::{ShortcodeDefinition, render_template};
 
 use crate::file_info::FileInfo;
-use crate::front_matter::{split_section_content, SectionFrontMatter};
+use crate::front_matter::{SectionFrontMatter, split_section_content};
 use crate::library::Library;
 use crate::ser::{SectionSerMode, SerializingSection};
 use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
@@ -171,10 +171,10 @@ impl Section {
         self.toc = res.toc;
 
         self.external_links = res.external_links;
-        if let Some(ref redirect_to) = self.meta.redirect_to {
-            if is_external_link(redirect_to) {
-                self.external_links.push(redirect_to.to_owned());
-            }
+        if let Some(ref redirect_to) = self.meta.redirect_to
+            && is_external_link(redirect_to)
+        {
+            self.external_links.push(redirect_to.to_owned());
         }
 
         self.internal_links = res.internal_links;
@@ -237,7 +237,7 @@ impl Section {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{create_dir, create_dir_all, File};
+    use std::fs::{File, create_dir, create_dir_all};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 

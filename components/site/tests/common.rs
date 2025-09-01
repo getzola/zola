@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use path_slash::PathExt;
 use site::Site;
 use std::ffi::OsStr;
-use tempfile::{tempdir, TempDir};
+use tempfile::{TempDir, tempdir};
 
 // 2 helper macros to make all the build testing more bearable
 #[macro_export]
@@ -46,7 +46,7 @@ pub fn build_site(name: &str) -> (Site, TempDir, PathBuf) {
     site.load().unwrap();
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    site.set_output_path(public);
     site.build().expect("Couldn't build the site");
     (site, tmp_dir, public.clone())
 }
@@ -66,7 +66,7 @@ where
     }
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
-    site.set_output_path(&public);
+    site.set_output_path(public);
     site.build().expect("Couldn't build the site");
     (site, tmp_dir, public.clone())
 }
@@ -94,7 +94,7 @@ fn find_lang_for(entry: &Path, base_dir: &Path) -> Option<(String, Option<String
         let mut unified_path = no_ext.clone();
         unified_path.pop();
         // Readd stem with .md added
-        unified_path.push(&format!("{}.md", stem.unwrap().to_str().unwrap()));
+        unified_path.push(format!("{}.md", stem.unwrap().to_str().unwrap()));
         let unified_path_str = match unified_path.strip_prefix(base_dir) {
             Ok(path_without_prefix) => path_without_prefix.to_slash_lossy(),
             _ => unified_path.to_slash_lossy(),

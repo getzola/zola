@@ -61,6 +61,11 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
             site.output_path.clone(),
         ),
     );
+    {
+        let local = libs::chrono::Local::now();
+        let utc = local.to_utc();
+        site.tera.register_function("now", global_fns::Now::new(local, utc));
+    }
     site.tera.register_filter(
         "markdown",
         filters::MarkdownFilter::new(
