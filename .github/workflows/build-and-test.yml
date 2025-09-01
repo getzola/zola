@@ -44,6 +44,9 @@ jobs:
         with:
           toolchain: ${{ matrix.rustup_toolchain }}
 
+      - name: Cargo fmt
+        run: cargo fmt --check
+
       - name: Cargo build (Native TLS)
         run: |
           cargo build --all --no-default-features --features=native-tls
@@ -54,6 +57,3 @@ jobs:
 
       - name: Cargo test
         run: cargo test --all
-
-      - name: Cargo fmt
-        run: cargo fmt --check
