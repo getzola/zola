@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Oceanic Zen | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;oceanic-zen&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Oceanic Zen</h1>
+            <p>Minimalistic blog theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;barlog.li">Barlog M.</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.12.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;barlog-m&#x2F;oceanic-zen">https:&#x2F;&#x2F;github.com&#x2F;barlog-m&#x2F;oceanic-zen</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;oceanic-zen.netlify.app">https:&#x2F;&#x2F;oceanic-zen.netlify.app</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-08-25T18:51:47-04:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="oceanic-zen">Oceanic Zen</h1>
+<p><a class="external" href="https://app.netlify.com/sites/oceanic-zen/deploys"><img src="https://api.netlify.com/api/v1/badges/e90897e9-f3e3-4906-b647-11a918af3a3b/deploy-status" alt="Netlify Status" /></a></p>
+<p>Oceanic Zen is a theme for <a class="external" href="https://www.getzola.org/">Zola</a> static site generator</p>
+<p><a class="external" href="https://oceanic-zen.netlify.app/">Oceanic Zen</a> is a minimalistic theme for personal blog.</p>
+<p><img src="https://www.getzola.org/themes/oceanic-zen/screenshot-index.png" alt="Screenshot" />
+<img src="https://www.getzola.org/themes/oceanic-zen/screenshot.png" alt="Screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>Download theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/barlog-m/oceanic-zen.git
+</span></code></pre>
+<p>Or add as git submodule</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ git submodule add https://github.com/barlog-m/oceanic-zen.git themes/oceanic-zen
+</span></code></pre>
+<p>Enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;oceanic-zen&quot;
+</span></code></pre>
+<h2 id="options">Options</h2>
+<p>Theme supported some extra options</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;blog author name&quot;
+</span><span style="color:#e8bf6a;">github </span><span>= </span><span style="color:#c1be91;">&quot;github author name&quot;
+</span><span style="color:#e8bf6a;">twitter </span><span>= </span><span style="color:#c1be91;">&quot;twitter author name&quot;
+</span></code></pre>
+<p>Font <a class="external" href="https://typeof.net/Iosevka/">Iosevka</a></p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Papaya | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;papaya&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Papaya</h1>
+            <p>A clean Zola theme for blogging and projects</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;justintennant.me">Justin Tennant</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.16.1 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;justint&#x2F;papaya">https:&#x2F;&#x2F;github.com&#x2F;justint&#x2F;papaya</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;justintennant.me&#x2F;papaya">https:&#x2F;&#x2F;justintennant.me&#x2F;papaya</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-07-27T22:20:55-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="papaya">Papaya</h1>
+<p>A clean <a class="external" href="https://getzola.org">Zola</a> theme for blogging and projects, forked from <a class="external" href="https://github.com/zbrox/anpu-zola-theme">Anpu</a>.</p>
+<h2 id="preview">Preview</h2>
+<p><strong>Demo site</strong>: <a class="external" href="https://justintennant.me/papaya/">https://justintennant.me/papaya/</a></p>
+<p><img src="https://raw.githubusercontent.com/justint/papaya/main/pics/blendedindex.png" alt="index light/dark" /></p>
+<p align="center">
+  <img alt="Light Projects" src="https://raw.githubusercontent.com/justint/papaya/main/pics/projects.png" width="45%">
+&nbsp; &nbsp; &nbsp; &nbsp;
+  <img alt="Dark Projects" src="https://raw.githubusercontent.com/justint/papaya/main/pics/projects_dark.png" width="45%">
+</p>
+<p align="center">
+  <img alt="Light Project" src="https://raw.githubusercontent.com/justint/papaya/main/pics/project.png" width="45%">
+&nbsp; &nbsp; &nbsp; &nbsp;
+  <img alt="Dark Project" src="https://raw.githubusercontent.com/justint/papaya/main/pics/project_dark.png" width="45%">
+</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Blog posts</li>
+<li>Project pages</li>
+<li>Automatic light/dark mode</li>
+<li>Categories and tags</li>
+<li>Optional multilingual support</li>
+<li>Customizable sections and navigation menu links</li>
+<li>Featured images for posts/pages</li>
+<li>Smart image embedding shortcode (<code>{{ img() }}</code>)</li>
+<li>GitHub repository star/fork counts</li>
+<li><a class="external" href="https://ogp.me/">Open Graph Protocol</a> tags</li>
+<li><a class="external" href="https://utteranc.es/">Utterances</a> support</li>
+<li>Social/contact links</li>
+<li>100% Google Lighthouse score</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<ol>
+<li>
+<p>Clone this repository to your <code>themes</code> folder:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/justint/papaya.git themes/papaya
+</span></code></pre>
+</li>
+<li>
+<p>Set your theme setting in <code>config.toml</code> to <code>papaya</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;papaya&quot;
+</span></code></pre>
+</li>
+<li>
+<p>Copy the following sections and keys (and their contents/values) from papaya's <a class="external" href="https://github.com/justint/papaya/blob/main/config.toml"><code>config.toml</code></a> and paste them into your site's <code>config.toml</code>:</p>
+<ul>
+<li><code>[languages]</code>
+<ul>
+<li><code>[languages.en]</code></li>
+<li><code>[languages.en.translations]</code></li>
+</ul>
+</li>
+<li><code>[extra.cdn]</code>
+<ul>
+<li><code>font_awesome</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>In your <code>content</code> directory, add new <code>blog</code> and <code>projects</code> directories. Copy the <code>_index.md</code> file from Papaya's <code>content/blog</code> into your <code>content/blog</code>, and the <code>_index.md</code> and <code>categories.json</code> files from Papaya's <code>content/projects</code> into your <code>content/projects</code>.</p>
+<p>Your <code>content</code> directory structure should look like this:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>content
+</span><span>├── blog
+</span><span>│  └── _index.md
+</span><span>└── projects
+</span><span>   └── _index.md
+</span><span>   └── categories.json
+</span></code></pre>
+</li>
+<li>
+<p><em>(optional)</em> To enable GitHub repository stars/fork counts (disabled by default to avoid hitting API rate limits), set the <code>$ZOLA_ENV</code> environment variable to <code>prod</code> prior to your <code>zola serve</code>/<code>zola build</code> execution.</p>
+<p>For csh/tsch:</p>
+<pre data-lang="shell" style="background-color:#383838;color:#e6e1dc;" class="language-shell "><code class="language-shell" data-lang="shell"><span>setenv ZOLA_ENV prod
+</span></code></pre>
+<p>For bash/ksh/zsh:</p>
+<pre data-lang="shell" style="background-color:#383838;color:#e6e1dc;" class="language-shell "><code class="language-shell" data-lang="shell"><span>export ZOLA_ENV=prod
+</span></code></pre>
+</li>
+</ol>
+<h2 id="customization">Customization</h2>
+<p>Here are the customizable features of Papaya:</p>
+<ul>
+<li>Project categories</li>
+<li>Light/dark mode</li>
+<li>Multilingual support</li>
+<li>Sections and navigation menu links</li>
+<li>Post/project date formats</li>
+<li>Post/project featured images</li>
+<li>Open Graph Protocol locale/profile information</li>
+<li>Utterances</li>
+<li>Social/contact links</li>
+</ul>
+<h3 id="project-categories">Project categories</h3>
+<p>In your <code>content/projects/categories.json</code>, you can specify the categories of projects. The formatting of the file is:</p>
+<pre data-lang="json" style="background-color:#383838;color:#e6e1dc;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>   </span><span style="color:#c1be91;">&quot;title&quot;</span><span>: </span><span style="color:#c1be91;">&quot;keyword&quot;
+</span><span>}
+</span></code></pre>
+<ul>
+<li><code>"title"</code>: the title text displayed for each category grouping on your projects page.</li>
+<li><code>"keyword"</code>: the taxonomy term you'll use in your project pages.</li>
+</ul>
+<p>A project can have multiple categories, and will be displayed once in each category configured.</p>
+<p>Projects without categories will be displayed in the "Other" category listing of your project page. If you don't want the "Other" category displayed, you can copy the <code>templates/projects.html</code> to your own <code>templates</code> directory and delete/comment out the "Other" category code.</p>
+<p>Example <code>categories.json</code>:</p>
+<pre data-lang="json" style="background-color:#383838;color:#e6e1dc;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  </span><span style="color:#c1be91;">&quot;Software&quot;</span><span>: </span><span style="color:#c1be91;">&quot;software&quot;</span><span>,
+</span><span>  </span><span style="color:#c1be91;">&quot;Films&quot;</span><span>: </span><span style="color:#c1be91;">&quot;film&quot;
+</span><span>}
+</span></code></pre>
+<p>Example project page front matter:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Example software project&quot;
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#6d9cbe;">2021-08-11
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span style="color:#e8bf6a;">categories </span><span>= [</span><span style="color:#c1be91;">&quot;software&quot;</span><span>]
+</span></code></pre>
+<p>The example project page above would be grouped into &amp; displayed within the "Software" category of your projects page.</p>
+<h3 id="light-dark-mode">Light/dark mode</h3>
+<p>The Papaya theme can be set to <code>"light"</code>, <code>"dark"</code>, or <code>"auto"</code> mode in the <code>config.toml</code>.</p>
+<p>In <code>"auto"</code>, the light and dark modes are implicitly chosen by the <code>prefers-color-scheme</code> CSS media feature. The theme will switch automatically based on the viewer's OS or user agent setting.</p>
+<h3 id="multilingual-support">Multilingual support</h3>
+<p>Currently Zola has basic internationalization (<code>i18n</code>) support, you can read more in <a class="external" href="https://www.getzola.org/documentation/content/multilingual/">zola's Multilingual Sites doc</a>.</p>
+<p>To write a multilingual site, follow the steps below (English and Chinese in this example):</p>
+<ol>
+<li>
+<p>Add a <code>default_language</code> configuration and <code>[languages.zh]</code> and <code>[languages.en]</code> sections to your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">default_language </span><span>= </span><span style="color:#c1be91;">&quot;en&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh</span><span>]
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;中文标题&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;中文描述&quot;
+</span></code></pre>
+<p>Under the <code>[languages.zh]</code> section you can override default configurations like <code>title</code>, <code>description</code>, etc.</p>
+</li>
+<li>
+<p>Add translations of all keywords in <code>[languages.zh.translations]</code> and <code>languages.en.translations]</code> sections (see Papaya's <a href="https://www.getzola.org/themes/papaya/config.toml"><code>config.toml</code></a> for a listing of all keywords):</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">languages</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en.translations</span><span>]
+</span><span style="color:#e8bf6a;">projects </span><span>= </span><span style="color:#c1be91;">&quot;Projects&quot;
+</span><span style="color:#e8bf6a;">blog </span><span>= </span><span style="color:#c1be91;">&quot;Blog&quot;
+</span><span style="color:#e8bf6a;">about </span><span>= </span><span style="color:#c1be91;">&quot;About&quot;
+</span><span style="color:#e8bf6a;">recent_projects </span><span>= </span><span style="color:#c1be91;">&quot;Recent Projects&quot;
+</span><span style="color:#e8bf6a;">more_projects </span><span>= </span><span style="color:#c1be91;">&quot;More Projects&quot;
+</span><span style="color:#e8bf6a;">recent_blog_posts </span><span>= </span><span style="color:#c1be91;">&quot;Recent Blog Posts&quot;
+</span><span style="color:#e8bf6a;">more_blog_posts </span><span>= </span><span style="color:#c1be91;">&quot;More blog posts&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">...</span><span>
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh.translations</span><span>]
+</span><span style="color:#e8bf6a;">projects </span><span>= </span><span style="color:#c1be91;">&quot;项目&quot;
+</span><span style="color:#e8bf6a;">blog </span><span>= </span><span style="color:#c1be91;">&quot;博文&quot;
+</span><span style="color:#e8bf6a;">about </span><span>= </span><span style="color:#c1be91;">&quot;关于&quot;
+</span><span style="color:#e8bf6a;">recent_projects </span><span>= </span><span style="color:#c1be91;">&quot;近期项目&quot;
+</span><span style="color:#e8bf6a;">more_projects </span><span>= </span><span style="color:#c1be91;">&quot;更多项目&quot;
+</span><span style="color:#e8bf6a;">recent_blog_posts </span><span>= </span><span style="color:#c1be91;">&quot;近期博文&quot;
+</span><span style="color:#e8bf6a;">more_blog_posts </span><span>= </span><span style="color:#c1be91;">&quot;更多博文&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">...</span><span>
+</span></code></pre>
+</li>
+<li>
+<p>Add a <code>_index.zh.md</code> file into every section.</p>
+<p>For example: add <code>content/blog/_index.zh.md</code> and <code>content/projects/_index.zh.md</code>.</p>
+</li>
+<li>
+<p>Provide a <code>{page-name}.zh.md</code> (or <code>index.zh.md</code> into the page's directory, if it has one) for every page you'd like to translate.</p>
+<p>For example: add <code>content/blog/what-is-zola.zh.md</code> and <code>content/blog/blog-with-image/index.zh.md</code>.</p>
+</li>
+<li>
+<p>Add a <code>content/categories.zh.json</code> file. For example:</p>
+<pre data-lang="json" style="background-color:#383838;color:#e6e1dc;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>    </span><span style="color:#c1be91;">&quot;软件&quot;</span><span>: </span><span style="color:#c1be91;">&quot;software&quot;</span><span>,
+</span><span>    </span><span style="color:#c1be91;">&quot;电影&quot;</span><span>: </span><span style="color:#c1be91;">&quot;film&quot;
+</span><span>}
+</span></code></pre>
+</li>
+</ol>
+<p>Now you will have a website that supports both English and Chinese! Since <code>default_language</code> in <code>config.toml</code> is set to "en", by visiting <code>{base_url}</code> you will see the English version of this blog. You can visit the Chinese version by visiting <code>{base_url}/zh</code>.</p>
+<p>A page (post or project) can be available in both languages or only in one language, and it's not necessary that a page is available in the default language.</p>
+<h3 id="sections-and-navigation-menu-links">Sections and navigation menu links</h3>
+<p>The navigation menu is constructed from a list of <code>menu_items</code> in your <code>config.toml</code>. For example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">menu_items </span><span>= [
+</span><span>   { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;projects&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$LANG_BASE_URL/projects&quot;</span><span>, </span><span style="color:#e8bf6a;">show_recent </span><span>= </span><span style="color:#6e9cbe;">true</span><span>, </span><span style="color:#e8bf6a;">recent_items </span><span>= </span><span style="color:#a5c261;">3</span><span>, </span><span style="color:#e8bf6a;">recent_trans_key </span><span>= </span><span style="color:#c1be91;">&quot;recent_projects&quot;</span><span>, </span><span style="color:#e8bf6a;">more_trans_key </span><span>= </span><span style="color:#c1be91;">&quot;more_projects&quot; </span><span>},
+</span><span>   { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;blog&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$LANG_BASE_URL/blog&quot;</span><span>, </span><span style="color:#e8bf6a;">show_recent </span><span>= </span><span style="color:#6e9cbe;">true</span><span>, </span><span style="color:#e8bf6a;">recent_items </span><span>= </span><span style="color:#a5c261;">3</span><span>, </span><span style="color:#e8bf6a;">recent_trans_key </span><span>= </span><span style="color:#c1be91;">&quot;recent_blog_posts&quot;</span><span>, </span><span style="color:#e8bf6a;">more_trans_key </span><span>= </span><span style="color:#c1be91;">&quot;more_blog_posts&quot; </span><span>},
+</span><span>   { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$LANG_BASE_URL/tags&quot; </span><span>},
+</span><span>   { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;about&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$LANG_BASE_URL/about&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<p>A <code>menu_item</code> can be one of two things:</p>
+<ul>
+<li>
+<p><strong>a link to a section.</strong> Section links can be optionally configured to display its most recently authored items on your index page. See Configuring section menu items.</p>
+</li>
+<li>
+<p><strong>a link to a URL.</strong> See Configuring URL menu items</p>
+</li>
+</ul>
+<h4 id="configuring-section-menu-items">Configuring section menu items</h4>
+<p>A section is created whenever a directory (or subdirectory) in the content section contains an <code>_index.md</code> file; see the <a class="external" href="https://www.getzola.org/documentation/content/section/">Zola docs on sections</a>.</p>
+<p>Papaya has two sections by default: <code>projects</code> and <code>blog</code>. You can add additional sections or change section names.  For example, you can add a section called <em>Diary</em>. In order to add this section, you need to:</p>
+<ol>
+<li>
+<p>Create a directory called <code>diary</code> in <code>content/</code>.</p>
+</li>
+<li>
+<p>Create an <code>_index.md</code> inside <code>content/diary/</code>, for example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Diary&quot;
+</span><span style="color:#e8bf6a;">render </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#95815e;"># diary will use blog.html for its template
+</span><span style="color:#e8bf6a;">template </span><span>= </span><span style="color:#c1be91;">&quot;blog.html&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+</li>
+</ol>
+<p>Sections can be added to the navigation menu, and optionally configured to display its most recently authored items on your index page. To add your section to the navigation menu:</p>
+<ol>
+<li>
+<p>In your <code>config.toml</code> under the <code>[extra]</code> section, add your section to the <code>menu_items</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">menu_items </span><span>= [
+</span><span>    </span><span style="background-color:#b90622;color:#f8f8f0;">...</span><span>
+</span><span>    </span><span style="background-color:#b90622;color:#f8f8f0;">{</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">name</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">&quot;diary&quot;</span><span>, </span><span style="background-color:#b90622;color:#f8f8f0;">url</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">&quot;$LANG_BASE_URL/diary&quot;</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">}</span><span>
+</span><span>]
+</span></code></pre>
+</li>
+<li>
+<p>In your <code>config.toml</code> under the <code>[languages.&lt;code&gt;.translations]</code> section, add your section name translation keys:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">languages</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en.translations</span><span>]
+</span><span style="color:#e8bf6a;">diary </span><span>= </span><span style="color:#c1be91;">&quot;Diary&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh.translations</span><span>]
+</span><span style="color:#e8bf6a;">diary </span><span>= </span><span style="color:#c1be91;">&quot;日记&quot;
+</span></code></pre>
+<p>This will add a simple hyperlink to your new <em>Diary</em> section in the navigation menu.</p>
+</li>
+</ol>
+<p>To also display recently authored items from your <em>Diary</em> section on your index page:</p>
+<ol>
+<li>
+<p>Add the following attributes to your menu item:</p>
+<ul>
+<li><code>show_recent</code>: Adds the section's recent items listing to your index page.</li>
+<li><code>recent_items</code>: Number of recent items to display.</li>
+<li><code>recent_trans_key</code>: Translation key for the recent items listing title text.</li>
+<li><code>more_trans_key</code>: Translation key for the hyperlink text to the section.</li>
+</ul>
+<p>For example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">menu_items </span><span>= [
+</span><span>    </span><span style="background-color:#b90622;color:#f8f8f0;">...</span><span>
+</span><span>    </span><span style="background-color:#b90622;color:#f8f8f0;">{</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">name</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">&quot;diary&quot;</span><span>, </span><span style="background-color:#b90622;color:#f8f8f0;">url</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">&quot;$LANG_BASE_URL/diary&quot;</span><span>, </span><span style="background-color:#b90622;color:#f8f8f0;">show_recent</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">true</span><span>, </span><span style="background-color:#b90622;color:#f8f8f0;">recent_items</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">3</span><span>, </span><span style="background-color:#b90622;color:#f8f8f0;">recent_trans_key</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">&quot;recent_diary&quot;</span><span>, </span><span style="background-color:#b90622;color:#f8f8f0;">more_trans_key</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">&quot;more_diary&quot;</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">}</span><span>
+</span><span>]
+</span></code></pre>
+</li>
+<li>
+<p>In your <code>config.toml</code> under the <code>[languages.&lt;code&gt;.translations]</code> section, add your section name, <code>recent_trans_key</code>, and <code>more_trans_key</code> translation keys:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">languages</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en.translations</span><span>]
+</span><span style="color:#e8bf6a;">diary </span><span>= </span><span style="color:#c1be91;">&quot;Diary&quot;
+</span><span style="color:#e8bf6a;">recent_diary </span><span>= </span><span style="color:#c1be91;">&quot;Recent Diaries&quot;
+</span><span style="color:#e8bf6a;">more_diary </span><span>= </span><span style="color:#c1be91;">&quot;More Diaries&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh.translations</span><span>]
+</span><span style="color:#e8bf6a;">diary </span><span>= </span><span style="color:#c1be91;">&quot;日记&quot;
+</span><span style="color:#e8bf6a;">recent_diary </span><span>= </span><span style="color:#c1be91;">&quot;近期日记&quot;
+</span><span style="color:#e8bf6a;">more_diary </span><span>= </span><span style="color:#c1be91;">&quot;更多日记&quot;
+</span></code></pre>
+<p>This will add both a hyperlink to your new <em>Diary</em> section in the navigation menu, and a listing of the three most recent items from your <em>Diary</em> section on your index page.</p>
+</li>
+</ol>
+<h4 id="configuring-url-menu-items">Configuring URL menu items</h4>
+<p>If you want to add a simple link to the navigation menu, add an item with a <code>name</code> and <code>url</code>. For example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">sections </span><span>= [
+</span><span>    </span><span style="background-color:#b90622;color:#f8f8f0;">...</span><span>
+</span><span>    </span><span style="background-color:#b90622;color:#f8f8f0;">{</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">name</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">&quot;tag&quot;</span><span>, </span><span style="background-color:#b90622;color:#f8f8f0;">url</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">=</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">&quot;$LANG_BASE_URL/tags&quot;</span><span> </span><span style="background-color:#b90622;color:#f8f8f0;">}</span><span>
+</span><span>]
+</span></code></pre>
+<p>A translation key for your link's <code>name</code> must be added into your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">languages</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en.translations</span><span>]
+</span><span style="color:#e8bf6a;">tag </span><span>= </span><span style="color:#c1be91;">&quot;Tag&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">langauges.zh.translations</span><span>]
+</span><span style="color:#e8bf6a;">tag </span><span>= </span><span style="color:#c1be91;">&quot;标签&quot;
+</span></code></pre>
+<p>If you include <code>$BASE_URL</code> in the URL of a link it will be replaced with the base URL of your site, and <code>$LANG_BASE_URL</code> will be replaced with the language-specific base URL of your site.</p>
+<h3 id="post-project-date-formats">Post/project date formats</h3>
+<p>You can have different date formats in different languages. You need to set the <code>date_format</code> value in every langauge's translation section.</p>
+<p>Example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">languages</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en.translations</span><span>]
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%e %B %Y&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh.translations</span><span>]
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%Y 年 %m 月 %d 日&quot;
+</span></code></pre>
+<p>The formatting uses the standard <code>date</code> filter in Tera. The date format options you can use are listed in the <a class="external" href="https://tera.netlify.app/docs/#date">chrono crate documentation</a>.</p>
+<h3 id="post-project-featured-images">Post/project featured images</h3>
+<p>Posts and projects can have featured images which display at the top of their page before the page contents.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">featured_image </span><span>= </span><span style="color:#c1be91;">&quot;image.jpg&quot;
+</span><span style="color:#e8bf6a;">featured_image_alt </span><span>= </span><span style="color:#c1be91;">&quot;A lodge overlooks a forested mountain range.&quot;
+</span></code></pre>
+<p><img src="https://www.getzola.org/themes/papaya/pics/featured_image.png" alt="Featured image" /></p>
+<p>Featured images can also be extended to the full width of the viewport:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">featured_image </span><span>= </span><span style="color:#c1be91;">&quot;image.jpg&quot;
+</span><span style="color:#e8bf6a;">featured_image_alt </span><span>= </span><span style="color:#c1be91;">&quot;A lodge overlooks a forested mountain range.&quot;
+</span><span style="color:#e8bf6a;">featured_image_extended </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p><img src="https://www.getzola.org/themes/papaya/pics/featured_image_extended.png" alt="Featured image, extended" /></p>
+<h3 id="open-graph-protocol-locale-profile-information">Open Graph Protocol locale/profile information</h3>
+<p>In your <code>config.toml</code> you can add a <code>[extra.ogp]</code> section to specify your Open Graph Protocol locale and profile information.</p>
+<p>Open Graph Protocol provides you control over how your website's content should be displayed on social media sites.</p>
+<p>For the more information on Open Graph Protocol and valid property values, visit the official <a class="external" href="https://ogp.me/">website</a>.</p>
+<p>Example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.ogp</span><span>]
+</span><span style="color:#e8bf6a;">locale </span><span>= </span><span style="color:#c1be91;">&quot;en_US&quot;
+</span><span style="color:#e8bf6a;">first_name </span><span>= </span><span style="color:#c1be91;">&quot;Papaya&quot;
+</span><span style="color:#e8bf6a;">last_name </span><span>= </span><span style="color:#c1be91;">&quot;Tiliqua&quot;
+</span><span style="color:#e8bf6a;">gender </span><span>= </span><span style="color:#c1be91;">&quot;female&quot;
+</span><span style="color:#e8bf6a;">username </span><span>= </span><span style="color:#c1be91;">&quot;tiliquasp&quot;
+</span></code></pre>
+<h3 id="utterances">Utterances</h3>
+<p><a class="external" href="https://utteranc.es/">Utterances</a> is a comments widget built on GitHub issues. When enabled, Papaya can display GitHub issues as comments on your blog posts.</p>
+<p>To enable:</p>
+<ol>
+<li>
+<p>Follow instructions on the <a class="external" href="https://utteranc.es/">utterances</a> website.</p>
+</li>
+<li>
+<p>Once you're at the "Enable Utterances" step, enter the following keys into your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.utterances</span><span>]
+</span><span style="color:#e8bf6a;">enabled </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">repo </span><span>= </span><span style="color:#c1be91;">&quot;yourname/yourrepository&quot; </span><span style="color:#95815e;"># put your repository&#39;s short path here
+</span><span style="color:#e8bf6a;">post_map </span><span>= </span><span style="color:#c1be91;">&quot;pathname&quot;
+</span><span style="color:#e8bf6a;">label </span><span>= </span><span style="color:#c1be91;">&quot;utterances&quot;
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;preferred-color-scheme&quot;
+</span><span>
+</span></code></pre>
+</li>
+</ol>
+<h3 id="social-contact-links">Social/contact links</h3>
+<p>In your <code>config.toml</code> you can add a <code>[extra.social]</code> section to specify your social network/contact accounts. Changing these will update what links appear on your website's footer.</p>
+<p>Example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.social</span><span>]
+</span><span style="color:#e8bf6a;">email </span><span>= </span><span style="color:#c1be91;">&quot;papaya@tiliqua.sp&quot;
+</span><span style="color:#e8bf6a;">github </span><span>= </span><span style="color:#c1be91;">&quot;papaya&quot;
+</span><span style="color:#e8bf6a;">linkedin </span><span>= </span><span style="color:#c1be91;">&quot;papayatiliqua&quot;
+</span><span style="color:#e8bf6a;">twitter </span><span>= </span><span style="color:#c1be91;">&quot;papayathehisser&quot;
+</span></code></pre>
+<p>If you want to include other custom social websites, you can add them to <code>other</code>:</p>
+<p>Example:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.social</span><span>]
+</span><span style="color:#e8bf6a;">other </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;BTC&quot;</span><span>, </span><span style="color:#e8bf6a;">font_awesome </span><span>= </span><span style="color:#c1be91;">&quot;fa-brands fa-btc&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://www.bitcoin.com/&quot; </span><span>}
+</span><span>]
+</span></code></pre>
+<p>The <code>font_awesome</code> attribute specifies the Font Awesome classes; you can find them in <a class="external" href="https://fontawesome.com/">Font Awesome</a>. Be aware that different versions of Font Awesome may include different sets of icons; you can change your version of Font Awesome by updating the CDN path in the <code>[extra.cdn]</code> section:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.cdn</span><span>]
+</span><span style="color:#e8bf6a;">font_awesome </span><span>= </span><span style="color:#c1be91;">&quot;https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css&quot;
+</span></code></pre>
+<h2 id="image-embedding-shortcode">Image embedding shortcode</h2>
+<p>Included with Papaya is a shortcode for embedding images into your posts:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>img(path, alt, caption, class, extended_width_pct, quality)
+</span></code></pre>
+<p>You can use <code>./&lt;image-path&gt;</code> to specify the relative path of image which is relative to current markdown file.</p>
+<h3 id="arguments">Arguments</h3>
+<ul>
+<li>
+<p><code>path</code>: The path to the image. It can be either:</p>
+<ul>
+<li>a full path (eg: <code>https://somesite.com/my-image.jpg</code>),</li>
+<li>relative to the <code>content</code> directory in the <a class="external" href="https://www.getzola.org/documentation/getting-started/directory-structure/">directory structure</a> (eg: <code>@/projects/project-1/my-image.jpg</code>), or</li>
+<li>relative to the current markdown file (eg: <code>./my-image.jpg</code>).</li>
+</ul>
+</li>
+<li>
+<p><code>alt</code>: <em>(optional)</em> The alternate text for the image.</p>
+</li>
+<li>
+<p><code>caption</code>: <em>(optional)</em> A caption for the image. Text/HTML/Tera templates supported.</p>
+</li>
+<li>
+<p><code>class</code>: <em>(optional)</em> Any CSS classes to assign to the image. Multiple classes should be separated with a space (<code>" "</code>).</p>
+</li>
+<li>
+<p><code>quality</code>: <em>(optional)</em> JPEG or WebP quality of the image, in percent.  Only used when encoding JPEGs or WebPs; default value is <code>90</code>.</p>
+</li>
+<li>
+<p><code>extended_width_pct</code>: <em>(optional)</em> The percentage by which the image's width should be expanded past it's default figure width, up to maximum configured pixel width.</p>
+<p>Range is <code>0.0-1.0</code>, or <code>-1</code> for document width.</p>
+<p>Max pixel width can be defined in your <code>config.toml</code>  with the <code>extra.images.max_width</code> property (2500px default).</p>
+<p>See Extended width images section for more details and examples.</p>
+</li>
+</ul>
+<p>The benefits of using this shortcode over regular Markdown/HTML image embedding are:</p>
+<ul>
+<li>Images are automatically resized for best performance, using Zola's <a class="external" href="https://www.getzola.org/documentation/content/image-processing/">image processing functions</a></li>
+<li>Images &amp; captions are ✨pre-styled✨ for you</li>
+<li>Images can have their width extended past the document's width (see: Extended width images</li>
+<li>Less HTML/CSS boilerplate to write</li>
+</ul>
+<h3 id="extended-width-images">Extended width images</h3>
+<p>Images embedded into pages using the <code>img</code> shortcode can be configured to extend past their document width. This is especially nice for displaying wide/landscape images at higher resolutions.</p>
+<p>By default, images embedded with the <code>img</code> shortcode will be inserted as a <code>figure</code> with default margins:</p>
+<pre data-lang="js" style="background-color:#383838;color:#e6e1dc;" class="language-js "><code class="language-js" data-lang="js"><span>{{ </span><span style="color:#ffc66d;">img</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;image.jpg&quot;</span><span>, 
+</span><span>       </span><span style="color:#d0d0ff;">alt</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;A very cute leopard gecko.&quot;</span><span>, 
+</span><span>       </span><span style="color:#d0d0ff;">caption</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;A very cute leopard gecko. Default sizing.&quot;</span><span>) }}
+</span></code></pre>
+<p><img src="https://www.getzola.org/themes/papaya/pics/img_default.png" alt="Default sized image" /></p>
+<p>With the <code>extended_width_pct</code> argument, we can specify a percentage of how much the image should expand outside its default figure width, up to your maximum configured image width (<code>config.extra.images.max_width</code>, 2500px default).</p>
+<p>Here's an example with <code>extended_width_pct=0.1</code>:</p>
+<pre data-lang="js" style="background-color:#383838;color:#e6e1dc;" class="language-js "><code class="language-js" data-lang="js"><span>{{ </span><span style="color:#ffc66d;">img</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;image.jpg&quot;</span><span>, 
+</span><span>       </span><span style="color:#d0d0ff;">alt</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;A very cute leopard gecko.&quot;</span><span>, 
+</span><span>       </span><span style="color:#d0d0ff;">caption</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;A very cute leopard gecko. extended_width_pct=0.1&quot;</span><span>,
+</span><span>       </span><span style="color:#d0d0ff;">extended_width_pct</span><span style="color:#cc7833;">=</span><span style="color:#a5c261;">0.1</span><span>) }}
+</span></code></pre>
+<p><img src="https://www.getzola.org/themes/papaya/pics/img_0.1.png" alt="Image extended by 0.1" /></p>
+<p>The image is now displayed with a 10% larger width, while maintaining its original aspect ratio.</p>
+<p>Here's an even wider example:</p>
+<pre data-lang="js" style="background-color:#383838;color:#e6e1dc;" class="language-js "><code class="language-js" data-lang="js"><span>{{ </span><span style="color:#ffc66d;">img</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;image.jpg&quot;</span><span>, 
+</span><span>       </span><span style="color:#d0d0ff;">alt</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;A very cute leopard gecko.&quot;</span><span>, 
+</span><span>       </span><span style="color:#d0d0ff;">caption</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;A very cute leopard gecko. extended_width_pct=0.2&quot;</span><span>,
+</span><span>       </span><span style="color:#d0d0ff;">extended_width_pct</span><span style="color:#cc7833;">=</span><span style="color:#a5c261;">0.2</span><span>) }}
+</span></code></pre>
+<p><img src="https://www.getzola.org/themes/papaya/pics/img_0.2.png" alt="Image extended by 0.2" /></p>
+<p>The images will resize in resolution up to your maximum configured image width, and will display on the webpage up to the maximum width of the viewport.</p>
+<p>You can also force the image width to match the document's width by setting <code>extended_width_pct</code> to <code>-1</code>:</p>
+<pre data-lang="js" style="background-color:#383838;color:#e6e1dc;" class="language-js "><code class="language-js" data-lang="js"><span>{{ </span><span style="color:#ffc66d;">img</span><span>(</span><span style="color:#d0d0ff;">path</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;image.jpg&quot;</span><span>, 
+</span><span>       </span><span style="color:#d0d0ff;">alt</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;A very cute leopard gecko.&quot;</span><span>, 
+</span><span>       </span><span style="color:#d0d0ff;">caption</span><span style="color:#cc7833;">=</span><span style="color:#c1be91;">&quot;A very cute leopard gecko. extended_width_pct=-1&quot;</span><span>,
+</span><span>       </span><span style="color:#d0d0ff;">extended_width_pct</span><span style="color:#cc7833;">=-</span><span style="color:#a5c261;">1</span><span>) }}
+</span></code></pre>
+<p><img src="https://www.getzola.org/themes/papaya/pics/img_-1.png" alt="Image fixed to document width" /></p>
+<h2 id="why-papaya">Why "Papaya"?</h2>
+<p>🦎</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

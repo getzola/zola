@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>kodama | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;kodama-theme&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>kodama</h1>
+            <p>Theme insipired by wowchemy academic.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;adrien-faure.fr">Adrien Faure</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.15 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;adfaure&#x2F;kodama-theme">https:&#x2F;&#x2F;github.com&#x2F;adfaure&#x2F;kodama-theme</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;adfaure.github.io&#x2F;kodama-theme&#x2F;">https:&#x2F;&#x2F;adfaure.github.io&#x2F;kodama-theme&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-02-26T08:26:29+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="kodama">Kodama</h1>
+<p><img src="https://www.getzola.org/themes/kodama-theme/./screenshot.png" alt="Theme screenshot" /></p>
+<h2 id="summary">Summary</h2>
+<p>This theme is greatly inspired from hugo academic theme.</p>
+<p>First lets introduce some technical details:</p>
+<ul>
+<li>It relies on <a class="external" href="https://www.getzola.org/">zola</a>.</li>
+<li>It has no javascript.</li>
+<li>The CSS is built with <a class="external" href="https://tailwindcss.com/">tailwindcss</a>.
+<ul>
+<li>The blog articles are themed with <a class="external" href="https://tailwindcss.com/docs/typography-plugin">@tailwindcss/typography</a> theme.</li>
+</ul>
+</li>
+</ul>
+<h2 id="getting-started">Getting started</h2>
+<p>The best way to get started is to follow the official <a class="external" href="https://www.getzola.org/documentation/getting-started/overview/">zola tutorial</a>.</p>
+<p>This theme can be installed as any other theme.</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>mkdir themes
+</span><span>cd themes &amp; git clone https://github.com/adfaure/kodama-theme
+</span></code></pre>
+<p>and set in the <code>config.toml</code> the variable <code>theme</code> to <code>kodama-theme</code>.</p>
+<h3 id="generate-the-css">Generate the CSS</h3>
+<p><a class="external" href="https://tailwindcss.com/">Tailwindcss</a> is a framework that parses your html files, and generate the minimal CSS required.
+This theme depends on this framework.</p>
+<p>The theme comes with the precompiled style files (<code>static/styles/styles.css</code>). However, if you wish to change the style, or modify the template htlm, you might need to recompile your styles.</p>
+<p>The most simple way, is to follow the <a class="external" href="https://tailwindcss.com/docs/installation">installation page of tailwindcss</a>.</p>
+<p>At the end, you should have tailwindcss installed, and I advise to use the following tailwind configuration:</p>
+<pre data-lang="js" style="background-color:#383838;color:#e6e1dc;" class="language-js "><code class="language-js" data-lang="js"><span># </span><span style="color:#d0d0ff;">tailwind</span><span>.</span><span style="color:#d0d0ff;">config</span><span>.</span><span style="color:#d0d0ff;">js
+</span><span style="font-style:italic;color:#6e9cbe;">module</span><span>.</span><span style="font-style:italic;color:#6e9cbe;">exports </span><span style="color:#cc7833;">= </span><span>{
+</span><span>  content: [</span><span style="color:#c1be91;">&quot;./templates/**/*.html&quot;</span><span>, </span><span style="color:#c1be91;">&quot;./themes/**/*.html&quot;</span><span>,  </span><span style="color:#c1be91;">&quot;./themes/**/*.html&quot;</span><span>],
+</span><span>  theme: {},
+</span><span>  variants: {},
+</span><span>  plugins: [
+</span><span>      </span><span style="color:#da4939;">require</span><span>(</span><span style="color:#a5c261;">&#39;@tailwindcss/typography&#39;</span><span>),
+</span><span>  ],
+</span><span>};
+</span></code></pre>
+<p>Create a file <code>styles/styles.css</code>, and use the following command to generate the final CSS file:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>npx tailwindcss -i styles/styles.css -o static/styles/styles.css
+</span></code></pre>
+<p>The resulting file <code>static/styles/styles.css</code> is loaded in the html.</p>
+<p><em>Note that, for the moment the generation of the css is not automated. As a result, it is necessary to re-run this command when changes are made with the styling.</em></p>
+<h2 id="configuration">Configuration</h2>
+<p>This theme use some extra configuration, that can be set in the extra section of your <code>config.toml</code>.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># Title displayed in the index page
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Website title&quot;
+</span><span>
+</span><span style="color:#95815e;"># Use this theme
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;kodama-theme&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Image of your avatar displayed on the landing page
+</span><span style="color:#e8bf6a;">avatar </span><span>= </span><span style="color:#c1be91;">&quot;static/img/avatar.jpg&quot;
+</span><span style="color:#95815e;"># Image of the favicon
+</span><span style="color:#e8bf6a;">favicon </span><span>= </span><span style="color:#c1be91;">&quot;static/img/avatar.jpg&quot;
+</span><span>
+</span><span style="color:#95815e;"># Your email address showed in the contact section
+</span><span style="color:#e8bf6a;">email </span><span>= </span><span style="color:#c1be91;">&quot;kodama[at]domain.com&quot;
+</span><span>
+</span><span style="color:#95815e;"># If you don&#39;t want to show your contact information in the index
+</span><span style="color:#e8bf6a;">contact_in_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># Additional menu items
+</span><span style="color:#95815e;"># `Name` is what it is displayed, `path` is the url
+</span><span style="color:#e8bf6a;">menu_items </span><span>= [
+</span><span>  { </span><span style="color:#e8bf6a;">path </span><span>= </span><span style="color:#c1be91;">&quot;#contacts&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Contact&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<h2 id="index-page">Index page</h2>
+<p>The information needed to build the index page are located in the page <a class="external" href="https://www.getzola.org/documentation/content/page/#front-matter">front matter</a> of root index file (e.g <code>content/_index.md</code>).</p>
+<p>The available configuration options are:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># Insert zola front matter variable such as date etc
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Show a concise description of what you do below your avatar.
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Concise description&quot;
+</span><span>
+</span><span style="color:#95815e;"># The list of interests displayed
+</span><span style="color:#e8bf6a;">interests </span><span>= [
+</span><span>  </span><span style="color:#c1be91;">&quot;Rainbow pony&quot;</span><span>,
+</span><span>  </span><span style="color:#c1be91;">&quot;Martian food&quot;</span><span>,
+</span><span>  </span><span style="color:#c1be91;">&quot;Quantic science&quot;
+</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># The list of your degrees / education
+</span><span>[[</span><span style="color:#e8bf6a;">extra.education.courses</span><span>]]
+</span><span>  </span><span style="color:#e8bf6a;">course </span><span>= </span><span style="color:#c1be91;">&quot;Latest degree&quot;
+</span><span>  </span><span style="color:#e8bf6a;">institution </span><span>= </span><span style="color:#c1be91;">&quot;Some acamedy&quot;
+</span><span>  </span><span style="color:#e8bf6a;">year </span><span>= </span><span style="color:#a5c261;">2020
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.education.courses</span><span>]]
+</span><span>  </span><span style="color:#e8bf6a;">course </span><span>= </span><span style="color:#c1be91;">&quot;Another degree&quot;
+</span><span>  </span><span style="color:#e8bf6a;">institution </span><span>= </span><span style="color:#c1be91;">&quot;Here and there&quot;
+</span><span>  </span><span style="color:#e8bf6a;">year </span><span>= </span><span style="color:#a5c261;">2016
+</span><span>
+</span><span style="color:#95815e;"># Finally, a list of icons with a link displayed below your avatar
+</span><span>[[</span><span style="color:#e8bf6a;">extra.avatar_icons</span><span>]]
+</span><span>  </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;github&quot;
+</span><span>  </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/adfaure&quot;
+</span><span>[[</span><span style="color:#e8bf6a;">extra.avatar_icons</span><span>]]
+</span><span>  </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;gitlab&quot;
+</span><span>  </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;https://gitlab.com/adfaure&quot;
+</span><span>[[</span><span style="color:#e8bf6a;">extra.avatar_icons</span><span>]]
+</span><span>  </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;linkedin&quot;
+</span><span>  </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;https://www.linkedin.com/in/adrien-faure-9958978b/&quot;
+</span></code></pre>
+<h2 id="contact">Contact</h2>
+<p>The predefined contact page can be use.
+The front matter extra part should contains a list of the link to show in the contacts.</p>
+<h2 id="sections">Sections</h2>
+<p>The section available in your website are automatically detected and displayed in the nav bar at the top of the page.
+To prevent a section to be displayed in the nav bar, you can set the extra front matter option <code>extra.hidden_nav = false</code> to false.</p>
+<p>The section are sorted by <code>weight</code> defined in the front matter of the section.</p>
+<p>By default, the sections (i.e folders under <code>content/section_name</code>) have a summary showed in the index.
+This is configurable in the front matter of the section (e.g <code>content/section_name/_index.md</code>).</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># The name displayed in the section summary
+</span><span style="color:#e8bf6a;">extra.index_title </span><span>= </span><span style="color:#c1be91;">&quot;Recent Posts&quot;
+</span><span style="color:#95815e;"># Set to false to remove the section from the index
+</span><span style="color:#e8bf6a;">extra.index_show </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h3 id="blog">Blog</h3>
+<p>The section <code>blog</code> is the most standard section. It show a list of article with things that you want to share in your website.
+To use the blog template, configure the section with the following front matter:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">template </span><span>= </span><span style="color:#c1be91;">&quot;section.html&quot;
+</span><span style="color:#e8bf6a;">page_template </span><span>= </span><span style="color:#c1be91;">&quot;blog-page.html&quot;
+</span></code></pre>
+<h3 id="publications">Publications</h3>
+<p>The section <code>publication</code> is very similar to the <code>blog</code> section however it is dedicated to show your list of scientific articles.
+The articles are showed in two subcategories: Thesis and Conference / Workshop.</p>
+<p>To configure a publication section (e.g <code>content/research</code>) and set the following content:</p>
+<pre data-lang="md" style="background-color:#383838;color:#e6e1dc;" class="language-md "><code class="language-md" data-lang="md"><span>+++
+</span><span>title = &quot;Research&quot;
+</span><span>sort_by = &quot;date&quot;
+</span><span>
+</span><span style="color:#fd971f;"># Here the two dedicated templates
+</span><span>template = &quot;publications.html&quot;
+</span><span>page_template = &quot;publication-page.html&quot;
+</span><span>
+</span><span style="color:#fd971f;"># If you want to show your publications under different sections
+</span><span style="color:#fd971f;"># the title will be the displayed text in your website, and the type
+</span><span style="color:#fd971f;"># should be the type of publication.
+</span><span style="color:#fd971f;"># Each individual plublication has an </span><span style="color:#ec3533;">`extra.type`</span><span style="color:#fd971f;"> that refers to the
+</span><span style="color:#fd971f;"># publication type (example in content sub-section).
+</span><span>extra.publications_types = [
+</span><span>  { title = &quot;Journal articles&quot;, type = &quot;journals&quot; },
+</span><span>  { title = &quot;Thesis&quot;, type = &quot;thesis&quot; },
+</span><span>  { title = &quot;Conferences and workshops &quot;, type = &quot;conferences&quot; }
+</span><span>]
+</span><span>+++
+</span><span>
+</span><span style="color:#fd971f;">## Content
+</span><span>
+</span><span>Any content will be displayed on top of the section.
+</span></code></pre>
+<p>Article are referenced in subdirectories of this section.</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>tree content/research
+</span><span>content/research
+</span><span>├── _index.md
+</span><span>├── paper1
+</span><span>│   ├── bib
+</span><span>│   └── index.md
+</span><span>└── thesis
+</span><span>    ├── bib
+</span><span>    ├── index.md
+</span><span>    ├── thesis.pdf
+</span><span>    └── thesis_slides.pdf
+</span></code></pre>
+<p>The bib files are automatically loaded to get information from it. However, it is also possible to add information in the front matter of the article markdown file.</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>title = &quot;Article 1&quot;
+</span><span>date = 2021-05-18
+</span><span>
+</span><span>[extra]
+</span><span>type = &quot;Conference&quot;
+</span><span>authors = [ &quot;Kodama Mononoke&quot; ]
+</span><span>
+</span><span style="color:#fd971f;"># Should be the type of the publication type it should appears under
+</span><span style="color:#fd971f;"># configured in the front matter of publications/</span><span style="font-style:italic;color:#e42e70;">_index.md
+</span><span style="font-style:italic;color:#e42e70;">type = &quot;conferences&quot;
+</span><span style="background-color:#b90622;font-style:italic;color:#f8f8f0;">
+</span><span>featured = true
+</span><span>publication = &quot;2020 IEE rainbow workshop&quot;
+</span><span style="color:#fd971f;"># Add full url for your pdf and your presentation
+</span><span>url_pdf = &quot;https://your-pdf&quot;
+</span><span>url_slides = &quot;path_to_slides&quot;
+</span><span>
+</span><span style="color:#fd971f;"># Add a link to a local pdf inside of your paper folder (example in content/publications/paper1.index.md)
+</span><span>pdf = &quot;paper.pdf&quot;
+</span><span>slides = &quot;path_to_slides.pdf&quot;
+</span><span>+++
+</span></code></pre>
+<h2 id="extend-the-html-header">Extend the html header</h2>
+<p>In some cases, it is needed to add extra javascript or css files to be loaded by the web browsers.
+The base template of this theme define an empty block named <code>user_head</code>.</p>
+<p>To use this block, you can just create a new template name <code>templates/base.html</code> with the following content:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* extends &quot;kodama-theme/templates/base.html&quot; */%}
+</span><span>
+</span><span>{%/* block user_head */%}
+</span><span>  &lt;</span><span style="font-style:italic;color:#e8bf6a;">script</span><span>&gt;
+</span><span>    </span><span style="font-style:italic;color:#6e9cbe;">console</span><span style="color:#86c20e;">.</span><span style="color:#da4939;">log</span><span style="color:#86c20e;">(</span><span style="color:#c1be91;">&quot;hello world!&quot;</span><span style="color:#86c20e;">);
+</span><span style="color:#86c20e;">  </span><span>&lt;/</span><span style="font-style:italic;color:#e8bf6a;">script</span><span>&gt;
+</span><span>{%/* endblock user_head */%}
+</span></code></pre>
+<h2 id="icons">Icons</h2>
+<p>The icons available in this project are stored in a dedicated macro function in <code>templates/macros/icons.html</code>.
+To add a new svg, you can add a case in the <code>if elif .. else</code> of the function containing the svg copied from <a class="external" href="https://heroicons.com/">heroicons</a> for instance.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

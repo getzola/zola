@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>lightspeed | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;lightspeed&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>lightspeed</h1>
+            <p>Zola theme with a perfect Lighthouse score</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;carpetscheme">carpetscheme</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.20.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;carpetscheme&#x2F;lightspeed">https:&#x2F;&#x2F;github.com&#x2F;carpetscheme&#x2F;lightspeed</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;carpetscheme.github.io&#x2F;lightspeed">https:&#x2F;&#x2F;carpetscheme.github.io&#x2F;lightspeed</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-07-05T15:37:03+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="light-speed">Light Speed</h1>
+<p>A small Zola theme, ported from <a class="external" href="https://github.com/bradleytaunt/lightspeed">Light Speed Jekyll</a>.</p>
+<ul>
+<li>Perfect score on Google's Lighthouse audit</li>
+<li>Only ~700 bytes of CSS</li>
+<li>No JavaScript</li>
+</ul>
+<p>Demo: <a class="external" href="https://carpetscheme.github.io/lightspeed">carpetscheme.github.io/lightspeed</a></p>
+<hr />
+<h2 id="contents">Contents</h2>
+<ul>
+<li>Installation</li>
+<li>Options
+<ul>
+<li>Title</li>
+<li>Footer menu</li>
+<li>Sass</li>
+</ul>
+</li>
+<li>Original</li>
+<li>License</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>Download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/carpetscheme/lightspeed.git
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;lightspeed&quot;
+</span></code></pre>
+<p>Posts should be placed directly in the <code>content</code> folder.</p>
+<p>To sort the post index by date, enable sort in your index section <code>content/_index.md</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">sort_by </span><span>= </span><span style="color:#c1be91;">&quot;date&quot;
+</span></code></pre>
+<h2 id="options">Options</h2>
+<h3 id="title">Title</h3>
+<p>Set a title and description in the config to appear in the site header:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Different strokes&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;for different folks&quot;
+</span><span>
+</span></code></pre>
+<h3 id="footer-menu">Footer-menu</h3>
+<p>Set a field in <code>extra</code> with a key of <code>footer_links</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">footer_links </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/about&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;About&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/atom.xml&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;RSS&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Example&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>Create pages such as <code>$BASE_URL/about</code> by placing them in a subfolder of the content directory, and specifying the path in the frontmatter:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">path </span><span>= </span><span style="color:#c1be91;">&quot;about&quot;
+</span></code></pre>
+<p>The footer credit to Zola and Lightspeed can be disabled with the <code>footer_credits</code> option.</p>
+<h3 id="sass">Sass</h3>
+<p>Styles are compiled from sass and imported inline to the header.</p>
+<p>You can overide the styles by enabling sass compilation in the config:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">compile_sass </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>and placing a replacement <code>style.scss</code> file in your sass folder.</p>
+<h2 id="original">Original</h2>
+<p>This template is based on the Jekyll template <a class="external" href="https://github.com/bradleytaunt/lightspeed">Light Speed Jekyll</a> by Bradley Taunt.</p>
+<h2 id="license">License</h2>
+<p>Open sourced under the <a href="https://www.getzola.org/themes/lightspeed/LICENSE.md">MIT license</a>.</p>
+<p>This project is open source except for example articles found in <code>content</code>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
