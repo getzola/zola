@@ -5,7 +5,7 @@
 
   <name>Zola</name>
   <summary>A fast static site generator in a single binary with everything built-in</summary>
-  <developer>
+  <developer id="org.getzola">
     <name>Vincent Prouillet and contributors</name>
   </developer>
 
