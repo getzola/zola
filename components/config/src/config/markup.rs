@@ -240,7 +240,7 @@ impl Default for Markdown {
             external_links_target_blank: false,
             external_links_no_follow: false,
             external_links_no_referrer: false,
-            external_links_external: false,
+            external_links_external: true,
             smart_punctuation: false,
             definition_list: false,
             bottom_footnotes: false,
