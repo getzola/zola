@@ -247,7 +247,7 @@ mod tests {
         let result = MarkdownFilter::new(config.clone(), HashMap::new(), Tera::default())
             .filter(&to_value(md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), to_value("<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
+        assert_eq!(result.unwrap(), to_value("<p>Hello <a rel=\"noopener external\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
 
         let md = "```py\ni=0\n```";
         let result = MarkdownFilter::new(config, HashMap::new(), Tera::default())

@@ -182,7 +182,7 @@ fn can_use_external_links_class() {
     config.markdown.external_links_class = None;
     config.markdown.external_links_target_blank = true;
     let body = common::render_with_config("<https://google.com>", config.clone()).unwrap().body;
-    insta::assert_snapshot!("external_link_target_blank", body);
+    insta::assert_snapshot!("external_link_no_class_and_target_blank", body);
 
     // both class and target blank
     config.markdown.external_links_class = Some("external".to_string());
@@ -194,11 +194,12 @@ fn can_use_external_links_class() {
 fn can_use_external_links_options() {
     let mut config = Config::default_for_test();
 
-    // no options
+    // default options (rel=external only)
     let body = common::render("<https://google.com>").unwrap().body;
-    insta::assert_snapshot!("external_link_no_options", body);
+    insta::assert_snapshot!("external_link_default_options", body);
 
     // target blank
+    config.markdown.external_links_external = false;
     config.markdown.external_links_target_blank = true;
     let body = common::render_with_config("<https://google.com>", config.clone()).unwrap().body;
     insta::assert_snapshot!("external_link_target_blank", body);
