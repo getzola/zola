@@ -13,7 +13,7 @@ expression: body
 <h1 id=""></h1>
 <h1 id="-1"></h1>
 <h1 id="About"><a href="https://getzola.org/about/">About</a></h1>
-<h1 id="Rust"><a href="https://rust-lang.org" title="Rust homepage">Rust</a></h1>
+<h1 id="Rust"><a rel="external" title="Rust homepage" href="https://rust-lang.org">Rust</a></h1>
 <h1 id="hi"><code>hi</code></h1>
 <h1 id="hi-1"><em>hi</em></h1>
 <h1 id="hi-2"><strong>hi</strong></h1>
@@ -22,4 +22,3 @@ expression: body
 <p>footnote</p>
 </div>
 <h1 id="classes" class="bold another">Classes</h1>
-

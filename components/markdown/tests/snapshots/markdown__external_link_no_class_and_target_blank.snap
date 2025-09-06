@@ -1,0 +1,5 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: body
+---
+<p><a rel="noopener external" target="_blank" href="https://google.com">https://google.com</a></p>

@@ -3,4 +3,4 @@ source: components/markdown/tests/markdown.rs
 expression: body
 snapshot_kind: text
 ---
-<p><a href="https://google.com">https://google.com</a></p>
+<p><a rel="external" href="https://google.com">https://google.com</a></p>
