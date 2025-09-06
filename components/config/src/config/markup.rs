@@ -46,6 +46,8 @@ pub struct Markdown {
     pub external_links_no_follow: bool,
     /// Whether to set rel="noreferrer" for all external links
     pub external_links_no_referrer: bool,
+    /// Whether to set rel="external" for all external links
+    pub external_links_external: bool,
     /// Whether smart punctuation is enabled (changing quotes, dashes, dots etc in their typographic form)
     pub smart_punctuation: bool,
     /// Whether parsing of definition lists is enabled
@@ -188,6 +190,7 @@ impl Markdown {
         self.external_links_target_blank
             || self.external_links_no_follow
             || self.external_links_no_referrer
+            || self.external_links_external
             || self.external_links_class.is_some()
     }
 
@@ -212,6 +215,9 @@ impl Markdown {
         if self.external_links_no_referrer {
             rel_opts.push("noreferrer");
         }
+        if self.external_links_external {
+            rel_opts.push("external");
+        }
         let rel = if rel_opts.is_empty() {
             "".to_owned()
         } else {
@@ -234,6 +240,7 @@ impl Default for Markdown {
             external_links_target_blank: false,
             external_links_no_follow: false,
             external_links_no_referrer: false,
+            external_links_external: true,
             smart_punctuation: false,
             definition_list: false,
             bottom_footnotes: false,

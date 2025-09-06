@@ -105,8 +105,8 @@ console.log(foo(5));
 <tr><td style="text-align: right">ext</td><td style="text-align: right">extension to be used for dest files.</td></tr>
 </tbody></table>
 <h2 id="links">Links</h2>
-<p><a href="http://duckduckgo.com">link text</a></p>
-<p><a href="http://duckduckgo.com/" title="Duck duck go">link with title</a></p>
+<p><a rel="external" href="http://duckduckgo.com">link text</a></p>
+<p><a rel="external" title="Duck duck go" href="http://duckduckgo.com/">link with title</a></p>
 <h2 id="images">Images</h2>
 <p><img src="https://octodex.github.com/images/minion.png" alt="Minion" />
 <img src="https://octodex.github.com/images/stormtroopocat.jpg" alt="Stormtroopocat" title="The Stormtroopocat" /></p>
@@ -126,4 +126,3 @@ and multiple paragraphs.</p>
 <div class="footnote-definition" id="second"><sup class="footnote-definition-label">2</sup>
 <p>Footnote text.</p>
 </div>
-
