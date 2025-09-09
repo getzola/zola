@@ -24,7 +24,7 @@ Here's a high-level overview of each of these directories and `config.toml`.
 
 ## `config.toml`
 A mandatory Zola configuration file in TOML format.
-This file is explained in detail in the [configuration documentation](@/documentation/getting-started/configuration.md).
+This file is explained in detail in the [configuration documentation](@/documentation/getting-started/configuration/index.md).
 
 ## `content`
 Contains all your markup content (mostly `.md` files).

@@ -23,13 +23,13 @@ COPY --from=zola /project/public /public
 ```
 
 To build your website as a docker image, you then run:
-```shell
+```bash
 docker build -t my_website:latest .
 ```
 
 To test your site, just run the docker image and browse [http://localhost:8000](http://localhost:8000)
 
-```
+```bash
 docker run --rm -p 8000:80 my_website:latest
 ```
 

@@ -4,7 +4,7 @@ weight = 80
 +++
 
 Zola comes with built-in syntax highlighting but you first
-need to enable it in the [configuration](@/documentation/getting-started/configuration.md).
+need to enable it in the [configuration](@/documentation/getting-started/configuration/index.md).
 
 Once this is done, Zola will automatically highlight all code blocks
 in your content. A code block in Markdown looks like the following:
@@ -170,7 +170,7 @@ If your site source is laid out as follows:
 
 you would set your `extra_syntaxes_and_themes` to `["syntaxes", "syntaxes/Sublime-Language1"]` to load `lang1.sublime-syntax` and `lang2.sublime-syntax`.
 
-You can see the list of available themes on the [configuration page](@/documentation/getting-started/configuration.md#syntax-highlighting).
+You can see the list of available themes on the [configuration page](@/documentation/getting-started/configuration/index.md#syntax-highlighting).
 
 
 ## Inline VS classed highlighting

@@ -69,7 +69,7 @@ By default, this page's slug will be the directory name and thus its permalink w
 ### Excluding files from assets
 
 It is possible to ignore selected asset files using the
-[ignored_content](@/documentation/getting-started/configuration.md) setting in the config file.
+[ignored_content](@/documentation/getting-started/configuration/index.md) setting in the config file.
 For example, say that you have several code files which you are linking to on your website.
 For maintainability, you want to keep your code in the same directory as the Markdown file,
 but you don't want to copy the build folders to the public web site. You can achieve this by setting `ignored_content` in the config file:
