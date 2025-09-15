@@ -3,14 +3,14 @@
 title = "apollo"
 description = "Modern and minimalistic blog theme"
 template = "theme.html"
-date = 2025-08-09T15:26:23+02:00
+date = 2025-09-08T22:33:37+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-08-09T15:26:23+02:00
-updated = 2025-08-09T15:26:23+02:00
+created = 2025-09-08T22:33:37+02:00
+updated = 2025-09-08T22:33:37+02:00
 repository = "https://github.com/not-matthias/apollo.git"
 homepage = "https://github.com/not-matthias/apollo"
 minimum_version = "0.14.0"
@@ -47,7 +47,7 @@ Modern and minimalistic blog theme powered by [Zola](https://getzola.org). See a
 - [x] Pagination
 - [x] Themes (light, dark, auto)
 - [x] Projects page
-- [x] Analytics using [GoatCounter](https://www.goatcounter.com/) / [Umami](https://umami.is/)
+- [x] Analytics using [GoatCounter](https://www.goatcounter.com/) / [Umami](https://umami.is/) / [Google Analytics](https://analytics.google.com/)
 - [x] Social Links
 - [x] MathJax Rendering
 - [x] Taxonomies
