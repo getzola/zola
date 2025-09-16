@@ -3,14 +3,14 @@
 title = "boring"
 description = "A minimal theme"
 template = "theme.html"
-date = 2025-08-21T02:43:48-04:00
+date = 2025-09-05T12:48:33+05:30
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-08-21T02:43:48-04:00
-updated = 2025-08-21T02:43:48-04:00
+created = 2025-09-05T12:48:33+05:30
+updated = 2025-09-05T12:48:33+05:30
 repository = "https://github.com/ssiyad/boring.git"
 homepage = "https://github.com/ssiyad/boring"
 minimum_version = "0.16.0"
@@ -35,13 +35,13 @@ https://boring-zola.netlify.app/
 In your zola site directory
 - Get theme
 
-    ```shell
+    ```bash
     git submodule add https://github.com/ssiyad/boring themes/boring
     ```
 
 - Build CSS
 
-    ```shell
+    ```bash
     cd themes/boring
     yarn install --frozen-lockfile
     yarn build
