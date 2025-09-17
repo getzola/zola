@@ -3,14 +3,14 @@
 title = "UI Navigation"
 description = "A multilingual theme designed for accessibility rather than visual."
 template = "theme.html"
-date = 2025-03-18T21:11:06+07:00
+date = 2025-09-10T09:22:29+06:30
 
 [taxonomies]
 theme-tags = ['blind', 'multilingual', 'accessible', 'responsive', 'search', 'documentation', 'blog', 'SEO']
 
 [extra]
-created = 2025-03-18T21:11:06+07:00
-updated = 2025-03-18T21:11:06+07:00
+created = 2025-09-10T09:22:29+06:30
+updated = 2025-09-10T09:22:29+06:30
 repository = "https://github.com/harrymkt/zluinav"
 homepage = "https://github.com/harrymkt/zluinav"
 minimum_version = "0.19.2"
@@ -23,7 +23,7 @@ homepage = "https://harrymkt.github.io"
 +++        
 
 # UI Navigation
-UI Navigation, or known as zluinav, is a Zola theme designed for accessibility rather than visual and made as easy as possible using templates and macros. Since I am a blind developer, I'd like to develop with accessibility as possible so visually impaired users can use them.
+UI Navigation, or known as zluinav, is a Zola theme designed for accessibility rather than visual and made as easy as possible using templates and macros. Since I am a blind developer, I would like to develop with accessibility as possible so visually impaired users can use them.
 
 This theme is also available for Hugo at [Hguinav](https://github.com/harrymkt/hguinav).
 
@@ -38,7 +38,7 @@ This theme is distributed under the terms of the [MIT License](https://github.co
 - Accessibility; Zluinav is designed to be accessible as possible, especially for blind and visually impaired. This is done by using accessibility tags, such as ARIA, and other possible accessibility features.
 - SEO friendly.
 - Configuration; use an extensive [configuration](https://harrymkt.github.io/zluinav/docs#extra-variables) parameters to control your site, from the main configuration file to [frontmadder configuration](https://harrymkt.github.io/zluinav/docs/extra/frontmadder), and more.
-- Blog with pagination enabled; multiple blogs can be created by copying the blog directory in the content folder to the new directory for a new blog. This means that you can have multiple blogs in one site. In fact, Zola doesn't have its build-in posts, but it is possible using sections. Please note that directory other than blog will require you to manually set the `template` to `blogpage.html` and `page_template` to `section_paginated.html` in its `_index.md` file.
+- Blog with pagination enabled; multiple blogs can be created by copying the blog directory in the content folder to the new directory for a new blog. This means that you can have multiple blogs in one site. In fact, Zola does not have its build-in posts, but it is possible using sections. Please note that directory other than blog will require you to manually set the `template` to `blogpage.html` and `page_template` to `section_paginated.html` in its `_index.md` file.
 - Documentation site; build accessible [documentation sites](https://harrymkt.github.io/zluinav/docs/documentation) by using built-in 1subsection templates specifically designed for documentation.
 - Multilingual; build your site in multiple languages.
 - [Custom Menu](https://harrymkt.github.io/zluinav/docs/extra/config#menus) support.
