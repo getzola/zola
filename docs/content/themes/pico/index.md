@@ -3,14 +3,14 @@
 title = "pico"
 description = "Clean and minimalistic dark theme"
 template = "theme.html"
-date = 2024-04-28T13:42:00+03:00
+date = 2025-09-08T11:17:37+03:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-04-28T13:42:00+03:00
-updated = 2024-04-28T13:42:00+03:00
+created = 2025-09-08T11:17:37+03:00
+updated = 2025-09-08T11:17:37+03:00
 repository = "https://github.com/kuznetsov17/pico.git"
 homepage = "https://github.com/kuznetsov17/pico"
 minimum_version = "0.18.0"
@@ -67,7 +67,7 @@ show_date = true / false # displays publication date in page
 
 # Blog
 I am using this theme for my [notes](https://viku.me/notes/), or probably blog. 
-The section template supports pagination, tags, sorts the pages by publication date. You may see the working example [here](@/notes/_index.md)
+The section template supports pagination, tags, sorts the pages by publication date. You may see the working example [here](content/notes/_index.md)
 
 
 # Search
