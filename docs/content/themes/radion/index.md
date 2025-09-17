@@ -3,14 +3,14 @@
 title = "radion"
 description = "A sleek, modern blog theme."
 template = "theme.html"
-date = 2025-07-27T11:58:37-07:00
+date = 2025-09-09T13:16:19-05:00
 
 [taxonomies]
 theme-tags = ['SEO', 'search', 'accessible']
 
 [extra]
-created = 2025-07-27T11:58:37-07:00
-updated = 2025-07-27T11:58:37-07:00
+created = 2025-09-09T13:16:19-05:00
+updated = 2025-09-09T13:16:19-05:00
 repository = "https://github.com/micahkepe/radion.git"
 homepage = "https://github.com/micahkepe/radion"
 minimum_version = "0.20.0"
@@ -56,6 +56,7 @@ site demo [here](https://micahkepe.com/radion/).
 - [x] Table of Contents option
 - [x] Footnote support
 - [x] Built-in comments option (Giscus)
+- [x] Open Graph cover image selection
 
 ## Contents and Configuration Guide
 
@@ -72,6 +73,8 @@ site demo [here](https://micahkepe.com/radion/).
   - Light and Dark Modes
   - Table of Contents
   - Comments
+  - Post Revision History
+  - Set Post Open Graph Image (Cover Image)
 - Acknowledgements
 
 ## Installation
@@ -198,7 +201,6 @@ To change the default favicon:
 
 1. Create your own favicon folder with the following site:
    [RealFaviconGenerator](https://realfavicongenerator.net/)
-
    - Set the 'Favicon path' option to `/icons/favicon/`
 
 2. Unzip the created folder
@@ -333,6 +335,76 @@ The `config.toml` value for `comments` takes precedence and priority. For
 example, if you globally disable comments in your `config.toml` by setting
 `comments = false`, then trying to enabling comments through a page's front
 matter will have no effect.
+
+### Post Revision History
+
+To enable revision history links that allow readers to view the commit history
+for individual posts, configure the following in your `config.toml`:
+
+```toml
+[extra]
+# Enable revision history globally
+revision_history = true
+# Your blog's GitHub repository URL
+blog_github_repo_url = "https://github.com/username/repository-name"
+```
+
+Revision history can be enabled or disabled on a per-page basis by adding the
+following to a page's front matter:
+
+```toml
+[extra]
+revision_history = true  # or false to disable for this page
+```
+
+When enabled, a "(revision history)" link will appear in the page footer that
+links directly to the GitHub commit history for that specific content file,
+allowing readers to see how the post has evolved over time.
+
+### Set Post Open Graph Image (Cover Image)
+
+[Open Graph](https://ogp.me/) is a standard for embedding rich previews of
+content on the Internet. It is used by social media platforms like Facebook,
+Twitter, and LinkedIn to display a preview of a page when a user shares the
+page on their social media network.
+
+For example, to set the Open Graph image for a post `my-post` to be the page
+asset `cover.png`, add the following to the front matter of the post:
+
+1. Make sure the image is located in the page's content directory (i.e.
+   `content/my-post/`. For example:
+
+   ```
+   content/
+   └── my-post/
+       ├── index.md
+       ├── cover.png        # Your cover image
+       └── assets/
+           └── other-image.jpg
+   ```
+
+   or
+
+   ```
+   content/
+   └── my-post/
+       ├── index.md
+       └── assets/
+           ├── other-image.jpg
+           └── cover.png    # Your cover image
+   ```
+
+2. Add the following to the front matter of the post:
+
+```toml
+[extra]
+cover_image = "cover.png"
+```
+
+> [!NOTE]
+> The image must be located within the page's content directory and
+> `cover_image` expects just the filename of the image (e.g., `"cover.png"`, not
+> a path like `"assets/cover.png"`). The first filename match will be used.
 
 ---
 

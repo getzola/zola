@@ -3,14 +3,14 @@
 title = "Daisy"
 description = "Beautiful and fast responsive theme based on TailwindCSS and DaisyUI."
 template = "theme.html"
-date = 2025-07-27T12:37:19+02:00
+date = 2025-09-14T10:01:01+03:00
 
 [taxonomies]
 theme-tags = ['multilingual', 'responsive', 'search']
 
 [extra]
-created = 2025-07-27T12:37:19+02:00
-updated = 2025-07-27T12:37:19+02:00
+created = 2025-09-14T10:01:01+03:00
+updated = 2025-09-14T10:01:01+03:00
 repository = "https://codeberg.org/winterstein/zola-theme-daisy.git"
 homepage = "https://codeberg.org/winterstein/zola-theme-daisy"
 minimum_version = "0.19.0"
@@ -55,7 +55,7 @@ The Daisy theme supports all [built-in color themes of DaisyUI](https://daisyui.
 
 ## Quick Start
 
-The installation of the theme works the same as for other Zola themes. As it is described in the [official documentation](https://www.getzola.org/documentation/themes/installing-and-using-themes/). Hence, it fist needs to be added as a git submodule:
+The installation of the theme works the same as for other Zola themes. As it is described in the [official documentation](https://www.getzola.org/documentation/themes/installing-and-using-themes/). Hence, it first needs to be added as a git submodule:
 
 ```bash
 cd my-zola-website
@@ -125,7 +125,7 @@ taxonomies = [
 
 Taxonomies should have exactly the same (not translated) name in all languages, for the language switching to work best.
 
-You need to create an i18n file containing the translations for all theme variables for all the languages of your website, if they are not included in the theme. Right now, [English](i18n/en.toml), [German](i18n/de.toml) and [Hungarian](i18n/hu.toml) are included. You can create a the directory `i18n` in your website root directory and the language files in there will be picked up by the theme. It would be great, however, if you create a [pull-request](https://codeberg.org/winterstein/zola-theme-daisy/pulls) on the theme repository to add your translations to the theme.
+You need to create an i18n file containing the translations for all theme variables for all the languages of your website, if they are not included in the theme. Right now, [English](i18n/en.toml), [German](i18n/de.toml), [Hungarian](i18n/hu.toml), [Finnish](i18n/fi.toml) are included. You can create a the directory `i18n` in your website root directory and the language files in there will be picked up by the theme. It would be great, however, if you create a [pull-request](https://codeberg.org/winterstein/zola-theme-daisy/pulls) on the theme repository to add your translations to the theme.
 
 ### Search
 
@@ -213,5 +213,26 @@ notice = "This is my <b>copyright</b> notice."
 ```
 
 HTML can be used there.
+
+## Customization
+
+The page template can be extended with custom CSS or JavaScript files (or code) by inheriting the template and overwriting the blocks `extra_headers` or `extra_javascript`. The content of `extra_headers` will be added at the end of the `<head>` section of each page, while the content of `extra_javascript` will be added at the end of the `<body>` section of each page.
+
+```html
+{%/* extends "daisy/templates/base.html" */%}
+
+{%/* block extra_headers */%}
+<!-- add an own stylesheet for example -->
+<link rel="stylesheet" href="{{/* get_url(path='my_custom_style.css') */}}">
+{%/* endblock */%}
+
+{%/* block extra_javascript */%}
+<script>
+    /* here is some custom JavaScript code */
+</script>
+{%/* endblock */%}
+```
+
+In most cases, however, you would probably not extent the `base` template, but the more specific templates like `page`, `section`, or `index`. As they are themselves derived from the `base` template you can override the `extra_headers` and `extra_javascript` blocks the same way in those cases.
 
         

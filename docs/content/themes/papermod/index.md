@@ -3,14 +3,14 @@
 title = "PaperMod"
 description = "A fast, clean, responsive theme ported to Zola."
 template = "theme.html"
-date = 2025-07-15T07:56:50Z
+date = 2025-09-12T09:50:16Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-07-15T07:56:50Z
-updated = 2025-07-15T07:56:50Z
+created = 2025-09-12T09:50:16Z
+updated = 2025-09-12T09:50:16Z
 repository = "https://github.com/cydave/zola-theme-papermod.git"
 homepage = "https://github.com/cydave/zola-theme-papermod"
 minimum_version = "0.4.0"
@@ -21,6 +21,15 @@ demo = "https://cydave.github.io/zola-theme-papermod/"
 name = "cydave"
 homepage = "https://github.com/cydave"
 +++        
+
+# Archived - Zola PaperMod
+
+This repository has gained quite some traction, thank you so much to everyone who decided to fork and contribute <3.
+Unfortunately, I'm no longer a Zola user and am currently unable to keep a close eye on this repo. As such, I'm archiving this repo.
+
+I encourage fans of the original papermod theme (and this port) to create a fork (soft or hard) and re-publish it in the Zola theme index.
+
+Thanks for all the fish.
 
 # Zola PaperMod
 
