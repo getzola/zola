@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>pickles | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zola-pickles&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>pickles</h1>
+            <p>A modern, simple, clean blog theme for Zola.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;luke.hsiao.dev">Luke Hsiao</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> BlueOak-1.0.0</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;lukehsiao&#x2F;zola-pickles">https:&#x2F;&#x2F;github.com&#x2F;lukehsiao&#x2F;zola-pickles</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-pickles.pages.dev&#x2F;">https:&#x2F;&#x2F;zola-pickles.pages.dev&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-01-03T23:14:08-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 align="center">
+    🥒<br>
+    zola-pickes
+</h1>
+<div align="center">
+    <strong>Pickles is a clean, responsive blog theme for <a href="https://www.getzola.org/">Zola</a> based on the <a href="https://github.com/mismith0227/hugo_theme_pickles">Hugo theme</a> with the same name.</strong>
+</div>
+<br>
+<div align="center">
+  <a href="https://zola-pickles.pages.dev/">
+    <img src="https://img.shields.io/badge/demo-website-forestgreen" alt="demo website"></a>
+  <a href="https://github.com/lukehsiao/zola-pickles/blob/main/LICENSE.md">
+    <img src="https://img.shields.io/badge/license-BlueOak--1.0.0-blue" alt="License">
+  </a>
+</div>
+<br>
+<p><img src="https://github.com/lukehsiao/zola-pickles/blob/main/screenshot.png?raw=true" alt="pickles screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/lukehsiao/zola-pickles.git
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;zola-pickles&quot;
+</span></code></pre>
+<p>The theme requires putting the posts in the root of the <code>content</code> folder and to enable pagination, for example in <code>content/_index.md</code>.</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>+++
+</span><span>paginate_by = 5
+</span><span>sort_by = &quot;date&quot;
+</span><span>insert_anchor_links = &quot;right&quot;
+</span><span>+++
+</span></code></pre>
+<h2 id="reference-guides">Reference guides</h2>
+<h2 id="configuration-options">Configuration Options</h2>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#95815e;"># A line to display underneath the main title
+</span><span style="color:#e8bf6a;">subtitle </span><span>= </span><span style="color:#c1be91;">&quot;Example subtitle&quot;
+</span><span>
+</span><span style="color:#95815e;"># Text to display in the footer of the page
+</span><span style="color:#e8bf6a;">copyright </span><span>= </span><span style="color:#c1be91;">&quot;Copyright authors year&quot;
+</span><span>
+</span><span style="color:#95815e;"># Your Google Analytics ID
+</span><span style="color:#e8bf6a;">analytics </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># See below
+</span><span style="color:#e8bf6a;">katex_enable </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># See below
+</span><span style="color:#e8bf6a;">instantpage_enable </span><span>= </span><span style="color:#6e9cbe;">false
+</span></code></pre>
+<p>A full example configuration is included in config.toml.</p>
+<p>Note how pickles also expects <code>title</code> and <code>description</code> to also be set in the Zola configuration.</p>
+<h3 id="katex-math-formula-support">KaTeX math formula support</h3>
+<p>This theme contains math formula support using <a class="external" href="https://katex.org/">KaTeX</a>, which can be enabled by setting <code>katex_enable = true</code> in the <code>extra</code> section of <code>config.toml</code>.</p>
+<p>After enabling this extension, the <code>katex</code> short code can be used in documents:</p>
+<ul>
+<li><code>{% katex(block=true) %}\KaTeX{% end %}</code> to typeset a block of math formulas,
+similar to <code>$$...$$</code> in LaTeX</li>
+</ul>
+<h3 id="figure-shortcode">Figure Shortcode</h3>
+<p>The figure shortcode is convenient for captioning figures.</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% figure(link=&quot;https://www.example.com/&quot;, src=&quot;https://www.example.com/img.jpeg&quot;, alt=&quot;sample alt text&quot;) %}
+</span><span>Your caption here.
+</span><span>{% end %}
+</span></code></pre>
+<h3 id="table-shortcode">Table Shortcode</h3>
+<p>The table shortcode is convenient for making mobile-friendly tables (centered with overflow scrollbar).</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% table() %}
+</span><span>| Item         | Price | # In stock |
+</span><span>| :----------- | ----: | ---------: |
+</span><span>| Juicy Apples |  1.99 |        739 |
+</span><span>| Bananas      |  1.89 |          6 |
+</span><span>{% end %}
+</span></code></pre>
+<h3 id="fontawesome">Fontawesome</h3>
+<p>This theme includes fontawesome, so that fontawesome icons can be directly used.</p>
+<h3 id="instant-page">Instant.page</h3>
+<p>The theme contains instant.page prefetching. This can be enabled by setting <code>instantpage_enable = true</code> in the <code>extra</code> section of <code>config.toml</code>.</p>
+<h2 id="showing-article-summaries">Showing article summaries</h2>
+<p>By default, the theme will use the first 280 characters of your post as a summary, if a proper <a class="external" href="https://www.getzola.org/documentation/content/page/#summary">page summary</a> using <code>&lt;!-- more --&gt;</code> is not provided.
+For more sensible summaries, we recommend using the manual more indicator.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

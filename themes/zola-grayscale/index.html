@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>zola-grayscale | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zola-grayscale&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>zola-grayscale</h1>
+            <p>A port of the Start Bootrap Grayscale theme, for Zola.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;mattimustang">Matthew Flanagan</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;mattimustang&#x2F;zola-grayscale">https:&#x2F;&#x2F;github.com&#x2F;mattimustang&#x2F;zola-grayscale</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;mattimustang.github.io&#x2F;zola-grayscale&#x2F;">https:&#x2F;&#x2F;mattimustang.github.io&#x2F;zola-grayscale&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-11-24T16:09:25+11:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zola-grayscale">Zola Grayscale</h1>
+<p><img src="https://www.getzola.org/themes/zola-grayscale/screenshot.png" alt="screenshot" /></p>
+<p>A port of the Start Bootstrap Grayscale theme, for Zola.</p>
+<p>Updated to use the latest Bootstrap 5.3.3.</p>
+<!-- toc -->
+<ul>
+<li>Demo</li>
+<li>How to Customize
+<ul>
+<li>Configuration</li>
+<li>Navigation</li>
+<li>Contacts</li>
+<li>Masthead
+<ul>
+<li>Background Image</li>
+</ul>
+</li>
+<li>Content</li>
+<li>About</li>
+<li>Projects</li>
+<li>Signup</li>
+<li>Contact</li>
+<li>Footer</li>
+</ul>
+</li>
+<li>Macros
+<ul>
+<li>Debug</li>
+<li>Title</li>
+<li>Google Analytics</li>
+</ul>
+</li>
+<li>Misc</li>
+</ul>
+<!-- tocstop -->
+<h2 id="demo">Demo</h2>
+<p><a class="external" href="https://mattimustang.github.io/zola-grayscale/">Live Demo</a></p>
+<h2 id="how-to-customize">How to Customize</h2>
+<p>The majority of customisation is done through template inheritance.
+Every section and subsection of the page has a template <code>{%/* block */%}</code> that you
+can override with your own content.</p>
+<p>Start by copying <code>themes/zola-grayscale/contact.toml</code> and
+<code>themes/zola-grayscale/navigation.toml</code> to your site root folder.</p>
+<p>Then create your own site <code>templates/index.html</code> with the following contents:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* extends &quot;zola-grayscale/templates/index.html&quot; */%}
+</span></code></pre>
+<p>If you don't want a particular section in your page override it with an empty
+block, for example this will remove the <code>about</code> section of the page:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block about */%}{%/* endblock about */%}
+</span></code></pre>
+<h3 id="configuration">Configuration</h3>
+<p>The <code>config.toml</code> file has some basic configuration used by the page including:</p>
+<ul>
+<li>title</li>
+<li>author</li>
+<li>description</li>
+<li>google_analytics_tag (optional)</li>
+<li>sb_forms_api_token</li>
+</ul>
+<h3 id="navigation">Navigation</h3>
+<p>The page navigation is customised through the <code>navigation.toml</code> file.
+Edit this file to change the names and paths to link to.
+You can add additional <code>item</code>'s and they will be automatically added to the
+navigation bar.</p>
+<p>The home link in the left of the navigation bar uses <code>config.title</code> by default
+or can be customised with the <code>nav_home_title</code> block.</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block nav_home_title */%}Home{%/* endblock nav_home_title */%}
+</span></code></pre>
+<h3 id="contacts">Contacts</h3>
+<p>The contacts section of the page is managed via in the <code>contacts.toml</code> which has
+two types of items:</p>
+<ul>
+<li><code>contact</code> for the contact cards.</li>
+<li><code>social</code> for the social network links.</li>
+</ul>
+<p>Modifying, adding, or removing items from these lists will automatically update
+that section of the page.
+Both contact item types use <a class="external" href="https://fontawesome.io/icons/">Font Awesome</a> icons
+for their <code>icon</code> value.</p>
+<h3 id="masthead">Masthead</h3>
+<p>The entire <code>masthead</code> section can be overridden with your own markup like so:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block masthead */%}
+</span><span>...
+</span><span>{%/* endblock masthead */%}
+</span></code></pre>
+<p>The following sub-blocks are provided for further customisation:</p>
+<ul>
+<li><code>masthead_title</code>:
+defaults to <code>config.title</code></li>
+<li><code>masthead_description</code>:
+defaults to <code>config.description</code></li>
+<li><code>masthead_button</code></li>
+<li><code>masthead_button_url</code></li>
+<li><code>masthead_button_tag</code></li>
+<li><code>masthead_button_label</code></li>
+</ul>
+<h4 id="background-image">Background Image</h4>
+<p>The background image of the <code>masthead</code> can be changed by creating the directory
+<code>static/assets/img</code> copying your own image to
+<code>static/assets/img/bg-masthead.jpg</code> in your own site.</p>
+<h3 id="content">Content</h3>
+<p>A <code>content</code> block wraps the About](#about), [Projects sections of
+the page to allow you to completely replace the content of the page with your
+own markup.</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block content */%}
+</span><span>...
+</span><span>{%/* endblock content */%}
+</span></code></pre>
+<h3 id="about">About</h3>
+<p>The entire <code>about</code> section can be overridden with your own markup like so:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block about */%}
+</span><span>...
+</span><span>{%/* endblock about */%}
+</span></code></pre>
+<p>The following sub-blocks are provided for further customisation:</p>
+<ul>
+<li><code>about_title</code></li>
+<li><code>about_description</code></li>
+<li><code>about_image</code></li>
+</ul>
+<h3 id="projects">Projects</h3>
+<p>The entire <code>projects</code> section can be overridden with your own markup like so:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block projects */%}
+</span><span>...
+</span><span>{%/* endblock projects */%}
+</span></code></pre>
+<p>The section has these sub-blocks:</p>
+<ul>
+<li>
+<p><code>projects_id</code>:
+set the html id attribute for the projects section.</p>
+</li>
+<li>
+<p><code>featured_project</code> with these sub-blocks for customisation:</p>
+<ul>
+<li><code>featured_project_thumbnail</code>:
+Allows overriding the markup of the project thumbnail.</li>
+<li><code>featured_project_content</code>:
+Allows overriding the markup of the project content.</li>
+<li><code>featured_project_title</code></li>
+<li><code>featured_project_description</code></li>
+</ul>
+</li>
+<li>
+<p><code>project_1</code> with these sub-blocks for customisation:</p>
+<ul>
+<li><code>project_1_thumbnail</code>:
+Allows overriding the markup of the project thumbnail.</li>
+<li><code>project_1_content</code>:
+Allows overriding the markup of the project content.</li>
+<li><code>project_1_title</code></li>
+<li><code>project_1_description</code></li>
+</ul>
+</li>
+<li>
+<p><code>project_2</code> with these sub-blocks for customisation:</p>
+<ul>
+<li><code>project_2_thumbnail</code>:
+Allows overriding the markup of the project thumbnail.</li>
+<li><code>project_2_content</code>:
+Allows overriding the markup of the project content.</li>
+<li><code>project_2_title</code></li>
+<li><code>project_2_description</code></li>
+</ul>
+</li>
+<li>
+<p><code>extra_projects</code> to add extra content as you wish.</p>
+</li>
+</ul>
+<h3 id="signup">Signup</h3>
+<p>The entire <code>signup</code> section can be overridden with your own markup like so:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block signup */%}
+</span><span>...
+</span><span>{%/* endblock signup */%}
+</span></code></pre>
+<p>The following sub-blocks are provided for further customisation:</p>
+<ul>
+<li><code>signup_id</code>:
+set the html id attribute for the signup section.</li>
+<li><code>signup_icon</code>:
+the Font Awesome icon to use.</li>
+<li><code>signup_title</code></li>
+<li><code>signup_form</code></li>
+</ul>
+<h3 id="contact">Contact</h3>
+<p>The entire <code>contact</code> section can be overridden with your own markup like so:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block contact */%}
+</span><span>...
+</span><span>{%/* endblock contact */%}
+</span></code></pre>
+<p>The following sub-blocks are provided for further customisation:</p>
+<ul>
+<li><code>contact_id</code>:
+set the html id attribute for the contact section.</li>
+<li><code>contact_contact</code></li>
+<li><code>contact_social</code></li>
+</ul>
+<h3 id="footer">Footer</h3>
+<p>The entire <code>footer</code> section can be overridden with your own markup like so:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block footer */%}
+</span><span>...
+</span><span>{%/* endblock footer */%}
+</span></code></pre>
+<p>The following sub-blocks are provided for further customisation:</p>
+<ul>
+<li><code>footer_copyright</code></li>
+<li><code>footer_debug</code>:
+customise the debug macro call.</li>
+<li><code>extra_footer</code>:
+to add extra content as you wish.</li>
+</ul>
+<h2 id="macros">Macros</h2>
+<h3 id="debug">Debug</h3>
+<p>The <code>debug</code> macro can be used by setting <code>config.extra.debug</code> to <code>true</code>.
+This will then add a <code>debug</code> button to the footer of the page to allow you to
+inspect, by default, the <code>__tera_context</code> in a pop-out sidebar.</p>
+<p>If you want to debug other context information you can customise it like so.
+For example, to debug the <code>config</code> context:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* block footer_debug */%}{{/* debug::debug(context=config, name=&quot;config&quot;) */}}{%/* endblock footer_debug */%}
+</span></code></pre>
+<h3 id="title">Title</h3>
+<p>The <code>title</code> macro can be used to set the title for any additional pages you
+might create.</p>
+<h3 id="google-analytics">Google Analytics</h3>
+<p>The <code>google_analytics</code> macro can be used to insert code for Google Analytics.
+Set <code>config.extra.google_analytics_tag</code> to your tag id.</p>
+<h2 id="misc">Misc</h2>
+<p>The <code>extra_head</code> block can be used to add extra markup to the end of the
+<code>&lt;head&gt;</code> of the page.
+The <code>extra_scripts</code> block can be used to add extra scripts to the end of the
+page.</p>
+<p><code>static/css/custom.css</code> can be created and used to add any custom CSS.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

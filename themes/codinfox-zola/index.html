@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>codinfox-zola | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;codinfox-zola&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>codinfox-zola</h1>
+            <p>Codinfox theme for Zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;svavs.github.io&#x2F;">Silvano Sallese</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.11.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;svavs&#x2F;codinfox-zola">https:&#x2F;&#x2F;github.com&#x2F;svavs&#x2F;codinfox-zola</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;codinfox-zola.vercel.app&#x2F;">https:&#x2F;&#x2F;codinfox-zola.vercel.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-05-11T01:34:05+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="codinfox-zola">Codinfox-Zola</h1>
+<p><img src="https://github.com/svavs/codinfox-zola/workflows/Zola%20Deploy%20to%20Pages%20on%20push/badge.svg?branch=master" alt="Zola Deploy to Github Pages on push" /></p>
+<p>This is a <a class="external" href="https://www.getzola.com">Zola</a> theme inspired to <a class="external" href="https://codinfox.github.com/">Codinfox-Lanyon</a>, a Lanyon based theme for <a class="external" href="http://jekyllrb.com">Jekyll</a>. See a live demo <a class="external" href="https://codinfox-zola.vercel.app/">here</a>.</p>
+<p>This theme places content first by tucking away navigation in a hidden drawer.</p>
+<ul>
+<li>Built for <a class="external" href="https://www.getzola.com">Zola</a></li>
+<li>Developed on GitHub and hosted for free on <a class="external" href="https://pages.github.com">GitHub Pages</a> and <a class="external" href="https://vercel.com">Vercel</a></li>
+<li>Coded with <a class="external" href="https://www.spacemacs.org">Spacemacs</a></li>
+</ul>
+<p>This theme supports:</p>
+<ol>
+<li>Theme colors: you can choose your favorite theme color (changing in <code>_config.scss</code>)</li>
+<li>Changable sidebar locations (reverse it by changing the boolean value in <code>_config.scss</code>)</li>
+<li>Integration of FontAwesome, MathJax, Disqus and Google Analytics</li>
+<li>Support for multilingual sites</li>
+<li>Support for Gravatar</li>
+<li>and numerous improvements over original Lanyon and Codinfox-Lanyon</li>
+</ol>
+<p>All the configuration variables and their meaning are inside:</p>
+<ul>
+<li><code>config.toml</code> (for the zola config variables and some extra variables required by this theme),</li>
+<li><code>author.toml</code> (for the personal informations to be displayed about the author of the site),</li>
+<li><code>nav.toml</code> (for the navigation menu structure available in the site's sidebar)</li>
+<li><code>_config.scss</code> (for the definition of some css customizations)</li>
+</ul>
+<p>The options are fairly straightforward and described in comments.</p>
+<p>Learn more and contribute on <a class="external" href="https://github.com/svavs/codinfox-zola">GitHub</a>.</p>
+<p>Have questions or suggestions? Feel free to <a class="external" href="https://github.com/svavs/codinfox-zola/issues/new">open an issue on GitHub</a> or <a class="external" href="https://twitter.com/svavs">ask me on Twitter</a>.</p>
+<h3 id="before-you-start">Before you start</h3>
+<p><a class="external" href="https://gravatar.com">Get a gravatar account</a> and set this up with a profile image.</p>
+<h4 id="add-gravatar-profile-image-to-codinfox-zola-theme">Add gravatar profile image to codinfox-zola theme</h4>
+<ol>
+<li>login to gravatar.com</li>
+<li>click My Profile</li>
+<li>click <strong>view profile</strong> in RH sidebar beneath profile name</li>
+<li>click JSON</li>
+<li>copy the <code>hash</code> value on line 4</li>
+<li>paste the <code>hash</code> value to <code>author.toml</code> line 10</li>
+</ol>
+<h3 id="install-and-use">Install and use</h3>
+<p>To use this theme you can follow the instruction required by any Zola theme.</p>
+<p>Simply clone this repository under the <code>themes</code> folder of your site's main folder.</p>
+<p>Then, define the required extra variables in the config.toml (take it from the config.toml file of the theme), create and define the author.toml and nav.toml configuration files in the main folder of your site (the same level of the config.toml), and that's it!</p>
+<p>To define your own home picture, put an image file in the <code>static/img/</code> folder and set the path in the config.extra.image variable.</p>
+<p>Now is possible to create the content inside the <code>content</code> folder as usual for Zola sites.</p>
+<p>If you want to have a Blog with this theme, then create a folder inside the <code>content</code> folder containing all the blog posts in Markdown format. Zola automatically generate a section that you can manage as a blog. See an example in the <a class="external" href="https://codinfox-zola.vercel.app/blog/">live demo</a>.</p>
+<h2 id="license">License</h2>
+<p>Open sourced under the <a href="https://www.getzola.org/themes/codinfox-zola/LICENSE.md">MIT license</a>.</p>
+<h2 id="todo">TODO</h2>
+<ul>
+<li>recaptcha for hiding email address link (https://developers.google.com/recaptcha/intro)</li>
+<li>hidden multilingual links in topbar for main index section pages</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
