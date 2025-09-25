@@ -76,3 +76,6 @@
 [submodule "sublime/syntaxes/extra/protobuf-syntax-highlighting"]
 	path = components/config/sublime/syntaxes/extra/protobuf-syntax-highlighting
 	url = https://github.com/VcamX/protobuf-syntax-highlighting.git
+[submodule "components/config/sublime/syntaxes/extra/Terraform"]
+	path = components/config/sublime/syntaxes/extra/Terraform
+	url = https://github.com/SublimeText/Terraform.git
