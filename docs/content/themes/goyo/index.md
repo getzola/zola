@@ -3,14 +3,14 @@
 title = "Goyo"
 description = "A simplicity and clean documentation theme"
 template = "theme.html"
-date = 2025-07-12T22:58:52+09:00
+date = 2025-09-05T22:22:53+09:00
 
 [taxonomies]
 theme-tags = ['documentation', 'Multilingual', 'Responsive', 'minimal']
 
 [extra]
-created = 2025-07-12T22:58:52+09:00
-updated = 2025-07-12T22:58:52+09:00
+created = 2025-09-05T22:22:53+09:00
+updated = 2025-09-05T22:22:53+09:00
 repository = "https://github.com/hahwul/goyo"
 homepage = "https://github.com/hahwul/goyo"
 minimum_version = "0.17.0"
@@ -41,6 +41,7 @@ homepage = "https://www.hahwul.com"
 - SEO-Friendly
 - Multi-Language Support
 - Auto-Generated Sidebar & Custom Nav
+- Built-in resources (FontAwesome, Mermaid.js)
 - Comments (Giscus, Utterances)
 - Various shortcodes (Mermaid, Asciinema, etc.)
 - Customization
@@ -92,10 +93,10 @@ sidebar_expand_depth = 1
 disable_root_sidebar_hide = false
 
 nav = [
-    { name = "Documents", url = "/introduction", type = "url" },
-    { name = "GitHub", url = "https://github.com/hahwul/goyo", type = "url" },
-    { name = "Links", type = "dropdown", members = [
-        { name = "Creator Blog", url = "https://www.hahwul.com", type = "url" },
+    { name = "Documents", url = "/introduction", type = "url", icon = "fa-solid fa-book" },
+    { name = "GitHub", url = "https://github.com/hahwul/goyo", type = "url", icon = "fa-brands fa-github" },
+    { name = "Links", type = "dropdown", icon = "fa-solid fa-link", members = [
+        { name = "Creator Blog", url = "https://www.hahwul.com", type = "url", icon = "fa-solid fa-fire-flame-curved" },
     ] },
 ]
 ```

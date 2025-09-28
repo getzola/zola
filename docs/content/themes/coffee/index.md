@@ -3,14 +3,14 @@
 title = "coffee"
 description = "A simple theme for Zola inspired by coffee."
 template = "theme.html"
-date = 2025-09-10T02:36:32+09:00
+date = 2025-09-22T00:36:54+09:00
 
 [taxonomies]
 theme-tags = ['dark', 'simple', 'mermaid', 'katex']
 
 [extra]
-created = 2025-09-10T02:36:32+09:00
-updated = 2025-09-10T02:36:32+09:00
+created = 2025-09-22T00:36:54+09:00
+updated = 2025-09-22T00:36:54+09:00
 repository = "https://github.com/Myxogastria0808/coffee.git"
 homepage = "https://github.com/Myxogastria0808/coffee/"
 minimum_version = "0.19.0"
@@ -35,13 +35,13 @@ https://zola-coffee-theme.netlify.app/
 - [theme logo](https://github.com/Myxogastria0808/coffee/blob/main/logo/README.md)
 
 <div align="center">
-  <img src="https://github.com/Myxogastria0808/coffee/blob/main/logo/coffee.svg" width="300px" height="300px" />
+  <img src="https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/logo/coffee.svg" width="300px" height="300px" />
 </div>
 
 - screenshot
 
 <div align="center">
-  <img src="https://github.com/Myxogastria0808/coffee/blob/main/screenshot.png" width="1920px" height="935px" />
+  <img src="https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/screenshot.png" width="1920px" height="935px" />
 </div>
 
 ## Setup Environment
