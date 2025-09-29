@@ -3,14 +3,14 @@
 title = "coast"
 description = "A simple theme for Zola that evokes the feel the sea breeze."
 template = "theme.html"
-date = 2025-09-16T14:29:07+09:00
+date = 2025-09-22T00:35:02+09:00
 
 [taxonomies]
 theme-tags = ['light', 'simple', 'mermaid', 'katex']
 
 [extra]
-created = 2025-09-16T14:29:07+09:00
-updated = 2025-09-16T14:29:07+09:00
+created = 2025-09-22T00:35:02+09:00
+updated = 2025-09-22T00:35:02+09:00
 repository = "https://github.com/Myxogastria0808/coast.git"
 homepage = "https://github.com/Myxogastria0808/coast/"
 minimum_version = "0.19.0"
@@ -35,13 +35,13 @@ https://zola-coast-theme.netlify.app/
 - [theme logo](https://github.com/Myxogastria0808/coast/blob/main/logo/README.md)
 
 <div align="center">
-  <img src="https://github.com/Myxogastria0808/coast/blob/main/logo/coast.svg" width="300px" height="300px" />
+  <img src="https://raw.githubusercontent.com/Myxogastria0808/coast/refs/heads/main/logo/coast.svg" width="300px" height="300px" />
 </div>
 
 - screenshot
 
 <div align="center">
-  <img src="https://github.com/Myxogastria0808/coast/blob/main/screenshot.png" width="1920px" height="935px" />
+  <img src="https://raw.githubusercontent.com/Myxogastria0808/coast/refs/heads/main/screenshot.png" width="1920px" height="935px" />
 </div>
 
 ## Setup Environment

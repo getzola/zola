@@ -3,14 +3,14 @@
 title = "Vonge"
 description = "Vonge is a Personal portfolio/blog site template"
 template = "theme.html"
-date = 2025-06-15T10:24:51+03:00
+date = 2025-06-15T10:50:24+03:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-06-15T10:24:51+03:00
-updated = 2025-06-15T10:24:51+03:00
+created = 2025-06-15T10:50:24+03:00
+updated = 2025-06-15T10:50:24+03:00
 repository = "https://github.com/paberr/vonge-zola-theme"
 homepage = "https://github.com/paberr/vonge"
 minimum_version = "0.4.0"
@@ -51,11 +51,19 @@ Demo @ https://paberr.github.io/vonge-zola-theme/
 git submodule add https://github.com/paberr/vonge-zola-theme themes/vonge
 ```
 
-2. Add `theme = "vonge"` to your zola `config.toml`
+2. At minimum, add the following to your zola `config.toml`
+
+```toml
+theme = "vonge"
+taxonomies = [
+    { name = "tags", feed = true},
+]
+```
+
 3. Copy over the example content to get started
 
 ```
-cp -r themes/vonge/content content
+cp -r themes/vonge/content/* content
 ```
 
 ## 👷 Usage
