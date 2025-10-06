@@ -952,6 +952,10 @@ impl Site {
             components.push(taxonomy.lang.as_ref());
         }
 
+        if let Some(ref taxonomy_root) = self.config.taxonomy_root {
+            components.push(taxonomy_root.as_ref());
+        }
+
         components.push(taxonomy.slug.as_ref());
 
         let list_output =
@@ -987,9 +991,26 @@ impl Site {
 
                 if taxonomy.kind.feed {
                     let tax_path = if taxonomy.lang == self.config.default_language {
-                        PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))
+                        if let Some(ref taxonomy_root) = self.config.taxonomy_root {
+                            PathBuf::from(format!(
+                                "{}/{}/{}",
+                                taxonomy_root, taxonomy.slug, item.slug
+                            ))
+                        } else {
+                            PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))
+                        }
                     } else {
-                        PathBuf::from(format!("{}/{}/{}", taxonomy.lang, taxonomy.slug, item.slug))
+                        if let Some(ref taxonomy_root) = self.config.taxonomy_root {
+                            PathBuf::from(format!(
+                                "{}/{}/{}/{}",
+                                taxonomy.lang, taxonomy_root, taxonomy.slug, item.slug
+                            ))
+                        } else {
+                            PathBuf::from(format!(
+                                "{}/{}/{}",
+                                taxonomy.lang, taxonomy.slug, item.slug
+                            ))
+                        }
                     };
                     self.render_feeds(
                         item.pages.iter().map(|p| library.pages.get(p).unwrap()).collect(),
