@@ -99,6 +99,10 @@ author =
 #
 taxonomies = []
 
+# Optional base path for all taxonomies. If set, all taxonomy paths will be relative to this path.
+# For example, if taxonomy_root is "blog" and taxonomy is "tags", the path will be /blog/tags/
+# taxonomy_root = "blog"
+
 # When set to "true", a search index is built from the pages and section
 # content for `default_language`.
 build_search_index = false

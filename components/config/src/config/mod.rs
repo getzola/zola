@@ -66,6 +66,9 @@ pub struct Config {
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
+    /// Optional base path for all taxonomies. If set, all taxonomy paths will be relative to this path.
+    /// For example, if taxonomy_root is "blog" and taxonomy is "tags", the path will be /blog/tags/
+    pub taxonomy_root: Option<String>,
     /// The default author for pages.
     pub author: Option<String>,
 
@@ -410,6 +413,7 @@ impl Default for Config {
             feed_filenames: vec!["atom.xml".to_string()],
             hard_link_static: false,
             taxonomies: Vec::new(),
+            taxonomy_root: None,
             author: None,
             compile_sass: false,
             minify_html: false,
