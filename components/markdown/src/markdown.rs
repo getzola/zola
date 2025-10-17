@@ -853,8 +853,13 @@ pub fn markdown_to_html(
             summary = Some(summary_html);
         }
 
-        // emit everything after summary
-        cmark::html::push_html(&mut html, events.into_iter());
+        // emit everything (or everything after summary if there is one)
+        if has_summary {
+            // Only emit events after the summary cutoff to avoid duplication
+            cmark::html::push_html(&mut html, events.into_iter().skip(continue_reading));
+        } else {
+            cmark::html::push_html(&mut html, events.into_iter());
+        }
     }
 
     if let Some(e) = error {
@@ -939,12 +944,13 @@ mod tests {
             assert!(rendered.summary.is_some(), "no summary when splitting on {more}");
             let summary = rendered.summary.unwrap();
             let summary = summary.trim();
-            let body = rendered.body[summary.len()..].trim();
-            let continue_reading = &body[..CONTINUE_READING.len()];
-            let body = &body[CONTINUE_READING.len()..].trim();
+            // The body should now start with CONTINUE_READING, followed by the bottom content
+            // (no duplication of the summary)
+            let body = rendered.body.trim();
+            assert!(body.starts_with(CONTINUE_READING), "body should start with continue reading marker");
+            let body_after_marker = &body[CONTINUE_READING.len()..].trim();
             assert_eq!(summary, &top_rendered);
-            assert_eq!(continue_reading, CONTINUE_READING);
-            assert_eq!(body, &bottom_rendered);
+            assert_eq!(body_after_marker, &bottom_rendered);
         }
     }
 

@@ -75,3 +75,41 @@ Good bye.
     );
     insta::assert_snapshot!(body);
 }
+
+#[test]
+fn footnotes_in_summary_no_duplication() {
+    // Test that content with footnotes before <!-- more --> is not duplicated
+    let content = r#"
+When Ken Thompson won the Turing Award jointly with Dennis Ritchie for their
+work in UNIX, he was expected like other Turing winners to write a paper that
+would be published in the ACM Computer Journal. What he ended up submitting was
+a paper about "the cutest program [he] ever wrote"-- a sneaky undetectable
+self-reproducing "Trojan horse" virus in the C compiler that would allow him to
+log into affected machines as any user.
+
+Thompson didn't want to write about the usual things that Turing
+award winners write about— in fact, according to him,[^1] he didn't want to write a
+paper at all. However, when he did finally write a paper (after putting it off
+for a year past the original deadline)
+
+<!-- more -->
+
+The rest of the content.
+
+[^1]: YouTube video reference.
+    "#;
+
+    let rendered = get_rendered(content);
+
+    // Summary should not have footnote references
+    let summary = rendered.summary.expect("should have summary");
+    assert!(!summary.contains("footnote-reference"), "summary should not have footnote references");
+
+    // Body should start with continue-reading marker, not duplicate the summary content
+    let body = rendered.body.trim();
+    assert!(body.starts_with("<span id=\"continue-reading\"></span>"), "body should start with continue marker");
+
+    // The summary text should not appear in the body after the continue-reading marker
+    assert!(!body[40..].contains("When Ken Thompson won the Turing Award"),
+        "body should not duplicate summary content");
+}
