@@ -71,6 +71,6 @@ From within the workers & pages dash, do the following:
 And add an environment variable `UNSTABLE_PRE_BUILD`, with the following value and save.
 
 ```sh
-# Use zola latest binary version
-asdf plugin add zola https://github.com/salasrod/asdf-zola && asdf install zola <latest-version> && asdf global zola <latest-version>
+# Replace by the current latest version of Zola
+asdf plugin add zola https://github.com/salasrod/asdf-zola && asdf install zola <zola-latest-version> && asdf global zola <zola-latest-version>
 ```
