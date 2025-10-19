@@ -947,7 +947,10 @@ mod tests {
             // The body should now start with CONTINUE_READING, followed by the bottom content
             // (no duplication of the summary)
             let body = rendered.body.trim();
-            assert!(body.starts_with(CONTINUE_READING), "body should start with continue reading marker");
+            assert!(
+                body.starts_with(CONTINUE_READING),
+                "body should start with continue reading marker"
+            );
             let body_after_marker = &body[CONTINUE_READING.len()..].trim();
             assert_eq!(summary, &top_rendered);
             assert_eq!(body_after_marker, &bottom_rendered);

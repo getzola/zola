@@ -107,9 +107,14 @@ The rest of the content.
 
     // Body should start with continue-reading marker, not duplicate the summary content
     let body = rendered.body.trim();
-    assert!(body.starts_with("<span id=\"continue-reading\"></span>"), "body should start with continue marker");
+    assert!(
+        body.starts_with("<span id=\"continue-reading\"></span>"),
+        "body should start with continue marker"
+    );
 
     // The summary text should not appear in the body after the continue-reading marker
-    assert!(!body[40..].contains("When Ken Thompson won the Turing Award"),
-        "body should not duplicate summary content");
+    assert!(
+        !body[40..].contains("When Ken Thompson won the Turing Award"),
+        "body should not duplicate summary content"
+    );
 }
