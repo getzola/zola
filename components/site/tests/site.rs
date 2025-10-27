@@ -22,7 +22,7 @@ fn can_parse_site() {
     let library = site.library.read().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(library.pages.len(), 36);
+    assert_eq!(library.pages.len(), 37);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -45,7 +45,7 @@ fn can_parse_site() {
 
     let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
-    assert_eq!(posts_section.pages.len(), 10); // 11 with 1 draft == 10
+    assert_eq!(posts_section.pages.len(), 11); // 12 with 1 draft == 11
     assert_eq!(posts_section.ancestors, vec![index_section.file.relative.clone()]);
 
     // Make sure we remove all the pwd + content from the sections
@@ -445,7 +445,7 @@ fn can_build_site_with_pagination_for_section() {
         "posts/page/1/index.html",
         "http-equiv=\"refresh\" content=\"0; url=https://replace-this-with-your-url.com/posts/\""
     ));
-    assert!(file_contains!(public, "posts/index.html", "Num pagers: 5"));
+    assert!(file_contains!(public, "posts/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "posts/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/index.html", "Current index: 1"));
     assert!(!file_contains!(public, "posts/index.html", "has_prev"));
@@ -458,12 +458,12 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/5/"
+        "Last: https://replace-this-with-your-url.com/posts/page/6/"
     ));
     assert!(!file_contains!(public, "posts/index.html", "has_prev"));
 
     assert!(file_exists!(public, "posts/page/2/index.html"));
-    assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 5"));
+    assert!(file_contains!(public, "posts/page/2/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "posts/page/2/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "Current index: 2"));
     assert!(file_contains!(public, "posts/page/2/index.html", "has_prev"));
@@ -476,11 +476,11 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/2/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/5/"
+        "Last: https://replace-this-with-your-url.com/posts/page/6/"
     ));
 
     assert!(file_exists!(public, "posts/page/3/index.html"));
-    assert!(file_contains!(public, "posts/page/3/index.html", "Num pagers: 5"));
+    assert!(file_contains!(public, "posts/page/3/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "posts/page/3/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/3/index.html", "Current index: 3"));
     assert!(file_contains!(public, "posts/page/3/index.html", "has_prev"));
@@ -493,11 +493,11 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/3/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/5/"
+        "Last: https://replace-this-with-your-url.com/posts/page/6/"
     ));
 
     assert!(file_exists!(public, "posts/page/4/index.html"));
-    assert!(file_contains!(public, "posts/page/4/index.html", "Num pagers: 5"));
+    assert!(file_contains!(public, "posts/page/4/index.html", "Num pagers: 6"));
     assert!(file_contains!(public, "posts/page/4/index.html", "Page size: 2"));
     assert!(file_contains!(public, "posts/page/4/index.html", "Current index: 4"));
     assert!(file_contains!(public, "posts/page/4/index.html", "has_prev"));
@@ -510,7 +510,7 @@ fn can_build_site_with_pagination_for_section() {
     assert!(file_contains!(
         public,
         "posts/page/4/index.html",
-        "Last: https://replace-this-with-your-url.com/posts/page/5/"
+        "Last: https://replace-this-with-your-url.com/posts/page/6/"
     ));
 
     // sitemap contains the pager pages
@@ -932,16 +932,44 @@ fn can_find_site_and_page_authors() {
     let posts_path = path.join("content").join("posts");
     let posts_section = library.sections.get(&posts_path.join("_index.md")).unwrap();
 
-    let p1 = &library.pages[&posts_section.pages[0]];
-    let p2 = &library.pages[&posts_section.pages[1]];
+    // Find the page with an author (transparent-page.md)
+    let transparent_page =
+        library.pages.get(&posts_path.join("2018").join("transparent-page.md")).unwrap();
+    assert_eq!(1, transparent_page.meta.authors.len());
+    assert_eq!("page@example.com (Page Author)", transparent_page.meta.authors.first().unwrap());
 
-    // Only the first page has had an author added.
-    assert_eq!(1, p1.meta.authors.len());
-    assert_eq!("page@example.com (Page Author)", p1.meta.authors.first().unwrap());
-    assert_eq!(0, p2.meta.authors.len());
+    // Find a page without an author (simple.md)
+    let simple_page = library.pages.get(&posts_path.join("simple.md")).unwrap();
+    assert_eq!(0, simple_page.meta.authors.len());
 }
 
 // Follows test_site/themes/sample/templates/current_path.html
 fn current_path(path: &str) -> String {
     format!("[current_path]({})", path)
+}
+
+#[test]
+fn can_preserve_whitespace_in_text_templates_with_minification() {
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.config.minify_html = true;
+        (site, true)
+    });
+
+    assert!(&public.exists());
+
+    // The page with text template should exist
+    assert!(file_exists!(public, "posts/text-template-test/index.html"));
+
+    // Verify that multiple spaces are preserved (not collapsed by minification)
+    assert!(file_contains!(public, "posts/text-template-test/index.html", "multiple   spaces"));
+
+    // Verify that tabs are preserved
+    assert!(file_contains!(public, "posts/text-template-test/index.html", "tabs\tbetween"));
+
+    // Verify that multiple newlines are preserved
+    assert!(file_contains!(
+        public,
+        "posts/text-template-test/index.html",
+        "Line 1\nLine 2\nLine 3"
+    ));
 }

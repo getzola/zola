@@ -1,0 +1,12 @@
+Title: {{ page.title }}
+
+Date: {{ page.date }}
+
+Content with   multiple   spaces
+And    tabs	between    words
+
+Line 1
+Line 2
+Line 3
+
+End of text file

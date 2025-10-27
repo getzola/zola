@@ -653,6 +653,11 @@ impl Site {
         clean_site_output_folder(&self.output_path, self.config.preserve_dotfiles_in_output)
     }
 
+    /// Minify HTML content if minification is enabled.
+    fn maybe_minify(&self, content: String) -> Result<String> {
+        if self.config.minify_html { minify::html(content) } else { Ok(content) }
+    }
+
     /// Handles whether to write to disk or to memory
     pub fn write_content(
         &self,
@@ -668,19 +673,11 @@ impl Site {
             site_path.push(component);
         }
 
-        let final_content = if !filename.ends_with("html") || !self.config.minify_html {
-            content
-        } else {
-            match minify::html(content) {
-                Ok(minified_content) => minified_content,
-                Err(error) => bail!(error),
-            }
-        };
-
+        // Content is assumed to already be finalized (minified if needed)
         match self.build_mode {
             BuildMode::Disk | BuildMode::Both => {
                 let end_path = current_path.join(filename);
-                create_file(&end_path, &final_content)?;
+                create_file(&end_path, &content)?;
             }
             _ => (),
         }
@@ -689,7 +686,7 @@ impl Site {
                 let site_path =
                     if filename != "index.html" { site_path.join(filename) } else { site_path };
 
-                SITE_CONTENT.write().unwrap().insert(site_path, final_content);
+                SITE_CONTENT.write().unwrap().insert(site_path, content);
             }
             _ => (),
         }
@@ -720,8 +717,19 @@ impl Site {
 
         let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(output);
+
+        // Determine if we should minify based on template extension
+        let template = page.meta.template.as_deref().unwrap_or("page.html");
+        let final_content = if template.to_lowercase().ends_with(".html")
+            || template.to_lowercase().ends_with(".htm")
+        {
+            self.maybe_minify(content)?
+        } else {
+            content
+        };
+
         let components: Vec<&str> = page.path.split('/').collect();
-        let current_path = self.write_content(&components, "index.html", content)?;
+        let current_path = self.write_content(&components, "index.html", final_content)?;
 
         // Copy any asset we found previously into the same directory as the index.html
         self.copy_assets(page.file.path.parent().unwrap(), &page.assets, &current_path)?;
@@ -889,7 +897,11 @@ impl Site {
             None => "index.html",
         };
         let content = render_redirect_template(permalink, &self.tera)?;
-        self.write_content(&split, page_name, content)?;
+
+        // Aliases are always HTML redirects - minify if enabled
+        let final_content = self.maybe_minify(content)?;
+
+        self.write_content(&split, page_name, final_content)?;
         Ok(())
     }
 
@@ -917,7 +929,11 @@ impl Site {
         context.insert("lang", &self.config.default_language);
         let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
         let content = self.inject_livereload(output);
-        self.write_content(&[], "404.html", content)?;
+
+        // 404.html is always HTML - minify if enabled
+        let final_content = self.maybe_minify(content)?;
+
+        self.write_content(&[], "404.html", final_content)?;
         Ok(())
     }
 
@@ -926,6 +942,8 @@ impl Site {
         let mut context = Context::new();
         context.insert("config", &self.config.serialize(&self.config.default_language));
         let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
+
+        // robots.txt is plain text - never minify
         self.write_content(&[], "robots.txt", content)?;
         Ok(())
     }
@@ -961,7 +979,11 @@ impl Site {
         let list_output =
             taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
         let content = self.inject_livereload(list_output);
-        self.write_content(&components, "index.html", content)?;
+
+        // Taxonomy list pages are always HTML - minify if enabled
+        let final_content = self.maybe_minify(content)?;
+
+        self.write_content(&components, "index.html", final_content)?;
 
         let library = self.library.read().unwrap();
         taxonomy
@@ -986,7 +1008,11 @@ impl Site {
                     let single_output =
                         taxonomy.render_term(item, &self.tera, &self.config, &library)?;
                     let content = self.inject_livereload(single_output);
-                    self.write_content(&comp, "index.html", content)?;
+
+                    // Taxonomy term pages are always HTML - minify if enabled
+                    let final_content = self.maybe_minify(content)?;
+
+                    self.write_content(&comp, "index.html", final_content)?;
                 }
 
                 if taxonomy.kind.feed {
@@ -1044,6 +1070,8 @@ impl Site {
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
             let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+
+            // Sitemaps are XML - never minify
             self.write_content(&[], "sitemap.xml", sitemap)?;
             return Ok(());
         }
@@ -1056,6 +1084,8 @@ impl Site {
             let mut context = Context::new();
             context.insert("entries", &chunk);
             let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+
+            // Sitemaps are XML - never minify
             let file_name = format!("sitemap{}.xml", i + 1);
             self.write_content(&[], &file_name, sitemap)?;
             let mut sitemap_url = self.config.make_permalink(&file_name);
@@ -1072,6 +1102,8 @@ impl Site {
             main_context,
             &self.config.theme,
         )?;
+
+        // Sitemap index is XML - never minify
         self.write_content(&[], "sitemap.xml", sitemap)?;
 
         Ok(())
@@ -1096,6 +1128,7 @@ impl Site {
         for (feed, feed_filename) in
             feeds.into_iter().zip(self.config.languages[lang].feed_filenames.iter())
         {
+            // Feeds are XML - never minify
             if let Some(base) = base_path {
                 let mut components = Vec::new();
                 for component in base.components() {
@@ -1164,11 +1197,12 @@ impl Site {
             } else {
                 Cow::Owned(self.config.make_permalink(redirect_to))
             };
-            self.write_content(
-                &components,
-                "index.html",
-                render_redirect_template(&permalink, &self.tera)?,
-            )?;
+            let content = render_redirect_template(&permalink, &self.tera)?;
+
+            // Section redirects are always HTML - minify if enabled
+            let final_content = self.maybe_minify(content)?;
+
+            self.write_content(&components, "index.html", final_content)?;
 
             return Ok(());
         }
@@ -1182,7 +1216,11 @@ impl Site {
             let output =
                 section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
             let content = self.inject_livereload(output);
-            self.write_content(&components, "index.html", content)?;
+
+            // Section pages are always HTML - minify if enabled
+            let final_content = self.maybe_minify(content)?;
+
+            self.write_content(&components, "index.html", final_content)?;
         }
 
         Ok(())
@@ -1233,15 +1271,20 @@ impl Site {
                 )?;
                 let content = self.inject_livereload(output);
 
+                // Pagination pages are always HTML - minify if enabled
+                let final_content = self.maybe_minify(content)?;
+
                 if pager.index > 1 {
-                    self.write_content(&pager_components, "index.html", content)?;
+                    self.write_content(&pager_components, "index.html", final_content)?;
                 } else {
-                    self.write_content(&index_components, "index.html", content)?;
-                    self.write_content(
-                        &pager_components,
-                        "index.html",
-                        render_redirect_template(&paginator.permalink, &self.tera)?,
-                    )?;
+                    self.write_content(&index_components, "index.html", final_content)?;
+
+                    // The redirect for page 1 is also HTML
+                    let redirect_content =
+                        render_redirect_template(&paginator.permalink, &self.tera)?;
+                    let final_redirect = self.maybe_minify(redirect_content)?;
+
+                    self.write_content(&pager_components, "index.html", final_redirect)?;
                 }
 
                 Ok(())
