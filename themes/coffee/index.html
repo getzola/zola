@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>coffee | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;coffee&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>coffee</h1>
+            <p>A simple theme for Zola inspired by coffee.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;yukiosada.work">Myxogastria0808</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;Myxogastria0808&#x2F;coffee&#x2F;">https:&#x2F;&#x2F;github.com&#x2F;Myxogastria0808&#x2F;coffee&#x2F;</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-coffee-theme.netlify.app&#x2F;">https:&#x2F;&#x2F;zola-coffee-theme.netlify.app&#x2F;</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;dark&#x2F;">dark</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;simple&#x2F;">simple</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;mermaid&#x2F;">mermaid</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;katex&#x2F;">katex</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2025-09-22T00:36:54+09:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="coffee-theme">coffee theme</h1>
+<p><strong>coffee</strong> is a blog theme for zola!</p>
+<p>This theme can be used <strong>mermaid</strong> and <strong>katex</strong>.</p>
+<ul>
+<li>demo site</li>
+</ul>
+<p>https://zola-coffee-theme.netlify.app/</p>
+<ul>
+<li><a class="external" href="https://github.com/Myxogastria0808/coffee/blob/main/logo/README.md">theme logo</a></li>
+</ul>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/logo/coffee.svg" width="300px" height="300px" />
+</div>
+<ul>
+<li>screenshot</li>
+</ul>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/screenshot.png" width="1920px" height="935px" />
+</div>
+<h2 id="setup-environment">Setup Environment</h2>
+<ol>
+<li>Install zola</li>
+</ol>
+<p>Please install zola by referring to the following.</p>
+<p>https://www.getzola.org/documentation/getting-started/installation/</p>
+<ol start="2">
+<li>Setup coffee theme</li>
+</ol>
+<blockquote>
+<p>[!TIP]
+If you want to use the coffee theme repository as a blog, you do not need to do the <code>2.</code> step other than making extra settings in the <code>2-6.</code> step after cloning the repository.</p>
+</blockquote>
+<p>2-1. Create your blog project</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>zola init </span><span style="color:#cc7833;">&lt;</span><span> your blog project </span><span style="color:#cc7833;">&gt;
+</span></code></pre>
+<p>Please select as follows</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>Welcome to Zola!
+</span><span>Please answer a few questions to get started quickly.
+</span><span>Any choices made can be changed by modifying the `config.toml` file later.
+</span><span style="color:#cc7833;">&gt;</span><span> What is the URL of your site</span><span style="color:#cc7833;">?</span><span> (https://example.com)</span><span style="color:#da4939;">: </span><span style="color:#cc7833;">&lt; </span><span style="color:#c1be91;">&quot;Don&#39;t enter anything.&quot; </span><span style="color:#cc7833;">&gt;
+</span><span style="color:#cc7833;">&gt;</span><span> Do you want to enable Sass compilation</span><span style="color:#cc7833;">? [</span><span>Y/n</span><span style="color:#cc7833;">]</span><span>: y
+</span><span style="color:#cc7833;">&gt;</span><span> Do you want to enable syntax highlighting</span><span style="color:#cc7833;">? [</span><span>y/N</span><span style="color:#cc7833;">]</span><span>: y
+</span><span style="color:#cc7833;">&gt;</span><span> Do you want to build a search index of the content</span><span style="color:#cc7833;">? [</span><span>y/N</span><span style="color:#cc7833;">]</span><span>: y
+</span><span>
+</span><span>Done! Your site was created in /home/hello/Desktop/coffee-sample/docs
+</span><span>
+</span><span>Get started by moving into the directory and using the built-in server: `zola serve`
+</span><span>Visit https://www.getzola.org for the full documentation.
+</span></code></pre>
+<p>2-2. Change directory to your blog project</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#da4939;">cd</span><span> ./</span><span style="color:#cc7833;">&lt;</span><span> your blog project </span><span style="color:#cc7833;">&gt;</span><span>/themes/
+</span></code></pre>
+<p>2-3. Clone coffee theme to theme directory and remove .git directory of coffee theme repository</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>git clone https://github.com/Myxogastria0808/coffee.git
+</span><span>rm</span><span style="font-style:italic;color:#fd971f;"> -rf</span><span> coffee/.git
+</span></code></pre>
+<p>2-4. Change directory to the root of your blog project</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#da4939;">cd</span><span> ..
+</span></code></pre>
+<p>2-5. Replace settings to <code>config.toml</code> of your blog project</p>
+<p>The following is the content of the replacement config.</p>
+<p>Please change <code>base_url</code> to your blog's URL when deploying your blog.
+During development, I recommend leaving base_url as is.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;coffee&quot;
+</span><span>
+</span><span style="color:#95815e;"># The URL the site will be built for
+</span><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;/&quot;
+</span><span>
+</span><span style="color:#95815e;"># The site title and description; used in feeds by default.
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;coffee&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;A simple theme for Zola inspired by coffee.&quot;
+</span><span>
+</span><span style="color:#95815e;"># Whether to automatically compile all Sass files in the sass directory
+</span><span style="color:#e8bf6a;">compile_sass </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># When set to &quot;true&quot;, the generated HTML files are minified.
+</span><span style="color:#e8bf6a;">minify_html </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># Whether to build a search index to be used later on by a JavaScript library
+</span><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># RSS/Atom feeds
+</span><span style="color:#e8bf6a;">generate_feeds </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#95815e;"># The filenames to use for the feeds. Used as the template filenames, too.
+</span><span style="color:#95815e;"># Defaults to [&quot;atom.xml&quot;], which has a built-in template that renders an Atom 1.0 feed.
+</span><span style="color:#95815e;"># There is also a built-in template &quot;rss.xml&quot; that renders an RSS 2.0 feed.
+</span><span style="color:#e8bf6a;">feed_filenames </span><span>= [</span><span style="color:#c1be91;">&quot;rss.xml&quot;</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># The taxonomies to be rendered for the site and their configuration of the default languages
+</span><span style="color:#95815e;"># Example:
+</span><span style="color:#95815e;">#     taxonomies = [
+</span><span style="color:#95815e;">#       {name = &quot;tags&quot;, feed = true}, # each tag will have its own feed
+</span><span style="color:#95815e;">#       {name = &quot;tags&quot;}, # you can have taxonomies with the same name in multiple languages
+</span><span style="color:#95815e;">#       {name = &quot;categories&quot;, paginate_by = 5},  # 5 items per page for a term
+</span><span style="color:#95815e;">#       {name = &quot;authors&quot;}, # Basic definition: no feed or pagination
+</span><span style="color:#95815e;">#     ]
+</span><span style="color:#95815e;">#
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">markdown</span><span>]
+</span><span style="color:#95815e;"># Whether to do syntax highlighting
+</span><span style="color:#95815e;"># Theme can be customized by setting the `highlight_theme` variable to a theme supported by Zola
+</span><span style="color:#e8bf6a;">highlight_code </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># When set to &quot;true&quot;, emoji aliases translated to their corresponding
+</span><span style="color:#95815e;"># Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: =&gt; 😄)
+</span><span style="color:#e8bf6a;">render_emoji </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># Whether external links are to be opened in a new tab
+</span><span style="color:#95815e;"># If this is true, a `rel=&quot;noopener&quot;` will always automatically be added for security reasons
+</span><span style="color:#e8bf6a;">external_links_target_blank </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># Whether to set rel=&quot;noreferrer&quot; for all external links
+</span><span style="color:#e8bf6a;">external_links_no_referrer </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># Whether smart punctuation is enabled (changing quotes, dashes, dots in their typographic form)
+</span><span style="color:#95815e;"># For example, `...` into `…`, `&quot;quote&quot;` into `“curly”` etc
+</span><span style="color:#e8bf6a;">smart_punctuation </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">search</span><span>]
+</span><span style="color:#95815e;"># Whether to include the title of the page/section in the index
+</span><span style="color:#e8bf6a;">include_title </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#95815e;"># Whether to include the description of the page/section in the index
+</span><span style="color:#e8bf6a;">include_description </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#95815e;"># Whether to include the RFC3339 datetime of the page in the search index
+</span><span style="color:#e8bf6a;">include_date </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#95815e;"># Whether to include the path of the page/section in the index (the permalink is always included)
+</span><span style="color:#e8bf6a;">include_path </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#95815e;"># Whether to include the rendered content of the page/section in the index
+</span><span style="color:#e8bf6a;">include_content </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">slugify</span><span>]
+</span><span style="color:#95815e;"># Various slugification strategies, see below for details
+</span><span style="color:#95815e;"># Defaults to everything being a slug
+</span><span style="color:#e8bf6a;">paths </span><span>= </span><span style="color:#c1be91;">&quot;off&quot;
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= </span><span style="color:#c1be91;">&quot;off&quot;
+</span><span style="color:#95815e;"># Whether to remove date prefixes for page path slugs.
+</span><span style="color:#95815e;"># For example, content/posts/2016-10-08_a-post-with-dates.md =&gt; posts/a-post-with-dates
+</span><span style="color:#95815e;"># When true, content/posts/2016-10-08_a-post-with-dates.md =&gt; posts/2016-10-08-a-post-with-dates
+</span><span style="color:#e8bf6a;">paths_keep_dates </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>2-6. Add extra settings to <code>config.toml</code> of your blog project</p>
+<p>This theme provides the following additional settings.</p>
+<p>All settings have default values, so you only need to add the settings you want to change.</p>
+<ul>
+<li><code>config.toml</code></li>
+</ul>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.coffee</span><span>] </span><span style="color:#95815e;">#&lt;- CAUTION: You have to be [extra.coffee], not [extra].
+</span><span style="color:#95815e;"># default value: &#39;en&#39;
+</span><span style="color:#e8bf6a;">lang </span><span>= </span><span style="color:#c1be91;">&quot;en&quot;
+</span><span style="color:#95815e;"># default value: &#39;blog&#39;
+</span><span style="color:#e8bf6a;">keyword </span><span>= </span><span style="color:#c1be91;">&quot;blog&quot;
+</span><span style="color:#95815e;"># default value: &#39;https://raw.githubusercontent.com/Myxogastria0808/coffee/heads/main/static/favicon.svg&#39;
+</span><span style="color:#95815e;"># A shortcut icon has to be a SVG image.
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;https://raw.githubusercontent.com/Myxogastria0808/coffee/heads/main/static/favicon.svg&quot;
+</span><span style="color:#95815e;"># default value: &#39;&#39;
+</span><span style="color:#e8bf6a;">twitter_site </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># default value: &#39;@yuki_osada0808&#39;
+</span><span style="color:#e8bf6a;">twitter_creator </span><span>= </span><span style="color:#c1be91;">&quot;@yuki_osada0808&quot;
+</span><span style="color:#95815e;"># default value: &#39;https://raw.githubusercontent.com/Myxogastria0808/coffee/heads/main/static/coffee.webp&#39;
+</span><span style="color:#e8bf6a;">meta_image </span><span>= </span><span style="color:#c1be91;">&quot;https://raw.githubusercontent.com/Myxogastria0808/coffee/heads/main/static/coffee.webp&quot;
+</span><span style="color:#95815e;"># default value: &#39;coffee theme&#39;
+</span><span style="color:#e8bf6a;">meta_image_alt </span><span>= </span><span style="color:#c1be91;">&quot;coffee theme&quot;
+</span><span style="color:#95815e;"># default value: &#39;512&#39;
+</span><span style="color:#e8bf6a;">meta_image_width </span><span>= </span><span style="color:#c1be91;">&quot;512&quot;
+</span><span style="color:#95815e;"># default value: &#39;512&#39;
+</span><span style="color:#e8bf6a;">meta_image_height </span><span>= </span><span style="color:#c1be91;">&quot;512&quot;
+</span><span>
+</span><span style="color:#95815e;"># default value is below
+</span><span style="color:#e8bf6a;">about </span><span>= </span><span style="color:#a5c261;">&quot;&quot;&quot;
+</span><span style="color:#a5c261;">Hello, my name is &lt;strong&gt;Myxogastria0808.&lt;/strong&gt;&lt;br/&gt;
+</span><span style="color:#a5c261;">I created a Zola theme named &lt;strong&gt;&quot;coffee&quot;&lt;/strong&gt;.
+</span><span style="color:#a5c261;">This template can be used &lt;strong&gt;mermaid&lt;/strong&gt; and &lt;strong&gt;katex&lt;/strong&gt;.
+</span><span style="color:#a5c261;">&lt;h4&gt;Have a nice day!&lt;/h4&gt;
+</span><span style="color:#a5c261;">&quot;&quot;&quot;
+</span><span style="color:#95815e;"># default value: &#39;https://raw.githubusercontent.com/Myxogastria0808/coffee/heads/main/static/coffee.webp&#39;
+</span><span style="color:#e8bf6a;">about_image </span><span>= </span><span style="color:#c1be91;">&quot;https://raw.githubusercontent.com/Myxogastria0808/coffee/heads/main/static/coffee.webp&quot;
+</span><span style="color:#95815e;"># default value: &#39;coffee theme&#39;
+</span><span style="color:#e8bf6a;">about_image_alt </span><span>= </span><span style="color:#c1be91;">&quot;coffee theme&quot;
+</span><span style="color:#95815e;"># default value: &#39;512&#39;
+</span><span style="color:#e8bf6a;">about_image_width </span><span>= </span><span style="color:#c1be91;">&quot;512&quot;
+</span><span style="color:#95815e;"># default value: &#39;512&#39;
+</span><span style="color:#e8bf6a;">about_image_height </span><span>= </span><span style="color:#c1be91;">&quot;512&quot;
+</span></code></pre>
+<ul>
+<li>example (part of <code>config.toml</code>)</li>
+</ul>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.coffee</span><span>]
+</span><span style="color:#e8bf6a;">keyword </span><span>= </span><span style="color:#c1be91;">&quot;blog coffee drink&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">about </span><span>= </span><span style="color:#a5c261;">&quot;&quot;&quot;
+</span><span style="color:#a5c261;">Hello, my name is &lt;strong&gt;Myxogastria0808.&lt;/strong&gt;&lt;br/&gt;
+</span><span style="color:#a5c261;">This blog is made by Zola. This is a sample blog of coffee theme.
+</span><span style="color:#a5c261;">&quot;&quot;&quot;
+</span></code></pre>
+<p>2-7. Replace settings to <code>content/_index.md</code> of your blog project</p>
+<p>The following is the content of <code>_index.md</code>, which will be newly added in the content directory.</p>
+<ul>
+<li><code>_index.md</code></li>
+</ul>
+<pre data-lang="md" style="background-color:#383838;color:#e6e1dc;" class="language-md "><code class="language-md" data-lang="md"><span>+++
+</span><span>sort_by = &quot;date&quot;
+</span><span>template = &quot;index.html&quot;
+</span><span>page_template = &quot;blog-template.html&quot;
+</span><span>in_search_index = true
+</span><span>+++
+</span><span>
+</span></code></pre>
+<ol start="3">
+<li>Build your blog</li>
+</ol>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>zola build
+</span></code></pre>
+<ol start="4">
+<li>Check your blog</li>
+</ol>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>zola serve
+</span></code></pre>
+<h3 id="setup-example">Setup Example</h3>
+<p>The following sample have been set up.</p>
+<blockquote>
+<p>[!NOTE]
+This repository includes the coffee theme repository as a submodule.</p>
+</blockquote>
+<ul>
+<li>repository</li>
+</ul>
+<p>https://github.com/Myxogastria0808/coffee-sample.git</p>
+<ul>
+<li>demo site</li>
+</ul>
+<p>https://zola-coffee-theme-sample.netlify.app/</p>
+<h2 id="post-example">Post Example</h2>
+<p>You can see the post example below.</p>
+<pre data-lang="md" style="background-color:#383838;color:#e6e1dc;" class="language-md "><code class="language-md" data-lang="md"><span>+++
+</span><span>title = &quot;coffee&quot;
+</span><span>date = 2025-08-19
+</span><span>authors = [&quot;Myxogastria0808&quot;]
+</span><span>[taxonomies]
+</span><span>tags = [&quot;coffee&quot;]
+</span><span>+++
+</span><span>
+</span><span>The best part of my morning is the quiet moment with a steaming mug of coffee.
+</span><span>It&#39;s a simple, potent reminder that a new day has truly begun.
+</span><span>
+</span><span style="color:#fd971f;">## Greeting
+</span><span>
+</span><span>Hello, coffee lovers! ☕
+</span><span>
+</span><span>My name is Myxogastria0808, and I like coffee too!
+</span><span>
+</span><span style="color:#fd971f;">## How I like to drink coffee
+</span><span>
+</span><span>My favorite way to drink coffee is to add caramel flavored sugar to black coffee!
+</span><span>
+</span><span style="color:#fd971f;">## Coffee logo
+</span><span>
+</span><span>I create a logo for my blog theme named &quot;coffee&quot;.
+</span><span>
+</span><span>{{ image(path=&quot;/content/coffee/coffee.webp&quot;) }}
+</span><span>
+</span></code></pre>
+<p>Please refer to the following for an actual example.</p>
+<ul>
+<li>markdown example</li>
+</ul>
+<p>https://github.com/Myxogastria0808/coffee/blob/main/content/sample/index.md</p>
+<ul>
+<li>preview URL</li>
+</ul>
+<p>https://zola-coffee-theme.netlify.app/sample/</p>
+<h2 id="coffee-theme-specific-notation">coffee Theme Specific Notation</h2>
+<h3 id="list-of-languages-in-code-block">List of languages in Code Block</h3>
+<p>https://www.getzola.org/documentation/content/syntax-highlighting/</p>
+<h4 id="example">Example</h4>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>```rs
+</span><span>fn main() {
+</span><span>    println!(&quot;Hello, world!&quot;);
+</span><span>}
+</span><span>```
+</span></code></pre>
+<p><img src="https://github.com/Myxogastria0808/coffee/blob/main/assets/codeblock.png" alt="codeblock" /></p>
+<h3 id="image">Image</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{{ image(path=&quot;/image/path&quot;) }}
+</span></code></pre>
+<p>You can add <code>width=int</code>, <code>height=int</code>, and <code>caption=String</code> as options for image shortcode.</p>
+<p>You can see the image shortcode examples below.</p>
+<ul>
+<li>markdown example</li>
+</ul>
+<p>https://github.com/Myxogastria0808/coffee/blob/main/content/sample/index.md</p>
+<ul>
+<li>preview URL</li>
+</ul>
+<p>https://zola-coffee-theme.netlify.app/sample/</p>
+<h4 id="example-applying-all-of-width-height-and-caption">Example applying all of <code>width</code>, <code>height</code>, and <code>caption</code></h4>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{{ image(path=&quot;/content/sample/image.jpg&quot;, width=1000, height=200, caption=&quot;caption&quot;) }}
+</span></code></pre>
+<p><img src="https://github.com/Myxogastria0808/coffee/blob/main/assets/image.png" alt="image" /></p>
+<blockquote>
+<p>[!NOTE]
+Images are automatically converted to webp, so you don't need to worry about image size.</p>
+</blockquote>
+<h3 id="katex">katex</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$$
+</span><span>&lt;katex&#39;s syntax expression&gt;
+</span><span>$$
+</span></code></pre>
+<h4 id="example-1">Example</h4>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$$
+</span><span>\frac{dy}{dx} + p(x) y^2 + q(x) y + r(x) = 0
+</span><span>$$
+</span></code></pre>
+<p><img src="https://github.com/Myxogastria0808/coffee/blob/main/assets/katex.png" alt="katex" /></p>
+<h3 id="mermaid">mermaid</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% mermaid() %}
+</span><span>&lt;mermaid&#39;s syntax expression&gt;
+</span><span>{% end %}
+</span></code></pre>
+<h4 id="example-2">Example</h4>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% mermaid() %}
+</span><span>graph TD;
+</span><span>    A--&gt;B;
+</span><span>    A--&gt;C;
+</span><span>    B--&gt;D;
+</span><span>    C--&gt;D;
+</span><span>{% end %}
+</span></code></pre>
+<p><img src="https://github.com/Myxogastria0808/coffee/blob/main/assets/mermaid.png" alt="mermaid" /></p>
+<h3 id="note">note</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% note() %}
+</span><span>Contents of the note.
+</span><span>{% end %}
+</span></code></pre>
+<h4 id="example-3">Example</h4>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% note() %}
+</span><span>This is a note.
+</span><span>{% end %}
+</span></code></pre>
+<p><img src="https://github.com/Myxogastria0808/coffee/blob/main/assets/note.png" alt="note" /></p>
+<h3 id="tip">tip</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% tip() %}
+</span><span>Contents of the tip.
+</span><span>{% end %}
+</span></code></pre>
+<h4 id="example-4">Example</h4>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% tip() %}
+</span><span>This is a tip.
+</span><span>{% end %}
+</span></code></pre>
+<p><img src="https://github.com/Myxogastria0808/coffee/blob/main/assets/tip.png" alt="tip" /></p>
+<h3 id="important">important</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% important() %}
+</span><span>Contents of the important.
+</span><span>{% end %}
+</span></code></pre>
+<h4 id="example-5">Example</h4>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% important() %}
+</span><span>This is a important.
+</span><span>{% end %}
+</span></code></pre>
+<p><img src="https://github.com/Myxogastria0808/coffee/blob/main/assets/important.png" alt="important" /></p>
+<h3 id="warning">warning</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% warning() %}
+</span><span>Contents of the warning.
+</span><span>{% end %}
+</span></code></pre>
+<h4 id="example-6">Example</h4>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% warning() %}
+</span><span>This is a warning.
+</span><span>{% end %}
+</span></code></pre>
+<p><img src="https://github.com/Myxogastria0808/coffee/blob/main/assets/warning.png" alt="warning" /></p>
+<h3 id="caution">caution</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% caution() %}
+</span><span>Contents of the caution
+</span><span>{% end %}
+</span></code></pre>
+<h4 id="example-7">Example</h4>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% caution() %}
+</span><span>This is a caution.
+</span><span>{% end %}
+</span></code></pre>
+<p><img src="https://github.com/Myxogastria0808/coffee/blob/main/assets/caution.png" alt="caution" /></p>
+<h2 id="structure-of-this-template">Structure of this template</h2>
+<p>The following is expressed in pseudo-HTML.</p>
+<h3 id="top-page-also-serves-as-an-article-list-page">Top page (Also serves as an article list page)</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>&lt;base.html&gt;
+</span><span>  &lt;index.html&gt;&lt;/index.html&gt;
+</span><span>&lt;/base.html&gt;
+</span></code></pre>
+<h3 id="tag-list-page">Tag list page</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>&lt;base.html&gt;
+</span><span>  &lt;taxonomy_list.html&gt;&lt;/taxonomy_list.html&gt;
+</span><span>&lt;/base.html&gt;
+</span></code></pre>
+<h3 id="list-of-specific-tags-page">List of specific tags page</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>&lt;base.html&gt;
+</span><span>  &lt;taxonomy_single.html&gt;&lt;/taxonomy_single.html&gt;
+</span><span>&lt;/base.html&gt;
+</span></code></pre>
+<h3 id="post-page">Post page</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>&lt;base.html&gt;
+</span><span>  &lt;blog-template.html&gt;&lt;/blog-template.html&gt;
+</span><span>&lt;/base.html&gt;
+</span></code></pre>
+<h3 id="404-page">404 page</h3>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>&lt;base.html&gt;
+</span><span>  &lt;404.html&gt;&lt;/404.html&gt;
+</span><span>&lt;/base.html&gt;
+</span></code></pre>
+<h2 id="references">References</h2>
+<p>https://www.getzola.org/documentation/getting-started/overview/#content</p>
+<p>https://swaits.com/adding-mermaid-js-to-zola/</p>
+<p>https://sippo.work/blog/20231105-deploy-zola-with-cloudflare-pages/</p>
+<p>https://zenn.dev/com4dc/scraps/c6c0f5fb87a1f9</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

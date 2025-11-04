@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>henry | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zola-henry&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>henry</h1>
+            <p>A timeless blog theme</p>
+            <p><b>Author:</b>
+            
+              sirodoht
+              
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;sirodoht&#x2F;zola-henry">https:&#x2F;&#x2F;github.com&#x2F;sirodoht&#x2F;zola-henry</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;sirodoht.github.io&#x2F;zola-henry&#x2F;">https:&#x2F;&#x2F;sirodoht.github.io&#x2F;zola-henry&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-08-15T16:34:12+03:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="henry">henry</h1>
+<p>Henry is a single-column <a class="external" href="https://github.com/getzola/zola">Zola</a> theme based on the original Jekyll styles.</p>
+<p>Demo -&gt; <a class="external" href="https://sirodoht.github.io/zola-henry/">https://sirodoht.github.io/zola-henry/</a></p>
+<p><img src="https://www.getzola.org/themes/zola-henry/screenshot.png" alt="screenshot for home page" /></p>
+<p><img src="https://www.getzola.org/themes/zola-henry/screenshot-post.png" alt="screenshot for posts" /></p>
+<p><img src="https://www.getzola.org/themes/zola-henry/screenshot-page.png" alt="screenshot for any other page" /></p>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>$ cd themes
+</span><span>$ git clone https://github.com/sirodoht/zola-henry.git henry
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;henry&quot;
+</span></code></pre>
+<h2 id="options">Options</h2>
+<h3 id="nav-links">Nav links</h3>
+<p>Set a field in <code>extra</code> with a key of <code>henry_links</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">henry_links </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;about&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;About&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/benbalter&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;GitHub&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>Each link needs to have a <code>url</code> and a <code>name</code>.</p>
+<h3 id="footer-github-icon-link">Footer GitHub icon link</h3>
+<p>By default Henry ships with GitHub icon link in the right side of the footer. You can change its link href in your <code>config.toml</code>.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">henry_github </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/sirodoht/zola-henry&quot;
+</span></code></pre>
+<h3 id="footer-twitter-icon-link">Footer Twitter icon link</h3>
+<p>Twitter is too mainstream and a bit lame, but 100% of our users have requested, so we offer it.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">henry_twitter </span><span>= </span><span style="color:#c1be91;">&quot;https://twitter.com/benbalter&quot;
+</span></code></pre>
+<h2 id="license">License</h2>
+<p>MIT</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

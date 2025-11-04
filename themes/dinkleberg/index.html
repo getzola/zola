@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>dinkleberg | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;dinkleberg&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>dinkleberg</h1>
+            <p>The Rust BR theme for Gutenberg</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;guidiego">Guilherme Diego</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;rust-br&#x2F;dinkleberg">https:&#x2F;&#x2F;github.com&#x2F;rust-br&#x2F;dinkleberg</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;">https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2019-10-18T00:30:44-03:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><img src="https://user-images.githubusercontent.com/10289071/40806112-dd79ae78-64f6-11e8-8f24-63f387d5bb8f.jpg" alt="753986_1" /></p>
+<p>Rust BR Blog template for Gutenberg</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>A kind of i18n for base words as: "Next", "Previous", "Pages", "Categories"</li>
+<li>Blog Title and Logo on extra configurations</li>
+<li>Auto-sidebar links by configuration</li>
+<li>Simple design based on Medium</li>
+<li>SEO using structured data and another features</li>
+</ul>
+<h2 id="configurations">Configurations</h2>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">blog_logo</span><span>=</span><span style="color:#c1be91;">&quot;/imgs/common/logo.png&quot; </span><span style="color:#95815e;">#will appear on top header
+</span><span style="color:#e8bf6a;">blog_title</span><span>=</span><span style="color:#c1be91;">&quot;rust::br::Blog&quot; </span><span style="color:#95815e;">#will appear on top header after logo
+</span><span>
+</span><span style="color:#95815e;">## i18n words
+</span><span style="color:#e8bf6a;">label_tags </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot;
+</span><span style="color:#e8bf6a;">label_tag </span><span>= </span><span style="color:#c1be91;">&quot;Tag&quot;
+</span><span style="color:#e8bf6a;">label_categories </span><span>= </span><span style="color:#c1be91;">&quot;Categorias&quot;
+</span><span style="color:#e8bf6a;">label_category </span><span>= </span><span style="color:#c1be91;">&quot;Categoria&quot;
+</span><span style="color:#e8bf6a;">label_relative_posts </span><span>= </span><span style="color:#c1be91;">&quot;Postagens Relacionadas&quot;
+</span><span style="color:#e8bf6a;">label_next </span><span>= </span><span style="color:#c1be91;">&quot;Próxima&quot;
+</span><span style="color:#e8bf6a;">label_previous </span><span>= </span><span style="color:#c1be91;">&quot;Anterior&quot;
+</span><span style="color:#e8bf6a;">label_page </span><span>= </span><span style="color:#c1be91;">&quot;Página&quot;
+</span><span style="color:#e8bf6a;">label_of </span><span>= </span><span style="color:#c1be91;">&quot;de&quot;
+</span><span style="color:#e8bf6a;">label_minutes </span><span>= </span><span style="color:#c1be91;">&quot;minutos&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">og_image</span><span>=</span><span style="color:#c1be91;">&quot;&quot; </span><span style="color:#95815e;"># Image that will appear on social media
+</span><span style="color:#e8bf6a;">og_alt_image</span><span>=</span><span style="color:#c1be91;">&quot;&quot; </span><span style="color:#95815e;"># Alt for og_image
+</span><span style="color:#e8bf6a;">og_site_name</span><span>=</span><span style="color:#c1be91;">&quot;&quot; </span><span style="color:#95815e;"># Site Name for Open Graphic
+</span><span style="color:#e8bf6a;">keywords</span><span>=</span><span style="color:#c1be91;">&quot;&quot; </span><span style="color:#95815e;"># Keywords for SEO
+</span><span>
+</span><span style="color:#e8bf6a;">educational_use</span><span>=</span><span style="color:#c1be91;">&quot;knowledge share&quot; </span><span style="color:#95815e;"># OPTIONAL
+</span><span style="color:#e8bf6a;">copyright_year</span><span>=</span><span style="color:#c1be91;">&quot;2018&quot; </span><span style="color:#95815e;"># OPTIONAL
+</span><span>
+</span><span style="color:#e8bf6a;">fb_app_id</span><span>=</span><span style="color:#c1be91;">&quot;???&quot; </span><span style="color:#95815e;"># OPTIONAL, Facebook App Id to help in metrics
+</span><span style="color:#e8bf6a;">twitter_username</span><span>=</span><span style="color:#c1be91;">&quot;@???&quot; </span><span style="color:#95815e;"># OPTIONAL, Twitter User to help with metrics
+</span><span>
+</span><span style="color:#95815e;">## Sidebar automatic links
+</span><span style="color:#e8bf6a;">sidebar </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Social&quot;</span><span>, </span><span style="color:#e8bf6a;">urls</span><span>=[
+</span><span>        {</span><span style="color:#e8bf6a;">name</span><span>=</span><span style="color:#c1be91;">&quot;Telegram&quot;</span><span>, </span><span style="color:#e8bf6a;">url</span><span>=</span><span style="color:#c1be91;">&quot;https://t.me/rustlangbr&quot;</span><span>},
+</span><span>        {</span><span style="color:#e8bf6a;">name</span><span>=</span><span style="color:#c1be91;">&quot;Github&quot;</span><span>, </span><span style="color:#e8bf6a;">url</span><span>=</span><span style="color:#c1be91;">&quot;https://github.com/rust-br&quot;</span><span>},
+</span><span>    ]},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Divida Conhecimento!&quot;</span><span>, </span><span style="color:#e8bf6a;">urls</span><span>=[
+</span><span>        {</span><span style="color:#e8bf6a;">name</span><span>=</span><span style="color:#c1be91;">&quot;Contribuir!&quot;</span><span>, </span><span style="color:#e8bf6a;">url</span><span>=</span><span style="color:#c1be91;">&quot;https://rust-br.github.io/blog/hello-world&quot;</span><span>}
+</span><span>    ]}
+</span><span>]
+</span><span>
+</span></code></pre>
+<p>This configuration was the same configuration that we use on <a class="external" href="https://rust-br.github.io/blog">RustBR Blog</a></p>
+<h3 id="favicons-and-other-stuff">Favicons and other stuff</h3>
+<p>By default Dinkleberg wait that you have all icons on root of your static, for it you can use the site <a class="external" href="https://www.favicon-generator.org/">https://www.favicon-generator.org/</a> to generate that bundle and put it inside you <code>/static</code> :D</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

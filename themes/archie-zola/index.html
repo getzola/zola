@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>archie-zola | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;archie-zola&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>archie-zola</h1>
+            <p>A zola theme based on Hugo archie.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;XXXMrG">Keith</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.14.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;XXXMrG&#x2F;archie-zola">https:&#x2F;&#x2F;github.com&#x2F;XXXMrG&#x2F;archie-zola</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;archie-zola.netlify.app&#x2F;">https:&#x2F;&#x2F;archie-zola.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-08-18T14:52:13+08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="archie-zola">archie-zola</h1>
+<p>A clean, minimal Zola theme forked from <a class="external" href="https://github.com/athul/archie">archie</a>. Perfect for personal blogs and portfolios with dark/light mode support.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li>Demo</li>
+<li>Features</li>
+<li>Installation</li>
+<li>Quick Start</li>
+<li>Configuration</li>
+<li>Content Management</li>
+<li>Customization</li>
+<li>Troubleshooting</li>
+<li>Contributing</li>
+</ul>
+<h2 id="demo">Demo</h2>
+<p><strong>Live Demo:</strong> <a class="external" href="https://archie-zola.netlify.app">https://archie-zola.netlify.app</a></p>
+<h3 id="screenshots">Screenshots</h3>
+<table><thead><tr><th>Light Mode</th><th>Dark Mode</th></tr></thead><tbody>
+<tr><td><img src="https://archie-zola.netlify.app/screenshot/screenshot-light.png" alt="Light" /></td><td><img src="https://archie-zola.netlify.app/screenshot/screenshot-dark.png" alt="Dark" /></td></tr>
+</tbody></table>
+<h2 id="features">Features</h2>
+<ul>
+<li>✅ <strong>Responsive Design</strong> - Works on desktop, tablet, and mobile</li>
+<li>✅ <strong>Dark/Light Mode</strong> - Auto-detection + manual toggle</li>
+<li>✅ <strong>Fast &amp; Lightweight</strong> - Minimal CSS and JavaScript</li>
+<li>✅ <strong>SEO Optimized</strong> - Meta tags, Open Graph, structured data</li>
+<li>✅ <strong>Syntax Highlighting</strong> - Code blocks with theme support</li>
+<li>✅ <strong>LaTeX Math</strong> - KaTeX integration for mathematical expressions</li>
+<li>✅ <strong>Custom CSS/JS</strong> - Easy theme customization</li>
+<li>✅ <strong>Google Analytics</strong> - Built-in GA4 support</li>
+<li>✅ <strong>Tags &amp; Pagination</strong> - Organize and navigate content</li>
+<li>✅ <strong>Social Links</strong> - Footer social media integration</li>
+</ul>
+<h3 id="coming-soon">Coming Soon</h3>
+<ul>
+<li>🔄 <strong>Twitter Cards</strong> - Rich social media previews</li>
+<li>🔄 <strong>YouTube Embeds</strong> - Video integration</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<h3 id="method-1-git-submodule-recommended">Method 1: Git Submodule (Recommended)</h3>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="font-style:italic;color:#7c7865;"># Add as submodule
+</span><span>git submodule add https://github.com/XXXMrG/archie-zola.git themes/archie-zola
+</span><span>
+</span><span style="font-style:italic;color:#7c7865;"># Enable in config.toml
+</span><span style="color:#da4939;">echo </span><span style="color:#a5c261;">&#39;theme = &quot;archie-zola&quot;&#39; </span><span style="color:#cc7833;">&gt;&gt;</span><span> config.toml
+</span></code></pre>
+<h3 id="method-2-direct-clone">Method 2: Direct Clone</h3>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="font-style:italic;color:#7c7865;"># Clone to themes directory
+</span><span>git clone https://github.com/XXXMrG/archie-zola.git themes/archie-zola
+</span><span>
+</span><span style="font-style:italic;color:#7c7865;"># Enable in config.toml
+</span><span style="color:#da4939;">echo </span><span style="color:#a5c261;">&#39;theme = &quot;archie-zola&quot;&#39; </span><span style="color:#cc7833;">&gt;&gt;</span><span> config.toml
+</span></code></pre>
+<h3 id="updating-the-theme">Updating the Theme</h3>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="font-style:italic;color:#7c7865;"># Initialize submodules (first time)
+</span><span>git submodule update</span><span style="font-style:italic;color:#fd971f;"> --init
+</span><span>
+</span><span style="font-style:italic;color:#7c7865;"># Update to latest version
+</span><span>git submodule update</span><span style="font-style:italic;color:#fd971f;"> --remote
+</span><span>
+</span><span style="font-style:italic;color:#7c7865;"># Commit the update
+</span><span>git add themes/archie-zola
+</span><span>git commit</span><span style="font-style:italic;color:#fd971f;"> -m </span><span style="color:#c1be91;">&quot;Update archie-zola theme&quot;
+</span></code></pre>
+<h2 id="quick-start">Quick Start</h2>
+<ol>
+<li><strong>Install the theme</strong> (see above)</li>
+<li><strong>Copy example config</strong> to your <code>config.toml</code>:</li>
+</ol>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;https://yourdomain.com&quot;
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Your Blog&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Your blog description&quot;
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;archie-zola&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">mode </span><span>= </span><span style="color:#c1be91;">&quot;toggle&quot;  </span><span style="color:#95815e;"># auto | dark | toggle
+</span><span style="color:#e8bf6a;">subtitle </span><span>= </span><span style="color:#c1be91;">&quot;Your tagline here&quot;
+</span></code></pre>
+<ol start="3">
+<li><strong>Create your first post</strong>:</li>
+</ol>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>mkdir</span><span style="font-style:italic;color:#fd971f;"> -p</span><span> content/posts
+</span><span style="color:#da4939;">echo </span><span style="color:#a5c261;">&#39;+++
+</span><span style="color:#a5c261;">title = &quot;Hello World&quot;
+</span><span style="color:#a5c261;">date = 2024-01-01
+</span><span style="color:#a5c261;">+++
+</span><span style="color:#a5c261;">
+</span><span style="color:#a5c261;">Your first post content here.&#39; </span><span style="color:#cc7833;">&gt;</span><span> content/posts/hello-world.md
+</span></code></pre>
+<ol start="4">
+<li><strong>Build and serve</strong>:</li>
+</ol>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola serve
+</span></code></pre>
+<h2 id="configuration">Configuration</h2>
+<h3 id="basic-settings">Basic Settings</h3>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;https://yourdomain.com&quot;
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Your Site Title&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Your site description&quot;
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;archie-zola&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#95815e;"># Theme mode: &quot;auto&quot; | &quot;dark&quot; | &quot;toggle&quot;
+</span><span style="color:#e8bf6a;">mode </span><span>= </span><span style="color:#c1be91;">&quot;toggle&quot;
+</span><span>
+</span><span style="color:#95815e;"># Subtitle shown under title on homepage
+</span><span style="color:#e8bf6a;">subtitle </span><span>= </span><span style="color:#c1be91;">&quot;Your tagline or description&quot;
+</span><span>
+</span><span style="color:#95815e;"># Use CDN for fonts and icons (default: false)
+</span><span style="color:#e8bf6a;">useCDN </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># Favicon path
+</span><span style="color:#e8bf6a;">favicon </span><span>= </span><span style="color:#c1be91;">&quot;/icon/favicon.png&quot;
+</span><span>
+</span><span style="color:#95815e;"># Footer copyright text
+</span><span style="color:#e8bf6a;">copyright </span><span>= </span><span style="color:#c1be91;">&quot;Your Name&quot;
+</span><span>
+</span><span style="color:#95815e;"># Google Analytics ID (optional)
+</span><span style="color:#e8bf6a;">ga </span><span>= </span><span style="color:#c1be91;">&quot;G-XXXXXXXXXX&quot;
+</span></code></pre>
+<h3 id="dark-mode-options">Dark Mode Options</h3>
+<ul>
+<li><strong><code>auto</code></strong> - Automatically follows system preference</li>
+<li><strong><code>dark</code></strong> - Always dark mode</li>
+<li><strong><code>toggle</code></strong> - Shows a toggle button for user choice</li>
+</ul>
+<h3 id="navigation-menu">Navigation Menu</h3>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[[</span><span style="color:#e8bf6a;">extra.translations.en</span><span>]]
+</span><span style="color:#e8bf6a;">show_more </span><span>= </span><span style="color:#c1be91;">&quot;Read more ⟶&quot;
+</span><span style="color:#e8bf6a;">previous_page </span><span>= </span><span style="color:#c1be91;">&quot;← Previous&quot;
+</span><span style="color:#e8bf6a;">next_page </span><span>= </span><span style="color:#c1be91;">&quot;Next →&quot;
+</span><span style="color:#e8bf6a;">posted_on </span><span>= </span><span style="color:#c1be91;">&quot;on &quot;
+</span><span style="color:#e8bf6a;">posted_by </span><span>= </span><span style="color:#c1be91;">&quot;Published by&quot;
+</span><span style="color:#e8bf6a;">read_time </span><span>= </span><span style="color:#c1be91;">&quot;minute read&quot;
+</span><span style="color:#e8bf6a;">all_tags </span><span>= </span><span style="color:#c1be91;">&quot;All tags&quot;
+</span><span style="color:#e8bf6a;">menus </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/&quot;</span><span>, </span><span style="color:#e8bf6a;">weight </span><span>= </span><span style="color:#a5c261;">1 </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Posts&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/posts&quot;</span><span>, </span><span style="color:#e8bf6a;">weight </span><span>= </span><span style="color:#a5c261;">2 </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/tags&quot;</span><span>, </span><span style="color:#e8bf6a;">weight </span><span>= </span><span style="color:#a5c261;">3 </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;About&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/about&quot;</span><span>, </span><span style="color:#e8bf6a;">weight </span><span>= </span><span style="color:#a5c261;">4 </span><span>},
+</span><span>]
+</span></code></pre>
+<h3 id="social-links">Social Links</h3>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[[</span><span style="color:#e8bf6a;">extra.social</span><span>]]
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;github&quot;
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;GitHub&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/yourusername&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.social</span><span>]]
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;twitter&quot;
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Twitter&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://twitter.com/yourusername&quot;
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">extra.social</span><span>]]
+</span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;linkedin&quot;
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;LinkedIn&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://linkedin.com/in/yourusername&quot;
+</span></code></pre>
+<h3 id="custom-meta-tags">Custom Meta Tags</h3>
+<p>Add custom meta tags to individual pages:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Your Post Title&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Post description&quot;
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#c1be91;">&quot;2024-01-01&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">meta </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">property </span><span>= </span><span style="color:#c1be91;">&quot;og:title&quot;</span><span>, </span><span style="color:#e8bf6a;">content </span><span>= </span><span style="color:#c1be91;">&quot;Custom OG Title&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">property </span><span>= </span><span style="color:#c1be91;">&quot;og:description&quot;</span><span>, </span><span style="color:#e8bf6a;">content </span><span>= </span><span style="color:#c1be91;">&quot;Custom OG Description&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">property </span><span>= </span><span style="color:#c1be91;">&quot;og:image&quot;</span><span>, </span><span style="color:#e8bf6a;">content </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com/image.jpg&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>If not specified, the theme will automatically generate Open Graph tags from your page title and description.</p>
+<h2 id="content-management">Content Management</h2>
+<h3 id="posts-and-pagination">Posts and Pagination</h3>
+<p>Create posts in <code>content/posts/</code> directory. Configure pagination in <code>content/posts/_index.md</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">5
+</span><span style="color:#e8bf6a;">sort_by </span><span>= </span><span style="color:#c1be91;">&quot;date&quot;
+</span><span style="color:#e8bf6a;">template </span><span>= </span><span style="color:#c1be91;">&quot;posts.html&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<h3 id="tags">Tags</h3>
+<p>Add tags to any post:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Your Post&quot;
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#c1be91;">&quot;2024-01-01&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span style="color:#e8bf6a;">tags </span><span>= [</span><span style="color:#c1be91;">&quot;tech&quot;</span><span>, </span><span style="color:#c1be91;">&quot;programming&quot;</span><span>, </span><span style="color:#c1be91;">&quot;rust&quot;</span><span>]
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<p>Enable tags in your main <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot; </span><span>}
+</span><span>]
+</span></code></pre>
+<h3 id="author-information">Author Information</h3>
+<p>Add author info to posts:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Your Name&quot;</span><span>, </span><span style="color:#e8bf6a;">social </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/yourusername&quot; </span><span>}
+</span></code></pre>
+<h3 id="tl-dr-summary">TL;DR Summary</h3>
+<p>Add a quick summary to posts:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">tldr </span><span>= </span><span style="color:#c1be91;">&quot;Quick summary of what this post is about&quot;
+</span></code></pre>
+<h2 id="customization">Customization</h2>
+<h3 id="custom-css-javascript">Custom CSS &amp; JavaScript</h3>
+<p>Add custom styling and functionality:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#95815e;"># Custom CSS files (placed in static/css/)
+</span><span style="color:#e8bf6a;">custom_css </span><span>= [
+</span><span>    </span><span style="color:#c1be91;">&quot;css/custom.css&quot;</span><span>,
+</span><span>    </span><span style="color:#c1be91;">&quot;css/my-theme.css&quot;
+</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Custom JS files (placed in static/js/)
+</span><span style="color:#e8bf6a;">custom_js </span><span>= [
+</span><span>    </span><span style="color:#c1be91;">&quot;js/custom.js&quot;</span><span>,
+</span><span>    </span><span style="color:#c1be91;">&quot;js/analytics.js&quot;
+</span><span>]
+</span></code></pre>
+<p><strong>File structure:</strong></p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>static/
+</span><span>├── css/
+</span><span>│   ├── custom.css
+</span><span>│   └── my-theme.css
+</span><span>└── js/
+</span><span>    ├── custom.js
+</span><span>    └── analytics.js
+</span></code></pre>
+<p>The files will be automatically included in the <code>&lt;head&gt;</code> section of all pages.</p>
+<h3 id="latex-math-support">LaTeX Math Support</h3>
+<p>Enable mathematical expressions with KaTeX:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">katex_enable </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>Then use in your content:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>Inline math: </span><span style="color:#519f50;">\\</span><span>( E = mc^2 </span><span style="color:#519f50;">\\</span><span>)
+</span><span>
+</span><span>Block math:
+</span><span>$$
+</span><span>\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+</span><span>$$
+</span></code></pre>
+<h3 id="extending-the-theme">Extending the Theme</h3>
+<p>Follow Zola's <a class="external" href="https://www.getzola.org/documentation/themes/extending-a-theme/">theme extension guide</a> to override templates and add custom functionality.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="common-issues">Common Issues</h3>
+<p><strong>Theme not loading</strong></p>
+<ul>
+<li>Ensure <code>theme = "archie-zola"</code> is in your <code>config.toml</code></li>
+<li>Check that the theme is in <code>themes/archie-zola/</code></li>
+</ul>
+<p><strong>Submodule not updating</strong></p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git submodule update</span><span style="font-style:italic;color:#fd971f;"> --init --recursive
+</span></code></pre>
+<p><strong>Build errors</strong></p>
+<ul>
+<li>Check your <code>config.toml</code> syntax</li>
+<li>Ensure all required fields are present</li>
+<li>Verify custom CSS/JS files exist</li>
+</ul>
+<p><strong>Dark mode not working</strong></p>
+<ul>
+<li>Set <code>mode = "toggle"</code> or <code>"auto"</code> in <code>[extra]</code> section</li>
+<li>Clear browser cache</li>
+</ul>
+<h3 id="performance-tips">Performance Tips</h3>
+<ul>
+<li>Set <code>useCDN = true</code> for faster font loading</li>
+<li>Optimize images in <code>static/</code> directory</li>
+<li>Use <code>zola build --drafts</code> during development</li>
+</ul>
+<h2 id="contributing">Contributing</h2>
+<p>We welcome contributions! Here's how you can help:</p>
+<ol>
+<li><strong>Report bugs</strong> - Open an issue with reproduction steps</li>
+<li><strong>Suggest features</strong> - Describe your use case</li>
+<li><strong>Submit PRs</strong> - Follow the existing code style</li>
+<li><strong>Improve docs</strong> - Help make this README better</li>
+</ol>
+<h3 id="development-setup">Development Setup</h3>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="font-style:italic;color:#7c7865;"># Fork and clone the repo
+</span><span>git clone https://github.com/yourusername/archie-zola.git
+</span><span style="color:#da4939;">cd</span><span> archie-zola
+</span><span>
+</span><span style="font-style:italic;color:#7c7865;"># Create a test site
+</span><span>zola init test-site
+</span><span style="color:#da4939;">cd</span><span> test-site
+</span><span style="color:#da4939;">echo </span><span style="color:#a5c261;">&#39;theme = &quot;archie-zola&quot;&#39; </span><span style="color:#cc7833;">&gt;&gt;</span><span> config.toml
+</span><span>
+</span><span style="font-style:italic;color:#7c7865;"># Link your local theme
+</span><span>ln</span><span style="font-style:italic;color:#fd971f;"> -s</span><span> ../archie-zola themes/
+</span><span>
+</span><span style="font-style:italic;color:#7c7865;"># Start developing
+</span><span>zola serve
+</span></code></pre>
+<h2 id="license">License</h2>
+<p>This theme is released under the MIT License. See <a href="https://www.getzola.org/themes/archie-zola/LICENSE">LICENSE</a> for details.</p>
+<h2 id="credits">Credits</h2>
+<ul>
+<li>Original <a class="external" href="https://github.com/athul/archie">Archie theme</a> by @athul</li>
+<li>Ported to Zola by @XXXMrG</li>
+<li>Icons by <a class="external" href="https://feathericons.com/">Feather Icons</a></li>
+</ul>
+<hr />
+<p>⭐ <strong>Star this repo</strong> if you find it useful!</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

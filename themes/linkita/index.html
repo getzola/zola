@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Linkita | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;linkita&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Linkita</h1>
+            <p>A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;salif.eu">Salif Mehmed</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;codeberg.org&#x2F;salif&#x2F;linkita">https:&#x2F;&#x2F;codeberg.org&#x2F;salif&#x2F;linkita</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;salif.github.io&#x2F;linkita&#x2F;">https:&#x2F;&#x2F;salif.github.io&#x2F;linkita&#x2F;</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;blog&#x2F;">Blog</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;multilingual&#x2F;">Multilingual</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;responsive&#x2F;">Responsive</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;seo&#x2F;">SEO</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;search&#x2F;">Search</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2025-09-19T14:25:48+03:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="linkita">Linkita</h1>
+<p>A clean and elegant blog theme for <a class="external" href="https://www.getzola.org/">Zola</a>.
+Linkita is based on <a class="external" href="https://github.com/st1020/kita">Kita</a> and <a class="external" href="https://github.com/nanxiaobei/hugo-paper">Hugo-Paper</a> and is multilingual and SEO friendly.</p>
+<ul>
+<li>The source code is available on <a class="external" href="https://codeberg.org/salif/linkita">Codeberg</a> and mirrored on <a class="external" href="https://github.com/salif/linkita">GitHub</a>.</li>
+<li>For discussion, join the <a class="external" href="https://matrix.to/#/#linkita:mozilla.org">Matrix chat room</a>.</li>
+<li>Open bug reports and feature requests on <a class="external" href="https://codeberg.org/salif/linkita/issues">Codeberg</a>.</li>
+<li>See <a class="external" href="https://codeberg.org/salif/linkita-demo">demo source code</a>.</li>
+<li>Live preview in:
+<ul>
+<li><a class="external" href="https://salif.github.io/linkita/">English</a>, <a class="external" href="https://salif.github.io/linkita/bg/">Bulgarian</a>, <a class="external" href="https://salif.github.io/linkita/eo/">Esperanto</a>, <a class="external" href="https://salif.github.io/linkita/gb/">Globasa</a>.</li>
+<li><a class="external" href="https://salif.github.io/linkita/zh/">Chinese</a>, <a class="external" href="https://salif.github.io/linkita/ja/">Japanese</a>, <a class="external" href="https://salif.github.io/linkita/ko/">Korean</a>, <a class="external" href="https://salif.github.io/linkita/es/">Spanish</a>.</li>
+<li><a class="external" href="https://salif.github.io/linkita/ar/">Arabic</a>, <a class="external" href="https://salif.github.io/linkita/tr/">Turkish</a>, <a class="external" href="https://salif.github.io/linkita/cs/">Czech</a>, <a class="external" href="https://salif.github.io/linkita/fr/">French</a>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="features">Features</h2>
+<ul>
+<li>Easy to use and modify</li>
+<li>No preset limits</li>
+<li>Inject support</li>
+<li>Dark mode</li>
+<li>Responsive design</li>
+<li>Social icons</li>
+<li>Taxonomies support</li>
+<li>Projects page</li>
+<li>Archive page</li>
+<li>Table of Content</li>
+<li>Admonition shortcode</li>
+<li>SEO friendly</li>
+<li>Comments using <a class="external" href="https://giscus.app/">Giscus</a></li>
+<li>Mathematical notations using <a class="external" href="https://katex.org/">KaTeX</a></li>
+<li>Diagrams and charts using <a class="external" href="https://mermaid.js.org/">Mermaid</a></li>
+<li>Multilingual support</li>
+<li>Search support (elasticlunr_javascript)</li>
+<li>Improved search engine optimization</li>
+<li>Improved configurability</li>
+<li>Author profiles</li>
+<li>Projects shortcode</li>
+<li>Keyboard shortcuts</li>
+<li>Relative URLs support</li>
+</ul>
+<h2 id="installing">Installing</h2>
+<ol start="0">
+<li>Create a new Zola site if you haven't already:</li>
+</ol>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>zola init myblog
+</span><span style="color:#da4939;">cd</span><span> myblog
+</span><span>git init
+</span></code></pre>
+<ol>
+<li>Add the theme as a git submodule:</li>
+</ol>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>git submodule add https://codeberg.org/salif/linkita.git themes/linkita
+</span></code></pre>
+<p>If you don't want to use git submodules, you can clone the repository instead: <code>git clone https://codeberg.org/salif/linkita.git themes/linkita</code></p>
+<ol start="2">
+<li>Enable the theme in your <code>config.toml</code> file:</li>
+</ol>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;linkita&quot;
+</span></code></pre>
+<p>Place it near the <code>base_url</code> variable, not under <code>[extra]</code>.</p>
+<h2 id="managing-versions">Managing versions</h2>
+<p>To update the theme, run:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>git submodule update</span><span style="font-style:italic;color:#fd971f;"> --remote</span><span> themes/linkita
+</span></code></pre>
+<p>Check the <a class="external" href="https://codeberg.org/salif/linkita/src/branch/linkita/CHANGELOG.md">changelog</a>
+for all versions after the one you are using. There may be breaking changes that require manual involvement.</p>
+<p>If and only if you use Tailwind classes in your templates directory, run:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#da4939;">cd</span><span> themes/linkita
+</span><span>pnpm tailwindcss</span><span style="font-style:italic;color:#fd971f;"> -i</span><span> ./src/app.css</span><span style="font-style:italic;color:#fd971f;"> -o</span><span> ../../static/main.min.css</span><span style="font-style:italic;color:#fd971f;"> --minify
+</span></code></pre>
+<h2 id="usage">Usage</h2>
+<p>Linkita uses the following front matter variables.
+All variables are optional.
+Set the ones you need.</p>
+<h3 id="yaml-frontmatter">YAML frontmatter</h3>
+<pre data-lang="yaml" data-name="frontmatter" style="background-color:#383838;color:#e6e1dc;" class="language-yaml "><code class="language-yaml" data-lang="yaml" data-name="frontmatter"><span>---
+</span><span style="color:#e8bf6a;">title</span><span>: </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">description</span><span>: </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">date</span><span>: 
+</span><span style="color:#e8bf6a;">updated</span><span>: 
+</span><span style="color:#e8bf6a;">taxonomies</span><span>:
+</span><span>  </span><span style="color:#e8bf6a;">categories</span><span>:
+</span><span>  </span><span style="color:#e8bf6a;">tags</span><span>:
+</span><span style="color:#e8bf6a;">extra</span><span>:
+</span><span>  </span><span style="color:#e8bf6a;">comment</span><span>: </span><span style="color:#6e9cbe;">false
+</span><span>  </span><span style="color:#e8bf6a;">math</span><span>: </span><span style="color:#6e9cbe;">false
+</span><span>  </span><span style="color:#e8bf6a;">mermaid</span><span>: </span><span style="color:#6e9cbe;">false
+</span><span>  </span><span style="color:#e8bf6a;">cover</span><span>:
+</span><span>    </span><span style="color:#e8bf6a;">image</span><span>: </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>    </span><span style="color:#e8bf6a;">alt</span><span>: </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>---
+</span></code></pre>
+<h3 id="toml-frontmatter">TOML frontmatter</h3>
+<pre data-lang="toml" data-name="frontmatter" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="frontmatter"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># The date of the post
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#6d9cbe;">2025-12-30
+</span><span style="color:#95815e;"># The last updated date of the post
+</span><span style="color:#e8bf6a;">updated </span><span>= </span><span style="color:#6d9cbe;">2025-12-31
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span style="color:#e8bf6a;">categories </span><span>= []
+</span><span style="color:#e8bf6a;">tags </span><span>= []
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#95815e;"># Enable comments
+</span><span style="color:#e8bf6a;">comment </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span style="color:#95815e;"># Enable KaTeX support
+</span><span style="color:#e8bf6a;">math </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span style="color:#95815e;"># Enable Mermaid support
+</span><span style="color:#e8bf6a;">mermaid </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>[</span><span style="color:#e8bf6a;">extra.cover</span><span>]
+</span><span style="color:#95815e;"># Path to the cover image
+</span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># A description of the cover image
+</span><span style="color:#e8bf6a;">alt </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<h3 id="other-extra-front-matter-variables">Other extra front matter variables</h3>
+<p>Linkita supports <a class="external" href="https://salif.github.io/linkita/extra-frontmatter/">more extra variables, listed here</a>.</p>
+<h3 id="pages-and-posts">Pages and Posts</h3>
+<h4 id="home-page">Home page</h4>
+<p>Create a <code>content/_index.md</code> file and set <code>extra.profile</code> to your username:</p>
+<pre data-lang="toml" data-name="content/_index.md" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="content/_index.md"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">sort_by </span><span>= </span><span style="color:#c1be91;">&quot;date&quot;
+</span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">4
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">profile </span><span>= </span><span style="color:#c1be91;">&quot;your_username&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<p>Do it for each language in your blog.
+For French, the file name is <code>content/_index.fr.md</code>.</p>
+<p>See Profiles for more.</p>
+<h4 id="posts">Posts</h4>
+<p>In the <code>content</code> directory, create a subdirectory named <code>blog</code> or another name of your choice.</p>
+<p>Create a <code>content/blog/_index.md</code> file:</p>
+<pre data-lang="toml" data-name="content/blog/_index.md" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="content/blog/_index.md"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Archive&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">template </span><span>= </span><span style="color:#c1be91;">&quot;archive.html&quot;
+</span><span style="color:#e8bf6a;">transparent </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%m-%d&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<p>Create a <code>content/blog/hello.md</code> file:</p>
+<pre data-lang="md" data-name="content/blog/hello.md" style="background-color:#383838;color:#e6e1dc;" class="language-md "><code class="language-md" data-lang="md" data-name="content/blog/hello.md"><span>+++
+</span><span>title = &quot;Title&quot;
+</span><span>date = 2025-12-30
+</span><span>+++
+</span><span>
+</span><span>Summary </span><span style="color:#95815e;">&lt;!-- more --&gt;
+</span><span>
+</span><span style="color:#fd971f;">## Hello, world!
+</span></code></pre>
+<h4 id="pages">Pages</h4>
+<p>The default page template <code>page.html</code> is for blog posts.
+For pages that are not blog posts you can use the <code>pages.html</code> template.</p>
+<p>In the <code>content</code> directory, create a subdirectory named <code>pages</code> and
+create a <code>content/pages/_index.md</code> file:</p>
+<pre data-lang="toml" data-name="content/pages/_index.md" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="content/pages/_index.md"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">render </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span style="color:#e8bf6a;">page_template </span><span>= </span><span style="color:#c1be91;">&quot;pages.html&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<p>Create a <code>content/pages/about.md</code> file:</p>
+<pre data-lang="md" data-name="content/pages/about.md" style="background-color:#383838;color:#e6e1dc;" class="language-md "><code class="language-md" data-lang="md" data-name="content/pages/about.md"><span>+++
+</span><span>title = &quot;About me&quot;
+</span><span>description = &quot;&quot;
+</span><span>path = &quot;about&quot;
+</span><span>+++
+</span><span>
+</span><span style="color:#fd971f;">## Hello, world!
+</span></code></pre>
+<p>If you want, you can also create <a class="external" href="https://salif.github.io/linkita/shortcodes/#projects">a page for your projects</a>.</p>
+<h3 id="setting-page-authors">Setting page authors</h3>
+<p>Choose one of the following options or skip if you don't know what you're doing:</p>
+<h4 id="option-a-using-page-authors-and-config-author">Option A: Using <code>page.authors</code> and <code>config.author</code></h4>
+<p>The default author for posts is set using the <code>author</code> variable in the <code>config.toml</code> file.</p>
+<p>You don't need to set <code>authors</code> in the front matter if the default author is the only author of the post. Otherwise, set <code>authors</code>:</p>
+<pre data-lang="toml" data-name="frontmatter" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="frontmatter"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">authors </span><span>= [</span><span style="color:#c1be91;">&quot;author_username&quot;</span><span>]
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<h4 id="option-b-using-taxonomies">Option B: Using Taxonomies</h4>
+<p>Useful if the blog has a team of several authors.
+If you choose this option you should set taxonomies in each post.</p>
+<pre data-lang="toml" data-name="frontmatter" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="frontmatter"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span style="color:#e8bf6a;">authors </span><span>= [</span><span style="color:#c1be91;">&quot;author_username&quot;</span><span>, </span><span style="color:#c1be91;">&quot;author2_username&quot;</span><span>]
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<h3 id="inject-support">Inject support</h3>
+<p>You can easily use inject to add new features to your side without modifying the theme itself.</p>
+<p>To use inject, you need to add some HTML files to the <code>templates/injects</code> directory.</p>
+<p>The available inject points are: <code>head.html</code>, <code>head_end.html</code>, <code>header_nav.html</code>,
+<code>body_start.html</code>, <code>body_end.html</code>, <code>page_start.html</code>, <code>page_end.html</code>, <code>footer.html</code>.</p>
+<p>For example, you can add JavaScript files and CSS stylesheets in the <code>templates/injects/head_end.html</code> file.</p>
+<h3 id="keyboard-shortcuts">Keyboard shortcuts</h3>
+<table><thead><tr><th>Action</th><th>Shortcut</th></tr></thead><tbody>
+<tr><td>Home</td><td><kbd>Alt</kbd>+<kbd>!</kbd></td></tr>
+<tr><td>Search</td><td><kbd>Alt</kbd>+<kbd>/</kbd></td></tr>
+<tr><td>Toggle menu</td><td><kbd>Alt</kbd>+<kbd>+</kbd></td></tr>
+<tr><td>Toggle dark mode</td><td><kbd>Alt</kbd>+<kbd>$</kbd></td></tr>
+<tr><td>Go to prev page</td><td><kbd>Alt</kbd>+<kbd>,</kbd></td></tr>
+<tr><td>Go to next page</td><td><kbd>Alt</kbd>+<kbd>.</kbd></td></tr>
+<tr><td>Table of contents</td><td><kbd>Alt</kbd>+<kbd>=</kbd></td></tr>
+<tr><td>Skip to footer</td><td><kbd>Alt</kbd>+<kbd>_</kbd></td></tr>
+</tbody></table>
+<h2 id="configuring">Configuring</h2>
+<p>Copy and paste the examples into your <code>config.toml</code> file
+and comment out the variables you don't use instead of setting empty values.
+All variables are optional.</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span style="color:#95815e;"># The URL the site will be built for.
+</span><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com&quot;
+</span><span>
+</span><span style="color:#95815e;"># The site theme to use.
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;linkita&quot;
+</span><span>
+</span><span style="color:#95815e;"># The default language.
+</span><span style="color:#95815e;"># &quot;en&quot; is for English.
+</span><span style="color:#e8bf6a;">default_language </span><span>= </span><span style="color:#c1be91;">&quot;en&quot;
+</span><span>
+</span><span style="color:#95815e;"># The default author for pages.
+</span><span style="color:#95815e;"># See &quot;extra.profiles&quot;.
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;your_username&quot;
+</span><span>
+</span><span style="color:#95815e;"># The site title.
+</span><span style="color:#95815e;"># Will be in all page titles.
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># The site description.
+</span><span style="color:#95815e;"># Used in feeds by default.
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Automatically generate a feed.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">generate_feeds </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># The filenames to use for the feeds.
+</span><span style="color:#95815e;"># e.g. [&quot;rss.xml&quot;]
+</span><span style="color:#e8bf6a;">feed_filenames </span><span>= [</span><span style="color:#c1be91;">&quot;atom.xml&quot;</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Build a search index from the pages and section content
+</span><span style="color:#95815e;"># for &quot;default_language&quot;.
+</span><span style="color:#95815e;"># build_search_index = true
+</span></code></pre>
+<p>Zola has built-in support for taxonomies.
+Linkita has special support for taxonomies named <code>tags</code>, <code>categories</code>, and <code>authors</code>.</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[[</span><span style="color:#e8bf6a;">taxonomies</span><span>]]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;categories&quot;
+</span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">4
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">taxonomies</span><span>]]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;
+</span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">4
+</span><span>
+</span><span>[[</span><span style="color:#e8bf6a;">taxonomies</span><span>]]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;authors&quot;
+</span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">4
+</span></code></pre>
+<p>You can add more languages by replacing <code>fr</code> from the following example with the language code:</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[</span><span style="color:#e8bf6a;">languages.fr</span><span>]
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Site title in French&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Site description in French&quot;
+</span><span style="color:#e8bf6a;">generate_feeds </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">feed_filenames </span><span>= [</span><span style="color:#c1be91;">&quot;atom.xml&quot;</span><span>] </span><span style="color:#95815e;"># or [&quot;rss.xml&quot;]
+</span><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true</span><span>, </span><span style="color:#e8bf6a;">paginate_by </span><span>= </span><span style="color:#a5c261;">4 </span><span>}
+</span><span>]
+</span></code></pre>
+<p>By default, taxonomy pages are sorted in descending order by the number of posts.
+You can customize this behavior using the <code>extra.taxonomy_sorting</code> variable:</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[</span><span style="color:#e8bf6a;">extra.taxonomy_sorting</span><span>]
+</span><span style="color:#95815e;"># &quot;ascending_frequency&quot;, &quot;descending_frequency&quot; or &quot;name&quot;
+</span><span style="color:#95815e;"># Default value: &quot;descending_frequency&quot;
+</span><span style="color:#e8bf6a;">categories </span><span>= </span><span style="color:#c1be91;">&quot;name&quot;
+</span><span style="color:#e8bf6a;">tags </span><span>= </span><span style="color:#c1be91;">&quot;descending_frequency&quot;
+</span><span style="color:#e8bf6a;">authors </span><span>= </span><span style="color:#c1be91;">&quot;name&quot;
+</span></code></pre>
+<h3 id="general-config">General config</h3>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#95815e;"># Enable KaTeX math formula support globally.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">math </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># Enable Mermaid support globally.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">mermaid </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># Enable comments globally.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">comment </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># Title separator.
+</span><span style="color:#e8bf6a;">title_separator </span><span>= </span><span style="color:#c1be91;">&quot; | &quot;
+</span><span>
+</span><span style="color:#95815e;"># The top menu.
+</span><span style="color:#95815e;"># See &quot;extra.menus&quot;.
+</span><span style="color:#e8bf6a;">header_menu_name </span><span>= </span><span style="color:#c1be91;">&quot;menu_name&quot;
+</span><span>
+</span><span style="color:#95815e;"># If you disable default favicons, you can use
+</span><span style="color:#95815e;"># the inject support to set your own favicons.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">disable_default_favicon </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># If you want to implement the JS code
+</span><span style="color:#95815e;"># yourself, set to true and use the inject support.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">disable_javascript </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">use_cdn </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># Use relative urls.
+</span><span style="color:#95815e;"># It doesn&#39;t apply for content yet.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">relative_urls </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># If you want to view the site without a webserver
+</span><span style="color:#95815e;"># set this and &quot;relative_urls&quot; to true.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">urls_to_index_html </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># Prioritize summary over description.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">page_summary_on_paginator </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># Reverse the order of prev and next post links.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">invert_page_navigation </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># You can reorder the strings, remove them, replace them.
+</span><span style="color:#95815e;"># For example, you can replace &quot;site_title&quot; with &quot;home_button&quot;.
+</span><span style="color:#95815e;"># Default value: [&quot;site_title&quot;, &quot;theme_button&quot;, &quot;search_button&quot;, &quot;translations_button&quot;]
+</span><span style="color:#95815e;"># header_buttons = []
+</span><span>
+</span><span style="color:#95815e;"># Valid &quot;when&quot; values:
+</span><span style="color:#95815e;">#  &quot;date&quot;, &quot;date_updated&quot;, &quot;reading_time&quot;, &quot;word_count&quot;, &quot;authors&quot;, &quot;tags&quot;, &quot;&quot;.
+</span><span style="color:#95815e;"># The &quot;prepend&quot; and &quot;append&quot; are used when the value of &quot;when&quot; is defined for the page.
+</span><span style="color:#95815e;"># e.g. [{when=&quot;&quot;, prepend=&quot;Page Info: &quot;},{when=&quot;date&quot;,prepend=&quot;Published on &quot;},{when=&quot;authors&quot;,prepend=&quot;By &quot;}]
+</span><span style="color:#95815e;"># page_info = [{ when=&quot;date&quot; }, { when=&quot;date_updated&quot;, prepend=&quot;(&quot;, append=&quot;)&quot; }, { when=&quot;reading_time&quot; }]
+</span><span style="color:#95815e;"># page_info_on_paginator = [{ when=&quot;date&quot; }, { when=&quot;reading_time&quot; }]
+</span><span>
+</span><span style="color:#95815e;"># Enable table of contents on all pages.
+</span><span style="color:#95815e;"># If not set, toc is enabled only on posts.
+</span><span style="color:#95815e;"># If set to false, toc is disabled on all pages.
+</span><span style="color:#95815e;"># Type: boolean or object
+</span><span style="color:#95815e;"># toc = true
+</span></code></pre>
+<h3 id="style-config">Style config</h3>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[</span><span style="color:#e8bf6a;">extra.style</span><span>]
+</span><span style="color:#95815e;"># The custom background color.
+</span><span style="color:#e8bf6a;">bg_color </span><span>= </span><span style="color:#c1be91;">&quot;#f4f4f5&quot;
+</span><span style="color:#95815e;"># The custom background color in dark mode.
+</span><span style="color:#e8bf6a;">bg_dark_color </span><span>= </span><span style="color:#c1be91;">&quot;#18181b&quot;
+</span><span>
+</span><span style="color:#95815e;"># Enable header blur.
+</span><span style="color:#e8bf6a;">header_blur </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># The custom header color, only available
+</span><span style="color:#95815e;"># when &quot;header_blur&quot; is false.
+</span><span style="color:#e8bf6a;">header_color </span><span>= </span><span style="color:#c1be91;">&quot;#e4e4e7&quot;
+</span><span style="color:#95815e;"># The custom header color in dark mode, only available
+</span><span style="color:#95815e;"># when &quot;header_blur&quot; is false.
+</span><span style="color:#e8bf6a;">header_dark_color </span><span>= </span><span style="color:#c1be91;">&quot;#27272a&quot;
+</span></code></pre>
+<h3 id="menus">Menus</h3>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[</span><span style="color:#e8bf6a;">extra.menus</span><span>]
+</span><span style="color:#e8bf6a;">menu_name </span><span>= [
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/blog/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Archive&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/categories/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Categories&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/tags/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/about/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;About&quot; </span><span>},
+</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Example multilingual menu.
+</span><span style="color:#e8bf6a;">multilingual_menu_name </span><span>= [
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/about/&quot;</span><span>, </span><span style="color:#e8bf6a;">names </span><span>= { </span><span style="color:#e8bf6a;">en </span><span>= </span><span style="color:#c1be91;">&quot;About&quot;</span><span>, </span><span style="color:#e8bf6a;">fr </span><span>= </span><span style="color:#c1be91;">&quot;About in French&quot; </span><span>} },
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/projects/&quot;</span><span>, </span><span style="color:#e8bf6a;">names </span><span>= { </span><span style="color:#e8bf6a;">en </span><span>= </span><span style="color:#c1be91;">&quot;Projects&quot;</span><span>, </span><span style="color:#e8bf6a;">fr </span><span>= </span><span style="color:#c1be91;">&quot;Projects in French&quot; </span><span>} },
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/blog/&quot;</span><span>, </span><span style="color:#e8bf6a;">names </span><span>= { </span><span style="color:#e8bf6a;">en </span><span>= </span><span style="color:#c1be91;">&quot;Archive&quot;</span><span>, </span><span style="color:#e8bf6a;">fr </span><span>= </span><span style="color:#c1be91;">&quot;Archive in French&quot; </span><span>} },
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/categories/&quot;</span><span>, </span><span style="color:#e8bf6a;">names </span><span>= { </span><span style="color:#e8bf6a;">en </span><span>= </span><span style="color:#c1be91;">&quot;Categories&quot;</span><span>, </span><span style="color:#e8bf6a;">fr </span><span>= </span><span style="color:#c1be91;">&quot;Categories in French&quot; </span><span>} },
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/tags/&quot;</span><span>, </span><span style="color:#e8bf6a;">names </span><span>= { </span><span style="color:#e8bf6a;">en </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot;</span><span>, </span><span style="color:#e8bf6a;">fr </span><span>= </span><span style="color:#c1be91;">&quot;Tags in French&quot; </span><span>} },
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/authors/&quot;</span><span>, </span><span style="color:#e8bf6a;">names </span><span>= { </span><span style="color:#e8bf6a;">en </span><span>= </span><span style="color:#c1be91;">&quot;Authors&quot;</span><span>, </span><span style="color:#e8bf6a;">fr </span><span>= </span><span style="color:#c1be91;">&quot;Authors in French&quot; </span><span>} },
+</span><span>]
+</span></code></pre>
+<p>To use a menu, set <code>extra.header_menu_name</code>.</p>
+<p><code>$BASE_URL</code> in <code>url</code> will be automatically replaced with the language specific base url.
+You can use <code>names_i18n</code> instead of <code>names</code>, see the <code>static/i18n.json</code> file,
+set <code>names_i18n</code> to a <code>common_</code> key.</p>
+<p>You can use <a class="external" href="https://www.getzola.org/documentation/content/linking/#internal-links">Internal links</a> instead of <code>$BASE_URL</code>.</p>
+<h3 id="profiles">Profiles</h3>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span style="color:#95815e;"># Replace &quot;your_username&quot; with your username.
+</span><span>[</span><span style="color:#e8bf6a;">extra.profiles.your_username</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># The URL of avatar.
+</span><span style="color:#95815e;"># e.g. &quot;icons/github.svg&quot;
+</span><span style="color:#e8bf6a;">avatar_url </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># A description of what is in the avatar.
+</span><span style="color:#e8bf6a;">avatar_alt </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Invert avatar color in dark mode.
+</span><span style="color:#95815e;"># Default value: false
+</span><span style="color:#e8bf6a;">avatar_invert </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span>
+</span><span style="color:#95815e;"># Profile name.
+</span><span style="color:#95815e;"># Default value: the username
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Profile bio.
+</span><span style="color:#95815e;"># Supports Markdown.
+</span><span style="color:#e8bf6a;">bio </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Social icons.
+</span><span style="color:#95815e;"># &quot;name&quot; should be the file name of &quot;static/icons/*.svg&quot; or
+</span><span style="color:#95815e;"># the icon name of https://simpleicons.org/
+</span><span style="color:#95815e;"># &quot;url&quot; supports &quot;$BASE_URL&quot;.
+</span><span style="color:#95815e;"># Other variables: &quot;urls&quot;, &quot;title&quot;, &quot;titles&quot;.
+</span><span style="color:#e8bf6a;">social </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;bluesky&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://bsky.app/profile/username&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;github&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/username&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;email&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;mailto:example@example.com&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;rss&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/atom.xml&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<h3 id="profile-translations">Profile translations</h3>
+<p>Skip if your site is not multilingual.</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span style="color:#95815e;"># For French. Replace &quot;your_username&quot; with your username.
+</span><span>[</span><span style="color:#e8bf6a;">extra.profiles.your_username.languages.fr</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># A description of what is in the avatar.
+</span><span style="color:#e8bf6a;">avatar_alt </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Profile name.
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Profile bio.
+</span><span style="color:#95815e;"># Supports Markdown.
+</span><span style="color:#e8bf6a;">bio </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Social icons.
+</span><span style="color:#e8bf6a;">social </span><span>= []
+</span></code></pre>
+<h3 id="open-graph-for-profiles">Open Graph for profiles</h3>
+<p>See <a class="external" href="https://ogp.me/">the Open Graph protocol</a>.</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span style="color:#95815e;"># Replace &quot;your_username&quot; with your username.
+</span><span>[</span><span style="color:#e8bf6a;">extra.profiles.your_username.open_graph</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># The URL of social image.
+</span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># A description of what is in the social image.
+</span><span style="color:#95815e;"># Default value: &quot;&quot;
+</span><span style="color:#e8bf6a;">image_alt </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># Your first name. No default value.
+</span><span style="color:#e8bf6a;">first_name </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># Your last name. No default value.
+</span><span style="color:#e8bf6a;">last_name </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># Your username. No default value.
+</span><span style="color:#e8bf6a;">username </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># e.g. &quot;female&quot; or &quot;male&quot;. No default value.
+</span><span style="color:#e8bf6a;">gender </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># fb_app_id = &quot;Your fb app ID&quot;
+</span><span style="color:#95815e;"># fb_admins = [&quot;YOUR_USER_ID&quot;]
+</span><span>
+</span><span style="color:#95815e;"># Set if you have a Fediverse account.
+</span><span style="color:#95815e;">#  handle - Your Fediverse handle.
+</span><span style="color:#95815e;">#  domain - Your Fediverse instance.
+</span><span style="color:#95815e;">#  url - Your Fediverse account URL. Optional.
+</span><span style="color:#95815e;"># Example for @me@mastodon.social:
+</span><span style="color:#95815e;"># { handle = &quot;me&quot;, domain = &quot;mastodon.social&quot; }
+</span><span style="color:#e8bf6a;">fediverse_creator </span><span>= { </span><span style="color:#e8bf6a;">handle </span><span>= </span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#e8bf6a;">domain </span><span>= </span><span style="color:#c1be91;">&quot;&quot; </span><span>}
+</span></code></pre>
+<p><code>image</code> and <code>image_alt</code> of the default author's profile will be used
+as a fallback open graph image for all pages.</p>
+<h4 id="open-graph-translations">Open Graph translations</h4>
+<p>Skip if your site is not multilingual.</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span style="color:#95815e;"># For French. Replace &quot;your_username&quot; with your username.
+</span><span>[</span><span style="color:#e8bf6a;">extra.profiles.your_username.open_graph.languages.fr</span><span>]
+</span><span style="color:#95815e;"># A description of what is in the social image.
+</span><span style="color:#e8bf6a;">image_alt </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span></code></pre>
+<h3 id="the-page-footer">The page footer</h3>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[</span><span style="color:#e8bf6a;">extra.footer</span><span>]
+</span><span style="color:#95815e;"># Replace with the correct year.
+</span><span style="color:#95815e;"># Default value: the current year
+</span><span style="color:#e8bf6a;">since </span><span>= </span><span style="color:#a5c261;">2025
+</span><span>
+</span><span style="color:#95815e;"># Replace with the URL of the license you want.
+</span><span style="color:#95815e;"># No default value. Supports &quot;$BASE_URL&quot;.
+</span><span style="color:#e8bf6a;">license_url </span><span>= </span><span style="color:#c1be91;">&quot;https://creativecommons.org/licenses/by-sa/4.0/deed&quot;
+</span><span>
+</span><span style="color:#95815e;"># Replace &quot;Your Name&quot; with your name and &quot;CC BY-SA 4.0&quot; with the name of the license you want.
+</span><span style="color:#e8bf6a;">copyright </span><span>= </span><span style="color:#c1be91;">&quot;&amp;copy; $YEAR Your Name &amp;vert; [CC BY-SA 4.0]($LICENSE_URL)&quot;
+</span><span>
+</span><span style="color:#95815e;"># Not used yet.
+</span><span style="color:#95815e;"># Supports &quot;$BASE_URL&quot;.
+</span><span style="color:#95815e;"># privacy_policy_url = &quot;$BASE_URL/privacy-policy/&quot;
+</span><span>
+</span><span style="color:#95815e;"># Not used yet.
+</span><span style="color:#95815e;"># Supports &quot;$BASE_URL&quot;.
+</span><span style="color:#95815e;"># terms_of_service_url = &quot;$BASE_URL/terms-of-service/&quot;
+</span><span>
+</span><span style="color:#95815e;"># Not used yet.
+</span><span style="color:#95815e;"># Supports &quot;$BASE_URL&quot;.
+</span><span style="color:#95815e;"># search_page_url = &quot;$BASE_URL/search/&quot;
+</span></code></pre>
+<p>The <code>copyright</code> variable supports Markdown, <code>$BASE_URL</code>, <code>$YEAR</code> (uses <code>since</code>), and <code>$LICENSE_URL</code> (uses <code>license_url</code>).</p>
+<h3 id="language-specific-options">Language specific options</h3>
+<p>For date format, see <a class="external" href="https://docs.rs/chrono/0.4/chrono/format/strftime/index.html">chrono docs</a>.</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span style="color:#95815e;"># For English
+</span><span>[</span><span style="color:#e8bf6a;">extra.languages.en</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># No default value.
+</span><span style="color:#e8bf6a;">locale </span><span>= </span><span style="color:#c1be91;">&quot;en_US&quot;
+</span><span>
+</span><span style="color:#95815e;"># Default value: &quot;%F&quot;
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%x&quot;
+</span><span>
+</span><span style="color:#95815e;"># Default value: extra.page_info
+</span><span style="color:#95815e;"># page_info = []
+</span><span>
+</span><span style="color:#95815e;"># Default value: extra.page_info_on_paginator
+</span><span style="color:#95815e;"># page_info_on_paginator = []
+</span><span>
+</span><span style="color:#95815e;"># Default value: extra.header_menu_name
+</span><span style="color:#95815e;"># header_menu_name = &quot;menu_name&quot;
+</span><span>
+</span><span style="color:#95815e;"># Default value: extra.header_buttons
+</span><span style="color:#95815e;"># header_buttons = []
+</span><span>
+</span><span style="color:#95815e;"># To set a different &quot;lang&quot; attribute of the document.
+</span><span style="color:#95815e;"># You can set IETF tag for artificial languages, e.g. &quot;art-x-code&quot;.
+</span><span style="color:#95815e;"># language_code = &quot;&quot;
+</span><span>
+</span><span style="color:#95815e;"># To use a different interface language, e.g. English.
+</span><span style="color:#95815e;"># i18n_code = &quot;en&quot;
+</span><span>
+</span><span style="color:#95815e;"># Set a description for taxonomy pages.
+</span><span>[</span><span style="color:#e8bf6a;">extra.languages.en.taxonomy_descriptions</span><span>]
+</span><span style="color:#e8bf6a;">categories </span><span>= </span><span style="color:#c1be91;">&quot;A map of all categories on this site. Start exploring!&quot;
+</span><span style="color:#e8bf6a;">tags </span><span>= </span><span style="color:#c1be91;">&quot;A map of all tags on this site. Start exploring!&quot;
+</span><span style="color:#e8bf6a;">authors </span><span>= </span><span style="color:#c1be91;">&quot;A map of all authors on this site. Start exploring!&quot;
+</span><span>
+</span><span style="color:#95815e;"># Set a description for term pages.
+</span><span style="color:#95815e;"># &quot;$NAME&quot; will be automatically replaced.
+</span><span>[</span><span style="color:#e8bf6a;">extra.languages.en.term_descriptions</span><span>]
+</span><span style="color:#e8bf6a;">categories </span><span>= </span><span style="color:#c1be91;">&quot;Browse articles related to $NAME. Start exploring!&quot;
+</span><span style="color:#e8bf6a;">tags </span><span>= </span><span style="color:#c1be91;">&quot;Browse articles related to $NAME. Start exploring!&quot;
+</span><span style="color:#e8bf6a;">authors </span><span>= </span><span style="color:#c1be91;">&quot;Browse articles written by $NAME. Start exploring!&quot;
+</span></code></pre>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span style="color:#95815e;"># For French
+</span><span>[</span><span style="color:#e8bf6a;">extra.languages.fr</span><span>]
+</span><span style="color:#e8bf6a;">locale </span><span>= </span><span style="color:#c1be91;">&quot;fr_FR&quot;
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%x&quot;
+</span></code></pre>
+<h3 id="web-analytics">Web analytics</h3>
+<h4 id="goatcounter">GoatCounter</h4>
+<p>Set only if you use <a class="external" href="https://www.goatcounter.com/">GoatCounter</a>.</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[</span><span style="color:#e8bf6a;">extra.goatcounter</span><span>]
+</span><span style="color:#95815e;"># No default value.
+</span><span style="color:#e8bf6a;">endpoint </span><span>= </span><span style="color:#c1be91;">&quot;https://MYCODE.goatcounter.com/count&quot;
+</span><span>
+</span><span style="color:#95815e;"># To enable tracking pixel, set to an empty string.
+</span><span style="color:#95815e;"># If your &quot;base_url&quot; includes a subpath, set to
+</span><span style="color:#95815e;"># the subpath without a trailing slash.
+</span><span style="color:#95815e;"># noscript_prefix = &quot;&quot;
+</span></code></pre>
+<h4 id="vercel-analytics">Vercel Analytics</h4>
+<p>Set only if you use <a class="external" href="https://vercel.com/docs/analytics">Vercel Web Analytics</a>.</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[</span><span style="color:#e8bf6a;">extra.vercel_analytics</span><span>]
+</span><span style="color:#95815e;"># No default value.
+</span><span style="color:#e8bf6a;">src </span><span>= </span><span style="color:#c1be91;">&quot;/_vercel/insights/script.js&quot;
+</span></code></pre>
+<h4 id="prevent-tracking-own-pageviews">Prevent tracking own pageviews</h4>
+<p>Open a page of your site, adding <code>#disable-analytics</code> to the page address.
+Do this once for each browser and device.
+For example, open <a class="external" href="http://127.0.0.1:1111/#disable-analytics">http://127.0.0.1:1111/#disable-analytics</a>.</p>
+<h3 id="comments">Comments</h3>
+<p>See <a class="external" href="https://giscus.app/">giscus.app</a>.
+Only available when <code>extra.comment</code> in the front matter or <code>extra.comment</code> in the config is set to true.</p>
+<pre data-lang="toml" data-name="config.toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"><span>[</span><span style="color:#e8bf6a;">extra.giscus</span><span>]
+</span><span style="color:#95815e;"># No default value.
+</span><span style="color:#e8bf6a;">repo </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># No default value.
+</span><span style="color:#e8bf6a;">repo_id </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># No default value.
+</span><span style="color:#e8bf6a;">category </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># No default value.
+</span><span style="color:#e8bf6a;">category_id </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#95815e;"># Default value: &quot;pathname&quot;
+</span><span style="color:#e8bf6a;">mapping </span><span>= </span><span style="color:#c1be91;">&quot;pathname&quot;
+</span><span style="color:#95815e;"># Default value: 1
+</span><span style="color:#e8bf6a;">strict </span><span>= </span><span style="color:#a5c261;">1
+</span><span style="color:#95815e;"># Default value: 0
+</span><span style="color:#e8bf6a;">reactions_enabled </span><span>= </span><span style="color:#a5c261;">0
+</span><span style="color:#95815e;"># Default value: 0
+</span><span style="color:#e8bf6a;">emit_metadata </span><span>= </span><span style="color:#a5c261;">0
+</span><span style="color:#95815e;"># Default value: &quot;top&quot;
+</span><span style="color:#e8bf6a;">input_position </span><span>= </span><span style="color:#c1be91;">&quot;top&quot;
+</span><span style="color:#95815e;"># Default value: &quot;light&quot;
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;light&quot;
+</span><span style="color:#95815e;"># Default value: &quot;en&quot;
+</span><span style="color:#e8bf6a;">lang </span><span>= </span><span style="color:#c1be91;">&quot;en&quot;
+</span><span style="color:#95815e;"># Default value: &quot;lazy&quot;
+</span><span style="color:#e8bf6a;">loading </span><span>= </span><span style="color:#c1be91;">&quot;lazy&quot;
+</span></code></pre>
+<h2 id="license">License</h2>
+<p>See the <a class="external" href="https://codeberg.org/salif/linkita/src/branch/linkita/LICENSE">MIT License</a> file.</p>
+<h2 id="contributing">Contributing</h2>
+<p>Pull requests are welcome on <a class="external" href="https://codeberg.org/salif/linkita">Codeberg</a> and <a class="external" href="https://github.com/salif/linkita">Github</a>.</p>
+<h2 id="sites-using-linkita">Sites using Linkita</h2>
+<ul>
+<li><a class="external" href="https://github.com/salif/zola-themes-collection">Zola Themes Collection</a></li>
+<li><a class="external" href="https://github.com/salif/personal-web-page">salif.eu</a>: Personal website</li>
+<li><a class="external" href="https://github.com/Rratic/rratic.github.io">Rratic's blog</a>: Personal website</li>
+</ul>
+<p>If your blog uses Linkita and is open source, feel free to create a pull request to add it to this list.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
