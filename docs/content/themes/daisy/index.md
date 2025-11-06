@@ -3,14 +3,14 @@
 title = "Daisy"
 description = "Beautiful and fast responsive theme based on TailwindCSS and DaisyUI."
 template = "theme.html"
-date = 2025-09-14T10:01:01+03:00
+date = 2025-10-04T19:56:32+02:00
 
 [taxonomies]
 theme-tags = ['multilingual', 'responsive', 'search']
 
 [extra]
-created = 2025-09-14T10:01:01+03:00
-updated = 2025-09-14T10:01:01+03:00
+created = 2025-10-04T19:56:32+02:00
+updated = 2025-10-04T19:56:32+02:00
 repository = "https://codeberg.org/winterstein/zola-theme-daisy.git"
 homepage = "https://codeberg.org/winterstein/zola-theme-daisy"
 minimum_version = "0.19.0"

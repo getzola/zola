@@ -3,14 +3,14 @@
 title = "Academic Workshop"
 description = "A Zola theme for a website to list the schedule of your scientific workshop or seminar series"
 template = "theme.html"
-date = 2025-05-30T13:51:53-04:00
+date = 2025-10-21T20:16:41-04:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-05-30T13:51:53-04:00
-updated = 2025-05-30T13:51:53-04:00
+created = 2025-10-21T20:16:41-04:00
+updated = 2025-10-21T20:16:41-04:00
 repository = "https://github.com/aterenin/academic-workshop.git"
 homepage = "https://github.com/aterenin/academic-workshop"
 minimum_version = "0.18.0"

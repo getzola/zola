@@ -3,14 +3,14 @@
 title = "coffee"
 description = "A simple theme for Zola inspired by coffee."
 template = "theme.html"
-date = 2025-09-22T00:36:54+09:00
+date = 2025-10-31T17:39:00+09:00
 
 [taxonomies]
 theme-tags = ['dark', 'simple', 'mermaid', 'katex']
 
 [extra]
-created = 2025-09-22T00:36:54+09:00
-updated = 2025-09-22T00:36:54+09:00
+created = 2025-10-31T17:39:00+09:00
+updated = 2025-10-31T17:39:00+09:00
 repository = "https://github.com/Myxogastria0808/coffee.git"
 homepage = "https://github.com/Myxogastria0808/coffee/"
 minimum_version = "0.19.0"
@@ -30,7 +30,7 @@ This theme can be used **mermaid** and **katex**.
 
 - demo site
 
-https://zola-coffee-theme.netlify.app/
+[https://zola-coffee-theme.netlify.app/](https://zola-coffee-theme.netlify.app/)
 
 - [theme logo](https://github.com/Myxogastria0808/coffee/blob/main/logo/README.md)
 
@@ -50,7 +50,7 @@ https://zola-coffee-theme.netlify.app/
 
 Please install zola by referring to the following.
 
-https://www.getzola.org/documentation/getting-started/installation/
+[https://www.getzola.org/documentation/getting-started/installation/](https://www.getzola.org/documentation/getting-started/installation/)
 
 2. Setup coffee theme
 
@@ -283,11 +283,11 @@ The following sample have been set up.
 
 - repository
 
-https://github.com/Myxogastria0808/coffee-sample.git
+[https://github.com/Myxogastria0808/coffee-sample.git](https://github.com/Myxogastria0808/coffee-sample.git)
 
 - demo site
 
-https://zola-coffee-theme-sample.netlify.app/
+[https://zola-coffee-theme-sample.netlify.app/](https://zola-coffee-theme-sample.netlify.app/)
 
 ## Post Example
 
@@ -327,17 +327,17 @@ Please refer to the following for an actual example.
 
 - markdown example
 
-https://github.com/Myxogastria0808/coffee/blob/main/content/sample/index.md
+[https://github.com/Myxogastria0808/coffee/blob/main/content/sample/index.md](https://github.com/Myxogastria0808/coffee/blob/main/content/sample/index.md)
 
 - preview URL
 
-https://zola-coffee-theme.netlify.app/sample/
+[https://zola-coffee-theme.netlify.app/sample/](https://zola-coffee-theme.netlify.app/sample/)
 
 ## coffee Theme Specific Notation
 
 ### List of languages in Code Block
 
-https://www.getzola.org/documentation/content/syntax-highlighting/
+[https://www.getzola.org/documentation/content/syntax-highlighting/](https://www.getzola.org/documentation/content/syntax-highlighting/)
 
 #### Example
 
@@ -349,7 +349,7 @@ fn main() {
 ```
 ````
 
-![codeblock](https://github.com/Myxogastria0808/coffee/blob/main/assets/codeblock.png)
+![codeblock](https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/assets/codeblock.png)
 
 ### Image
 
@@ -363,11 +363,11 @@ You can see the image shortcode examples below.
 
 - markdown example
 
-https://github.com/Myxogastria0808/coffee/blob/main/content/sample/index.md
+[https://github.com/Myxogastria0808/coffee/blob/main/content/sample/index.md](https://github.com/Myxogastria0808/coffee/blob/main/content/sample/index.md)
 
 - preview URL
 
-https://zola-coffee-theme.netlify.app/sample/
+[https://zola-coffee-theme.netlify.app/sample/](https://zola-coffee-theme.netlify.app/sample/)
 
 #### Example applying all of `width`, `height`, and `caption`
 
@@ -375,7 +375,7 @@ https://zola-coffee-theme.netlify.app/sample/
 {{/* image(path="/content/sample/image.jpg", width=1000, height=200, caption="caption") */}}
 ```
 
-![image](https://github.com/Myxogastria0808/coffee/blob/main/assets/image.png)
+![image](https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/assets/image.png)
 
 > [!NOTE]
 > Images are automatically converted to webp, so you don't need to worry about image size.
@@ -396,7 +396,7 @@ $$
 $$
 ```
 
-![katex](https://github.com/Myxogastria0808/coffee/blob/main/assets/katex.png)
+![katex](https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/assets/katex.png)
 
 ### mermaid
 
@@ -418,7 +418,7 @@ graph TD;
 {%/* end */%}
 ```
 
-![mermaid](https://github.com/Myxogastria0808/coffee/blob/main/assets/mermaid.png)
+![mermaid](https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/assets/mermaid.png)
 
 ### note
 
@@ -436,7 +436,7 @@ This is a note.
 {%/* end */%}
 ```
 
-![note](https://github.com/Myxogastria0808/coffee/blob/main/assets/note.png)
+![note](https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/assets/note.png)
 
 ### tip
 
@@ -454,7 +454,7 @@ This is a tip.
 {%/* end */%}
 ```
 
-![tip](https://github.com/Myxogastria0808/coffee/blob/main/assets/tip.png)
+![tip](https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/assets/tip.png)
 
 ### important
 
@@ -472,7 +472,7 @@ This is a important.
 {%/* end */%}
 ```
 
-![important](https://github.com/Myxogastria0808/coffee/blob/main/assets/important.png)
+![important](https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/assets/important.png)
 
 ### warning
 
@@ -490,7 +490,7 @@ This is a warning.
 {%/* end */%}
 ```
 
-![warning](https://github.com/Myxogastria0808/coffee/blob/main/assets/warning.png)
+![warning](https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/assets/warning.png)
 
 ### caution
 
@@ -508,7 +508,7 @@ This is a caution.
 {%/* end */%}
 ```
 
-![caution](https://github.com/Myxogastria0808/coffee/blob/main/assets/caution.png)
+![caution](https://raw.githubusercontent.com/Myxogastria0808/coffee/refs/heads/main/assets/caution.png)
 
 ## Structure of this template
 
@@ -556,12 +556,12 @@ The following is expressed in pseudo-HTML.
 
 ## References
 
-https://www.getzola.org/documentation/getting-started/overview/#content
+[https://www.getzola.org/documentation/getting-started/overview/#content](https://www.getzola.org/documentation/getting-started/overview/#content)
 
-https://swaits.com/adding-mermaid-js-to-zola/
+[https://swaits.com/adding-mermaid-js-to-zola/](https://swaits.com/adding-mermaid-js-to-zola/)
 
-https://sippo.work/blog/20231105-deploy-zola-with-cloudflare-pages/
+[https://sippo.work/blog/20231105-deploy-zola-with-cloudflare-pages/](https://sippo.work/blog/20231105-deploy-zola-with-cloudflare-pages/)
 
-https://zenn.dev/com4dc/scraps/c6c0f5fb87a1f9
+[https://zenn.dev/com4dc/scraps/c6c0f5fb87a1f9](https://zenn.dev/com4dc/scraps/c6c0f5fb87a1f9)
 
         

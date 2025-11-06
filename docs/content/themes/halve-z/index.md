@@ -3,17 +3,17 @@
 title = "halve-z"
 description = "Retro two-column theme"
 template = "theme.html"
-date = 2025-09-02T02:54:10Z
+date = 2025-11-04T08:14:31-05:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-09-02T02:54:10Z
-updated = 2025-09-02T02:54:10Z
+created = 2025-11-04T08:14:31-05:00
+updated = 2025-11-04T08:14:31-05:00
 repository = "https://github.com/charlesrocket/halve-z.git"
 homepage = "https://github.com/charlesrocket/halvez"
-minimum_version = "0.19.2"
+minimum_version = "0.21.0"
 license = "MIT"
 demo = "https://halve-z.netlify.app/"
 
@@ -44,7 +44,7 @@ This is a _retro_ port of [Halve](https://github.com/TaylanTatli/Halve) (**Jekyl
 * SEO
 * CSP
 * project cards
-* comments ([Cactus](https://gitlab.com/cactus-comments/)/[Giscus](https://github.com/giscus/giscus))
+* comments ([Mastodon](https://mastodon.social)/[Cactus](https://gitlab.com/cactus-comments/)/[Giscus](https://github.com/giscus/giscus))
 * read time
 
 ## Installation

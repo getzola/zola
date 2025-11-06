@@ -3,14 +3,14 @@
 title = "Project Portfolio"
 description = "Theme for a project portfolio (based on Tailwind CSS)."
 template = "theme.html"
-date = 2025-05-26T15:46:04+02:00
+date = 2025-10-04T20:23:25+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-05-26T15:46:04+02:00
-updated = 2025-05-26T15:46:04+02:00
+created = 2025-10-04T20:23:25+02:00
+updated = 2025-10-04T20:23:25+02:00
 repository = "https://github.com/awinterstein/zola-theme-project-portfolio.git"
 homepage = "https://codeberg.org/winterstein/zola-theme-project-portfolio"
 minimum_version = "0.19.0"
@@ -111,7 +111,7 @@ taxonomies = [
 
 Taxonomies should have exactly the same (not translated) name in all languages, for the language switching to work best.
 
-You need to create an i18n file containing the translations for all theme variables for all the languages of your website, if they are not included in the theme. Right now, [English](i18n/en.toml), [German](i18n/de.toml) and [Hungarian](i18n/hu.toml) are included. You can create a the directory `i18n` in your website root directory and the language files in there will be picked up by the theme. It would be great, however, if you create a pull-request on the theme repository to add your translations to the theme.
+You need to create an i18n file containing the translations for all theme variables for all the languages of your website, if they are not included in the theme. Right now, [English](i18n/en.toml), [German](i18n/de.toml), [Hungarian](i18n/hu.toml), [Finnish](i18n/fi.toml) are included. You can create a the directory `i18n` in your website root directory and the language files in there will be picked up by the theme. It would be great, however, if you create a pull-request on the theme repository to add your translations to the theme.
 
 ### Search
 
@@ -294,5 +294,26 @@ The content of the project description page follows here.
 The generated project site would then look like this:
 
 ![Screenshot of the project example page](https://codeberg.org/winterstein/zola-theme-project-portfolio/raw/branch/main/screenshot-project-example.png)
+
+## Customization
+
+The page template can be extended with custom CSS or JavaScript files (or code) by inheriting the template and overwriting the blocks `extra_headers` or `extra_javascript`. The content of `extra_headers` will be added at the end of the `<head>` section of each page, while the content of `extra_javascript` will be added at the end of the `<body>` section of each page.
+
+```html
+{%/* extends "daisy/templates/base.html" */%}
+
+{%/* block extra_headers */%}
+<!-- add an own stylesheet for example -->
+<link rel="stylesheet" href="{{/* get_url(path='my_custom_style.css') */}}">
+{%/* endblock */%}
+
+{%/* block extra_javascript */%}
+<script>
+    /* here is some custom JavaScript code */
+</script>
+{%/* endblock */%}
+```
+
+In most cases, however, you would probably not extent the `base` template, but the more specific templates like `page`, `section`, or `index`. As they are themselves derived from the `base` template you can override the `extra_headers` and `extra_javascript` blocks the same way in those cases.
 
         
