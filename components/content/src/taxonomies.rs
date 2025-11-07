@@ -72,12 +72,10 @@ impl TaxonomyTerm {
             } else {
                 format!("/{}/{}/{}/", lang, taxo_slug, item_slug)
             }
+        } else if let Some(ref taxonomy_root) = config.taxonomy_root {
+            format!("/{}/{}/{}/", taxonomy_root, taxo_slug, item_slug)
         } else {
-            if let Some(ref taxonomy_root) = config.taxonomy_root {
-                format!("/{}/{}/{}/", taxonomy_root, taxo_slug, item_slug)
-            } else {
-                format!("/{}/{}/", taxo_slug, item_slug)
-            }
+            format!("/{}/{}/", taxo_slug, item_slug)
         };
         let permalink = config.make_permalink(&path);
 
@@ -179,12 +177,10 @@ impl Taxonomy {
             } else {
                 format!("/{}/{}/", tax_found.lang, slug)
             }
+        } else if let Some(ref taxonomy_root) = config.taxonomy_root {
+            format!("/{}/{}/", taxonomy_root, slug)
         } else {
-            if let Some(ref taxonomy_root) = config.taxonomy_root {
-                format!("/{}/{}/", taxonomy_root, slug)
-            } else {
-                format!("/{}/", slug)
-            }
+            format!("/{}/", slug)
         };
         let permalink = config.make_permalink(&path);
 

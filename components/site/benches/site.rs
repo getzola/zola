@@ -71,7 +71,7 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     let section = library.sections.values().collect::<Vec<_>>()[0];
     let paginator = Paginator::from_section(section, &library);
 
-    b.iter(|| site.render_paginated(Vec::new(), &paginator));
+    b.iter(|| site.render_paginated(&[], &paginator));
 }
 
 #[bench]

@@ -1,9 +1,13 @@
 pub mod feeds;
 pub mod link_checking;
+pub mod middleware;
 mod minify;
+pub mod pipeline;
+pub mod renderable;
 pub mod sass;
 pub mod sitemap;
 pub mod tpls;
+pub mod writer;
 
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
@@ -21,12 +25,12 @@ use content::{Library, Page, Paginator, Section, Taxonomy};
 use errors::{Result, anyhow, bail};
 use libs::relative_path::RelativePathBuf;
 use std::time::Instant;
-use templates::{load_tera, render_redirect_template};
+use templates::load_tera;
 use utils::fs::{
     clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
 };
 use utils::net::{get_available_port, is_external_link};
-use utils::templates::{ShortcodeDefinition, render_template};
+use utils::templates::ShortcodeDefinition;
 use utils::types::InsertAnchor;
 
 pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
@@ -587,21 +591,6 @@ impl Site {
         Ok(())
     }
 
-    /// Inject live reload script tag if in live reload mode
-    fn inject_livereload(&self, mut html: String) -> String {
-        if let Some(port) = self.live_reload {
-            let script =
-                format!(r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script>"#, port,);
-            if let Some(index) = html.rfind("</body>") {
-                html.insert_str(index, &script);
-            } else {
-                html.push_str(&script);
-            }
-        }
-
-        html
-    }
-
     /// Copy the main `static` folder and the theme `static` folder if a theme is used
     pub fn copy_static_directories(&self) -> Result<()> {
         // The user files will overwrite the theme files
@@ -653,9 +642,38 @@ impl Site {
         clean_site_output_folder(&self.output_path, self.config.preserve_dotfiles_in_output)
     }
 
-    /// Minify HTML content if minification is enabled.
-    fn maybe_minify(&self, content: String) -> Result<String> {
-        if self.config.minify_html { minify::html(content) } else { Ok(content) }
+    /// Create a rendering pipeline with configured middleware
+    fn create_pipeline(&self) -> pipeline::Pipeline {
+        use middleware::{LiveReloadMiddleware, MinifyMiddleware};
+
+        let mut middleware_chain: Vec<Box<dyn middleware::Middleware>> = Vec::new();
+
+        // Add live reload middleware if in serve mode
+        if let Some(port) = self.live_reload {
+            middleware_chain.push(Box::new(LiveReloadMiddleware::new(port)));
+        }
+
+        // Add minification middleware if enabled
+        if self.config.minify_html {
+            middleware_chain.push(Box::new(MinifyMiddleware::new()));
+        }
+
+        let writer =
+            Arc::new(writer::ContentWriter::new(self.build_mode, self.output_path.clone()));
+
+        pipeline::Pipeline::new(
+            Arc::new(self.tera.clone()),
+            Arc::new(self.config.clone()),
+            self.library.clone(),
+            middleware_chain,
+            writer,
+        )
+    }
+
+    /// Helper to render any Renderable through the pipeline
+    fn render(&self, renderable: &dyn renderable::Renderable) -> Result<()> {
+        let pipeline = self.create_pipeline();
+        pipeline.process(renderable)?.write()
     }
 
     /// Handles whether to write to disk or to memory
@@ -715,23 +733,14 @@ impl Site {
             return Ok(());
         }
 
-        let output = page.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
-        let content = self.inject_livereload(output);
-
-        // Determine if we should minify based on template extension
-        let template = page.meta.template.as_deref().unwrap_or("page.html");
-        let final_content = if template.to_lowercase().ends_with(".html")
-            || template.to_lowercase().ends_with(".htm")
-        {
-            self.maybe_minify(content)?
-        } else {
-            content
-        };
-
-        let components: Vec<&str> = page.path.split('/').collect();
-        let current_path = self.write_content(&components, "index.html", final_content)?;
+        self.render(page as &dyn renderable::Renderable)?;
 
         // Copy any asset we found previously into the same directory as the index.html
+        let components: Vec<&str> = page.path.split('/').collect();
+        let mut current_path = self.output_path.to_path_buf();
+        for component in &components {
+            current_path.push(component);
+        }
         self.copy_assets(page.file.path.parent().unwrap(), &page.assets, &current_path)?;
 
         Ok(())
@@ -884,25 +893,28 @@ impl Site {
     }
 
     fn render_alias(&self, alias: &str, permalink: &str) -> Result<()> {
-        let mut split = alias.split('/').collect::<Vec<_>>();
+        let parts: Vec<&str> = alias.split('/').collect();
 
         // If the alias ends with an html file name, use that instead of mapping
         // as a path containing an `index.html`
-        let page_name = match split.pop() {
-            Some(part) if part.ends_with(".html") => part,
-            Some(part) => {
-                split.push(part);
-                "index.html"
+        let (components, page_name) = match parts.last() {
+            Some(part) if part.ends_with(".html") => {
+                let filename = part.to_string();
+                let components = parts[..parts.len() - 1].iter().map(|s| s.to_string()).collect();
+                (components, filename)
             }
-            None => "index.html",
+            Some(_) | None => {
+                let components = parts.iter().map(|s| s.to_string()).collect();
+                (components, "index.html".to_string())
+            }
         };
-        let content = render_redirect_template(permalink, &self.tera)?;
 
-        // Aliases are always HTML redirects - minify if enabled
-        let final_content = self.maybe_minify(content)?;
-
-        self.write_content(&split, page_name, final_content)?;
-        Ok(())
+        let redirect = renderable::RedirectRenderable {
+            target_url: permalink.to_string(),
+            components,
+            filename: page_name,
+        };
+        self.render(&redirect as &dyn renderable::Renderable)
     }
 
     /// Renders all the aliases for each page/section: a magic HTML template that redirects to
@@ -924,27 +936,16 @@ impl Site {
 
     /// Renders 404.html
     pub fn render_404(&self) -> Result<()> {
-        let mut context = Context::new();
-        context.insert("config", &self.config.serialize(&self.config.default_language));
-        context.insert("lang", &self.config.default_language);
-        let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
-        let content = self.inject_livereload(output);
-
-        // 404.html is always HTML - minify if enabled
-        let final_content = self.maybe_minify(content)?;
-
-        self.write_content(&[], "404.html", final_content)?;
-        Ok(())
+        let not_found =
+            renderable::NotFoundRenderable { lang: self.config.default_language.clone() };
+        self.render(&not_found as &dyn renderable::Renderable)
     }
 
     /// Renders robots.txt
     pub fn render_robots(&self) -> Result<()> {
-        let mut context = Context::new();
-        context.insert("config", &self.config.serialize(&self.config.default_language));
-        let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
-
-        // robots.txt is plain text - never minify
-        self.write_content(&[], "robots.txt", content)?;
+        let robots_renderable =
+            renderable::RobotsTxtRenderable { lang: self.config.default_language.clone() };
+        self.render(&robots_renderable as &dyn renderable::Renderable)?;
         Ok(())
     }
 
@@ -967,35 +968,32 @@ impl Site {
 
         let mut components = Vec::new();
         if taxonomy.lang != self.config.default_language {
-            components.push(taxonomy.lang.as_ref());
+            components.push(taxonomy.lang.clone());
         }
 
         if let Some(ref taxonomy_root) = self.config.taxonomy_root {
-            components.push(taxonomy_root.as_ref());
+            components.push(taxonomy_root.clone());
         }
 
-        components.push(taxonomy.slug.as_ref());
+        components.push(taxonomy.slug.clone());
 
-        let list_output =
-            taxonomy.render_all_terms(&self.tera, &self.config, &self.library.read().unwrap())?;
-        let content = self.inject_livereload(list_output);
+        // Render the taxonomy list page (all terms)
+        let taxonomy_list =
+            renderable::TaxonomyListRenderable { taxonomy, components: components.clone() };
+        self.render(&taxonomy_list as &dyn renderable::Renderable)?;
 
-        // Taxonomy list pages are always HTML - minify if enabled
-        let final_content = self.maybe_minify(content)?;
-
-        self.write_content(&components, "index.html", final_content)?;
-
+        // Render individual term pages
         let library = self.library.read().unwrap();
         taxonomy
             .items
             .par_iter()
             .map(|item| {
                 let mut comp = components.clone();
-                comp.push(&item.slug);
+                comp.push(item.slug.clone());
 
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
-                        comp.clone(),
+                        &comp,
                         &Paginator::from_taxonomy(
                             taxonomy,
                             item,
@@ -1005,14 +1003,12 @@ impl Site {
                         ),
                     )?;
                 } else {
-                    let single_output =
-                        taxonomy.render_term(item, &self.tera, &self.config, &library)?;
-                    let content = self.inject_livereload(single_output);
-
-                    // Taxonomy term pages are always HTML - minify if enabled
-                    let final_content = self.maybe_minify(content)?;
-
-                    self.write_content(&comp, "index.html", final_content)?;
+                    let term_renderable = renderable::TaxonomyTermRenderable {
+                        taxonomy,
+                        term: item,
+                        components: comp.clone(),
+                    };
+                    self.render(&term_renderable as &dyn renderable::Renderable)?;
                 }
 
                 if taxonomy.kind.feed {
@@ -1025,18 +1021,13 @@ impl Site {
                         } else {
                             PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))
                         }
+                    } else if let Some(ref taxonomy_root) = self.config.taxonomy_root {
+                        PathBuf::from(format!(
+                            "{}/{}/{}/{}",
+                            taxonomy.lang, taxonomy_root, taxonomy.slug, item.slug
+                        ))
                     } else {
-                        if let Some(ref taxonomy_root) = self.config.taxonomy_root {
-                            PathBuf::from(format!(
-                                "{}/{}/{}/{}",
-                                taxonomy.lang, taxonomy_root, taxonomy.slug, item.slug
-                            ))
-                        } else {
-                            PathBuf::from(format!(
-                                "{}/{}/{}",
-                                taxonomy.lang, taxonomy.slug, item.slug
-                            ))
-                        }
+                        PathBuf::from(format!("{}/{}/{}", taxonomy.lang, taxonomy.slug, item.slug))
                     };
                     self.render_feeds(
                         item.pages.iter().map(|p| library.pages.get(p).unwrap()).collect(),
@@ -1067,44 +1058,30 @@ impl Site {
 
         if all_sitemap_entries.len() < sitemap_limit {
             // Create single sitemap
-            let mut context = Context::new();
-            context.insert("entries", &all_sitemap_entries);
-            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
-
-            // Sitemaps are XML - never minify
-            self.write_content(&[], "sitemap.xml", sitemap)?;
+            let sitemap_renderable = renderable::SitemapRenderable {
+                entries: &all_sitemap_entries,
+                filename: "sitemap.xml".to_string(),
+            };
+            self.render(&sitemap_renderable as &dyn renderable::Renderable)?;
             return Ok(());
         }
 
         // Create multiple sitemaps (max 30000 urls each)
         let mut sitemap_index = Vec::new();
-        for (i, chunk) in
-            all_sitemap_entries.iter().collect::<Vec<_>>().chunks(sitemap_limit).enumerate()
-        {
-            let mut context = Context::new();
-            context.insert("entries", &chunk);
-            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
-
-            // Sitemaps are XML - never minify
+        for (i, chunk) in all_sitemap_entries.chunks(sitemap_limit).enumerate() {
             let file_name = format!("sitemap{}.xml", i + 1);
-            self.write_content(&[], &file_name, sitemap)?;
+            let sitemap_renderable =
+                renderable::SitemapRenderable { entries: chunk, filename: file_name.clone() };
+            self.render(&sitemap_renderable as &dyn renderable::Renderable)?;
+
             let mut sitemap_url = self.config.make_permalink(&file_name);
             sitemap_url.pop(); // Remove trailing slash
             sitemap_index.push(sitemap_url);
         }
 
         // Create main sitemap that reference numbered sitemaps
-        let mut main_context = Context::new();
-        main_context.insert("sitemaps", &sitemap_index);
-        let sitemap = render_template(
-            "split_sitemap_index.xml",
-            &self.tera,
-            main_context,
-            &self.config.theme,
-        )?;
-
-        // Sitemap index is XML - never minify
-        self.write_content(&[], "sitemap.xml", sitemap)?;
+        let index_renderable = renderable::SitemapIndexRenderable { sitemap_urls: sitemap_index };
+        self.render(&index_renderable as &dyn renderable::Renderable)?;
 
         Ok(())
     }
@@ -1119,46 +1096,21 @@ impl Site {
         lang: &str,
         additional_context_fn: impl Fn(Context) -> Context,
     ) -> Result<()> {
-        let feeds =
-            match feeds::render_feeds(self, all_pages, lang, base_path, additional_context_fn)? {
-                Some(v) => v,
-                None => return Ok(()),
-            };
-
-        for (feed, feed_filename) in
-            feeds.into_iter().zip(self.config.languages[lang].feed_filenames.iter())
-        {
-            // Feeds are XML - never minify
-            if let Some(base) = base_path {
-                let mut components = Vec::new();
-                for component in base.components() {
-                    components.push(component.as_os_str().to_string_lossy());
-                }
-                self.write_content(
-                    &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
-                    feed_filename,
-                    feed,
-                )?;
-            } else {
-                self.write_content(&[], feed_filename, feed)?;
-            }
-        }
-
-        Ok(())
+        feeds::render_feeds(self, all_pages, lang, base_path, additional_context_fn)
     }
 
     /// Renders a single section
     pub fn render_section(&self, section: &Section, render_pages: bool) -> Result<()> {
         let mut output_path = self.output_path.clone();
-        let mut components: Vec<&str> = Vec::new();
+        let mut components: Vec<String> = Vec::new();
 
         if section.lang != self.config.default_language {
-            components.push(&section.lang);
+            components.push(section.lang.clone());
             output_path.push(&section.lang);
         }
 
         for component in &section.file.components {
-            components.push(component);
+            components.push(component.clone());
             output_path.push(component);
         }
 
@@ -1197,30 +1149,22 @@ impl Site {
             } else {
                 Cow::Owned(self.config.make_permalink(redirect_to))
             };
-            let content = render_redirect_template(&permalink, &self.tera)?;
 
-            // Section redirects are always HTML - minify if enabled
-            let final_content = self.maybe_minify(content)?;
-
-            self.write_content(&components, "index.html", final_content)?;
-
-            return Ok(());
+            let redirect = renderable::RedirectRenderable {
+                target_url: permalink.to_string(),
+                components: components.clone(),
+                filename: "index.html".to_string(),
+            };
+            return self.render(&redirect as &dyn renderable::Renderable);
         }
 
         if section.meta.is_paginated() {
             self.render_paginated(
-                components,
+                &components,
                 &Paginator::from_section(section, &self.library.read().unwrap()),
             )?;
         } else {
-            let output =
-                section.render_html(&self.tera, &self.config, &self.library.read().unwrap())?;
-            let content = self.inject_livereload(output);
-
-            // Section pages are always HTML - minify if enabled
-            let final_content = self.maybe_minify(content)?;
-
-            self.write_content(&components, "index.html", final_content)?;
+            self.render(section as &dyn renderable::Renderable)?;
         }
 
         Ok(())
@@ -1248,43 +1192,42 @@ impl Site {
     }
 
     /// Renders a list of pages when the section/index is wanting pagination.
-    pub fn render_paginated<'a>(
-        &self,
-        components: Vec<&'a str>,
-        paginator: &'a Paginator,
-    ) -> Result<()> {
-        let index_components = components.clone();
+    pub fn render_paginated(&self, components: &[String], paginator: &Paginator) -> Result<()> {
+        let index_components = components.to_vec();
 
         paginator
             .pagers
             .par_iter()
             .map(|pager| {
                 let mut pager_components = index_components.clone();
-                pager_components.push(&paginator.paginate_path);
-                let pager_path = format!("{}", pager.index);
-                pager_components.push(&pager_path);
-                let output = paginator.render_pager(
+                let is_first = pager.index == 1;
+
+                if !is_first {
+                    pager_components.push(paginator.paginate_path.clone());
+                    pager_components.push(format!("{}", pager.index));
+                }
+
+                // Render the pager
+                let pager_renderable = renderable::PagerRenderable {
                     pager,
-                    &self.config,
-                    &self.tera,
-                    &self.library.read().unwrap(),
-                )?;
-                let content = self.inject_livereload(output);
+                    paginator,
+                    components: pager_components.clone(),
+                    is_first,
+                };
+                self.render(&pager_renderable as &dyn renderable::Renderable)?;
 
-                // Pagination pages are always HTML - minify if enabled
-                let final_content = self.maybe_minify(content)?;
+                // If this is the first page, also create redirect from page/1 to index
+                if is_first {
+                    let mut redirect_components = index_components.clone();
+                    redirect_components.push(paginator.paginate_path.clone());
+                    redirect_components.push("1".to_string());
 
-                if pager.index > 1 {
-                    self.write_content(&pager_components, "index.html", final_content)?;
-                } else {
-                    self.write_content(&index_components, "index.html", final_content)?;
-
-                    // The redirect for page 1 is also HTML
-                    let redirect_content =
-                        render_redirect_template(&paginator.permalink, &self.tera)?;
-                    let final_redirect = self.maybe_minify(redirect_content)?;
-
-                    self.write_content(&pager_components, "index.html", final_redirect)?;
+                    let redirect = renderable::RedirectRenderable {
+                        target_url: paginator.permalink.clone(),
+                        components: redirect_components,
+                        filename: "index.html".to_string(),
+                    };
+                    self.render(&redirect as &dyn renderable::Renderable)?;
                 }
 
                 Ok(())

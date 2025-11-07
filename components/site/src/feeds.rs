@@ -5,10 +5,9 @@ use libs::rayon::prelude::*;
 use libs::tera::Context;
 use serde::Serialize;
 
-use crate::Site;
+use crate::{Site, renderable};
 use content::{Page, TaxonomyTerm};
 use errors::Result;
-use utils::templates::render_template;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SerializedFeedTaxonomyItem<'a> {
@@ -33,7 +32,7 @@ pub fn render_feeds(
     lang: &str,
     base_path: Option<&PathBuf>,
     additional_context_fn: impl Fn(Context) -> Context,
-) -> Result<Option<Vec<String>>> {
+) -> Result<()> {
     let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
 
     pages.par_sort_unstable_by(|a, b| {
@@ -63,9 +62,15 @@ pub fn render_feeds(
     context.insert("config", &site.config.serialize(lang));
     context.insert("lang", lang);
 
-    let mut feeds = Vec::new();
+    // Calculate components from base_path
+    let components = if let Some(base) = base_path {
+        base.components().map(|c| c.as_os_str().to_string_lossy().to_string()).collect()
+    } else {
+        Vec::new()
+    };
+
     for feed_filename in &site.config.languages[lang].feed_filenames {
-        let mut context = context.clone();
+        let mut feed_context = context.clone();
 
         let feed_url = if let Some(base) = base_path {
             site.config
@@ -74,10 +79,19 @@ pub fn render_feeds(
             site.config.make_permalink(feed_filename)
         };
 
-        context.insert("feed_url", &feed_url);
-        context = additional_context_fn(context);
-        feeds.push(render_template(feed_filename, &site.tera, context, &site.config.theme)?);
+        feed_context.insert("feed_url", &feed_url);
+        feed_context = additional_context_fn(feed_context);
+
+        let feed_renderable = renderable::FeedRenderable {
+            feed_filename: feed_filename.clone(),
+            feed_url,
+            context: feed_context,
+            lang: lang.to_string(),
+            components: components.clone(),
+        };
+
+        site.render(&feed_renderable as &dyn renderable::Renderable)?;
     }
 
-    Ok(Some(feeds))
+    Ok(())
 }

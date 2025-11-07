@@ -15,7 +15,7 @@ pub use file_info::FileInfo;
 pub use front_matter::{PageFrontMatter, SectionFrontMatter};
 pub use library::Library;
 pub use page::Page;
-pub use pagination::Paginator;
+pub use pagination::{Pager, Paginator};
 pub use section::Section;
 pub use taxonomies::{Taxonomy, TaxonomyTerm};
 pub use types::*;
