@@ -3,14 +3,14 @@
 title = "hallo"
 description = "A single-page theme to introduce yourself."
 template = "theme.html"
-date = 2021-09-27T13:05:37+02:00
+date = 2025-09-22T20:09:00+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2021-09-27T13:05:37+02:00
-updated = 2021-09-27T13:05:37+02:00
+created = 2025-09-22T20:09:00+02:00
+updated = 2025-09-22T20:09:00+02:00
 repository = "https://github.com/flyingP0tat0/zola-hallo.git"
 homepage = "https://github.com/janbaudisch/zola-hallo"
 minimum_version = "0.4.0"
@@ -21,9 +21,6 @@ demo = "https://zola-hallo.janbaudisch.dev"
 name = "Jan Baudisch"
 homepage = "https://janbaudisch.dev"
 +++        
-
-[![Build Status][build-img]][build-url]
-[![Demo][demo-img]][demo-url]
 
 # Hallo
 
@@ -59,7 +56,16 @@ theme = "hallo"
 
 ### Introduction
 
-The introduction text is made in `content/_index.md`.
+The introduction text is taken from `content/_index.md`.
+
+#### Template
+
+Alternatively, it can be included from `templates/partials/introduction.html` with the following configuration option:
+
+```toml
+[extra]
+hallo_use_introduction_template = true
+```
 
 ## Options
 
@@ -122,10 +128,6 @@ foreground = "#FFF" # text and portrait border
 hover = "#333" # link hover
 ```
 
-[build-img]: https://builds.sr.ht/~janbaudisch/zola-hallo.svg
-[build-url]: https://builds.sr.ht/~janbaudisch/zola-hallo
-[demo-img]: https://img.shields.io/badge/demo-live-green.svg
-[demo-url]: https://zola-hallo.janbaudisch.dev
 [zola]: https://www.getzola.org
 [hallo-hugo]: https://github.com/EmielH/hallo-hugo
 [fontawesome]: https://fontawesome.com
