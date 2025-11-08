@@ -87,7 +87,9 @@ impl ProcessedContent {
         self.writer.write(&components_refs, &self.filename, &self.content)?;
 
         // Write compressed version if present
-        if let (Some(binary_content), Some(extension)) = (self.binary_content, self.compressed_extension) {
+        if let (Some(binary_content), Some(extension)) =
+            (self.binary_content, self.compressed_extension)
+        {
             let compressed_filename = format!("{}{}", self.filename, extension);
             self.writer.write_binary(&components_refs, &compressed_filename, &binary_content)?;
         }
@@ -102,7 +104,9 @@ impl ProcessedContent {
         self.writer.write(&components_owned, filename, &self.content)?;
 
         // Write compressed version if present
-        if let (Some(binary_content), Some(extension)) = (self.binary_content, self.compressed_extension) {
+        if let (Some(binary_content), Some(extension)) =
+            (self.binary_content, self.compressed_extension)
+        {
             let compressed_filename = format!("{}{}", filename, extension);
             self.writer.write_binary(&components_owned, &compressed_filename, &binary_content)?;
         }

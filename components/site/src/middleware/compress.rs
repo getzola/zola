@@ -23,15 +23,18 @@ impl CompressionMiddleware {
 
     /// Check if content type should be compressed
     fn should_compress(&self, content_type: &ContentType) -> bool {
-        matches!(content_type, ContentType::Html | ContentType::Xml | ContentType::Json | ContentType::Text)
+        matches!(
+            content_type,
+            ContentType::Html | ContentType::Xml | ContentType::Json | ContentType::Text
+        )
     }
 
     /// Compress using gzip
     #[cfg(feature = "gzip")]
     fn compress_gzip(&self, content: &str) -> Result<Vec<u8>> {
-        use std::io::Write;
-        use flate2::write::GzEncoder;
         use flate2::Compression as GzipCompression;
+        use flate2::write::GzEncoder;
+        use std::io::Write;
 
         let mut encoder = GzEncoder::new(Vec::new(), GzipCompression::new(GZIP_COMPRESSION_LEVEL));
         encoder.write_all(content.as_bytes())?;

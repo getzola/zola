@@ -52,7 +52,12 @@ impl ContentWriter {
     }
 
     /// Write binary content to the appropriate destination(s) based on build mode
-    pub fn write_binary(&self, components: &[String], filename: &str, content: &[u8]) -> Result<()> {
+    pub fn write_binary(
+        &self,
+        components: &[String],
+        filename: &str,
+        content: &[u8],
+    ) -> Result<()> {
         let mut current_path = self.output_path.clone();
         let mut site_path = RelativePathBuf::new();
 

@@ -40,8 +40,7 @@ pub enum ContentData {
     Binary(Vec<u8>),
 }
 
-pub static SITE_CONTENT: Lazy<DashMap<RelativePathBuf, ContentData>> =
-    Lazy::new(DashMap::new);
+pub static SITE_CONTENT: Lazy<DashMap<RelativePathBuf, ContentData>> = Lazy::new(DashMap::new);
 
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]

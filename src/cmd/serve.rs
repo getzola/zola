@@ -22,29 +22,39 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::cell::Cell;
-use std::future::IntoFuture;
 use std::net::{IpAddr, SocketAddr, TcpListener};
 use std::path::{MAIN_SEPARATOR, Path, PathBuf};
-use std::sync::Mutex;
 use std::sync::mpsc::channel;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use hyper::http::HeaderValue;
-use hyper::server::Server;
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Method, Request, Response, StatusCode};
-use hyper::{body, header};
+use axum::{
+    Router,
+    body::Body,
+    extract::{
+        State, WebSocketUpgrade,
+        ws::{Message, WebSocket},
+    },
+    http::{HeaderMap, Request, StatusCode, Uri, header},
+    middleware::{self, Next},
+    response::{Html, IntoResponse, Response},
+    routing::get,
+};
 use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
+use tokio::sync::broadcast;
+use tower_http::cors::CorsLayer;
+use tower_http::trace::TraceLayer;
+use tracing::Level;
 
 use libs::percent_encoding;
 use libs::relative_path::{RelativePath, RelativePathBuf};
 use libs::serde_json;
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
-use ws::{Message, Sender, WebSocket};
 
+use config::Config;
 use errors::{Context, Error, Result, anyhow};
 use site::sass::compile_sass;
 use site::{BuildMode, ContentData, SITE_CONTENT, Site};
@@ -60,9 +70,6 @@ enum WatchMode {
     Optional,
     Condition(bool),
 }
-
-const METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
-const NOT_FOUND_TEXT: &[u8] = b"Not Found";
 
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
@@ -80,131 +87,291 @@ fn set_serve_error(msg: &'static str, e: errors::Error) {
     }
 }
 
-async fn handle_request(
-    req: Request<Body>,
-    mut root: PathBuf,
+#[derive(Clone)]
+struct AppState {
+    static_root: PathBuf,
     base_path: String,
-) -> Result<Response<Body>> {
-    let path_str = req.uri().path();
-    if !path_str.starts_with(&base_path) {
-        return Ok(not_found());
+    reload_tx: broadcast::Sender<String>,
+    config: Arc<Config>,
+}
+
+async fn serve_file(
+    State(state): State<Arc<AppState>>,
+    uri: Uri,
+    headers: HeaderMap,
+) -> Result<Response<Body>, StatusCode> {
+    let path_str = uri.path();
+
+    // Handle base path trimming
+    if !path_str.starts_with(&state.base_path) {
+        return Err(StatusCode::NOT_FOUND);
     }
 
-    let trimmed_path = &path_str[base_path.len() - 1..];
+    let trimmed_path = &path_str[state.base_path.len() - 1..];
 
-    let original_root = root.clone();
-    let mut path = RelativePathBuf::new();
-    // https://zola.discourse.group/t/percent-encoding-for-slugs/736
-    let decoded = match percent_encoding::percent_decode_str(trimmed_path).decode_utf8() {
-        Ok(d) => d,
-        Err(_) => return Ok(not_found()),
-    };
+    // Parse path
+    let decoded = percent_encoding::percent_decode_str(trimmed_path)
+        .decode_utf8()
+        .map_err(|_| StatusCode::NOT_FOUND)?;
 
-    let decoded_path = if base_path != "/" && decoded.starts_with(&base_path) {
-        // Remove the base_path from the request path before processing
-        decoded[base_path.len()..].to_string()
+    let decoded_path = if state.base_path != "/" && decoded.starts_with(&state.base_path) {
+        decoded[state.base_path.len()..].to_string()
     } else {
         decoded.to_string()
     };
 
+    let mut path = RelativePathBuf::new();
     for c in decoded_path.split('/') {
         path.push(c);
     }
 
-    // livereload.js is served using the LIVE_RELOAD str, not a file
-    if path == "livereload.js" {
-        if req.method() == Method::GET {
-            return Ok(livereload_js());
-        } else {
-            return Ok(method_not_allowed());
+    // Normalize empty path or directory paths to index.html
+    // This ensures we look for index.html.br instead of .br
+    let normalized_path = if path.as_str().is_empty() || path.as_str().ends_with('/') {
+        let mut index_path = path.clone();
+        index_path.push("index.html");
+        index_path
+    } else {
+        path.clone()
+    };
+
+    // Try to serve pre-compressed variant if compression is enabled
+    if let Some((compressed_path, encoding)) =
+        find_compressed_variant(&normalized_path, &headers, &state.config).await
+    {
+        // Try in-memory first
+        if let Some(content_data) = SITE_CONTENT.get(&compressed_path) {
+            tracing::debug!(
+                "Serving {} (compressed: {}, source: memory)",
+                normalized_path.as_str(),
+                encoding
+            );
+            return Ok(build_response(&normalized_path, content_data.value(), Some(encoding)));
+        }
+
+        // Try filesystem
+        if let Ok(content) = serve_from_filesystem(&state.static_root, &compressed_path).await {
+            tracing::debug!(
+                "Serving {} (compressed: {}, source: filesystem)",
+                compressed_path.as_str(),
+                encoding
+            );
+            let response = Response::builder()
+                .status(StatusCode::OK)
+                .header(
+                    header::CONTENT_TYPE,
+                    mimetype_from_path(normalized_path.as_str())
+                        .first_or_octet_stream()
+                        .essence_str(),
+                )
+                .header(header::CONTENT_ENCODING, encoding)
+                .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                .body(Body::from(content))
+                .unwrap();
+            return Ok(response);
         }
     }
 
-    if let Some(content_data) = SITE_CONTENT.get(&path) {
-        return Ok(in_memory_content(&path, content_data.value()));
+    // Serve original file (not compressed)
+    // Check SITE_CONTENT (memory) using normalized path
+    if let Some(content_data) = SITE_CONTENT.get(&normalized_path) {
+        tracing::debug!("Serving {} (source: memory)", normalized_path.as_str());
+        return Ok(build_response(&normalized_path, content_data.value(), None));
     }
 
-    // Handle only `GET`/`HEAD` requests
-    match *req.method() {
-        Method::HEAD | Method::GET => {}
-        _ => return Ok(method_not_allowed()),
+    // Fallback to filesystem
+    // We need to check the filesystem with the same security checks as before
+    let mut full_path = state.static_root.clone();
+    full_path.push(&decoded[1..]);
+
+    // Resolve and canonicalize to prevent path traversal
+    let canonical_path = match tokio::fs::canonicalize(&full_path).await {
+        Ok(p) => p,
+        Err(_) => return Err(StatusCode::NOT_FOUND),
+    };
+
+    // Ensure we're still within the static root
+    if !canonical_path.starts_with(&state.static_root) {
+        return Err(StatusCode::NOT_FOUND);
     }
 
-    // Handle only simple path requests
-    if req.uri().scheme_str().is_some() || req.uri().host().is_some() {
-        return Ok(not_found());
+    // Check if it's a directory
+    let metadata = match tokio::fs::metadata(&canonical_path).await {
+        Ok(m) => m,
+        Err(_) => return Err(StatusCode::NOT_FOUND),
+    };
+
+    let file_path =
+        if metadata.is_dir() { canonical_path.join("index.html") } else { canonical_path };
+
+    match tokio::fs::read(&file_path).await {
+        Ok(contents) => {
+            // Get relative path for logging
+            let relative_path = file_path
+                .strip_prefix(&state.static_root)
+                .ok()
+                .and_then(|p| p.to_str())
+                .unwrap_or_else(|| file_path.to_str().unwrap_or("unknown"));
+            tracing::debug!("Serving {} (source: filesystem)", relative_path);
+
+            Ok(Response::builder()
+                .status(StatusCode::OK)
+                .header(
+                    header::CONTENT_TYPE,
+                    mimetype_from_path(&file_path).first_or_octet_stream().essence_str(),
+                )
+                .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                .body(Body::from(contents))
+                .unwrap())
+        }
+        Err(_) => serve_404(),
+    }
+}
+
+async fn find_compressed_variant(
+    path: &RelativePathBuf,
+    headers: &HeaderMap,
+    config: &Config,
+) -> Option<(RelativePathBuf, &'static str)> {
+    // Only if compression was enabled during build
+    if !config.compress {
+        return None;
     }
 
-    // Remove the first slash from the request path
-    // otherwise `PathBuf` will interpret it as an absolute path
-    root.push(&decoded[1..]);
+    let accept_encoding = headers.get(header::ACCEPT_ENCODING).and_then(|v| v.to_str().ok())?;
 
-    // Resolve the root + user supplied path into the absolute path
-    // this should hopefully remove any path traversals
-    // if we fail to resolve path, we should return 404
-    root = match tokio::fs::canonicalize(&root).await {
-        Ok(d) => d,
-        Err(_) => return Ok(not_found()),
-    };
+    // Try brotli first (better compression)
+    if accept_encoding.contains("br") {
+        // Create path like "index.html.br" by appending .br to the filename
+        let br_path_str = format!("{}.br", path.as_str());
+        let br_path = RelativePathBuf::from(br_path_str);
 
-    // Ensure we are only looking for things in our public folder
-    if !root.starts_with(original_root) {
-        return Ok(not_found());
+        if check_exists(&br_path).await {
+            return Some((br_path, "br"));
+        }
     }
 
-    let metadata = match tokio::fs::metadata(root.as_path()).await {
-        Err(err) => return Ok(io_error(err)),
-        Ok(metadata) => metadata,
-    };
-    if metadata.is_dir() {
-        // if root is a directory, append index.html to try to read that instead
-        root.push("index.html");
+    // Try gzip
+    if accept_encoding.contains("gzip") {
+        // Create path like "index.html.gz" by appending .gz to the filename
+        let gz_path_str = format!("{}.gz", path.as_str());
+        let gz_path = RelativePathBuf::from(gz_path_str);
+
+        if check_exists(&gz_path).await {
+            return Some((gz_path, "gzip"));
+        }
+    }
+
+    None
+}
+
+async fn check_exists(path: &RelativePathBuf) -> bool {
+    SITE_CONTENT.contains_key(path)
+}
+
+async fn serve_livereload_js() -> Html<&'static str> {
+    Html(LIVE_RELOAD)
+}
+
+fn build_response(
+    path: &RelativePathBuf,
+    content_data: &ContentData,
+    content_encoding: Option<&str>,
+) -> Response<Body> {
+    let mut builder =
+        Response::builder().status(StatusCode::OK).header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+
+    // Handle content type
+    match content_data {
+        ContentData::Text(_) => {
+            let content_type = match path.extension() {
+                Some(ext) => match ext {
+                    "xml" => "text/xml",
+                    "json" => "application/json",
+                    "txt" => "text/plain",
+                    _ => "text/html",
+                },
+                None => "text/html",
+            };
+            builder = builder.header(header::CONTENT_TYPE, content_type);
+        }
+        ContentData::Binary(_) => {
+            let mime_type = mimetype_from_path(path.as_str()).first_or_octet_stream();
+            builder = builder.header(header::CONTENT_TYPE, mime_type.essence_str());
+        }
+    }
+
+    if let Some(encoding) = content_encoding {
+        builder = builder.header(header::CONTENT_ENCODING, encoding);
+    }
+
+    let body = match content_data {
+        ContentData::Text(s) => Body::from(s.clone()),
+        ContentData::Binary(b) => Body::from(b.clone()),
     };
 
-    let result = tokio::fs::read(&root).await;
+    builder.body(body).unwrap()
+}
 
-    let contents = match result {
-        Err(err) => return Ok(io_error(err)),
-        Ok(contents) => contents,
-    };
+async fn serve_from_filesystem(
+    static_root: &Path,
+    path: &RelativePathBuf,
+) -> Result<Vec<u8>, std::io::Error> {
+    let full_path = static_root.join(path.as_str());
+    tokio::fs::read(full_path).await
+}
 
-    Ok(Response::builder()
-        .status(StatusCode::OK)
-        .header(
-            header::CONTENT_TYPE,
-            mimetype_from_path(&root).first_or_octet_stream().essence_str(),
-        )
-        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-        .body(Body::from(contents))
-        .unwrap())
+fn serve_404() -> Result<Response<Body>, StatusCode> {
+    let not_found_path = RelativePath::new("404.html");
+
+    if let Some(content_data) = SITE_CONTENT.get(not_found_path) {
+        let mut response =
+            build_response(&RelativePathBuf::from("404.html"), content_data.value(), None);
+        *response.status_mut() = StatusCode::NOT_FOUND;
+        return Ok(response);
+    }
+
+    Err(StatusCode::NOT_FOUND)
 }
 
 /// Inserts build error message boxes into HTML responses when needed.
-async fn response_error_injector(
-    req: impl IntoFuture<Output = Result<Response<Body>>>,
-) -> Result<Response<Body>> {
-    let req = req.await;
+async fn error_injection_middleware(request: Request<Body>, next: Next) -> Response {
+    let response = next.run(request).await;
 
-    // return req as-is if the request is Err(), not HTML, or if there are no error messages.
-    if req
-        .as_ref()
-        .map(|req| {
-            req.headers()
-                .get(header::CONTENT_TYPE)
-                .map(|val| val != HeaderValue::from_static("text/html"))
-                .unwrap_or(true)
-        })
-        .unwrap_or(true)
-        || SERVE_ERROR.lock().unwrap().get_mut().is_none()
-    {
-        return req;
+    // Only inject errors into HTML responses
+    let is_html = response
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .map(|ct| ct.contains("text/html"))
+        .unwrap_or(false);
+
+    if !is_html {
+        return response;
     }
 
-    let mut req = req.unwrap();
-    let mut bytes = body::to_bytes(req.body_mut()).await.unwrap().to_vec();
+    // Check if we have errors
+    let has_error = SERVE_ERROR.lock().unwrap().get_mut().is_some();
+    if !has_error {
+        return response;
+    }
+
+    // Inject errors into HTML
+    inject_errors_into_response(response).await
+}
+
+async fn inject_errors_into_response(response: Response) -> Response {
+    let (parts, body) = response.into_parts();
+
+    // Read the body
+    let bytes_result = axum::body::to_bytes(body, usize::MAX).await;
+    let mut bytes = match bytes_result {
+        Ok(b) => b.to_vec(),
+        Err(_) => return Response::from_parts(parts, Body::empty()),
+    };
 
     if let Some((msg, error)) = SERVE_ERROR.lock().unwrap().get_mut() {
-        // Generate an error message similar to the CLI version in messages::unravel_errors.
+        // Generate an error message similar to the CLI version
         let mut error_str = String::new();
 
         if !msg.is_empty() {
@@ -219,109 +386,129 @@ async fn response_error_injector(
             cause = e.source();
         }
 
-        // Push the error message (wrapped in an HTML dialog box) to the end of the HTML body.
-        //
-        // The message will be outside of <html> and <body> but web browsers are flexible enough
-        // that they will move it to the end of <body> at page load.
+        // Push the error message (wrapped in an HTML dialog box) to the end of the HTML body
         let html_error = format!(
             r#"<div style="all:revert;position:fixed;display:flex;align-items:center;justify-content:center;background-color:rgb(0,0,0,0.5);top:0;right:0;bottom:0;left:0;"><div style="background-color:white;padding:0.5rem;border-radius:0.375rem;filter:drop-shadow(0,25px,25px,rgb(0,0,0/0.15));overflow-x:auto;"><p style="font-weight:700;color:black;font-size:1.25rem;margin:0;margin-bottom:0.5rem;">Zola Build Error:</p><pre style="padding:0.5rem;margin:0;border-radius:0.375rem;background-color:#363636;color:#CE4A2F;font-weight:700;">{error_str}</pre></div></div>"#
         );
         bytes.extend(html_error.as_bytes());
-
-        *req.body_mut() = Body::from(bytes);
     }
 
-    Ok(req)
+    Response::from_parts(parts, Body::from(bytes))
 }
 
-fn livereload_js() -> Response<Body> {
-    Response::builder()
-        .header(header::CONTENT_TYPE, "text/javascript")
-        .status(StatusCode::OK)
-        .body(LIVE_RELOAD.into())
-        .expect("Could not build livereload.js response")
+async fn ws_handler(ws: WebSocketUpgrade, State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let reload_tx = state.reload_tx.clone();
+    ws.on_upgrade(move |socket| handle_websocket(socket, reload_tx))
 }
 
-fn in_memory_content(path: &RelativePath, content_data: &ContentData) -> Response<Body> {
-    match content_data {
-        ContentData::Text(s) => {
-            let content_type = match path.extension() {
-                Some(ext) => match ext {
-                    "xml" => "text/xml",
-                    "json" => "application/json",
-                    "txt" => "text/plain",
-                    _ => "text/html",
+async fn handle_websocket(mut socket: WebSocket, reload_tx: broadcast::Sender<String>) {
+    let mut rx = reload_tx.subscribe();
+
+    loop {
+        tokio::select! {
+            // Send reload messages to client
+            Ok(msg) = rx.recv() => {
+                if (socket.send(Message::Text(msg)).await).is_err() {
+                    break;
+                }
+            }
+            // Handle incoming messages (livereload protocol)
+            msg_result = socket.recv() => {
+                match msg_result {
+                    Some(Ok(msg)) => {
+                        // Handle "hello" message from client
+                        if let Message::Text(text) = msg
+                            && text.contains("\"hello\"") {
+                                let hello_response = r#"{
+                            "command": "hello",
+                            "protocols": [ "http://livereload.com/protocols/official-7" ],
+                            "serverName": "Zola"
+                        }"#;
+
+                                if (socket.send(Message::Text(hello_response.to_string())).await).is_err() {
+                                    break;
+                                }
+                            }
+                    }
+                    Some(Err(_)) | None => {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn create_router(
+    static_root: PathBuf,
+    base_path: String,
+    reload_tx: broadcast::Sender<String>,
+    config: Arc<Config>,
+    verbose: bool,
+) -> Router {
+    let app_state = AppState { static_root, base_path, reload_tx, config };
+
+    let mut app = Router::new()
+        .route("/livereload.js", get(serve_livereload_js))
+        .route("/livereload", get(ws_handler))
+        .fallback(serve_file)
+        .layer(CorsLayer::permissive());
+
+    if verbose {
+        let trace_layer = TraceLayer::new_for_http()
+            .make_span_with(|request: &Request<Body>| {
+                let accept_encoding = request
+                    .headers()
+                    .get(header::ACCEPT_ENCODING)
+                    .and_then(|v| v.to_str().ok())
+                    .unwrap_or("");
+
+                tracing::info_span!(
+                    "request",
+                    method = %request.method(),
+                    uri = %request.uri(),
+                    accept_encoding = %accept_encoding,
+                )
+            })
+            .on_response(
+                |response: &Response, latency: std::time::Duration, _span: &tracing::Span| {
+                    let content_encoding = response
+                        .headers()
+                        .get(header::CONTENT_ENCODING)
+                        .and_then(|v| v.to_str().ok())
+                        .unwrap_or("none");
+
+                    let content_type = response
+                        .headers()
+                        .get(header::CONTENT_TYPE)
+                        .and_then(|v| v.to_str().ok())
+                        .unwrap_or("unknown");
+
+                    tracing::info!(
+                        status = %response.status(),
+                        content_type = %content_type,
+                        content_encoding = %content_encoding,
+                        latency_ms = %latency.as_millis(),
+                        "response"
+                    );
                 },
-                None => "text/html",
-            };
-            Response::builder()
-                .header(header::CONTENT_TYPE, content_type)
-                .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                .status(StatusCode::OK)
-                .body(Body::from(s.clone()))
-                .expect("Could not build response")
-        }
-        ContentData::Binary(b) => {
-            let mime_type = mimetype_from_path(path.as_str()).first_or_octet_stream();
-            Response::builder()
-                .header(header::CONTENT_TYPE, mime_type.essence_str())
-                .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                .status(StatusCode::OK)
-                .body(Body::from(b.clone()))
-                .expect("Could not build response")
-        }
-    }
-}
-
-fn method_not_allowed() -> Response<Body> {
-    Response::builder()
-        .header(header::CONTENT_TYPE, "text/plain")
-        .status(StatusCode::METHOD_NOT_ALLOWED)
-        .body(METHOD_NOT_ALLOWED_TEXT.into())
-        .expect("Could not build Method Not Allowed response")
-}
-
-fn io_error(err: std::io::Error) -> Response<Body> {
-    match err.kind() {
-        std::io::ErrorKind::NotFound => not_found(),
-        std::io::ErrorKind::PermissionDenied => {
-            Response::builder().status(StatusCode::FORBIDDEN).body(Body::empty()).unwrap()
-        }
-        _ => panic!("{}", err),
-    }
-}
-
-fn not_found() -> Response<Body> {
-    let not_found_path = RelativePath::new("404.html");
-
-    if let Some(content_data) = SITE_CONTENT.get(not_found_path) {
-        let body = match content_data.value() {
-            ContentData::Text(s) => Body::from(s.clone()),
-            ContentData::Binary(b) => Body::from(b.clone()),
-        };
-        return Response::builder()
-            .header(header::CONTENT_TYPE, "text/html")
-            .status(StatusCode::NOT_FOUND)
-            .body(body)
-            .expect("Could not build Not Found response");
+            );
+        app = app.layer(trace_layer);
     }
 
-    // Use a plain text response when we can't find the body of the 404
-    Response::builder()
-        .header(header::CONTENT_TYPE, "text/plain")
-        .status(StatusCode::NOT_FOUND)
-        .body(NOT_FOUND_TEXT.into())
-        .expect("Could not build Not Found response")
+    app.layer(middleware::from_fn(error_injection_middleware)).with_state(Arc::new(app_state))
 }
 
-fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
+fn rebuild_done_handling(
+    broadcaster: &broadcast::Sender<String>,
+    res: Result<()>,
+    reload_path: &str,
+) {
     match res {
         Ok(_) => {
             clear_serve_error();
-            broadcaster
-                .send(format!(
-                    r#"
-                {{
+            let reload_msg = format!(
+                r#"{{
                     "command": "reload",
                     "path": {},
                     "originalPath": "",
@@ -329,13 +516,12 @@ fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &st
                     "liveImg": true,
                     "protocol": ["http://livereload.com/protocols/official-7"]
                 }}"#,
-                    serde_json::to_string(&reload_path).unwrap()
-                ))
-                .unwrap();
+                serde_json::to_string(&reload_path).unwrap()
+            );
+            let _ = broadcaster.send(reload_msg);
         }
         Err(e) => {
             let msg = "Failed to build the site";
-
             messages::unravel_errors(msg, &e);
             set_serve_error(msg, e);
         }
@@ -448,6 +634,7 @@ pub fn serve(
     utc_offset: UtcOffset,
     extra_watch_paths: Vec<String>,
     debounce: u64,
+    verbose: bool,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, bind_address, constructed_base_url) = create_new_site(
@@ -461,7 +648,7 @@ pub fn serve(
         include_drafts,
         store_html,
         no_port_append,
-        None,
+        Some(interface_port), // WebSocket is on the same server as HTTP in Axum
     )?;
     let base_path = match constructed_base_url.splitn(4, '/').nth(3) {
         Some(path) => format!("/{path}"),
@@ -478,13 +665,8 @@ pub fn serve(
     let config_path = PathBuf::from(config_file);
     let root_dir_str = root_dir.to_str().expect("Project root dir is not valid UTF-8.");
 
-    // An array of (path, WatchMode, RecursiveMode) where the path is watched for changes,
-    // the WatchMode value indicates whether this path must exist for zola serve to operate,
-    // and the RecursiveMode value indicates whether to watch nested directories.
+    // An array of (path, WatchMode, RecursiveMode)
     let mut watch_this = vec![
-        // The first entry is ultimately to watch config.toml in a more robust manner on Linux when
-        // the file changes by way of a caching strategy used by editors such as vim.
-        // https://github.com/getzola/zola/issues/2266
         (root_dir_str, WatchMode::Required, RecursiveMode::NonRecursive),
         ("content", WatchMode::Required, RecursiveMode::Recursive),
         ("sass", WatchMode::Condition(site.config.compile_sass), RecursiveMode::Recursive),
@@ -502,11 +684,6 @@ pub fn serve(
     let (tx, rx) = channel();
     let mut debouncer = new_debouncer(Duration::from_millis(debounce), None, tx).unwrap();
 
-    // We watch for changes on the filesystem for every entry in watch_this
-    // Will fail if either:
-    //   - the path is mandatory but does not exist (eg. config.toml)
-    //   - the path exists but has incorrect permissions
-    // watchers will contain the paths we're actually watching
     let mut watchers = Vec::new();
     for (entry, watch_mode, recursive_mode) in watch_this {
         let watch_path = root_dir.join(entry);
@@ -523,88 +700,58 @@ pub fn serve(
         }
     }
 
-    let ws_port = site.live_reload;
-    let ws_address = format!("{}:{}", interface, ws_port.unwrap());
     let output_path = site.output_path.clone();
     create_directory(&output_path)?;
 
-    // static_root needs to be canonicalized because we do the same for the http server.
+    // static_root needs to be canonicalized
     let static_root = std::fs::canonicalize(&output_path).unwrap();
 
-    let broadcaster = {
-        thread::spawn(move || {
-            let rt = tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .expect("Could not build tokio runtime");
+    // Create broadcast channel for WebSocket live reload
+    let (reload_tx, _) = broadcast::channel::<String>(100);
+    let reload_tx_clone = reload_tx.clone();
 
-            rt.block_on(async {
-                let make_service = make_service_fn(move |_| {
-                    let static_root = static_root.clone();
-                    let base_path = base_path.clone();
+    // Setup tracing if verbose
+    if verbose {
+        tracing_subscriber::fmt().with_max_level(Level::DEBUG).init();
+    }
 
-                    async {
-                        Ok::<_, hyper::Error>(service_fn(move |req| {
-                            response_error_injector(handle_request(
-                                req,
-                                static_root.clone(),
-                                base_path.clone(),
-                            ))
-                        }))
-                    }
-                });
+    let app = create_router(
+        static_root.clone(),
+        base_path.clone(),
+        reload_tx.clone(),
+        Arc::new(site.config.clone()),
+        verbose,
+    );
 
-                let server = Server::bind(&bind_address).serve(make_service);
+    // Start Axum server in a separate thread
+    thread::spawn(move || {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("Could not build tokio runtime");
 
-                println!(
-                    "Web server is available at {} (bound to {})\n",
-                    &constructed_base_url
-                        .replace(&bind_address.to_string(), &server.local_addr().to_string()),
-                    &server.local_addr()
-                );
-                if open && let Err(err) = open::that(&constructed_base_url) {
-                    eprintln!("Failed to open URL in your browser: {err}");
-                }
+        rt.block_on(async {
+            let listener =
+                tokio::net::TcpListener::bind(bind_address).await.expect("Cannot bind to address");
 
-                server.await.expect("Could not start web server");
-            });
-        });
+            let local_addr = listener.local_addr().expect("Could not get local address");
 
-        // The websocket for livereload
-        let ws_server = WebSocket::new(|output: Sender| {
-            move |msg: Message| {
-                if msg.into_text().unwrap().contains("\"hello\"") {
-                    return output.send(Message::text(
-                        r#"
-                        {
-                            "command": "hello",
-                            "protocols": [ "http://livereload.com/protocols/official-7" ],
-                            "serverName": "Zola"
-                        }
-                    "#,
-                    ));
-                }
-                Ok(())
+            println!(
+                "Web server is available at {} (bound to {})\n",
+                &constructed_base_url.replace(&bind_address.to_string(), &local_addr.to_string()),
+                &local_addr
+            );
+
+            if open && let Err(err) = open::that(&constructed_base_url) {
+                eprintln!("Failed to open URL in your browser: {err}");
             }
-        })
-        .unwrap();
 
-        let broadcaster = ws_server.broadcaster();
-
-        let ws_server = ws_server
-            .bind(&*ws_address)
-            .map_err(|_| anyhow!("Cannot bind to address {} for the websocket server. Maybe the port is already in use?", &ws_address))?;
-
-        thread::spawn(move || {
-            ws_server.run().unwrap();
+            axum::serve(listener, app).await.expect("Could not start web server");
         });
+    });
 
-        broadcaster
-    };
+    let broadcaster = reload_tx_clone;
 
-    // We watch for changes in the config by monitoring its parent directory, but we ignore all
-    // ordinary peer files. Map the parent directory back to the config file name to not confuse
-    // the end user.
     let config_name =
         config_path.file_name().unwrap().to_str().expect("Config name is not valid UTF-8.");
     let watch_list = watchers
@@ -681,6 +828,7 @@ pub fn serve(
         }
     };
 
+    let ws_port = site.live_reload;
     let recreate_site = || match create_new_site(
         root_dir,
         interface,
@@ -730,7 +878,6 @@ pub fn serve(
                     if let Ok(time_str) = current_time {
                         println!("Change detected @ {time_str}");
                     } else {
-                        // if formatting fails for some reason
                         println!("Change detected");
                     };
 
@@ -757,8 +904,6 @@ pub fn serve(
                                         } else if filename.ends_with(".md") {
                                             site.add_and_render_page(full_path)
                                         } else {
-                                            // an asset changed? a folder renamed?
-                                            // should we make it smarter so it doesn't reload the whole site?
                                             Err(anyhow!("dummy"))
                                         };
 
@@ -773,11 +918,8 @@ pub fn serve(
                                                 &full_path.to_string_lossy(),
                                             );
                                         }
-                                    } else {
-                                        // Should we be smarter than that? Is it worth it?
-                                        if let Some(s) = recreate_site() {
-                                            site = s;
-                                        }
+                                    } else if let Some(s) = recreate_site() {
+                                        site = s;
                                     }
                                 } else if let Some(s) = recreate_site() {
                                     site = s;
@@ -800,7 +942,6 @@ pub fn serve(
                             let shortcodes_updated = partial_paths
                                 .iter()
                                 .any(|p| p.starts_with("/templates/shortcodes"));
-                            // Rebuild site if shortcodes change; otherwise, just update template.
                             if shortcodes_updated {
                                 if let Some(s) = recreate_site() {
                                     site = s;
@@ -820,7 +961,6 @@ pub fn serve(
                             reload_sass(&site, &full_paths);
                         }
                         ChangeKind::Themes => {
-                            // No need to iterate over change group since we're rebuilding the site.
                             console::info("-> Themes changed.");
 
                             if let Some(s) = recreate_site() {
@@ -828,7 +968,6 @@ pub fn serve(
                             }
                         }
                         ChangeKind::Config => {
-                            // No need to iterate over change group since we're rebuilding the site.
                             console::info(
                                 "-> Config changed. The browser needs to be refreshed to make the changes visible.",
                             );
@@ -849,7 +988,6 @@ pub fn serve(
                                 "-> {combined_paths} changed. Recreating whole site."
                             ));
 
-                            // We can't know exactly what to update when a user provides the path.
                             if let Some(s) = recreate_site() {
                                 site = s;
                             }
@@ -1021,8 +1159,6 @@ mod tests {
         let ws_port: Option<u16> = None;
         let expected_base_url = String::from("http://example.com");
 
-        // Note that no_port_append only works if we define a base_url
-
         create_and_verify_new_site(
             interface,
             interface_port,
@@ -1045,8 +1181,6 @@ mod tests {
         let ws_port: Option<u16> = None;
         let expected_base_url = String::from("https://example.com");
 
-        // Note that no_port_append only works if we define a base_url
-
         create_and_verify_new_site(
             interface,
             interface_port,
@@ -1067,8 +1201,6 @@ mod tests {
         let no_port_append = true;
         let ws_port: Option<u16> = None;
         let expected_base_url = String::from("https://example.com/path/to/site");
-
-        // Note that no_port_append only works if we define a base_url
 
         create_and_verify_new_site(
             interface,
@@ -1091,8 +1223,6 @@ mod tests {
         let no_port_append = false;
         let ws_port: Option<u16> = None;
         let expected_base_url = String::from("https://example.com:1111/path/to/site");
-
-        // Note that no_port_append only works if we define a base_url
 
         create_and_verify_new_site(
             interface,
