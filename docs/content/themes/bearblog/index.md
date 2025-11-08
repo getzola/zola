@@ -3,19 +3,19 @@
 title = "Bear"
 description = "Bear blog theme"
 template = "theme.html"
-date = 2025-08-26T11:42:33+02:00
+date = 2025-10-18T20:31:47+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-08-26T11:42:33+02:00
-updated = 2025-08-26T11:42:33+02:00
+created = 2025-10-18T20:31:47+02:00
+updated = 2025-10-18T20:31:47+02:00
 repository = "https://codeberg.org/alanpearce/zola-bearblog.git"
 homepage = "https://codeberg.org/alanpearce/zola-bearblog"
 minimum_version = "0.4.0"
 license = "MIT"
-demo = "https://zola-bearblog.vercel.app/"
+demo = "https://zola-bearblog.alanpearce.eu/"
 
 [extra.author]
 name = "Alan Pearce"
@@ -24,7 +24,9 @@ homepage = "https://alanpearce.eu"
 
 # Zola ʕ•ᴥ•ʔ Bear Blog
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/121b53ce-c913-4604-9179-eb3cca31cd2c/deploy-status)](https://app.netlify.com/sites/zola-bearblog/deploys)
+[![Netlify Deploy](http://img.shields.io/netlify/121b53ce-c913-4604-9179-eb3cca31cd2c?logo=netlify)](https://app.netlify.com/sites/zola-bearblog/deploys)
+[![Forgejo Actions Status](https://codeberg.org/alanpearce/zola-bearblog/badges/workflows/zola.yaml/badge.svg)](https://codeberg.org/alanpearce/zola-bearblog/actions)
+[![Gitlab Pipeline Status](https://gitlab.com/alanpearce/zola-bearblog/badges/main/pipeline.svg)](https://gitlab.com/alanpearce/zola-bearblog/-/commits/main)
 
 🧸 A [Zola](https://www.getzola.org/)-theme based on [Bear Blog](https://bearblog.dev).
 
@@ -32,10 +34,18 @@ homepage = "https://alanpearce.eu"
 
 ## Demo
 
-This theme has multiple demo sites, to provide examples of how to set up deployment
-- [Vercel](https://zola-bearblog.vercel.app/)
+This theme has multiple demo sites, to provide examples of how to set up deployment.
+
+### Recommended
+
 - [Netlify](https://zola-bearblog.netlify.app/)
+- [Grebedoc](https://alanpearce.grebedoc.dev/zola-bearblog/)
+- [Codeberg Pages](https://alanpearce.codeberg.page/zola-bearblog/)
 - [Gitlab Pages](https://alanpearce.gitlab.io/zola-bearblog)
+
+### Not recommended
+
+These providers' build environments aren't yet compatible with Zola 0.21.0.
 - [Cloudflare Pages](https://zola-bearblog.pages.dev/)
 
 ## Screenshot
@@ -99,7 +109,7 @@ The contents of the `index`-page may be changed by editing your `content/_index.
 
 ### Adding your branding / colors / css
 
-Add a `custom_head.html`-file to your `templates/`-directory. In there you may add a `<style>`-tag, *or* you may add a `<link>`-tag referencing your own `custom.css` (in case you prefer to have a separate `.css`-file). Check out the [`style.html`](https://codeberg.org/alanpearce/zola-bearblog/src/branch/main/templates/style.html)-file to find out which CSS-styles are applied by default.
+Add a `custom_head.html`-file to your `templates/`-directory. In there you may add a `<style>`-tag, *or* you may add a `<link>`-tag referencing your own `custom.css` (in case you prefer to have a separate `.css`-file). Check out the [`style.html`](https://codeberg.org/alanpearce/zola-bearblog/src/branch/main/templates/style.css.html)-file to find out which CSS-styles are applied by default.
 
 ### Table of contents
 

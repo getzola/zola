@@ -3,14 +3,14 @@
 title = "apollo"
 description = "Modern and minimalistic blog theme"
 template = "theme.html"
-date = 2025-09-08T22:33:37+02:00
+date = 2025-11-04T18:00:58+07:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-09-08T22:33:37+02:00
-updated = 2025-09-08T22:33:37+02:00
+created = 2025-11-04T18:00:58+07:00
+updated = 2025-11-04T18:00:58+07:00
 repository = "https://github.com/not-matthias/apollo.git"
 homepage = "https://github.com/not-matthias/apollo"
 minimum_version = "0.14.0"
@@ -58,6 +58,7 @@ Modern and minimalistic blog theme powered by [Zola](https://getzola.org). See a
 - [x] RSS feeds
 - [x] Mermaid diagram support
 - [x] Table of Contents
+- [x] Configurable cards layout
 
 ## Installation
 
