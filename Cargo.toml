@@ -53,6 +53,8 @@ rust-tls = ["libs/rust-tls"]
 native-tls = ["libs/native-tls"]
 indexing-zh = ["libs/indexing-zh"]
 indexing-ja = ["libs/indexing-ja"]
+gzip = ["site/gzip"]
+brotli = ["site/brotli"]
 
 [workspace]
 members = ["components/*"]

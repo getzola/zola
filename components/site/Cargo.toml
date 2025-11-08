@@ -20,6 +20,14 @@ link_checker = { path = "../link_checker" }
 libs = { path = "../libs" }
 content = { path = "../content" }
 
+# Optional compression dependencies
+flate2 = { version = "1", optional = true }
+brotli = { version = "7", optional = true }
+
+[features]
+gzip = ["dep:flate2"]
+brotli = ["dep:brotli"]
+
 [dev-dependencies]
 tempfile = "3"
 path-slash = "0.2"

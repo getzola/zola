@@ -104,6 +104,8 @@ mod tests {
 
         MiddlewareContext {
             content,
+            binary_content: None,
+            compressed_extension: None,
             metadata: super::super::ContentMetadata {
                 path: PathBuf::from("test.md"),
                 components: vec!["test".to_string()],

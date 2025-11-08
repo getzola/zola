@@ -11,6 +11,7 @@ pub use avif_parse;
 pub use base64;
 pub use chrono;
 pub use csv;
+pub use dashmap;
 pub use elasticlunr;
 pub use filetime;
 pub use gh_emoji;

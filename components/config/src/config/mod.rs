@@ -36,6 +36,13 @@ pub enum ExcludePaginatedPagesInSitemap {
     All,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Compression {
+    Gzip,
+    Brotli,
+}
+
 #[derive(Clone, Debug, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
@@ -76,6 +83,10 @@ pub struct Config {
     pub compile_sass: bool,
     /// Whether to minify the html output
     pub minify_html: bool,
+    /// Whether to compress output files
+    pub compress: bool,
+    /// Compression algorithm to use (gzip or brotli)
+    pub compression: Compression,
     /// Whether to build the search index for the content
     pub build_search_index: bool,
     /// A list of file glob patterns to ignore when processing the content folder. Defaults to none.
@@ -417,6 +428,8 @@ impl Default for Config {
             author: None,
             compile_sass: false,
             minify_html: false,
+            compress: false,
+            compression: Compression::Gzip,
             mode: Mode::Build,
             build_search_index: false,
             ignored_content: Vec::new(),

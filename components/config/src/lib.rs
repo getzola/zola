@@ -5,6 +5,7 @@ mod theme;
 use std::path::Path;
 
 pub use crate::config::{
+    Compression,
     Config,
     languages::LanguageOptions,
     link_checker::LinkChecker,

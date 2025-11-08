@@ -6,9 +6,11 @@ use derive_builder::Builder;
 use config::Config;
 use errors::Result;
 
+mod compress;
 mod livereload;
 mod minify;
 
+pub use compress::CompressionMiddleware;
 pub use livereload::LiveReloadMiddleware;
 pub use minify::MinifyMiddleware;
 
@@ -25,6 +27,12 @@ pub trait Middleware: Send + Sync {
 pub struct MiddlewareContext {
     /// The rendered content to be processed
     pub content: String,
+
+    /// Binary content (for compressed output)
+    pub binary_content: Option<Vec<u8>>,
+
+    /// Compressed file extension (e.g., ".gz" or ".br")
+    pub compressed_extension: Option<String>,
 
     /// Metadata about the content being processed
     pub metadata: ContentMetadata,

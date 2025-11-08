@@ -15,6 +15,7 @@ use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
+use libs::dashmap::DashMap;
 use libs::once_cell::sync::Lazy;
 use libs::rayon::prelude::*;
 use libs::tera::{Context, Tera};
@@ -33,8 +34,14 @@ use utils::net::{get_available_port, is_external_link};
 use utils::templates::ShortcodeDefinition;
 use utils::types::InsertAnchor;
 
-pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
-    Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
+#[derive(Clone, Debug)]
+pub enum ContentData {
+    Text(String),
+    Binary(Vec<u8>),
+}
+
+pub static SITE_CONTENT: Lazy<DashMap<RelativePathBuf, ContentData>> =
+    Lazy::new(DashMap::new);
 
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -125,7 +132,7 @@ impl Site {
 
     /// Enable some `zola serve` related options
     pub fn enable_serve_mode(&mut self, build_mode: BuildMode) {
-        SITE_CONTENT.write().unwrap().clear();
+        SITE_CONTENT.clear();
         self.config.enable_serve_mode();
         self.build_mode = build_mode;
     }
@@ -644,7 +651,7 @@ impl Site {
 
     /// Create a rendering pipeline with configured middleware
     fn create_pipeline(&self) -> pipeline::Pipeline {
-        use middleware::{LiveReloadMiddleware, MinifyMiddleware};
+        use middleware::{CompressionMiddleware, LiveReloadMiddleware, MinifyMiddleware};
 
         let mut middleware_chain: Vec<Box<dyn middleware::Middleware>> = Vec::new();
 
@@ -656,6 +663,11 @@ impl Site {
         // Add minification middleware if enabled
         if self.config.minify_html {
             middleware_chain.push(Box::new(MinifyMiddleware::new()));
+        }
+
+        // Add compression middleware if enabled
+        if self.config.compress {
+            middleware_chain.push(Box::new(CompressionMiddleware::new(self.config.compression)));
         }
 
         let writer =
@@ -704,7 +716,7 @@ impl Site {
                 let site_path =
                     if filename != "index.html" { site_path.join(filename) } else { site_path };
 
-                SITE_CONTENT.write().unwrap().insert(site_path, content);
+                SITE_CONTENT.insert(site_path, ContentData::Text(content));
             }
             _ => (),
         }

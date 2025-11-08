@@ -47,7 +47,7 @@ use ws::{Message, Sender, WebSocket};
 
 use errors::{Context, Error, Result, anyhow};
 use site::sass::compile_sass;
-use site::{BuildMode, SITE_CONTENT, Site};
+use site::{BuildMode, ContentData, SITE_CONTENT, Site};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
 use crate::fs_utils::{ChangeKind, SimpleFileSystemEventKind, filter_events};
@@ -120,8 +120,8 @@ async fn handle_request(
         }
     }
 
-    if let Some(content) = SITE_CONTENT.read().unwrap().get(&path) {
-        return Ok(in_memory_content(&path, content));
+    if let Some(content_data) = SITE_CONTENT.get(&path) {
+        return Ok(in_memory_content(&path, content_data.value()));
     }
 
     // Handle only `GET`/`HEAD` requests
@@ -242,21 +242,35 @@ fn livereload_js() -> Response<Body> {
         .expect("Could not build livereload.js response")
 }
 
-fn in_memory_content(path: &RelativePathBuf, content: &str) -> Response<Body> {
-    let content_type = match path.extension() {
-        Some(ext) => match ext {
-            "xml" => "text/xml",
-            "json" => "application/json",
-            "txt" => "text/plain",
-            _ => "text/html",
-        },
-        None => "text/html",
-    };
-    Response::builder()
-        .header(header::CONTENT_TYPE, content_type)
-        .status(StatusCode::OK)
-        .body(content.to_owned().into())
-        .expect("Could not build HTML response")
+fn in_memory_content(path: &RelativePath, content_data: &ContentData) -> Response<Body> {
+    match content_data {
+        ContentData::Text(s) => {
+            let content_type = match path.extension() {
+                Some(ext) => match ext {
+                    "xml" => "text/xml",
+                    "json" => "application/json",
+                    "txt" => "text/plain",
+                    _ => "text/html",
+                },
+                None => "text/html",
+            };
+            Response::builder()
+                .header(header::CONTENT_TYPE, content_type)
+                .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                .status(StatusCode::OK)
+                .body(Body::from(s.clone()))
+                .expect("Could not build response")
+        }
+        ContentData::Binary(b) => {
+            let mime_type = mimetype_from_path(path.as_str()).first_or_octet_stream();
+            Response::builder()
+                .header(header::CONTENT_TYPE, mime_type.essence_str())
+                .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                .status(StatusCode::OK)
+                .body(Body::from(b.clone()))
+                .expect("Could not build response")
+        }
+    }
 }
 
 fn method_not_allowed() -> Response<Body> {
@@ -279,13 +293,16 @@ fn io_error(err: std::io::Error) -> Response<Body> {
 
 fn not_found() -> Response<Body> {
     let not_found_path = RelativePath::new("404.html");
-    let content = SITE_CONTENT.read().unwrap().get(not_found_path).cloned();
 
-    if let Some(body) = content {
+    if let Some(content_data) = SITE_CONTENT.get(not_found_path) {
+        let body = match content_data.value() {
+            ContentData::Text(s) => Body::from(s.clone()),
+            ContentData::Binary(b) => Body::from(b.clone()),
+        };
         return Response::builder()
             .header(header::CONTENT_TYPE, "text/html")
             .status(StatusCode::NOT_FOUND)
-            .body(body.into())
+            .body(body)
             .expect("Could not build Not Found response");
     }
 
@@ -368,7 +385,7 @@ fn create_new_site(
     mut no_port_append: bool,
     ws_port: Option<u16>,
 ) -> Result<(Site, SocketAddr, String)> {
-    SITE_CONTENT.write().unwrap().clear();
+    SITE_CONTENT.clear();
 
     let mut site = Site::new(root_dir, config_file)?;
     let address = SocketAddr::new(interface, interface_port);
