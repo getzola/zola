@@ -111,6 +111,24 @@ To format a number for a specific locale, you can use the `locale` argument and 
 <!-- 10,00,000 -->
 ```
 
+### before
+Filters an array of pages/sections to keep only items with a `date` field before the specified date.  Items without a `date` field are excluded.
+
+```jinja2
+{% for page in section.pages | before(date="2020-03-10") %}
+  <h2>{{ page.title }}</h2>
+{% endfor %}
+```
+
+### after
+Filters an array of pages/sections to keep only items with a `date` field on or after the specified date.  Items without a `date` field are excluded.
+
+```jinja2
+{% for page in section.pages | after(date="2020-03-10") %}
+  <h2>{{ page.title }}</h2>
+{% endfor %}
+```
+
 ## Built-in functions
 
 Zola adds a few Tera functions to [those built-in in Tera](https://keats.github.io/tera/docs#built-in-functions)
