@@ -164,6 +164,80 @@ impl TeraFilter for NumFormatFilter {
     }
 }
 
+pub fn before(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
+    let date_str = try_get_value!("before", "value", String, value);
+    let threshold_str = match args.get("date") {
+        Some(val) => try_get_value!("before", "date", String, val),
+        None => return Err(TeraError::msg("Filter `before` expected an arg called `date`")),
+    };
+
+    let item_date = parse_filter_date(&date_str)
+        .ok_or_else(|| TeraError::msg(format!("Filter `before`: invalid date '{}'", date_str)))?;
+    let threshold_date = parse_filter_date(&threshold_str).ok_or_else(|| {
+        TeraError::msg(format!("Filter `before`: invalid date '{}'", threshold_str))
+    })?;
+
+    let inclusive = args.get("inclusive").and_then(Value::as_bool).unwrap_or(false);
+    let result = if inclusive { item_date <= threshold_date } else { item_date < threshold_date };
+    Ok(to_value(result).unwrap())
+}
+
+pub fn after(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
+    filter_by_date(value, args, "after", |item_date, threshold| item_date >= threshold)
+}
+
+fn filter_by_date(
+    value: &Value,
+    args: &HashMap<String, Value>,
+    dir: &str,
+    compare: impl Fn(&str, &str) -> bool,
+) -> TeraResult<Value> {
+    let date_str = match args.get("date") {
+        Some(val) => try_get_value!(dir, "date", String, val),
+        None => {
+            return Err(TeraError::msg(format!("Filter `{}` expected an arg called `date`", dir)));
+        }
+    };
+
+    let threshold_date = parse_filter_date(&date_str).ok_or_else(|| {
+        TeraError::msg(format!(
+            "Filter `{}`: invalid date format '{}'. Expected YYYY-MM-DD or RFC3339.",
+            dir, date_str
+        ))
+    })?;
+
+    let items = value
+        .as_array()
+        .ok_or_else(|| TeraError::msg(format!("Filter `{}` expected an array", dir)))?;
+
+    let filtered: Vec<Value> = items
+        .iter()
+        .filter(|item| {
+            item.as_object()
+                .and_then(|obj| obj.get("date"))
+                .and_then(Value::as_str)
+                .and_then(parse_filter_date)
+                .map(|item_date| compare(&item_date, &threshold_date))
+                .unwrap_or(false)
+        })
+        .cloned()
+        .collect();
+
+    Ok(to_value(filtered).unwrap())
+}
+
+fn parse_filter_date(date_str: &str) -> Option<String> {
+    use libs::time::Date;
+    use libs::time::format_description::well_known::Iso8601;
+
+    let date = libs::time::OffsetDateTime::parse(date_str, &Iso8601::DEFAULT)
+        .ok()
+        .map(|dt| dt.date())
+        .or_else(|| Date::parse(date_str, &Iso8601::DATE).ok())?;
+
+    Some(format!("{:04}-{:02}-{:02}", date.year(), date.month() as u8, date.day()))
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -363,5 +437,63 @@ mod tests {
             assert!(result.is_ok());
             assert_eq!(result.unwrap(), to_value(expected).unwrap());
         }
+    }
+
+    #[test]
+    fn before_filter() {
+        use libs::serde_json::json;
+        let pages = vec![
+            json!({ "date": "2023-12-01T12:00:00Z" }),
+            json!({ "date": "2024-01-01" }),
+            json!({ "date": "2024-03-01" }),
+            json!({ "date": "2024-05-01T12:00:00Z" }),
+            json!({}),
+        ];
+        let [dec2023, jan2024, mar2024, may2024, none] = &pages[..] else { unreachable!() };
+
+        let mut args = HashMap::new();
+        args.insert("date".to_string(), to_value("2024-03-01").unwrap());
+
+        let result = super::before(&to_value(&pages).unwrap(), &args);
+        assert!(result.is_ok());
+
+        let filtered = result.unwrap();
+        let filtered_array = filtered.as_array().unwrap();
+
+        assert_eq!(filtered_array.len(), 2);
+        assert!(filtered_array.contains(dec2023));
+        assert!(filtered_array.contains(jan2024));
+        assert!(!filtered_array.contains(mar2024));
+        assert!(!filtered_array.contains(may2024));
+        assert!(!filtered_array.contains(none));
+    }
+
+    #[test]
+    fn after_filter() {
+        use libs::serde_json::json;
+        let pages = vec![
+            json!({ "date": "2023-12-01T12:00:00Z" }),
+            json!({ "date": "2024-01-01" }),
+            json!({ "date": "2024-03-01" }),
+            json!({ "date": "2024-05-01T12:00:00Z" }),
+            json!({}),
+        ];
+        let [dec2023, jan2024, mar2024, may2024, none] = &pages[..] else { unreachable!() };
+
+        let mut args = HashMap::new();
+        args.insert("date".to_string(), to_value("2024-03-01").unwrap());
+
+        let result = super::after(&to_value(&pages).unwrap(), &args);
+        assert!(result.is_ok());
+
+        let filtered = result.unwrap();
+        let filtered_array = filtered.as_array().unwrap();
+
+        assert_eq!(filtered_array.len(), 2);
+        assert!(!filtered_array.contains(dec2023));
+        assert!(!filtered_array.contains(jan2024));
+        assert!(filtered_array.contains(mar2024));
+        assert!(filtered_array.contains(may2024));
+        assert!(!filtered_array.contains(none));
     }
 }
