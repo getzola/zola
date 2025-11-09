@@ -666,7 +666,8 @@ impl Site {
 
         // Add compression middleware if enabled
         if self.config.compress {
-            middleware_chain.push(Box::new(CompressionMiddleware::new(self.config.compression)));
+            middleware_chain
+                .push(Box::new(CompressionMiddleware::new(self.config.compression.clone())));
         }
 
         let writer =

@@ -3,9 +3,10 @@ use std::sync::{Arc, RwLock};
 use config::Config;
 use content::Library;
 use errors::Result;
+use libs::rayon::prelude::*;
 use libs::tera::Tera;
 
-use super::middleware::{Middleware, MiddlewareContext};
+use super::middleware::{Middleware, OutputData, OutputPackage};
 use super::renderable::Renderable;
 use super::writer::ContentWriter;
 
@@ -37,29 +38,19 @@ impl Pipeline {
         // Step 2: Get metadata
         let metadata = renderable.metadata();
 
-        // Step 3: Create middleware context
-        let mut ctx = MiddlewareContext {
-            content,
-            binary_content: None,
-            compressed_extension: None,
-            metadata: metadata.clone(),
-            config: self.config.clone(),
-        };
+        // Step 3: Create output package with primary output
+        let mut package = OutputPackage::new(content, metadata, self.config.clone());
 
         // Step 4: Apply middleware chain
         for mw in &self.middleware {
-            mw.process(&mut ctx)?;
+            mw.process(&mut package)?;
         }
 
-        // Step 5: Return processed content with write capability
-        Ok(ProcessedContent {
-            content: ctx.content,
-            binary_content: ctx.binary_content,
-            compressed_extension: ctx.compressed_extension,
-            components: ctx.metadata.components,
-            filename: ctx.metadata.filename,
-            writer: self.writer.clone(),
-        })
+        // Step 5: Extract outputs from package
+        let outputs = package.outputs.into_iter().collect();
+
+        // Step 6: Return processed content with write capability
+        Ok(ProcessedContent { outputs, writer: self.writer.clone() })
     }
 
     /// Replace the middleware chain
@@ -71,51 +62,110 @@ impl Pipeline {
 
 /// Processed content ready to be written
 pub struct ProcessedContent {
-    content: String,
-    binary_content: Option<Vec<u8>>,
-    compressed_extension: Option<String>,
-    components: Vec<String>,
-    filename: String,
+    outputs: Vec<(super::middleware::OutputKey, super::middleware::Output)>,
     writer: Arc<ContentWriter>,
 }
 
 impl ProcessedContent {
-    /// Write to the default destination (from metadata)
+    /// Write all outputs to their destinations
+    /// Skips virtual outputs (those with is_virtual=true)
     pub fn write(self) -> Result<()> {
-        let components_refs: Vec<String> = self.components.clone();
-        // Write original content
-        self.writer.write(&components_refs, &self.filename, &self.content)?;
-
-        // Write compressed version if present
-        if let (Some(binary_content), Some(extension)) =
-            (self.binary_content, self.compressed_extension)
-        {
-            let compressed_filename = format!("{}{}", self.filename, extension);
-            self.writer.write_binary(&components_refs, &compressed_filename, &binary_content)?;
-        }
-
-        Ok(())
+        self.outputs
+            .into_par_iter()
+            .filter(|(_, output)| !output.tags.is_virtual)
+            .map(|(key, output)| match output.data {
+                OutputData::Text(content) => {
+                    self.writer.write(&key.components, &key.filename, &content)
+                }
+                OutputData::Binary(content) => {
+                    self.writer.write_binary(&key.components, &key.filename, &content)
+                }
+            })
+            .collect()
     }
 
-    /// Write to a custom destination
-    pub fn write_to(self, components: &[&str], filename: &str) -> Result<()> {
-        let components_owned: Vec<String> = components.iter().map(|s| s.to_string()).collect();
-        // Write original content
-        self.writer.write(&components_owned, filename, &self.content)?;
-
-        // Write compressed version if present
-        if let (Some(binary_content), Some(extension)) =
-            (self.binary_content, self.compressed_extension)
-        {
-            let compressed_filename = format!("{}{}", filename, extension);
-            self.writer.write_binary(&components_owned, &compressed_filename, &binary_content)?;
-        }
-
-        Ok(())
+    /// Get the primary output content without writing (for testing/inspection)
+    pub fn primary_content(&self) -> Option<String> {
+        self.outputs
+            .iter()
+            .find(|(_, output)| output.tags.is_primary)
+            .and_then(|(_, output)| output.data.as_text().map(|s| s.to_string()))
     }
 
-    /// Get the content without writing
-    pub fn into_string(self) -> String {
-        self.content
+    /// Get all output keys (for testing/inspection)
+    #[cfg(test)]
+    pub fn output_keys(&self) -> Vec<super::middleware::OutputKey> {
+        self.outputs.iter().map(|(key, _)| key.clone()).collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::middleware::{
+        ContentMetadata, ContentType, Output, OutputData, OutputPackage, OutputTags,
+    };
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_virtual_outputs_not_written() {
+        use tempfile::TempDir;
+
+        let temp_dir = TempDir::new().unwrap();
+        let output_path = temp_dir.path().to_path_buf();
+
+        // Create a simple output package with a virtual output
+        let metadata = ContentMetadata {
+            path: PathBuf::from("test.md"),
+            components: vec!["test".to_string()],
+            filename: "index.html".to_string(),
+            template_name: "page.html".to_string(),
+            content_type: ContentType::Html,
+            language: "en".to_string(),
+            permalink: "http://example.com/test/".to_string(),
+        };
+
+        let package = OutputPackage::new(
+            "Primary content".to_string(),
+            metadata,
+            Arc::new(config::Config::default_for_test()),
+        );
+
+        // Add a regular output
+        package.add(
+            "extra.html",
+            Output {
+                data: OutputData::Text("Extra content".to_string()),
+                content_type: ContentType::Html,
+                tags: OutputTags { is_derived: true, ..Default::default() },
+            },
+        );
+
+        // Add a virtual output
+        package.add_virtual(
+            "virtual.json",
+            Output {
+                data: OutputData::Text("Virtual content".to_string()),
+                content_type: ContentType::Json,
+                tags: OutputTags::default(),
+            },
+        );
+
+        // Create writer and processed content
+        let writer = Arc::new(ContentWriter::new(crate::BuildMode::Disk, output_path.clone()));
+        let outputs: Vec<_> = package.outputs.into_iter().collect();
+        let processed = ProcessedContent { outputs, writer };
+
+        // Write outputs
+        processed.write().unwrap();
+
+        // Verify primary output was written
+        assert!(output_path.join("test").join("index.html").exists());
+
+        // Verify regular derived output was written
+        assert!(output_path.join("test").join("extra.html").exists());
+
+        // Verify virtual output was NOT written
+        assert!(!output_path.join("test").join("virtual.json").exists());
     }
 }

@@ -85,8 +85,8 @@ pub struct Config {
     pub minify_html: bool,
     /// Whether to compress output files
     pub compress: bool,
-    /// Compression algorithm to use (gzip or brotli)
-    pub compression: Compression,
+    /// Compression algorithms to use (can include both gzip and brotli)
+    pub compression: Vec<Compression>,
     /// Whether to build the search index for the content
     pub build_search_index: bool,
     /// A list of file glob patterns to ignore when processing the content folder. Defaults to none.
@@ -429,7 +429,7 @@ impl Default for Config {
             compile_sass: false,
             minify_html: false,
             compress: false,
-            compression: Compression::Gzip,
+            compression: vec![Compression::Brotli],
             mode: Mode::Build,
             build_search_index: false,
             ignored_content: Vec::new(),

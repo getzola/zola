@@ -4,7 +4,7 @@ compile_sass = true
 generate_feeds = true
 theme = "sample"
 compress = true
-compression = "brotli"
+compression = ["brotli", "gzip"]
 
 
 taxonomies = [
