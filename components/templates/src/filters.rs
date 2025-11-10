@@ -183,7 +183,13 @@ pub fn before(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value>
 }
 
 pub fn after(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
-    filter_by_date(value, args, "after", |item_date, threshold| item_date >= threshold)
+    let inclusive = args.get("inclusive").and_then(Value::as_bool).unwrap_or(false);
+    filter_by_date(
+        value,
+        args,
+        "after",
+        if inclusive { |d: &str, t: &str| d >= t } else { |d: &str, t: &str| d > t },
+    )
 }
 
 fn filter_by_date(
@@ -456,16 +462,24 @@ mod tests {
 
         let result = super::before(&to_value(&pages).unwrap(), &args);
         assert!(result.is_ok());
+        let filtered = result.unwrap().as_array().unwrap().clone();
+        assert_eq!(filtered.len(), 2);
+        assert!(filtered.contains(dec2023));
+        assert!(filtered.contains(jan2024));
+        assert!(!filtered.contains(mar2024));
+        assert!(!filtered.contains(may2024));
+        assert!(!filtered.contains(none));
 
-        let filtered = result.unwrap();
-        let filtered_array = filtered.as_array().unwrap();
-
-        assert_eq!(filtered_array.len(), 2);
-        assert!(filtered_array.contains(dec2023));
-        assert!(filtered_array.contains(jan2024));
-        assert!(!filtered_array.contains(mar2024));
-        assert!(!filtered_array.contains(may2024));
-        assert!(!filtered_array.contains(none));
+        args.insert("inclusive".to_string(), to_value(true).unwrap());
+        let result = super::before(&to_value(&pages).unwrap(), &args);
+        assert!(result.is_ok());
+        let filtered = result.unwrap().as_array().unwrap().clone();
+        assert_eq!(filtered.len(), 3);
+        assert!(filtered.contains(dec2023));
+        assert!(filtered.contains(jan2024));
+        assert!(filtered.contains(mar2024));
+        assert!(!filtered.contains(may2024));
+        assert!(!filtered.contains(none));
     }
 
     #[test]
@@ -485,15 +499,23 @@ mod tests {
 
         let result = super::after(&to_value(&pages).unwrap(), &args);
         assert!(result.is_ok());
+        let filtered = result.unwrap().as_array().unwrap().clone();
+        assert_eq!(filtered.len(), 1);
+        assert!(!filtered.contains(dec2023));
+        assert!(!filtered.contains(jan2024));
+        assert!(!filtered.contains(mar2024));
+        assert!(filtered.contains(may2024));
+        assert!(!filtered.contains(none));
 
-        let filtered = result.unwrap();
-        let filtered_array = filtered.as_array().unwrap();
-
-        assert_eq!(filtered_array.len(), 2);
-        assert!(!filtered_array.contains(dec2023));
-        assert!(!filtered_array.contains(jan2024));
-        assert!(filtered_array.contains(mar2024));
-        assert!(filtered_array.contains(may2024));
-        assert!(!filtered_array.contains(none));
+        args.insert("inclusive".to_string(), to_value(true).unwrap());
+        let result = super::after(&to_value(&pages).unwrap(), &args);
+        assert!(result.is_ok());
+        let filtered = result.unwrap().as_array().unwrap().clone();
+        assert_eq!(filtered.len(), 2);
+        assert!(!filtered.contains(dec2023));
+        assert!(!filtered.contains(jan2024));
+        assert!(filtered.contains(mar2024));
+        assert!(filtered.contains(may2024));
+        assert!(!filtered.contains(none));
     }
 }

@@ -114,17 +114,31 @@ To format a number for a specific locale, you can use the `locale` argument and 
 ### before
 Filters an array of pages/sections to keep only items with a `date` field before the specified date.  Items without a `date` field are excluded.
 
+By default, the filter is exclusive (items matching the date are excluded). Set `inclusive=true` to include items matching the date.
+
 ```jinja2
 {% for page in section.pages | before(date="2020-03-10") %}
+  <h2>{{ page.title }}</h2>
+{% endfor %}
+
+{# Include pages from 2020-03-10 and earlier #}
+{% for page in section.pages | before(date="2020-03-10", inclusive=true) %}
   <h2>{{ page.title }}</h2>
 {% endfor %}
 ```
 
 ### after
-Filters an array of pages/sections to keep only items with a `date` field on or after the specified date.  Items without a `date` field are excluded.
+Filters an array of pages/sections to keep only items with a `date` field after the specified date.  Items without a `date` field are excluded.
+
+By default, the filter is exclusive (items matching the date are excluded). Set `inclusive=true` to include items matching the date.
 
 ```jinja2
 {% for page in section.pages | after(date="2020-03-10") %}
+  <h2>{{ page.title }}</h2>
+{% endfor %}
+
+{# Include pages from 2020-03-10 and later #}
+{% for page in section.pages | after(date="2020-03-10", inclusive=true) %}
   <h2>{{ page.title }}</h2>
 {% endfor %}
 ```
