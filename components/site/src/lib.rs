@@ -78,6 +78,8 @@ pub struct Site {
     include_drafts: bool,
     build_mode: BuildMode,
     shortcode_definitions: HashMap<String, ShortcodeDefinition>,
+    /// Registry for shortcode templates and rendering
+    pub shortcode_registry: Arc<utils::shortcode_registry::ShortcodeRegistry>,
     /// Whether to check external links
     check_external_links: bool,
 }
@@ -95,8 +97,29 @@ impl Site {
             config.merge_with_theme(path.join("themes").join(&theme).join("theme.toml"), &theme)?;
         }
 
-        let tera = load_tera(path, &config)?;
+        let mut tera = load_tera(path, &config)?;
         let shortcode_definitions = utils::templates::get_shortcodes(&tera);
+
+        // Register markdown filter before creating ShortcodeRegistry
+        // so that computed HTML templates can use it
+        tera.register_filter(
+            "markdown",
+            templates::filters::MarkdownFilter::new(
+                config.clone(),
+                HashMap::new(), // Empty permalinks for now, will be populated during build
+                tera.clone(),
+            ),
+        );
+
+        // Create shortcode registry and register functions
+        let shortcode_registry = Arc::new(
+            utils::shortcode_registry::ShortcodeRegistry::new(&mut tera).map_err(|e| {
+                anyhow!("Failed to create shortcode registry: {}", e)
+            })?,
+        );
+
+        // Register shortcodes as Tera functions for use in templates
+        tpls::register_shortcode_functions(&mut tera, shortcode_registry.clone())?;
 
         let content_path = path.join("content");
         let sass_path = path.join("sass");
@@ -123,6 +146,7 @@ impl Site {
             library: Arc::new(RwLock::new(Library::default())),
             build_mode: BuildMode::Disk,
             shortcode_definitions,
+            shortcode_registry,
             check_external_links: true,
         };
 

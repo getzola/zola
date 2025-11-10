@@ -1,0 +1,15 @@
+{% if page %}
+<div class="page-info">
+  <span class="page-title">{{ page.title }}</span>
+  {% if page.reading_time %}
+  <span class="reading-time">📖 {{ page.reading_time }} min</span>
+  {% endif %}
+  {% if page.word_count %}
+  <span class="word-count">📝 {{ page.word_count }} words</span>
+  {% endif %}
+</div>
+{% else %}
+<div class="page-info">
+  <em>Page information not available</em>
+</div>
+{% endif %}

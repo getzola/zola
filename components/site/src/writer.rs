@@ -40,8 +40,7 @@ impl ContentWriter {
         // Write to memory if needed
         match self.mode {
             BuildMode::Memory | BuildMode::Both => {
-                let site_path =
-                    if filename != "index.html" { site_path.join(filename) } else { site_path };
+                let site_path = site_path.join(filename);
 
                 SITE_CONTENT.insert(site_path, ContentData::Text(content.to_string()));
             }
@@ -79,8 +78,7 @@ impl ContentWriter {
         // Write to memory if needed
         match self.mode {
             BuildMode::Memory | BuildMode::Both => {
-                let site_path =
-                    if filename != "index.html" { site_path.join(filename) } else { site_path };
+                let site_path = site_path.join(filename);
 
                 SITE_CONTENT.insert(site_path, ContentData::Binary(content.to_vec()));
             }

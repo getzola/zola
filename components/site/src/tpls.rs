@@ -2,6 +2,8 @@ use crate::Site;
 use libs::tera::Result as TeraResult;
 use std::sync::Arc;
 use templates::{filters, global_fns};
+use utils::shortcode_fn::ShortcodeFunction;
+use utils::shortcode_registry::ShortcodeRegistry;
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
 pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
@@ -116,4 +118,22 @@ pub fn register_tera_global_fns(site: &mut Site) {
             site.library.clone(),
         ),
     );
+}
+
+/// Register all shortcodes as Tera functions
+/// This allows shortcodes to be called in regular Tera templates like {{ youtube(id="abc") }}
+pub fn register_shortcode_functions(
+    tera: &mut libs::tera::Tera,
+    registry: Arc<ShortcodeRegistry>,
+) -> TeraResult<()> {
+    // Get all shortcode names from the registry
+    for shortcode_name in registry.shortcode_names() {
+        // Create a function for this shortcode
+        let function = ShortcodeFunction::new(shortcode_name.clone(), registry.clone());
+
+        // Register it as a Tera function
+        tera.register_function(&shortcode_name, function);
+    }
+
+    Ok(())
 }

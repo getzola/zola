@@ -125,12 +125,25 @@ async fn serve_file(
         path.push(c);
     }
 
-    // Normalize empty path or directory paths to index.html
-    // This ensures we look for index.html.br instead of .br
+    // Normalize empty path or directory paths
+    // When a path ends with '/', we need to handle index.html lookups
+    // For SITE_CONTENT (memory), index.html files are stored without the filename
+    // For compressed variants, we need the full path with index.html
     let normalized_path = if path.as_str().is_empty() || path.as_str().ends_with('/') {
         let mut index_path = path.clone();
         index_path.push("index.html");
         index_path
+    } else {
+        path.clone()
+    };
+
+    // For directory paths (ending with '/'), also create a path without trailing slash
+    // for SITE_CONTENT lookups, as index.html files are stored without the filename
+    let memory_lookup_path = if path.as_str().ends_with('/') {
+        let path_str = path.as_str();
+        RelativePathBuf::from(&path_str[..path_str.len() - 1])
+    } else if path.as_str().is_empty() {
+        path.clone()
     } else {
         path.clone()
     };
@@ -173,10 +186,11 @@ async fn serve_file(
     }
 
     // Serve original file (not compressed)
-    // Check SITE_CONTENT (memory) using normalized path
-    if let Some(content_data) = SITE_CONTENT.get(&normalized_path) {
-        tracing::debug!("Serving {} (source: memory)", normalized_path.as_str());
-        return Ok(build_response(&normalized_path, content_data.value(), None));
+    // Check SITE_CONTENT (memory) using memory_lookup_path
+    // This handles index.html files which are stored without the filename in memory
+    if let Some(content_data) = SITE_CONTENT.get(&memory_lookup_path) {
+        tracing::debug!("Serving {} (source: memory)", memory_lookup_path.as_str());
+        return Ok(build_response(&memory_lookup_path, content_data.value(), None));
     }
 
     // Fallback to filesystem

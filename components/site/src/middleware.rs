@@ -18,6 +18,10 @@ pub use encrypt::EncryptionMiddleware;
 pub use livereload::LiveReloadMiddleware;
 pub use minify::MinifyMiddleware;
 
+// Re-export shortcode types from utils for convenience
+pub use utils::shortcode_fn::ShortcodeFunction;
+pub use utils::shortcode_registry::{HtmlTemplate, ShortcodeEntry, ShortcodeRegistry};
+
 /// Trait for middleware that can process rendered content
 pub trait Middleware: Send + Sync {
     /// Process the output package - can modify existing outputs or add new ones

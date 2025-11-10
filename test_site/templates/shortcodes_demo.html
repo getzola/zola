@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shortcodes in Templates Demo - {{ page.title }}</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .note { padding: 15px; margin: 20px 0; border-left: 4px solid; }
+        .note-info { background: #e3f2fd; border-color: #2196f3; }
+        .note-warning { background: #fff3e0; border-color: #ff9800; }
+        .note-danger { background: #ffebee; border-color: #f44336; }
+        .page-info { background: #f5f5f5; padding: 10px; margin: 20px 0; border-radius: 4px; }
+        .page-info span { margin-right: 15px; }
+        .demo-section { margin: 40px 0; padding: 20px; background: #fafafa; border-radius: 4px; }
+        pre { background: #263238; color: #aed581; padding: 15px; border-radius: 4px; overflow-x: auto; }
+        code { font-family: 'Courier New', monospace; }
+    </style>
+</head>
+<body>
+    <h1>Shortcodes in Templates Demo</h1>
+    <p>This page demonstrates the new ability to use shortcodes directly in Tera templates.</p>
+
+    <div class="demo-section">
+        <h2>1. Simple HTML Shortcode</h2>
+        <p>The <code>note</code> shortcode with different types:</p>
+
+        {{ note(text="This is an informational note.", type="info") }}
+        {{ note(text="This is a warning note.", type="warning", title="Warning") }}
+        {{ note(text="This is a danger note.", type="danger", title="Danger") }}
+    </div>
+
+    <div class="demo-section">
+        <h2>2. Markdown Shortcode (Auto-converted to HTML)</h2>
+        <p>The <code>emphasize</code> shortcode uses markdown syntax:</p>
+
+        <p>This text is {{ emphasize(text="really important") }} using a markdown shortcode.</p>
+    </div>
+
+    <div class="demo-section">
+        <h2>3. Context-Dependent Shortcode</h2>
+        <p>The <code>page_info</code> shortcode accesses page metadata:</p>
+
+        {{ page_info() }}
+    </div>
+
+    <div class="demo-section">
+        <h2>4. Existing YouTube Shortcode</h2>
+        <p>The classic <code>youtube</code> shortcode works in templates too:</p>
+
+        {{ youtube(id="dQw4w9WgXcQ", class="responsive-video") }}
+    </div>
+
+    <div class="demo-section">
+        <h2>5. Conditional Shortcode Usage</h2>
+        <p>You can use shortcodes conditionally:</p>
+
+        {% if page.extra.show_note %}
+          {{ note(text="This note is shown conditionally based on page.extra.show_note") }}
+        {% else %}
+          <p><em>No note to show (page.extra.show_note is not set)</em></p>
+        {% endif %}
+    </div>
+
+    <div class="demo-section">
+        <h2>Page Content</h2>
+        <div class="content">
+            {{ page.content | safe }}
+        </div>
+    </div>
+
+    <hr>
+    <footer>
+        <p><small>Demo page for Zola shortcodes in templates feature</small></p>
+    </footer>
+</body>
+</html>
