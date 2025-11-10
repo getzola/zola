@@ -111,6 +111,42 @@ To format a number for a specific locale, you can use the `locale` argument and 
 <!-- 10,00,000 -->
 ```
 
+### before
+Returns `true` if a date is before the specified date, `false` otherwise.
+
+By default, the filter is exclusive (the boundary date returns `false`). Set `inclusive=true` to include the boundary date.
+
+```jinja2
+{% for page in section.pages %}
+  {% if page.date | before(date="2020-03-10") %}
+    <h2>{{ page.title }}</h2>
+  {% endif %}
+{% endfor %}
+
+{# Include the boundary date #}
+{% if page.date | before(date="2020-03-10", inclusive=true) %}
+  ...
+{% endif %}
+```
+
+### after
+Returns `true` if a date is after the specified date, `false` otherwise.
+
+By default, the filter is exclusive (the boundary date returns `false`). Set `inclusive=true` to include the boundary date.
+
+```jinja2
+{% for page in section.pages %}
+  {% if page.date | after(date="2020-03-10") %}
+    <h2>{{ page.title }}</h2>
+  {% endif %}
+{% endfor %}
+
+{# Include the boundary date #}
+{% if page.date | after(date="2020-03-10", inclusive=true) %}
+  ...
+{% endif %}
+```
+
 ## Built-in functions
 
 Zola adds a few Tera functions to [those built-in in Tera](https://keats.github.io/tera/docs#built-in-functions)
