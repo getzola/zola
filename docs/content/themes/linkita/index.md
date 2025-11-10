@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-09-19T14:25:48+03:00
+date = 2025-11-05T22:15:23+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-09-19T14:25:48+03:00
-updated = 2025-09-19T14:25:48+03:00
+created = 2025-11-05T22:15:23+02:00
+updated = 2025-11-05T22:15:23+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -25,16 +25,18 @@ homepage = "https://salif.eu"
 # Linkita
 
 A clean and elegant blog theme for [Zola](https://www.getzola.org/).
-Linkita is based on [Kita](https://github.com/st1020/kita) and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual and SEO friendly.
+Linkita is based on [Kita](https://github.com/st1020/kita)
+and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual and SEO friendly.
 
-- The source code is available on [Codeberg](https://codeberg.org/salif/linkita) and mirrored on [GitHub](https://github.com/salif/linkita).
-- For discussion, join the [Matrix chat room](https://matrix.to/#/#linkita:mozilla.org).
+- The source code is available on [Codeberg](https://codeberg.org/salif/linkita)
+  and mirrored on [GitHub](https://github.com/salif/linkita).
 - Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/linkita/issues).
 - See [demo source code](https://codeberg.org/salif/linkita-demo).
 - Live preview in:
-  - [English](https://salif.github.io/linkita/), [Bulgarian](https://salif.github.io/linkita/bg/), [Esperanto](https://salif.github.io/linkita/eo/), [Globasa](https://salif.github.io/linkita/gb/).
-  - [Chinese](https://salif.github.io/linkita/zh/), [Japanese](https://salif.github.io/linkita/ja/), [Korean](https://salif.github.io/linkita/ko/), [Spanish](https://salif.github.io/linkita/es/).
-  - [Arabic](https://salif.github.io/linkita/ar/), [Turkish](https://salif.github.io/linkita/tr/), [Czech](https://salif.github.io/linkita/cs/), [French](https://salif.github.io/linkita/fr/).
+  [English](https://salif.github.io/linkita/),
+  [Bulgarian](https://salif.github.io/linkita/bg/),
+  [Esperanto](https://salif.github.io/linkita/eo/),
+  [Globasa](https://salif.github.io/linkita/gb/).
 
 ## Features
 
@@ -75,10 +77,12 @@ git init
 1. Add the theme as a git submodule:
 
 ```sh
-git submodule add https://codeberg.org/salif/linkita.git themes/linkita
+git submodule add -b linkita https://codeberg.org/salif/linkita.git themes/linkita
 ```
 
-If you don't want to use git submodules, you can clone the repository instead: `git clone https://codeberg.org/salif/linkita.git themes/linkita`
+If you don't want to use git submodules, you can clone the repository instead:
+
+`git clone https://codeberg.org/salif/linkita.git themes/linkita`
 
 2. Enable the theme in your `config.toml` file:
 
@@ -97,14 +101,8 @@ git submodule update --remote themes/linkita
 ```
 
 Check the [changelog](https://codeberg.org/salif/linkita/src/branch/linkita/CHANGELOG.md)
-for all versions after the one you are using. There may be breaking changes that require manual involvement.
-
-If and only if you use Tailwind classes in your templates directory, run:
-
-```sh
-cd themes/linkita
-pnpm tailwindcss -i ./src/app.css -o ../../static/main.min.css --minify
-```
+for all versions after the one you are using.
+There may be breaking changes that require manual involvement.
 
 ## Usage
 
@@ -184,7 +182,7 @@ profile = "your_username"
 +++
 ```
 
-Do it for each language in your blog.
+Do it for each language in your site.
 For French, the file name is `content/_index.fr.md`.
 
 See Profiles for more.
@@ -256,7 +254,8 @@ Choose one of the following options or skip if you don't know what you're doing:
 
 The default author for posts is set using the `author` variable in the `config.toml` file.
 
-You don't need to set `authors` in the front matter if the default author is the only author of the post. Otherwise, set `authors`:
+You don't need to set `authors` in the front matter if the default author is the only author of the post.
+Otherwise, set `authors`:
 
 ```toml ,name=frontmatter
 +++
@@ -411,6 +410,9 @@ title_separator = " | "
 # See "extra.menus".
 header_menu_name = "menu_name"
 
+# See "extra.menus".
+menu_i18n = false
+
 # If you disable default favicons, you can use
 # the inject support to set your own favicons.
 # Default value: false
@@ -421,6 +423,7 @@ disable_default_favicon = false
 # Default value: false
 disable_javascript = false
 
+# Use a CDN for libraries like KaTeX.
 # Default value: false
 use_cdn = false
 
@@ -432,7 +435,7 @@ relative_urls = false
 # If you want to view the site without a webserver
 # set this and "relative_urls" to true.
 # Default value: false
-urls_to_index_html = false
+ugly_urls = false
 
 # Prioritize summary over description.
 # Default value: false
@@ -442,16 +445,21 @@ page_summary_on_paginator = false
 # Default value: false
 invert_page_navigation = false
 
-# You can reorder the strings, remove them, replace them.
-# For example, you can replace "site_title" with "home_button".
-# Default value: ["site_title", "theme_button", "search_button", "translations_button"]
-# header_buttons = []
+# Header buttons.
+# Valid values:
+#  "site_title", "home_button", "theme_select", "theme_button",
+#  "search_button", "translations_select", "translations_button".
+# Can be set to an empty array.
+# header_buttons = ["site_title", "theme_select", "search_button", "translations_select"]
 
+# What info is shown on post pages.
 # Valid "when" values:
 #  "date", "date_updated", "reading_time", "word_count", "authors", "tags", "".
 # The "prepend" and "append" are used when the value of "when" is defined for the page.
 # e.g. [{when="", prepend="Page Info: "},{when="date",prepend="Published on "},{when="authors",prepend="By "}]
 # page_info = [{ when="date" }, { when="date_updated", prepend="(", append=")" }, { when="reading_time" }]
+
+# What info is shown for posts on paginators.
 # page_info_on_paginator = [{ when="date" }, { when="reading_time" }]
 
 # Enable table of contents on all pages.
@@ -492,7 +500,7 @@ menu_name = [
   { url = "$BASE_URL/about/", name = "About" },
 ]
 
-# Example multilingual menu.
+# Example multilingual menu using `names`.
 multilingual_menu_name = [
   { url = "$BASE_URL/about/", names = { en = "About", fr = "About in French" } },
   { url = "$BASE_URL/projects/", names = { en = "Projects", fr = "Projects in French" } },
@@ -506,10 +514,13 @@ multilingual_menu_name = [
 To use a menu, set `extra.header_menu_name`.
 
 `$BASE_URL` in `url` will be automatically replaced with the language specific base url.
-You can use `names_i18n` instead of `names`, see the `static/i18n.json` file,
-set `names_i18n` to a `common_` key.
+You can use [Internal links](https://www.getzola.org/documentation/content/linking/#internal-links)
+instead of `$BASE_URL`.
 
-You can use [Internal links](https://www.getzola.org/documentation/content/linking/#internal-links) instead of `$BASE_URL`.
+If your site is multilingual, you can choose one of the following options or combine them:
+1. Set `names` as in the `multilingual_menu_name` example.
+2. Set `extra.menu_i18n` to `true` in order to use the `static/i18n/menu.json` file.
+3. Set `header_menu_name` for each language using the language specific options.
 
 ### Profiles
 
@@ -599,9 +610,9 @@ gender = ""
 # fb_admins = ["YOUR_USER_ID"]
 
 # Set if you have a Fediverse account.
-#  handle - Your Fediverse handle.
-#  domain - Your Fediverse instance.
-#  url - Your Fediverse account URL. Optional.
+#  handle – Your Fediverse handle.
+#  domain – Your Fediverse instance.
+#  url – Your Fediverse account URL. Optional.
 # Example for @me@mastodon.social:
 # { handle = "me", domain = "mastodon.social" }
 fediverse_creator = { handle = "", domain = "" }
@@ -649,7 +660,8 @@ copyright = "&copy; $YEAR Your Name &vert; [CC BY-SA 4.0]($LICENSE_URL)"
 # search_page_url = "$BASE_URL/search/"
 ```
 
-The `copyright` variable supports Markdown, `$BASE_URL`, `$YEAR` (uses `since`), and `$LICENSE_URL` (uses `license_url`).
+The `copyright` variable supports Markdown,
+`$BASE_URL`, `$YEAR` (uses `since`), and `$LICENSE_URL` (uses `license_url`).
 
 ### Language specific options
 
@@ -677,12 +689,13 @@ date_format = "%x"
 # Default value: extra.header_buttons
 # header_buttons = []
 
-# To set a different "lang" attribute of the document.
-# You can set IETF tag for artificial languages, e.g. "art-x-code".
-# language_code = ""
+# To set a different lang attribute of the document.
+# Also changes the interface language. e.g. "en-GB".
+# hreflang = ""
 
-# To use a different interface language, e.g. English.
-# i18n_code = "en"
+# To format numbers for a different locale. e.g. "en-GB".
+# Useful if lang is not a valid locale.
+# num_format = ""
 
 # Set a description for taxonomy pages.
 [extra.languages.en.taxonomy_descriptions]
@@ -741,7 +754,7 @@ For example, open <http://127.0.0.1:1111/#disable-analytics>.
 ### Comments
 
 See [giscus.app](https://giscus.app/).
-Only available when `extra.comment` in the front matter or `extra.comment` in the config is set to true.
+Only available when `extra.comment` in the front matter or `extra.comment` in the config is set to `true`.
 
 ```toml ,name=config.toml
 [extra.giscus]
@@ -763,28 +776,65 @@ reactions_enabled = 0
 emit_metadata = 0
 # Default value: "top"
 input_position = "top"
-# Default value: "light"
-theme = "light"
+# Default value: "preferred_color_scheme"
+theme = "preferred_color_scheme"
 # Default value: "en"
 lang = "en"
 # Default value: "lazy"
 loading = "lazy"
 ```
 
-## License
-
-See the [MIT License](https://codeberg.org/salif/linkita/src/branch/linkita/LICENSE) file.
-
 ## Contributing
 
+This project is under the [MIT License](https://codeberg.org/salif/linkita/src/branch/linkita/LICENSE).
+
 Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [Github](https://github.com/salif/linkita).
+
+### Localization
+
+Feel free to contribute new translations or improve existing ones.
+
+To add a new language, create a file `LANG_CODE.json` in the `static/i18n` directory.
+See [ISO 639-1](https://localizely.com/iso-639-1-list/) codes.
+
+```sh
+echo '{}' > static/i18n/LANG_CODE.json
+node ./static/i18n/sync.js
+```
+
+See also the `static/i18n/menu.json` file and
+the [demo repository](https://codeberg.org/salif/linkita-demo).
+
+Live preview is available in following languages:
+
+[Arabic](https://salif.github.io/linkita/ar/),
+[Bulgarian](https://salif.github.io/linkita/bg/),
+[Czech](https://salif.github.io/linkita/cs/),
+[Esperanto](https://salif.github.io/linkita/eo/),
+[Spanish](https://salif.github.io/linkita/es/),
+[Finnish](https://salif.github.io/linkita/fi/),
+[French](https://salif.github.io/linkita/fr/),
+[Globasa](https://salif.github.io/linkita/gb/),
+[Japanese](https://salif.github.io/linkita/ja/),
+[Korean](https://salif.github.io/linkita/ko/),
+[English](https://salif.github.io/linkita/),
+[Turkish](https://salif.github.io/linkita/tr/),
+[Chinese](https://salif.github.io/linkita/zh/).
 
 ## Sites using Linkita
 
 - [Zola Themes Collection](https://github.com/salif/zola-themes-collection)
-- [salif.eu](https://github.com/salif/personal-web-page): Personal website
-- [Rratic's blog](https://github.com/Rratic/rratic.github.io): Personal website
+- [salif.eu](https://codeberg.org/salif/personal-web-page)
+- [Rratic's blog](https://github.com/Rratic/rratic.github.io)
 
-If your blog uses Linkita and is open source, feel free to create a pull request to add it to this list.
+If your blog is using Linkita and is open source, feel free to create a pull request to add it to this list.
+
+## Other Zola themes
+
+Linkita is one of several Zola themes I maintain.
+Other themes include:
+
+- [Tukan](https://codeberg.org/salif/tukan) – Fork of zola-blog-theme, inspired from Toucan theme.
+- [Trankwilo](https://codeberg.org/salif/trankwilo) – Fork of the Goyo theme, for documentation.
 
         
