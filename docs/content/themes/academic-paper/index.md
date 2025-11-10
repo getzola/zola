@@ -3,14 +3,14 @@
 title = "Academic Paper"
 description = "A Zola theme for a blog-post-style website to facilitate scientific communication of your academic paper"
 template = "theme.html"
-date = 2024-11-15T14:32:29-05:00
+date = 2025-10-21T20:33:42-04:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-11-15T14:32:29-05:00
-updated = 2024-11-15T14:32:29-05:00
+created = 2025-10-21T20:33:42-04:00
+updated = 2025-10-21T20:33:42-04:00
 repository = "https://github.com/aterenin/academic-paper.git"
 homepage = "https://github.com/aterenin/academic-paper"
 minimum_version = "0.18.0"
