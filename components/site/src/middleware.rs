@@ -9,10 +9,12 @@ use config::Config;
 use errors::Result;
 
 mod compress;
+mod encrypt;
 mod livereload;
 mod minify;
 
 pub use compress::CompressionMiddleware;
+pub use encrypt::EncryptionMiddleware;
 pub use livereload::LiveReloadMiddleware;
 pub use minify::MinifyMiddleware;
 

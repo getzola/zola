@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Protected Content{% if config.title %} | {{ config.title }}{% endif %}</title>
+
+    <style>
+        /* Base styles - can be overridden by themes */
+        :root {
+            --vault-bg: #f5f5f5;
+            --vault-fg: #333;
+            --vault-primary: #4a90e2;
+            --vault-primary-hover: #357abd;
+            --vault-border: #ddd;
+            --vault-error: #d32f2f;
+            --vault-success: #388e3c;
+            --vault-container-bg: #fff;
+            --vault-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --vault-bg: #1a1a1a;
+                --vault-fg: #e0e0e0;
+                --vault-primary: #64b5f6;
+                --vault-primary-hover: #42a5f5;
+                --vault-border: #444;
+                --vault-error: #ef5350;
+                --vault-success: #66bb6a;
+                --vault-container-bg: #2a2a2a;
+                --vault-shadow: rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: var(--vault-bg);
+            color: var(--vault-fg);
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+
+        main {
+            width: 100%;
+            max-width: 500px;
+            padding: 1rem;
+        }
+
+        .vault-container {
+            background: var(--vault-container-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px var(--vault-shadow);
+        }
+
+        h1 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.75rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .vault-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--vault-border);
+            border-radius: 4px;
+            font-size: 1rem;
+            background: var(--vault-bg);
+            color: var(--vault-fg);
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--vault-primary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .input-hint {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: -0.25rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .input-hint {
+                color: #999;
+            }
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: var(--vault-primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background: var(--vault-primary-hover);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .alert.visible {
+            display: block;
+        }
+
+        .alert-error {
+            background: rgba(211, 47, 47, 0.1);
+            color: var(--vault-error);
+            border-left: 4px solid var(--vault-error);
+        }
+
+        .alert-info {
+            background: rgba(74, 144, 226, 0.1);
+            color: var(--vault-primary);
+            border-left: 4px solid var(--vault-primary);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Hide content during decryption */
+        body.decrypting {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="vault-container">
+            <h1>🔒 Protected Content</h1>
+
+            <form id="vault-form" class="vault-form" aria-label="Decrypt content">
+                <div class="form-group">
+                    {% if uses_password %}
+                    <label for="auth-input">Password</label>
+                    <input
+                        type="password"
+                        id="auth-input"
+                        name="password"
+                        required
+                        aria-required="true"
+                        autocomplete="off"
+                        placeholder="Enter password">
+                    <span class="input-hint">Enter the password to decrypt this content</span>
+                    {% else %}
+                    <label for="auth-input">Decryption Key</label>
+                    <input
+                        type="text"
+                        id="auth-input"
+                        name="key"
+                        required
+                        aria-required="true"
+                        placeholder="Enter 256-bit key (hex or base64)">
+                    <span class="input-hint">Hex (64 chars) or Base64 (44 chars)</span>
+                    {% endif %}
+                </div>
+
+                <button type="submit" id="decrypt-btn">
+                    <span id="btn-text">Decrypt</span>
+                </button>
+            </form>
+
+            <div id="loading" class="alert alert-info" role="status" aria-live="polite"></div>
+            <div id="error" class="alert alert-error" role="alert" aria-live="assertive"></div>
+        </div>
+    </main>
+
+    <!-- Encrypted payload -->
+    <script type="application/octet-stream" id="encrypted-payload">{{ encrypted_data | safe }}</script>
+
+    {% if uses_password %}
+    <!-- Argon2 WASM library for password-based encryption -->
+    <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/dist/argon2-bundled.min.js"
+            integrity="sha512-Alrh8vbmKDc5xiq7I/y8LTDwy9nw1nT9S/yR73HMMoWrpX4S1kizNPdWM896c/CDIGILNwAiaih627A94kRhYQ=="
+            crossorigin="anonymous"></script>
+    {% endif %}
+
+    <!-- Decryption logic -->
+    <script>
+        (function() {
+            'use strict';
+
+            const form = document.getElementById('vault-form');
+            const input = document.getElementById('auth-input');
+            const btnText = document.getElementById('btn-text');
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('error');
+            const usesPassword = {{ uses_password }};
+
+            function showLoading(message) {
+                loadingEl.textContent = message;
+                loadingEl.classList.add('visible');
+                errorEl.classList.remove('visible');
+            }
+
+            function showError(message) {
+                errorEl.textContent = message;
+                errorEl.classList.add('visible');
+                loadingEl.classList.remove('visible');
+            }
+
+            function hideMessages() {
+                loadingEl.classList.remove('visible');
+                errorEl.classList.remove('visible');
+            }
+
+            // Base64 decode helper
+            function base64Decode(str) {
+                const binary = atob(str);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+                return bytes;
+            }
+
+            // Hex decode helper
+            function hexDecode(hex) {
+                const bytes = new Uint8Array(hex.length / 2);
+                for (let i = 0; i < hex.length; i += 2) {
+                    bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+                }
+                return bytes;
+            }
+
+            async function decrypt(authValue) {
+                try {
+                    // Get encrypted blob
+                    const encryptedData = document.getElementById('encrypted-payload').textContent.trim();
+                    if (!encryptedData) {
+                        throw new Error('No encrypted data found');
+                    }
+
+                    // Decode base64 blob
+                    const blob = base64Decode(encryptedData);
+
+                    // Check minimum size
+                    if (blob.length < 2) {
+                        throw new Error('Invalid encrypted data format');
+                    }
+
+                    const version = blob[0];
+                    let keyBytes, nonce, ciphertext;
+
+                    if (version === 1) {
+                        // Version 1: Password-based [version][salt:16][nonce:12][ciphertext+tag]
+                        if (blob.length < 29) {
+                            throw new Error('Invalid encrypted data format');
+                        }
+
+                        const salt = blob.slice(1, 17);
+                        nonce = blob.slice(17, 29);
+                        ciphertext = blob.slice(29);
+
+                        // Derive key from password using Argon2
+                        showLoading('Deriving encryption key (this may take a moment)...');
+                        await new Promise(resolve => setTimeout(resolve, 10)); // Allow UI to update
+
+                        try {
+                            // Check if argon2 library is loaded
+                            if (typeof argon2 === 'undefined') {
+                                throw new Error('Argon2 library failed to load. Please check your internet connection.');
+                            }
+
+                            // Use argon2-browser library with parameters from server
+                            const result = await argon2.hash({
+                                pass: authValue,
+                                salt: salt,
+                                time: {{ argon2_iterations | default(value=3) }},           // iterations (t_cost)
+                                mem: {{ argon2_memory | default(value=65536) }},                 // memory in KB (m_cost)
+                                hashLen: 32,                              // 32 bytes = 256 bits
+                                parallelism: {{ argon2_parallelism | default(value=1) }},    // p_cost
+                                type: argon2.ArgonType.Argon2id
+                            });
+
+                            keyBytes = result.hash;
+                        } catch (e) {
+                            throw new Error('Argon2 key derivation failed: ' + e.message);
+                        }
+
+                    } else if (version === 2) {
+                        // Version 2: Raw/Generated key [version][nonce:12][ciphertext+tag]
+                        if (blob.length < 13) {
+                            throw new Error('Invalid encrypted data format');
+                        }
+
+                        nonce = blob.slice(1, 13);
+                        ciphertext = blob.slice(13);
+
+                        // Parse raw key from authValue (hex or base64)
+                        if (authValue.length === 64 && /^[0-9a-fA-F]+$/.test(authValue)) {
+                            keyBytes = hexDecode(authValue);
+                        } else if (authValue.length === 44 && authValue.endsWith('=')) {
+                            keyBytes = base64Decode(authValue);
+                        } else {
+                            throw new Error('Invalid key format. Expected 64 hex characters or 44 base64 characters.');
+                        }
+
+                        if (keyBytes.length !== 32) {
+                            throw new Error('Key must be exactly 32 bytes (256 bits)');
+                        }
+
+                    } else {
+                        throw new Error(`Unsupported encryption version: ${version}`);
+                    }
+
+                    showLoading('Decrypting content...');
+                    await new Promise(resolve => setTimeout(resolve, 10)); // Allow UI to update
+
+                    // Import key for AES-GCM
+                    const cryptoKey = await crypto.subtle.importKey(
+                        'raw',
+                        keyBytes,
+                        { name: 'AES-GCM' },
+                        false,
+                        ['decrypt']
+                    );
+
+                    // Decrypt with AES-256-GCM
+                    const decryptedBuffer = await crypto.subtle.decrypt(
+                        {
+                            name: 'AES-GCM',
+                            iv: nonce
+                        },
+                        cryptoKey,
+                        ciphertext
+                    );
+
+                    // Convert to string
+                    const decoder = new TextDecoder();
+                    const decryptedHtml = decoder.decode(decryptedBuffer);
+
+                    // Replace entire document with decrypted content
+                    document.open();
+                    document.write(decryptedHtml);
+                    document.close();
+
+                } catch (error) {
+                    console.error('Decryption error:', error);
+
+                    if (error.name === 'OperationError' || error.message.includes('decrypt')) {
+                        showError('❌ Decryption failed. Incorrect password or key.');
+                    } else {
+                        showError('❌ Error: ' + error.message);
+                    }
+
+                    // Re-enable form
+                    Array.from(form.elements).forEach(el => el.disabled = false);
+                    btnText.textContent = 'Decrypt';
+                }
+            }
+
+            // Set up form for password/key modes
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const authValue = input.value.trim();
+                if (!authValue) {
+                    showError(usesPassword ? 'Please enter a password' : 'Please enter a key');
+                    return;
+                }
+
+                // Disable form during decryption
+                Array.from(form.elements).forEach(el => el.disabled = true);
+                btnText.innerHTML = '<span class="spinner"></span> Decrypting...';
+                hideMessages();
+
+                // Run decryption asynchronously
+                setTimeout(() => decrypt(authValue), 10);
+            });
+
+            // Focus input on load
+            input.focus();
+        })();
+    </script>
+</body>
+</html>

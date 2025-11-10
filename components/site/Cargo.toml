@@ -24,6 +24,13 @@ content = { path = "../content" }
 flate2 = { version = "1", optional = true }
 brotli = { version = "7", optional = true }
 
+# Encryption dependencies
+aes-gcm = "0.10"
+argon2 = "0.5"
+base64 = "0.22"
+rand = "0.8"
+hex = "0.4"
+
 [features]
 gzip = ["dep:flate2"]
 brotli = ["dep:brotli"]

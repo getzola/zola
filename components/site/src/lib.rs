@@ -650,7 +650,9 @@ impl Site {
 
     /// Create a rendering pipeline with configured middleware
     fn create_pipeline(&self) -> pipeline::Pipeline {
-        use middleware::{CompressionMiddleware, LiveReloadMiddleware, MinifyMiddleware};
+        use middleware::{
+            CompressionMiddleware, EncryptionMiddleware, LiveReloadMiddleware, MinifyMiddleware,
+        };
 
         let mut middleware_chain: Vec<Box<dyn middleware::Middleware>> = Vec::new();
 
@@ -662,6 +664,22 @@ impl Site {
         // Add minification middleware if enabled
         if self.config.minify_html {
             middleware_chain.push(Box::new(MinifyMiddleware::new()));
+        }
+
+        // Add encryption middleware if enabled (before compression so vault pages are compressed)
+        if self.config.has_encryption() {
+            match EncryptionMiddleware::new(
+                Arc::new(self.config.clone()),
+                Arc::new(self.tera.clone()),
+            ) {
+                Ok(encryption_middleware) => {
+                    middleware_chain.push(Box::new(encryption_middleware));
+                }
+                Err(e) => {
+                    eprintln!("Failed to initialize encryption middleware: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
 
         // Add compression middleware if enabled
