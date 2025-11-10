@@ -1,0 +1,2 @@
+# Preserve exact line endings in test templates (no normalization)
+test_site/templates/*.txt -text

@@ -3,6 +3,9 @@ base_url = "https://replace-this-with-your-url.com"
 compile_sass = true
 generate_feeds = true
 theme = "sample"
+compress = false
+# compression = ["brotli", "gzip"]
+
 
 taxonomies = [
     {name = "categories", feed = true},

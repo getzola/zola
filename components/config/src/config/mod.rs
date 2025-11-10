@@ -36,6 +36,53 @@ pub enum ExcludePaginatedPagesInSitemap {
     All,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Compression {
+    Gzip,
+    Brotli,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EncryptionRule {
+    /// Glob patterns for output paths to encrypt (e.g., ["secret/*", "private/**/*.html"])
+    pub paths: Vec<String>,
+
+    /// Environment variable name to read password from (ZOLA_ENCRYPTION_PASS_{this_value})
+    pub password_env: Option<String>,
+
+    /// Plaintext password (INSECURE - for development only!)
+    pub password: Option<String>,
+
+    /// Environment variable name to read raw 256-bit key from (ZOLA_ENCRYPTION_PASS_{this_value})
+    pub key_env: Option<String>,
+
+    /// Argon2 memory parameter in KB (default: 65536 = 64MB)
+    #[serde(default = "default_argon2_memory")]
+    pub argon2_memory: u32,
+
+    /// Argon2 iterations/time cost (default: 3)
+    #[serde(default = "default_argon2_iterations")]
+    pub argon2_iterations: u32,
+
+    /// Argon2 parallelism (default: 1)
+    #[serde(default = "default_argon2_parallelism")]
+    pub argon2_parallelism: u32,
+}
+
+fn default_argon2_memory() -> u32 {
+    65536 // 64 MB
+}
+
+fn default_argon2_iterations() -> u32 {
+    3
+}
+
+fn default_argon2_parallelism() -> u32 {
+    1
+}
+
 #[derive(Clone, Debug, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
@@ -76,6 +123,12 @@ pub struct Config {
     pub compile_sass: bool,
     /// Whether to minify the html output
     pub minify_html: bool,
+    /// Whether to compress output files
+    pub compress: bool,
+    /// Compression algorithms to use (can include both gzip and brotli)
+    pub compression: Vec<Compression>,
+    /// Encryption rules for encrypting output files
+    pub encrypt: Vec<EncryptionRule>,
     /// Whether to build the search index for the content
     pub build_search_index: bool,
     /// A list of file glob patterns to ignore when processing the content folder. Defaults to none.
@@ -166,6 +219,8 @@ impl Config {
 
         let static_glob_set = build_ignore_glob_set(&config.ignored_static, "static")?;
         config.ignored_static_globset = Some(static_glob_set);
+
+        config.validate_encryption_rules()?;
 
         Ok(config)
     }
@@ -319,6 +374,117 @@ impl Config {
         self.markdown.highlight_code = false;
     }
 
+    /// Validates encryption rules and resolves environment variables
+    fn validate_encryption_rules(&mut self) -> Result<()> {
+        for (idx, rule) in self.encrypt.iter().enumerate() {
+            // Validate that at most one auth method is specified
+            // If none specified, a random key will be auto-generated
+            let auth_methods =
+                [rule.password_env.is_some(), rule.password.is_some(), rule.key_env.is_some()];
+            let auth_count = auth_methods.iter().filter(|&&x| x).count();
+
+            if auth_count > 1 {
+                bail!(
+                    "Encryption rule #{} must specify only ONE of: password_env, password, or key_env (found {})",
+                    idx + 1,
+                    auth_count
+                );
+            }
+
+            // If no auth method specified, inform user that a random key will be generated
+            if auth_count == 0 {
+                println!(
+                    "ℹ️  Encryption rule #{}: No auth method specified. A random key will be \
+                     auto-generated and saved to .key files for each encrypted file.",
+                    idx + 1
+                );
+            }
+
+            // Warn if using plaintext password
+            if rule.password.is_some() {
+                println!(
+                    "⚠️  WARNING: Encryption rule #{} uses plaintext password in config.toml. \
+                     This is INSECURE and should only be used for development. \
+                     Use password_env for production.",
+                    idx + 1
+                );
+            }
+
+            // Validate environment variables exist
+            if let Some(env_var) = &rule.password_env {
+                let full_env_name = format!("ZOLA_ENCRYPTION_PASS_{}", env_var);
+                if std::env::var(&full_env_name).is_err() {
+                    bail!(
+                        "Encryption rule #{}: Environment variable '{}' is not set. \
+                         Please set it before building.",
+                        idx + 1,
+                        full_env_name
+                    );
+                }
+            }
+
+            if let Some(env_var) = &rule.key_env {
+                let full_env_name = format!("ZOLA_ENCRYPTION_PASS_{}", env_var);
+                match std::env::var(&full_env_name) {
+                    Err(_) => {
+                        bail!(
+                            "Encryption rule #{}: Environment variable '{}' is not set. \
+                             Please set it before building.",
+                            idx + 1,
+                            full_env_name
+                        );
+                    }
+                    Ok(key_str) => {
+                        // Validate key format (hex or base64)
+                        let is_hex =
+                            key_str.len() == 64 && key_str.chars().all(|c| c.is_ascii_hexdigit());
+                        let is_base64 = key_str.len() == 44 && key_str.ends_with('=');
+
+                        if !is_hex && !is_base64 {
+                            bail!(
+                                "Encryption rule #{}: Environment variable '{}' must contain \
+                                 a valid 256-bit key in hex (64 chars) or base64 (44 chars) format. \
+                                 Generate one with: openssl rand -hex 32",
+                                idx + 1,
+                                full_env_name
+                            );
+                        }
+                    }
+                }
+            }
+
+            // Validate paths is not empty
+            if rule.paths.is_empty() {
+                bail!("Encryption rule #{} must specify at least one path pattern", idx + 1);
+            }
+
+            // Validate Argon2 parameters are within reasonable bounds
+            if rule.argon2_memory < 8192 {
+                bail!(
+                    "Encryption rule #{}: argon2_memory must be at least 8192 KB (8 MB), got {}",
+                    idx + 1,
+                    rule.argon2_memory
+                );
+            }
+            if rule.argon2_iterations < 1 {
+                bail!(
+                    "Encryption rule #{}: argon2_iterations must be at least 1, got {}",
+                    idx + 1,
+                    rule.argon2_iterations
+                );
+            }
+            if rule.argon2_parallelism < 1 {
+                bail!(
+                    "Encryption rule #{}: argon2_parallelism must be at least 1, got {}",
+                    idx + 1,
+                    rule.argon2_parallelism
+                );
+            }
+        }
+
+        Ok(())
+    }
+
     pub fn get_translation(&self, lang: &str, key: &str) -> Result<String> {
         if let Some(options) = self.languages.get(lang) {
             options
@@ -365,6 +531,76 @@ impl Config {
             exclude_paginated_pages_in_sitemap: self.exclude_paginated_pages_in_sitemap,
         }
     }
+
+    /// Check if encryption is enabled
+    pub fn has_encryption(&self) -> bool {
+        !self.encrypt.is_empty()
+    }
+
+    /// Check if a permalink should be excluded from sitemap due to encryption
+    /// Converts the permalink to a relative path and checks against encryption rules
+    pub fn is_encrypted_path(&self, permalink: &str) -> bool {
+        if !self.has_encryption() {
+            return false;
+        }
+
+        // Convert permalink to relative path for matching
+        // Remove base_url and leading/trailing slashes
+        let base_url = self.base_url.trim_end_matches('/');
+        let path = if let Some(relative) = permalink.strip_prefix(base_url) {
+            relative.trim_start_matches('/').trim_end_matches('/')
+        } else {
+            return false;
+        };
+
+        // Check if this path should be encrypted by building a simplified glob match
+        // We'll do a simple pattern match here since we can't use the full globset
+        // from the middleware (which is compiled at a different stage)
+        for rule in &self.encrypt {
+            for pattern in &rule.paths {
+                if path_matches_pattern(path, pattern) {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+}
+
+/// Simple glob pattern matching for sitemap exclusion
+/// Supports basic wildcards: * (anything in segment) and ** (anything across segments)
+fn path_matches_pattern(path: &str, pattern: &str) -> bool {
+    // Handle exact matches
+    if path == pattern || path == pattern.trim_end_matches('/') {
+        return true;
+    }
+
+    // Handle trailing wildcards like "foo/*"
+    if let Some(prefix) = pattern.strip_suffix("/*")
+        && path.starts_with(prefix)
+        && path.len() > prefix.len()
+    {
+        // Check if there's only one more segment
+        let remainder = &path[prefix.len()..].trim_start_matches('/');
+        return !remainder.contains('/');
+    }
+
+    // Handle recursive wildcards like "foo/**"
+    if let Some(prefix) = pattern.strip_suffix("/**") {
+        return path.starts_with(prefix);
+    }
+
+    // Handle wildcards in filenames like "*.html"
+    if pattern.contains('*') && !pattern.contains('/') {
+        // Simple filename pattern
+        let pattern_regex = pattern.replace('.', r"\.").replace('*', ".*");
+        if let Ok(re) = libs::regex::Regex::new(&format!("^{}$", pattern_regex)) {
+            return re.is_match(path);
+        }
+    }
+
+    false
 }
 
 // merge TOML data that can be a table, or anything else
@@ -417,6 +653,9 @@ impl Default for Config {
             author: None,
             compile_sass: false,
             minify_html: false,
+            compress: false,
+            compression: vec![Compression::Brotli],
+            encrypt: Vec::new(),
             mode: Mode::Build,
             build_search_index: false,
             ignored_content: Vec::new(),

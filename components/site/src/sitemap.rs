@@ -67,6 +67,10 @@ pub fn find_entries<'a>(
         if !p.meta.render {
             continue;
         }
+        // Skip encrypted pages from sitemap
+        if config.is_encrypted_path(&p.permalink) {
+            continue;
+        }
         let mut entry = SitemapEntry::new(
             Cow::Borrowed(&p.permalink),
             if p.meta.updated.is_some() { &p.meta.updated } else { &p.meta.date },
@@ -77,6 +81,10 @@ pub fn find_entries<'a>(
 
     for s in library.sections.values() {
         if s.meta.render {
+            // Skip encrypted sections from sitemap
+            if config.is_encrypted_path(&s.permalink) {
+                continue;
+            }
             let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), &None);
             entry.add_extra(&s.meta.extra);
             entries.insert(entry);

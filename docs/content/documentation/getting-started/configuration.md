@@ -52,6 +52,20 @@ compile_sass = false
 # When set to "true", the generated HTML files are minified.
 minify_html = false
 
+# When set to "true", HTML, XML, JSON, and text files are compressed and written
+# to the output directory with .gz and/or .br extensions (based on compression setting).
+# The compression happens at build time. Files smaller than 512 bytes are not compressed.
+compress = false
+
+# Compression formats to generate. Can include "gzip" and/or "brotli".
+# Requires Zola to be compiled with the corresponding feature flags (both enabled by default).
+# Defaults to ["brotli"] when compress = true and this field is not specified.
+# Examples:
+#   compression = ["brotli"]           # Only Brotli compression
+#   compression = ["gzip"]             # Only Gzip compression
+#   compression = ["gzip", "brotli"]   # Both formats (recommended for maximum client compatibility)
+compression = ["brotli"]
+
 # A list of glob patterns specifying asset files to ignore when the content
 # directory is processed. Defaults to none, which means that all asset files are
 # copied over to the `public` directory.

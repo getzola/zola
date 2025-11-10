@@ -74,15 +74,12 @@ impl TeraFn for GetTaxonomyUrl {
 
 fn add_lang_to_path<'a>(path: &str, lang: &str) -> Result<Cow<'a, str>> {
     match path.rfind('.') {
-        Some(period_offset) => {
-            let prefix = path.get(0..period_offset);
-            let suffix = path.get(period_offset..);
-            if prefix.is_none() || suffix.is_none() {
-                Err(format!("Error adding language code to {}", path).into())
-            } else {
-                Ok(Cow::Owned(format!("{}.{}{}", prefix.unwrap(), lang, suffix.unwrap())))
+        Some(period_offset) => match (path.get(0..period_offset), path.get(period_offset..)) {
+            (Some(prefix), Some(suffix)) => {
+                Ok(Cow::Owned(format!("{}.{}{}", prefix, lang, suffix)))
             }
-        }
+            _ => Err(format!("Error adding language code to {}", path).into()),
+        },
         None => Ok(Cow::Owned(format!("{}.{}", path, lang))),
     }
 }

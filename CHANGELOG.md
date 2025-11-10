@@ -2,6 +2,8 @@
 
 ## 0.22.0 (unreleased)
 
+- Add support for using shortcodes directly in Tera templates (not just markdown content)
+
 ## 0.21.0 (2025-07-14)
 
 - Allow `github_alerts` at config.toml level

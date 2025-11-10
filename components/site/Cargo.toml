@@ -7,6 +7,7 @@ include = ["src/**/*"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
+derive_builder = "0.20"
 
 errors = { path = "../errors" }
 config = { path = "../config" }
@@ -18,6 +19,21 @@ imageproc = { path = "../imageproc" }
 link_checker = { path = "../link_checker" }
 libs = { path = "../libs" }
 content = { path = "../content" }
+
+# Optional compression dependencies
+flate2 = { version = "1", optional = true }
+brotli = { version = "7", optional = true }
+
+# Encryption dependencies
+aes-gcm = "0.10"
+argon2 = "0.5"
+base64 = "0.22"
+rand = "0.8"
+hex = "0.4"
+
+[features]
+gzip = ["dep:flate2"]
+brotli = ["dep:brotli"]
 
 [dev-dependencies]
 tempfile = "3"

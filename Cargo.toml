@@ -23,11 +23,14 @@ name = "zola"
 clap = { version = "4", features = ["derive"] }
 clap_complete = "4"
 # Below is for the serve cmd
-hyper = { version = "0.14.1", default-features = false, features = ["runtime", "server", "http2", "http1"] }
-tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time"] }
+axum = { version = "0.7", features = ["ws"] }
+tokio = { version = "1", features = ["rt-multi-thread", "fs", "time", "macros", "sync"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace", "cors"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 time = { version = "0.3", features = ["formatting", "macros", "local-offset"] }
 notify-debouncer-full = "0.5"
-ws = "0.9"
 ctrlc = "3"
 open = "5"
 pathdiff = "0.2"
@@ -38,6 +41,7 @@ mime = "0.3.16"
 
 
 site = { path = "components/site" }
+config = { path = "components/config" }
 errors = { path = "components/errors" }
 console = { path = "components/console" }
 utils = { path = "components/utils" }
@@ -48,11 +52,13 @@ libs = { path = "components/libs" }
 same-file = "1"
 
 [features]
-default = ["rust-tls"]
+default = ["rust-tls", "gzip", "brotli"]
 rust-tls = ["libs/rust-tls"]
 native-tls = ["libs/native-tls"]
 indexing-zh = ["libs/indexing-zh"]
 indexing-ja = ["libs/indexing-ja"]
+gzip = ["site/gzip"]
+brotli = ["site/brotli"]
 
 [workspace]
 members = ["components/*"]

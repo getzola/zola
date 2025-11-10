@@ -91,31 +91,42 @@ pub fn get_shortcodes(tera: &Tera) -> HashMap<String, ShortcodeDefinition> {
 /// is not found, it will look up for the equivalent template for the current theme if there is one.
 /// Lastly, if it's a default template (index, section or page), it will just return an empty string
 /// to avoid an error if there isn't a template with that name
+///
+/// This function automatically sets the shortcode rendering context so that shortcodes can access
+/// page/section/config data when called as Tera functions.
 pub fn render_template(
     name: &str,
     tera: &Tera,
     context: Context,
     theme: &Option<String>,
 ) -> Result<String> {
-    if let Some(template) = check_template_fallbacks(name, tera, theme) {
-        return tera.render(template, &context).map_err(std::convert::Into::into);
-    }
+    // Set the context for shortcodes to access
+    crate::shortcode_context::set_context(context.clone());
 
-    // maybe it's a default one?
-    match name {
-        "index.html" | "section.html" => render_default_tpl!(
-            name,
-            "https://www.getzola.org/documentation/templates/pages-sections/#section-variables"
-        ),
-        "page.html" => render_default_tpl!(
-            name,
-            "https://www.getzola.org/documentation/templates/pages-sections/#page-variables"
-        ),
-        "single.html" | "list.html" => {
-            render_default_tpl!(name, "https://www.getzola.org/documentation/templates/taxonomies/")
+    let result = if let Some(template) = check_template_fallbacks(name, tera, theme) {
+        tera.render(template, &context).map_err(std::convert::Into::into)
+    } else {
+        // maybe it's a default one?
+        match name {
+            "index.html" | "section.html" => render_default_tpl!(
+                name,
+                "https://www.getzola.org/documentation/templates/pages-sections/#section-variables"
+            ),
+            "page.html" => render_default_tpl!(
+                name,
+                "https://www.getzola.org/documentation/templates/pages-sections/#page-variables"
+            ),
+            "single.html" | "list.html" => {
+                render_default_tpl!(name, "https://www.getzola.org/documentation/templates/taxonomies/")
+            }
+            _ => bail!("Tried to render `{}` but the template wasn't found", name),
         }
-        _ => bail!("Tried to render `{}` but the template wasn't found", name),
-    }
+    };
+
+    // Clear the context after rendering
+    crate::shortcode_context::clear_context();
+
+    result
 }
 
 /// Rewrites the path of duplicate templates to include the complete theme path

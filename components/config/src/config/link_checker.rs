@@ -4,18 +4,13 @@ use serde::{Deserialize, Serialize};
 use errors::Result;
 use utils::globs::build_ignore_glob_set;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum LinkCheckerLevel {
     #[serde(rename = "error")]
+    #[default]
     Error,
     #[serde(rename = "warn")]
     Warn,
-}
-
-impl Default for LinkCheckerLevel {
-    fn default() -> Self {
-        Self::Error
-    }
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
