@@ -3,14 +3,14 @@
 title = "kodama"
 description = "Theme insipired by wowchemy academic."
 template = "theme.html"
-date = 2024-02-26T08:26:29+01:00
+date = 2025-10-11T14:31:25+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-02-26T08:26:29+01:00
-updated = 2024-02-26T08:26:29+01:00
+created = 2025-10-11T14:31:25+02:00
+updated = 2025-10-11T14:31:25+02:00
 repository = "https://github.com/adfaure/kodama-theme.git"
 homepage = "https://github.com/adfaure/kodama-theme"
 minimum_version = "0.15"
@@ -33,7 +33,7 @@ First lets introduce some technical details:
 - It relies on [zola](https://www.getzola.org/).
 - It has no javascript.
 - The CSS is built with [tailwindcss](https://tailwindcss.com/).
-    - The blog articles are themed with [@tailwindcss/typography](https://tailwindcss.com/docs/typography-plugin) theme.
+    - The blog articles are themed with [@tailwindcss/typography](https://tailwindcss-typography.vercel.app) theme.
 
 
 ## Getting started
@@ -54,21 +54,16 @@ and set in the `config.toml` the variable `theme` to `kodama-theme`.
 [Tailwindcss](https://tailwindcss.com/) is a framework that parses your html files, and generate the minimal CSS required.
 This theme depends on this framework.
 
-The theme comes with the precompiled style files (`static/styles/styles.css`). However, if you wish to change the style, or modify the template htlm, you might need to recompile your styles.
+The theme comes with the precompiled style files (`static/styles/styles.css`). However, if you wish to change the style, or modify the template html, you might need to recompile your styles.
 
-The most simple way, is to follow the [installation page of tailwindcss](https://tailwindcss.com/docs/installation).
+The most simple way, is to follow the [installation page of tailwindcss](https://tailwindcss.com/docs/installation/).
 
-At the end, you should have tailwindcss installed, and I advise to use the following tailwind configuration:
+At the end, you should have tailwindcss installed, and I advise to use the following tailwind configuration (for tailwindcss v4):
 
 ```js
 # tailwind.config.js
 module.exports = {
   content: ["./templates/**/*.html", "./themes/**/*.html",  "./themes/**/*.html"],
-  theme: {},
-  variants: {},
-  plugins: [
-      require('@tailwindcss/typography'),
-  ],
 };
 ```
 
@@ -76,6 +71,12 @@ Create a file `styles/styles.css`, and use the following command to generate the
 
 ```
 npx tailwindcss -i styles/styles.css -o static/styles/styles.css
+```
+
+or, starting with tailwindcss v4.0, the separate CLI command
+
+```
+npx @tailwindcss/cli -i styles/styles.css -o static/styles/styles.css
 ```
 
 The resulting file `static/styles/styles.css` is loaded in the html.
@@ -137,7 +138,7 @@ interests = [
 # The list of your degrees / education
 [[extra.education.courses]]
   course = "Latest degree"
-  institution = "Some acamedy"
+  institution = "Some academy"
   year = 2020
 
 [[extra.education.courses]]

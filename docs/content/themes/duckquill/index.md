@@ -3,14 +3,14 @@
 title = "Duckquill"
 description = "Modern, pretty, and clean theme"
 template = "theme.html"
-date = 2025-09-03T15:49:29+03:00
+date = 2025-11-07T20:54:55+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-09-03T15:49:29+03:00
-updated = 2025-09-03T15:49:29+03:00
+created = 2025-11-07T20:54:55+01:00
+updated = 2025-11-07T20:54:55+01:00
 repository = "https://codeberg.org/daudix/duckquill.git"
 homepage = "https://codeberg.org/daudix/duckquill"
 minimum_version = "0.19.0"
@@ -24,7 +24,6 @@ homepage = "https://daudix.one"
 
 [![Please don't upload to GitHub](https://nogithub.codeberg.page/badge.svg)](https://nogithub.codeberg.page)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue)](https://mit-license.org)
-[![status-badge](https://ci.codeberg.org/api/badges/13032/status.svg)](https://ci.codeberg.org/repos/13032)
 
 # [Duckquill](https://duckquill.daudix.one)
 
