@@ -157,6 +157,7 @@ mod tests {
                 id: "1".to_string(),
                 permalink: String::new(),
                 title: String::new(),
+                title_raw: String::new(),
                 children: vec![],
             },
             Heading {
@@ -164,6 +165,7 @@ mod tests {
                 id: "1-1".to_string(),
                 permalink: String::new(),
                 title: String::new(),
+                title_raw: String::new(),
                 children: vec![],
             },
             Heading {
@@ -171,6 +173,7 @@ mod tests {
                 id: "1-1-1".to_string(),
                 permalink: String::new(),
                 title: String::new(),
+                title_raw: String::new(),
                 children: vec![],
             },
             Heading {
@@ -178,6 +181,7 @@ mod tests {
                 id: "1-2".to_string(),
                 permalink: String::new(),
                 title: String::new(),
+                title_raw: String::new(),
                 children: vec![],
             },
         ];
@@ -192,12 +196,14 @@ mod tests {
             id: "1".to_string(),
             permalink: String::new(),
             title: String::new(),
+            title_raw: String::new(),
             children: vec![
                 Heading {
                     level: 2,
                     id: "1-1".to_string(),
                     permalink: String::new(),
                     title: String::new(),
+                    title_raw: String::new(),
                     children: vec![],
                 },
                 Heading {
@@ -205,6 +211,7 @@ mod tests {
                     id: "1-1-1".to_string(),
                     permalink: String::new(),
                     title: String::new(),
+                    title_raw: String::new(),
                     children: vec![],
                 },
                 Heading {
@@ -212,6 +219,7 @@ mod tests {
                     id: "1-2".to_string(),
                     permalink: String::new(),
                     title: String::new(),
+                    title_raw: String::new(),
                     children: vec![],
                 },
             ],

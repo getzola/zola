@@ -734,6 +734,8 @@ pub fn markdown_to_html(
             let start_idx = heading_ref.start_idx;
             let end_idx = heading_ref.end_idx;
             let title = get_text(&events[start_idx + 1..end_idx]);
+            let mut title_raw = String::new();
+            cmark::html::push_html(&mut title_raw, events[start_idx + 1..end_idx].iter().cloned());
 
             if heading_ref.id.is_none() {
                 heading_ref.id = Some(find_anchor(
@@ -785,6 +787,7 @@ pub fn markdown_to_html(
                 id: id.to_owned(),
                 permalink,
                 title,
+                title_raw,
                 children: Vec::new(),
             };
             headings.push(h);
