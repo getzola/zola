@@ -7,6 +7,7 @@ pub struct Heading {
     pub id: String,
     pub permalink: String,
     pub title: String,
+    pub title_raw: String,
     pub children: Vec<Heading>,
 }
 
