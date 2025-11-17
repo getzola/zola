@@ -16,12 +16,14 @@ Here is an example of using that field to render a two-level table of contents:
     <ul>
     {% for h1 in page.toc %}
         <li>
+            <!-- the "title" property strips the HTML tags from the original title -->
             <a href="{{ h1.permalink | safe }}">{{ h1.title }}</a>
             {% if h1.children %}
                 <ul>
                     {% for h2 in h1.children %}
                         <li>
-                            <a href="{{ h2.permalink | safe }}">{{ h2.title }}</a>
+                            <!-- "title_raw" lets you access the title with its original HTML tags -->
+                            <a href="{{ h2.permalink | safe }}">{{ h2.title_raw | safe }}</a>
                         </li>
                     {% endfor %}
                 </ul>
