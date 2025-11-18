@@ -3,7 +3,7 @@
 ## 0.21.0 (2025-07-14)
 
 - Allow `github_alerts` at config.toml level
-- Add a `copy` attribute that can bet set on codeblocks to set data-copy on them
+- Add a `copy` attribute that can be set on codeblocks to set data-copy on them
 - Empty feeds are now generated
 - Preserve the hash part of the URL for alias redirection
 - Add a new permalink sorting strategy for pages
@@ -406,7 +406,7 @@ accessible everywhere
 ### Other
 
 - Fix image processing not happening if called from the template
-- Add a `zola check` command to that validates the site and checks all external links
+- Add a `zola check` command that validates the site and checks all external links
 - Sections can have `aliases` as well
 - Anchors in internal links are now checked for existence
 
@@ -424,7 +424,7 @@ accessible everywhere
 ### Breaking
 - `earlier/later` and `lighter/heavier` are not set anymore on pages when rendering
 a section
-- The table of content for a page/section is now only available as the `toc` variable when
+- The table of contents for a page/section is now only available as the `toc` variable when
 rendering it and not anymore on the `page`/`section` variable
 - Default directory for `load_data` is now the root of the site instead of the `content` directory
 - Change variable sent to the sitemap template, see documentation for details
@@ -463,7 +463,7 @@ or the extension matches csv/toml/json
 - The `pagers` variable of Paginator objects has been removed
 - `section.subsections` is now an array of paths to be used with the `get_section`
 Tera function
-- Table of content now strips HTML from the titles to avoid various issues
+- Table of contents now strips HTML from the titles to avoid various issues
 - `gutenberg-anchor` CSS class has been renamed `zola-anchor`
 - `data` is now a reserved variable name in templates, it is unused right now but
 might change soon.
@@ -494,13 +494,13 @@ sections up to the index to be used with the `get_section` Tera function
 - `serve` will now try to find other ports than 1111 rather than panicking
 - Ensure content directory exists before rendering aliases
 - Do not include drafts in pagination
-- Pages filenames starting by a date will now use that date as page date if there isn't one defined in frontmatter
+- Pages filenames starting by a date will now use that date as page date if there isn't one defined in front-matter
 - Accept markdown files starting with BOM
 - Add a `watch-only` flag to the `serve` command for when you don't want a webserver
 - Add `transparent` sections, for when you want to separate content by sections but want to group them at a higher level (think a `posts` folder with years
 that want to use pagination on the index).
 - Add `page_template` to section front-matter for when you want to specify the template to use for every page under it
-- Improves to `zola serve`: now handles directories renaming
+- Improvements to `zola serve`: now handles directories renaming
 
 ## 0.4.2 (2018-09-03)
 
@@ -557,7 +557,7 @@ to the public directory
 - Gutenberg now creates an anchor link at the position of the `<!-- more -->` tag if you
 want to link directly to it
 - Fix many shortcode parsing issues
-- Correctly copy themes shortcodes so they are useable in content
+- Correctly copy themes shortcodes so they are usable in content
 - Fix internal links not working for markdown files directly in `content` directory
 
 ## 0.3.2 (2018-03-05)
@@ -589,7 +589,7 @@ For example: `date = "2001-10-10"` becomes `date = 2001-10-10`
 - Add Prolog syntax highlighting and update all current syntaxes
 - Live reloading now works on shortcode template changes
 - `gutenberg serve` now reloads site on `config.toml` changes: you will need to F5 to see any changes though
-- Add a `trans` global function that will get return the translation of the given key for the given lang, defaulting
+- Add a `trans` global function that will return the translation of the given key for the given lang, defaulting
 to `config.default_language` if not given
 - `gutenberg serve` cleans after itself and deletes the output directory on CTRL+C
 
