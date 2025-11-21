@@ -3,14 +3,14 @@
 title = "radion"
 description = "A sleek, modern blog theme."
 template = "theme.html"
-date = 2025-09-19T13:25:22-05:00
+date = 2025-11-16T09:04:46-06:00
 
 [taxonomies]
 theme-tags = ['SEO', 'search', 'accessible']
 
 [extra]
-created = 2025-09-19T13:25:22-05:00
-updated = 2025-09-19T13:25:22-05:00
+created = 2025-11-16T09:04:46-06:00
+updated = 2025-11-16T09:04:46-06:00
 repository = "https://github.com/micahkepe/radion.git"
 homepage = "https://github.com/micahkepe/radion"
 minimum_version = "0.20.0"
@@ -69,6 +69,7 @@ site demo [here](https://micahkepe.com/radion/).
     - Defining Author(s) Per\-Page
   - Favicon
   - GitHub
+  - Fediverse and Mastodon
   - Code Snippets
     - Syntax Highlighting:
     - Enhanced Codeblocks (Clipboard Support and Language Tags)
@@ -114,8 +115,8 @@ The theme requires tags and categories taxonomies to be enabled in your
 ```toml
 taxonomies = [
     # You can enable/disable RSS
-    {name = "categories", feed = true},
-    {name = "tags", feed = true},
+    { name = "categories", feed = true },
+    { name = "tags", feed = true },
 ]
 ```
 
@@ -132,10 +133,10 @@ Set a field in `extra` with a key of `radion_menu`:
 
 ```toml
 radion_menu = [
-    {url = "$BASE_URL", name = "Home"},
-    {url = "$BASE_URL/categories", name = "Categories"},
-    {url = "$BASE_URL/tags", name = "Tags"},
-    {url = "https://google.com", name = "Google"},
+    { url = "$BASE_URL", name = "Home" },
+    { url = "$BASE_URL/categories", name = "Categories" },
+    { url = "$BASE_URL/tags", name = "Tags" },
+    { url = "https://google.com", name = "Google" },
 ]
 ```
 
@@ -157,14 +158,13 @@ The order of precedence for determining the author shown in a page’s footer is
 
 1. `page.extra.author` (highest precedence)
 2. `page.authors`
-3. `page.config.author` (lowest precedence, default)
+3. `config.author` (lowest precedence, default)
 
 #### Defining a Global Default Author in `config.toml`
 
 In `config.toml`:
 
 ```toml
-[extra]
 author = "John Smith"
 ```
 
@@ -232,21 +232,69 @@ To enable a GitHub reference link in the header, set the following in your
 github = "https://github.com/your-github-link"
 ```
 
+### Fediverse and Mastodon
+
+In your `config.toml` you can set options related to the Fediverse and
+explicitly Mastodon.
+
+To enable author attribution, set the `extra.fediverse.creator` option to your
+account address. To enable website verification, set the
+`extra.fediverse.rel_me` option to a link to your profile.
+
+Set the `extra.mastodon` field to a link to your Mastodon account to show a
+Mastodon logo with this link.
+
+```toml
+[extra]
+fediverse.creator = "@username@my.instance.example.com"
+fediverse.rel_me = "https://my.instance.example.com/@username"
+mastodon = "https://my.instance.example.com/@username"
+```
+
 ### Code Snippets
 
 #### Syntax Highlighting:
 
+This theme uses **class-based syntax highlighting** for better security (CSP
+compliance) and theme flexibility.
+
+In your `config.toml`:
+
 ```toml
 [markdown]
-# Whether to do syntax highlighting
-# Theme can be customized by setting the `highlight_theme` variable to a theme
-# supported by Zola
 highlight_code = true
+highlight_theme = "css"  # Required for class-based highlighting
 
-# For a complete list of themes, see:
-# https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting
-highlight_theme = "one-dark"
+# Specify theme(s) for dark and light modes
+highlight_themes_css = [
+  { theme = "one-dark", filename = "syntax/syntax-theme-dark.css" },
+  { theme = "one-dark", filename = "syntax/syntax-theme-light.css" },
+]
 ```
+
+##### Choosing Themes
+
+1. Browse available themes at [Zola's syntax highlighting
+   docs](https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting)
+2. Update both entries in `highlight_themes_css` with your preferred themes
+3. Run `zola serve` or `zola build` - the CSS files will be automatically
+   generated in `static/`
+
+> [!NOTE]
+> If you change the syntax themes, delete the `static/syntax` directory to
+> ensure that the new Syntect CSS files are properly updated.
+
+##### Migration from Previous Versions
+
+**Breaking Change:** If upgrading from an older version that used inline styles:
+
+1. Change `highlight_theme` from a specific theme name to `"css"`
+2. Add the `highlight_themes_css` configuration as shown above
+3. Delete any old `syntax-theme-*.css` files from your `static/` folder
+4. Run `zola build` to regenerate the CSS files
+
+This change improves security by removing inline styles and enables proper CSP
+headers.
 
 #### Enhanced Codeblocks (Clipboard Support and Language Tags)
 
