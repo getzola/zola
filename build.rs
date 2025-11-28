@@ -13,13 +13,24 @@ fn generate_pe_header() {
     res.compile().expect("Failed to compile Windows resources!");
 }
 
+include!("src/cli.rs");
+
+fn generate_man_pages() {
+    use clap::CommandFactory;
+
+    let out_dir = std::env::var("OUT_DIR").unwrap();
+    let cmd = Cli::command();
+    clap_mangen::generate_to(cmd, out_dir).unwrap();
+}
+
 fn main() {
-    if std::env::var("CARGO_CFG_TARGET_OS").unwrap() != "windows"
-        && std::env::var("PROFILE").unwrap() != "release"
-    {
+    if std::env::var("PROFILE").unwrap() != "release" {
         return;
     }
     if cfg!(windows) {
         generate_pe_header();
+    }
+    if cfg!(unix) {
+        generate_man_pages();
     }
 }
