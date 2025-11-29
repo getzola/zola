@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>dose | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;dose&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>dose</h1>
+            <p>a small blog theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;oltdaniel.eu">oltdaniel</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.14.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;oltdaniel&#x2F;dose">https:&#x2F;&#x2F;github.com&#x2F;oltdaniel&#x2F;dose</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;oltdaniel.github.io&#x2F;dose">https:&#x2F;&#x2F;oltdaniel.github.io&#x2F;dose</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-05-07T12:14:01+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="dose">dose</h1>
+<p><img src="https://www.getzola.org/themes/dose/screenshot.png?raw=true" alt="" /></p>
+<h2 id="installation">Installation</h2>
+<p>First install the theme into the <code>themes</code> directory with one of these options:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="font-style:italic;color:#7c7865;"># If you work with git: 
+</span><span>git submodule add https://github.com/oltdaniel/dose.git themes/dose
+</span><span style="font-style:italic;color:#7c7865;"># or just do a download:
+</span><span>git clone https://github.com/oltdaniel/dose.git themes/dose
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;dose&quot;
+</span></code></pre>
+<p>You can enable the following taxonomies:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">feed </span><span>= </span><span style="color:#6e9cbe;">true </span><span>},
+</span><span>]
+</span></code></pre>
+<p>And the theme uses the following extras:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">social_media </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;GitHub&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/oltdaniel&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Twitter&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://twitter.com/@twitter&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Mastodon&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://mastodon.social/@Mastodon&quot;</span><span>, </span><span style="color:#e8bf6a;">rel </span><span>= </span><span style="color:#c1be91;">&quot;me&quot; </span><span>}
+</span><span>]
+</span><span style="color:#e8bf6a;">default_theme </span><span>= </span><span style="color:#c1be91;">&quot;dark&quot; </span><span style="color:#95815e;"># or &quot;light&quot;
+</span></code></pre>
+<p>The description of yourself with your image, you can modify by using a template. Just create a new
+file <code>myblog/templates/parts/me.html</code>:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">img </span><span style="color:#86c20e;">src=</span><span>&quot;</span><span style="color:#c1be91;">https://via.placeholder.com/50</span><span>&quot; </span><span style="color:#86c20e;">height=</span><span>&quot;</span><span style="color:#c1be91;">50px</span><span>&quot; </span><span style="color:#86c20e;">width=</span><span>&quot;</span><span style="color:#c1be91;">50px</span><span>&quot;&gt;
+</span><span>&lt;</span><span style="color:#e8bf6a;">p</span><span>&gt;Hi, this is me. I write about microcontrollers, programming and cloud software. ...&lt;/</span><span style="color:#e8bf6a;">p</span><span>&gt;
+</span></code></pre>
+<p>If you want to have all pages sorted by their date, please create <code>myblog/content/_index.md</code>:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>+++
+</span><span>sort_by = &quot;date&quot;
+</span><span>+++
+</span></code></pre>
+<h3 id="about">About</h3>
+<h4 id="inspired">Inspired</h4>
+<p>I created this theme mainly for my personal website. You are free to use it or modify it. It is inspired by the <a class="external" href="https://riggraz.dev/no-style-please/"><code>no-style-please</code></a> jekyll theme.</p>
+<h4 id="typography">Typography</h4>
+<p>This theme uses no special font, just the browsers default monospace font. Yes, this can mean that the website could be rendered differently, but users can freely choose their webfont.</p>
+<h4 id="darkmode">Darkmode</h4>
+<p>This theme supports dark and light mode. Currently this will be only switched based on the users preffered system theme. But a manual switch will follow in the future in the footer (see the todo).</p>
+<table><thead><tr><th>light</th><th>dark</th></tr></thead><tbody>
+<tr><td><img src="https://www.getzola.org/themes/dose/screenshot-light.png" alt="" /></td><td><img src="https://www.getzola.org/themes/dose/screenshot-dark.png" alt="" /></td></tr>
+</tbody></table>
+<h4 id="size">Size</h4>
+<p>The JavaScript has been moved into the page itself to allow minification. Together this results in the following sizes for the <code>index.html</code>:</p>
+<ul>
+<li><code>~ 3kB</code> JavaScript</li>
+<li><code>~ 3kB</code> CSS</li>
+<li><code>~ 17kB</code> Profile Image</li>
+<li><code>~5kB - ~3kB = ~2kB</code> HTML</li>
+</ul>
+<p>Which results in a total loading size of <code>3kB + 3kB + 17kB + 2kB = 25kB</code>.</p>
+<h4 id="syntax-highlighting">Syntax Highlighting</h4>
+<p>As I didn't want to invest any time in creating an own syntax color schema for this theme, I suggest to use <code>visual-studio-dark</code>, which is the same one used in the demo page.</p>
+<h4 id="customization">Customization</h4>
+<p>You can create your own version of this theme, by simply changing the sass variables in <code>sass/style.scss</code> to match your taste.</p>
+<pre data-lang="scss" style="background-color:#383838;color:#e6e1dc;" class="language-scss "><code class="language-scss" data-lang="scss"><span style="color:#95815e;">/**
+</span><span style="color:#95815e;"> * Variables
+</span><span style="color:#95815e;"> */
+</span><span>$base-background: </span><span style="color:#86c20e;">white</span><span>;
+</span><span>$text-color: </span><span style="color:#86c20e;">black</span><span>;
+</span><span>$article-tag: </span><span style="color:#86c20e;">green</span><span>;
+</span><span>$lang-tag: </span><span style="color:#86c20e;">red</span><span>;
+</span><span>$link-color: </span><span style="color:#86c20e;">blue</span><span>;
+</span><span>$target-color: </span><span style="color:#86c20e;">yellow</span><span>;
+</span><span>$separator-decoration: </span><span style="color:#c1be91;">&quot;//////&quot;</span><span>;
+</span></code></pre>
+<h2 id="license-contributors">License &amp; Contributors</h2>
+<p><img src="https://img.shields.io/github/license/oltdaniel/dose" alt="GitHub" /></p>
+<p>This project was created by <a class="external" href="https://github.com/oltdaniel">Daniel Oltmanns</a> and has been imporved by these <a class="external" href="https://github.com/oltdaniel/dose/graphs/contributors">contributors</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

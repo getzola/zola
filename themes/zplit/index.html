@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Zplit | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zplit&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Zplit</h1>
+            <p>A single page theme for a professional online presence.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;gicrisf">Giovanni Crisalfi</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.15.0 and above</p>
+            
+            <p><b>License:</b> Creative Commons Attribution 3.0 License</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;gicrisf&#x2F;zplit">https:&#x2F;&#x2F;github.com&#x2F;gicrisf&#x2F;zplit</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zplit.netlify.app">https:&#x2F;&#x2F;zplit.netlify.app</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-11-26T15:44:23+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zplit">Zplit</h1>
+<p>Zplit is a single-page, centrally-divided layout designed for a professional online presence. It features a large image or video on the left, accompanied by content on the right. Zplit is a port of <a href="//onepagelove.com/split">Split</a> by <a href="//onepagelove.com">One Page Love</a> for <a class="external" href="https://www.getzola.org/">Zola</a>.</p>
+<p><img src="https://www.getzola.org/themes/zplit/screenshot.png" alt="Zola Zplit Theme screenshot" /></p>
+<p><strong>DEMO</strong>: <a class="external" href="https://zplit.netlify.app/">https://zplit.netlify.app/</a></p>
+<h2 id="installation">Installation</h2>
+<p>Download the theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/gicrisf/zplit.git
+</span></code></pre>
+<p>Then, enable the theme editing your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;zplit&quot;
+</span></code></pre>
+<h2 id="getting-started">Getting started</h2>
+<p>The most important file of the theme is located in the root directory and is named =config.toml=. Edit this file to customize your preferences. Look for sections like <code>[extra]</code> to set variables like <code>author</code>, or <code>[extra.content]</code> to modify intro_tagline.</p>
+<p>If something is unclear or not obvious, you might have missed <a class="external" href="https://www.getzola.org/documentation/getting-started/configuration/">the "configuration" section of the Zola official documentation</a>. Even if you're new to static site generators, don't worry and take some time to go through the documentation, as it covers fundamental concepts.</p>
+<p>Here after, we will discuss two specific sections in more detail, because those are unique for the Zplit theme:</p>
+<ul>
+<li>Background image</li>
+<li>Lists (of links)</li>
+</ul>
+<h3 id="background-image">Background image</h3>
+<p>Edit the <code>[extra.visual]</code> section to set your background image of choice.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.visual</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">background </span><span>= </span><span style="color:#c1be91;">&quot;&lt;your-image-file-path-goes-here&gt;&quot;
+</span></code></pre>
+<p>You can find this example already written as the default:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.visual</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">background </span><span>= </span><span style="color:#c1be91;">&quot;images/background.jpg&quot;
+</span><span style="color:#e8bf6a;">position </span><span>= </span><span style="color:#c1be91;">&quot;center center&quot;
+</span></code></pre>
+<p>As you can see, you can edit the relative position of the image, which is centered by default.</p>
+<h3 id="lists">Lists</h3>
+<p>You can set up to 3 lists of links in the <code>[extra.lists]</code> section of the <code>config.toml</code> file:</p>
+<ul>
+<li>connect</li>
+<li>social</li>
+<li>network</li>
+</ul>
+<p>Manipulating them is very easy: just add/remove elements in the TOML list, as showed in this example (also already present in the default file):</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">social </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://t.me/zwitterio&quot;</span><span>, </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;Telegram&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://twitter.com/gicrisf&quot;</span><span>, </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;Twitter&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/gicrisf&quot;</span><span>, </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;Github&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>Do you want another item? Just throw it up to the pile. You have no limits.
+Remember to set the <code>url</code> field with the link itself you want to direct your user at and a <code>text</code> to show in the page for the corrisponding URL.</p>
+<h2 id="posts">Posts</h2>
+<p>To add new posts, simply place markdown files in the <code>content</code> directory. In order to sort the post index by date, you need to enable the <code>sort_by</code> option in the <code>content/_index.md</code> file within the index section.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">sort_by </span><span>= </span><span style="color:#c1be91;">&quot;date&quot;
+</span></code></pre>
+<p>This theme was not specifically designed for blogging, but rather as a landing page for professionals. However, if you wish to blog using this theme, you certainly can. To do so, simply add a new section in the content directory and include it in the main menu through the config file. This will make it readily accessible to the user.</p>
+<p>The theme does not offer support for taxonomies or other advanced features. It is focused on providing simple pages. If you wish to enhance the blogging functionality, you are welcome to customize the code or submit a specific request as an issue.</p>
+<h2 id="custom-css">Custom CSS</h2>
+<p>To make custom changes to the original stylesheets, you can create a <code>custom.css</code> file in the <code>static</code> directory. In this file, you can add any modifications or additions you desire.</p>
+<h2 id="custom-colors">Custom colors</h2>
+<p>If you need to make adjustments to the colors or grid dimensions, it may be easier to modify the frontmatter of the <code>_01-content.scss</code> file directly. In this file, you will find variables conveniently located at the top:</p>
+<pre data-lang="scss" style="background-color:#383838;color:#e6e1dc;" class="language-scss "><code class="language-scss" data-lang="scss"><span style="color:#95815e;">//-------------------------------------------------------------------------------
+</span><span style="color:#95815e;">// Variables
+</span><span style="color:#95815e;">//-------------------------------------------------------------------------------
+</span><span>
+</span><span style="color:#95815e;">// Colors
+</span><span>$color-background : </span><span style="color:#6d9cbe;">#061C30</span><span>;
+</span><span>$color-text       : </span><span style="color:#6d9cbe;">#848d96</span><span>;
+</span><span>$color-link       : </span><span style="color:#6d9cbe;">#848d96</span><span>;
+</span><span>$color-link-hover : </span><span style="color:#6d9cbe;">#CA486d</span><span>;
+</span><span>$color-maverick   : </span><span style="color:#6d9cbe;">#47bec7</span><span>;
+</span><span>$color-tagline    : </span><span style="color:#6d9cbe;">#CCCCCC</span><span>;
+</span><span>
+</span><span style="color:#95815e;">// Breakpoints
+</span><span>$bp-smallish      : </span><span style="color:#a5c261;">1200</span><span style="color:#cc7833;">px</span><span>;
+</span><span>$bp-tablet        : </span><span style="color:#a5c261;">800</span><span style="color:#cc7833;">px</span><span>;
+</span><span>$bp-mobile        : </span><span style="color:#a5c261;">500</span><span style="color:#cc7833;">px</span><span>;
+</span></code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Lightweight and minimal</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Responsive (mobile support)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Social links</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Deploy via Netlify (config already included)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Easily extendable menus</li>
+<li><input disabled="" type="checkbox" checked=""/>
+De-googled (local assets are faster and more secure)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Netlify support</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Custom CSS</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Custom colors</li>
+<li><input disabled="" type="checkbox" checked=""/>
+404 page</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Basic blogging features</li>
+<li><input disabled="" type="checkbox"/>
+Open Graph and Twitter Cards support</li>
+<li><input disabled="" type="checkbox"/>
+Multilanguage support</li>
+</ul>
+<h2 id="support-me">Support me!</h2>
+<p>Do you love Zplit? Did you find it enjoyable and useful? If so, consider showing your support by making a donation. Your contribution will help fund the development of new features and improvements for this theme.</p>
+<p><a class="external" href="https://ko-fi.com/V7V425BFU"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="ko-fi" /></a></p>
+<h2 id="license">License</h2>
+<p>The original template is released under the <a href="//github.com/escalate/hugo-split-theme/blob/master/LICENSE.md">Creative Commons Attribution 3.0 License</a>. Please keep the original attribution link when using for your own project. If you'd like to use the template without the attribution, you can check out the license option via the template <a href="//onepagelove.com/split">author's website</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

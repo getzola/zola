@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>shadharon | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;shadharon&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>shadharon</h1>
+            <p>Simple blog theme powered by Zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;syedzayyan.com">Syed Zayyan Masud</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;syedzayyan&#x2F;shadharon">https:&#x2F;&#x2F;github.com&#x2F;syedzayyan&#x2F;shadharon</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;syedzayyan.github.io&#x2F;shadharon">https:&#x2F;&#x2F;syedzayyan.github.io&#x2F;shadharon</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-10-27T18:58:30+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="shadharon">Shadharon</h1>
+<p>Simple blog theme powered by <a href="https://www.getzola.org/themes/shadharon/getzola.org">Zola</a>. See a live preview <a class="external" href="https://shadharon.syedzayyan.com/">here</a>.</p>
+<blockquote>
+<p>Name derived from the Bengali Word - সাধারণ which translates to "generic"</p>
+</blockquote>
+<details open>
+  <summary>Dark theme</summary>
+<p><img src="https://raw.githubusercontent.com/syedzayyan/shadharon/main/screenshot.png" alt="blog-dark" /></p>
+</details>
+<details close>
+  <summary>Light theme</summary>
+<p><img src="https://raw.githubusercontent.com/syedzayyan/shadharon/main/screenshot-light.png" alt="light-dark" /></p>
+</details>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Themes (light, dark). Default theme is dark with a switcher in the navbar</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Projects page</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Social Links</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Tags</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<ol start="0">
+<li>
+<p>Initialize Git Repo if not initialized</p>
+</li>
+<li>
+<p>Download the theme</p>
+</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git submodule add https://github.com/syedzayyan/shadharon themes/shadharon
+</span></code></pre>
+<ol start="2">
+<li>
+<p>Add <code>theme = "shadharon"</code> to your <code>config.toml</code></p>
+</li>
+<li>
+<p>Copy the example content</p>
+</li>
+</ol>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>cp -R themes/shadharon/content/. content
+</span></code></pre>
+<h2 id="customization">Customization</h2>
+<ol>
+<li>
+<p>For customization refer to config.toml files, which has comments.</p>
+</li>
+<li>
+<p>For customizing the banner on the homepage the content/posts/_index.md needs modification. The desc variable under <code>extra</code>, specifically. You could delete this as well to remove banner. For an about page or any aditional page an .md file in the "content" directory will do.</p>
+</li>
+</ol>
+<p>You can add stylesheets to override the theme:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">stylesheets </span><span>= [
+</span><span>    </span><span style="color:#c1be91;">&quot;override.css&quot;</span><span>,
+</span><span>]
+</span></code></pre>
+<p>These filenames are relative to the root of the site. In this example, the two CSS files would be in the <code>static</code> folder.</p>
+<h2 id="references">References</h2>
+<p>This theme takes inspiration from</p>
+<ul>
+<li><a class="external" href="https://github.com/not-matthias/apollo">apollo</a>.</li>
+<li><a class="external" href="https://tania.dev/">Tania's Website</a></li>
+<li><a class="external" href="https://github.com/zbrox/anpu-zola-theme">Anpu Zola Theme</a></li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
