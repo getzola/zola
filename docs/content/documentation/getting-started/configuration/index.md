@@ -156,6 +156,22 @@ lazy_async_image = false
 # Whether footnotes are rendered in the GitHub-style (at the bottom, with back references) or plain (in the place, where they are defined)
 bottom_footnotes = false
 
+# When set to "true", support for GitHub-style alerts, a.k.a. callouts or admonitions, is enabled in the Markdown parser.
+# For example, this Markdown syntax:
+#
+#     > [!NOTE]
+#     > alert note
+#
+# will result in the following generated HTML:
+#
+#     <blockquote class="markdown-alert-note">
+#     <p>alert note</p>
+#     </blockquote>
+#
+# where the CSS class name suffix may be `note`, `tip`, `important`, `warning`, or `caution`, depending on the alert type.
+# Visual appearance depends on theme-level support; refer to your theme's documentation for more information.
+github_alerts = false
+
 # This determines whether to insert a link for each header like the ones you can see on this site if you hover over
 # a header.
 # The default template can be overridden by creating an `anchor-link.html` file in the `templates` directory.
