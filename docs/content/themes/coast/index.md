@@ -3,14 +3,14 @@
 title = "coast"
 description = "A simple theme for Zola that evokes the feel the sea breeze."
 template = "theme.html"
-date = 2025-10-31T17:44:50+09:00
+date = 2025-11-29T04:11:34+09:00
 
 [taxonomies]
 theme-tags = ['light', 'simple', 'mermaid', 'katex']
 
 [extra]
-created = 2025-10-31T17:44:50+09:00
-updated = 2025-10-31T17:44:50+09:00
+created = 2025-11-29T04:11:34+09:00
+updated = 2025-11-29T04:11:34+09:00
 repository = "https://github.com/Myxogastria0808/coast.git"
 homepage = "https://github.com/Myxogastria0808/coast/"
 minimum_version = "0.19.0"

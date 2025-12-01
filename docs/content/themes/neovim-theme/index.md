@@ -3,14 +3,14 @@
 title = "neovim"
 description = "A only keyboard theme with tabs and file browser"
 template = "theme.html"
-date = 2025-08-02T17:54:58+02:00
+date = 2025-11-28T20:31:08+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-08-02T17:54:58+02:00
-updated = 2025-08-02T17:54:58+02:00
+created = 2025-11-28T20:31:08+01:00
+updated = 2025-11-28T20:31:08+01:00
 repository = "https://github.com/Super-Botman/neovim-theme.git"
 homepage = "https://github.com/super-botman/zola-theme"
 minimum_version = "0.4"
@@ -59,7 +59,7 @@ blog_name = "name"
 #####################
 
 # set the background image u want
-background-image = "assets/background.jpg"
+background_image = "/assets/background.jpg"
 
 # this parameter allow you to configure specific init functions/shortcuts and commands
 # the value has to be the path of you're config.js file
