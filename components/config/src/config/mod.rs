@@ -149,7 +149,7 @@ impl Config {
         };
 
         if config.base_url.is_empty() || config.base_url == DEFAULT_BASE_URL {
-            bail!("A base URL is required in config.toml with key `base_url`");
+            bail!("A base URL is required in zola.toml with key `base_url`");
         }
 
         languages::validate_code(&config.default_language)?;
@@ -249,7 +249,7 @@ impl Config {
                 return Ok(());
             }
             println!(
-                "Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
+                "Warning: zola.toml contains both default language specific information at base and under section `[languages.{}]`, \
                 which may cause merge conflicts. Please use only one to specify language specific information",
                 self.default_language
             );
@@ -391,7 +391,7 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
         _ => {
             // Trying to merge a table with something else
             Err(anyhow!(
-                "Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}",
+                "Cannot merge zola.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}",
                 into,
                 from
             ))
