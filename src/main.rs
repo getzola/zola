@@ -16,6 +16,11 @@ mod prompt;
 
 fn get_config_file_path(dir: &Path, config_path: &Path) -> (PathBuf, PathBuf) {
     let root_dir = dir.ancestors().find(|a| a.join(config_path).exists()).unwrap_or_else(|| {
+            if config_path == "zola.toml"  {
+                if let Some(a) = dir.ancestors().find(|a| a.join("config.toml").exists()) {
+                    return a;
+                }
+            }
         messages::unravel_errors(
             "",
             &anyhow!(
