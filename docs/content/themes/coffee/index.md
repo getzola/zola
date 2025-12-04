@@ -3,14 +3,14 @@
 title = "coffee"
 description = "A simple theme for Zola inspired by coffee."
 template = "theme.html"
-date = 2025-10-31T17:39:00+09:00
+date = 2025-11-29T04:07:35+09:00
 
 [taxonomies]
 theme-tags = ['dark', 'simple', 'mermaid', 'katex']
 
 [extra]
-created = 2025-10-31T17:39:00+09:00
-updated = 2025-10-31T17:39:00+09:00
+created = 2025-11-29T04:07:35+09:00
+updated = 2025-11-29T04:07:35+09:00
 repository = "https://github.com/Myxogastria0808/coffee.git"
 homepage = "https://github.com/Myxogastria0808/coffee/"
 minimum_version = "0.19.0"

@@ -3,14 +3,14 @@
 title = "Goyo"
 description = "A simplicity and clean documentation theme"
 template = "theme.html"
-date = 2025-11-24T09:37:27+09:00
+date = 2025-12-01T00:34:18+09:00
 
 [taxonomies]
 theme-tags = ['documentation', 'Multilingual', 'Responsive', 'minimal']
 
 [extra]
-created = 2025-11-24T09:37:27+09:00
-updated = 2025-11-24T09:37:27+09:00
+created = 2025-12-01T00:34:18+09:00
+updated = 2025-12-01T00:34:18+09:00
 repository = "https://github.com/hahwul/goyo"
 homepage = "https://github.com/hahwul/goyo"
 minimum_version = "0.17.0"
@@ -41,12 +41,15 @@ homepage = "https://www.hahwul.com"
 - Dark & Light Themes with Brightness Settings
 - Beautiful Landing Page
 - Responsive Design
-- SEO-Friendly
+- SEO-Friendly (Sitemap, RSS Feed)
 - Multi-Language Support
 - Auto-Generated Sidebar & Custom Nav
+- Built-in Search
 - Built-in resources (FontAwesome, Mermaid.js)
 - Comments (Giscus, Utterances)
-- Various shortcodes (Mermaid, Asciinema, Katex, Alert, Badge, etc.)
+- Various shortcodes (Mermaid, Asciinema, Katex, Alert, Badge, YouTube, Gist, Carousel, Collapse, etc.)
+- Custom Font Support
+- Edit Page & Share Buttons
 - Customization
 
 ## Installation
