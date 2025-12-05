@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Soapstone | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;soapstone&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Soapstone</h1>
+            <p>A bare bones dark theme with some color tweakability</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;mradford.com">Matt Radford</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;MattyRad&#x2F;soapstone">https:&#x2F;&#x2F;github.com&#x2F;MattyRad&#x2F;soapstone</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;mattyrad.github.io&#x2F;soapstone&#x2F;">https:&#x2F;&#x2F;mattyrad.github.io&#x2F;soapstone&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2022-07-25T17:05:29-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="soapstone">Soapstone</h1>
+<p>A divless dark theme for zola. <a class="external" href="https://mattyrad.github.io/soapstone/">See it in action</a>.</p>
+<p><img src="/screenshot.png" alt="sample" /></p>
+<p>See <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">installation</a> for installation directions.</p>
+<h2 id="extra-config">Extra config</h2>
+<p>The following config is optional, but can add a few niceties.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">list_header </span><span>= </span><span style="color:#c1be91;">&quot;Hello World&quot; </span><span style="color:#95815e;"># title of the main page
+</span><span style="color:#e8bf6a;">favicon_href </span><span>= </span><span style="color:#c1be91;">&quot;http://example.com&quot; </span><span style="color:#95815e;"># link to favicon
+</span><span style="color:#e8bf6a;">gravatar_img_src </span><span>= </span><span style="color:#c1be91;">&quot;https://0.gravatar.com/avatar/abc123?s=60&quot; </span><span style="color:#95815e;"># adds gravatar image in footer
+</span><span style="color:#e8bf6a;">gravatar_href </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com&quot; </span><span style="color:#95815e;"># link for gravatar image
+</span><span style="color:#e8bf6a;">github_link </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/JohnDoe&quot; </span><span style="color:#95815e;"># adds a github link in footer
+</span><span style="color:#e8bf6a;">about_link </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com&quot; </span><span style="color:#95815e;"># adds an about link in footer
+</span><span style="color:#e8bf6a;">signature_img_src </span><span>= </span><span style="color:#c1be91;">&quot;/example.png&quot; </span><span style="color:#95815e;"># adds an image to bottom of article
+</span><span style="color:#e8bf6a;">signature_text </span><span>= </span><span style="color:#c1be91;">&quot;Signing off!&quot; </span><span style="color:#95815e;"># adds signature text to bottom of articles
+</span><span style="color:#e8bf6a;">ga_code </span><span>= </span><span style="color:#c1be91;">&quot;UA-1234&quot; </span><span style="color:#95815e;"># adds google analytics code
+</span><span style="color:#e8bf6a;">theme_color </span><span>= </span><span style="color:#c1be91;">&quot;#000&quot; </span><span style="color:#95815e;"># for meta browser theme only
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

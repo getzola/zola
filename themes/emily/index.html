@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>emily_zola_theme | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;emily&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>emily_zola_theme</h1>
+            <p>a KISS theme for Zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;kyoheiu">Kyohei Uto</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.14.1 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;kyoheiu&#x2F;emily_zola_theme">https:&#x2F;&#x2F;github.com&#x2F;kyoheiu&#x2F;emily_zola_theme</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;emily-zola-theme.netlify.app&#x2F;">https:&#x2F;&#x2F;emily-zola-theme.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-11-05T15:26:56+09:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="emily-zola-theme">emily_zola_theme</h1>
+<p><img src="/static/images/ss01.png" alt="screenshot01" /></p>
+<p>A KISS theme for Zola (static site generator written in Rust).</p>
+<p>Features:</p>
+<ul>
+<li>simple &amp; clean</li>
+<li>mobile-friendly</li>
+<li>MathJax support</li>
+</ul>
+<p>Demo site is <a class="external" href="https://emily-zola-theme.netlify.app/">here</a>.</p>
+<h2 id="usage">Usage</h2>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>cd YOUR_SITE_DIRECTORY/themes
+</span><span>git clone https://github.com/kyoheiu/emily_zola_theme.git
+</span></code></pre>
+<p>and set the theme-name in <code>config.toml</code> to <code>emily_zola_theme</code>.</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>theme = &quot;emily_zola_theme&quot;
+</span></code></pre>
+<h2 id="example-articles">example articles</h2>
+<p>In <code>YOUR_SITE_DIRECTORY/themes/emily_zola_theme/content</code>.</p>
+<h2 id="mathjax-support">MathJax support</h2>
+<p>To use MathJax, add the following lines to the front matter in <code>.md</code> file. <code>[extra]</code> is mandatory:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>[extra]
+</span><span>math = true
+</span></code></pre>
+<h2 id="how-to-customize">How to customize</h2>
+<p>In addition to default values, you can customize following parts easily:</p>
+<ul>
+<li>author name (appears in footer)</li>
+<li>header icon (appears in header)</li>
+<li>favicon</li>
+<li>header icon size (default width: 70px)</li>
+<li>number of posts in <code>index.html</code> (default 5)</li>
+</ul>
+<p>Set your own in <code>themes/emily_zola_theme/theme.toml</code>, or to overwrite, copy <code>[extra]</code> block, paste it into your <code>config.toml</code> and edit.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

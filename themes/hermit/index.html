@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Hermit_Zola | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;hermit&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Hermit_Zola</h1>
+            <p>Minimal Zola theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;versbinarii.gitlab.io&#x2F;blog&#x2F;">VersBinarii</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;VersBinarii&#x2F;hermit_zola">https:&#x2F;&#x2F;github.com&#x2F;VersBinarii&#x2F;hermit_zola</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;versbinarii.gitlab.io&#x2F;blog&#x2F;">https:&#x2F;&#x2F;versbinarii.gitlab.io&#x2F;blog&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-04-06T11:23:44+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><a class="external" href="https://travis-ci.org/VersBinarii/hermit_zola"><img src="https://travis-ci.org/VersBinarii/hermit_zola.svg?branch=master" alt="Build Status" /></a></p>
+<h1 id="hermit">Hermit</h1>
+<blockquote>
+<p>this is a port of the <a class="external" href="https://github.com/Track3/hermit">Hermit theme</a> for <a class="external" href="https://www.getzola.org/">Zola</a></p>
+</blockquote>
+<p>Hermit is a  minimal &amp; fast Zola theme for bloggers.</p>
+<p><img src="https://www.getzola.org/themes/hermit/screenshot.png" alt="screenshot" /></p>
+<p><a class="external" href="https://versbinarii.gitlab.io/blog/">View demo</a></p>
+<h2 id="installation">Installation</h2>
+<p>First download the theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/VersBinarii/hermit_zola
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;hermit_zola&quot;
+</span></code></pre>
+<h2 id="configuration">Configuration</h2>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">home_subtitle </span><span>= </span><span style="color:#c1be91;">&quot;Some profound and catchy statement&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">footer_copyright </span><span>= </span><span style="color:#a5c261;">&#39; &amp;#183; &lt;a href=&quot;https://creativecommons.org/licenses/by-nc/4.0/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;CC BY-NC 4.0&lt;/a&gt;&#39;
+</span><span>
+</span><span style="color:#e8bf6a;">hermit_menu </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;/posts&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Posts&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;/about&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;About&quot; </span><span>}
+</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">hermit_social </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;twitter&quot;</span><span>, </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;https://twitter.com&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;github&quot;</span><span>, </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;email&quot;</span><span>, </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;mailto:author@domain.com&quot; </span><span>}
+</span><span>]
+</span><span>
+</span><span>
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.highlightjs</span><span>]
+</span><span style="color:#e8bf6a;">enable </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">clipboard </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;vs2015&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.disqus</span><span>]
+</span><span style="color:#e8bf6a;">enable </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span style="color:#95815e;"># Take this from your Disqus account
+</span><span style="color:#e8bf6a;">shortname </span><span>= </span><span style="color:#c1be91;">&quot;my-supa-dupa-blog&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.author</span><span>]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;The Author&quot;
+</span><span style="color:#e8bf6a;">email </span><span>= </span><span style="color:#c1be91;">&quot;author@domain.com&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.google_analytics</span><span>]
+</span><span style="color:#e8bf6a;">enable </span><span>= </span><span style="color:#6e9cbe;">false
+</span><span style="color:#e8bf6a;">id </span><span>= </span><span style="color:#c1be91;">&quot;UA-4XXXXXXX-X&quot;
+</span></code></pre>
+<h3 id="table-of-content">Table of content</h3>
+<p>Table of content can be enabled by adding</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>+++
+</span><span>[extra]
+</span><span>toc=true
+</span><span>+++
+</span></code></pre>
+<p>to the page front matter. Icon will then appear above the page title that will
+allow to toggle the ToC.</p>
+<h2 id="license">License</h2>
+<p><a href="https://www.getzola.org/themes/hermit/LICENSE">MIT</a></p>
+<p>Thanks to <a class="external" href="https://github.com/Track3">Track3</a> for creating the original!</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

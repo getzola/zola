@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>hephaestus | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;hephaestus&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>hephaestus</h1>
+            <p>A portfolio theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;bryantconquest.com">Bryant Conquest</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> AGPL</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;BConquest&#x2F;hephaestus">https:&#x2F;&#x2F;github.com&#x2F;BConquest&#x2F;hephaestus</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;bryantconquest.com">https:&#x2F;&#x2F;bryantconquest.com</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-03-19T11:40:54-05:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="hephaestus">hephaestus</h1>
+<p>Hephaestus is a portfolio theme for zola. It uses bulma css and supports using icons from ion-icon.</p>
+<p><img src="https://www.getzola.org/themes/hephaestus/screenshot.png?raw=true" alt="hephaestus screenshot" /></p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li>Installation</li>
+<li>Options
+<ul>
+<li>Navigation Bar</li>
+<li>Education</li>
+<li>Projects</li>
+<li>Skills</li>
+<li>Social Links</li>
+</ul>
+</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>First, you will download the theme into your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/BConquest/hephaestus
+</span></code></pre>
+<p>Second, you will enable the theme in your <code>config.toml</code> directory:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;hephaestus&quot;
+</span></code></pre>
+<h2 id="options">Options</h2>
+<h3 id="navigation-bar">Navigation Bar</h3>
+<p>To edit the navigation bar you will need to edit your <code>config.toml</code> to include:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">menu </span><span>= [
+</span><span>{ </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;foo&quot;</span><span>, </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;/foo&quot;</span><span>},
+</span><span>{ </span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;bar&quot;</span><span>, </span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;/bar&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>You can have as many items as you want to have and the links can be to anything.</p>
+<h3 id="education">Education</h3>
+<p>To edit the education that is displayed you will need to create a directory in <code>content</code>.
+In the <code>_index.md</code> the frontmatter needs to include:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;foo&quot;
+</span><span style="color:#e8bf6a;">template </span><span>= </span><span style="color:#c1be91;">&quot;education.html&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;Name&quot;
+</span></code></pre>
+<p>For every educational level you want to add you will need to create a new markdown file that includes the frontmatter:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>title = &quot;place of education&quot;
+</span><span>
+</span><span>[extra]
+</span><span>image = &quot;image-location&quot;
+</span><span>link = &quot;link to school&quot;
+</span><span>+++
+</span></code></pre>
+<p>Any content that is typed will be rendered underneath these two items.</p>
+<h3 id="projects">Projects</h3>
+<p>To edit the projects that are displayed you will need to create a directory in <code>content</code>.
+In the <code>_index.md</code> the frontmatter needs to include:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;foo&quot;
+</span><span style="color:#e8bf6a;">template </span><span>= </span><span style="color:#c1be91;">&quot;projects.html&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;bar&quot;
+</span></code></pre>
+<p>Then for every project you want to add you will need to format the <code>*.md</code> as:</p>
+<pre data-lang="md" style="background-color:#383838;color:#e6e1dc;" class="language-md "><code class="language-md" data-lang="md"><span>+++
+</span><span>title = &quot;foo&quot;
+</span><span>
+</span><span>[extra]
+</span><span>image = &quot;/image_location&quot;
+</span><span>link = &quot;link to project&quot;
+</span><span>technologies = [&quot;bar&quot;, &quot;baz&quot;]
+</span><span>+++
+</span><span>
+</span><span>Description of project named foo.
+</span></code></pre>
+<h3 id="skills">Skills</h3>
+<p>To edit the skills that you want to display it is important to note that there are two types of skills that can be
+displayed (lan, and tools). To format the look you will need to create a directory in <code>content</code> that includes the
+frontmatter of:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;foo&quot;
+</span><span style="color:#e8bf6a;">template </span><span>= </span><span style="color:#c1be91;">&quot;skills.html&quot;
+</span><span style="color:#e8bf6a;">page_template </span><span>= </span><span style="color:#c1be91;">&quot;skills.html&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;author-name&quot;
+</span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;image-location&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">lan </span><span>= [
+</span><span>{ </span><span style="color:#e8bf6a;">lang </span><span>= </span><span style="color:#c1be91;">&quot;language&quot;</span><span>, </span><span style="color:#e8bf6a;">expr </span><span>= </span><span style="color:#c1be91;">&quot;num between 1-5&quot;</span><span>, </span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;image-location&quot;</span><span>, </span><span style="color:#e8bf6a;">comfort </span><span>= </span><span style="color:#c1be91;">&quot;word to describe comfort&quot;</span><span>},
+</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">tools </span><span>= [
+</span><span>{ </span><span style="color:#e8bf6a;">tool </span><span>= </span><span style="color:#c1be91;">&quot;tool-name&quot;</span><span>, </span><span style="color:#e8bf6a;">expr </span><span>= </span><span style="color:#c1be91;">&quot;num between 1-5&quot;</span><span>, </span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;tool-image&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<h3 id="social-links">Social Links</h3>
+<p>To edit the social links that appear in the footer of the page, you need to edit your <code>config.toml</code> to include:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>social = [
+</span><span>{ user = &quot;username&quot;, link = &quot;link&quot;, icon = &quot;icon-name from ion-icon&quot;},
+</span><span>]
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

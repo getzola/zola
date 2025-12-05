@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>zola-paper | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zola-paper&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>zola-paper</h1>
+            <p>A clean theme inspired from hugo-paper.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;schoenenberg.dev">Maximilian Schoenenberg</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.11.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;schoenenberg&#x2F;zola-paper">https:&#x2F;&#x2F;github.com&#x2F;schoenenberg&#x2F;zola-paper</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;schoenenberg.github.io&#x2F;zola-paper">https:&#x2F;&#x2F;schoenenberg.github.io&#x2F;zola-paper</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-03-15T01:35:18-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zola-paper">Zola-Paper</h1>
+<p>A clean theme inspired from hugo-paper.</p>
+<p><a class="external" href="https://getzola.org">Zola</a> port of <a class="external" href="https://github.com/nanxiaobei/hugo-paper/">Hugo-Paper</a> (with a few tweaks).</p>
+<p><strong>Demo:</strong> <a class="external" href="https://schoenenberg.github.com/zola-paper">https://schoenenberg.github.com/zola-paper</a></p>
+<p><img src="https://www.getzola.org/themes/zola-paper/screenshot.png" alt="Screenshot" />
+<img src="https://www.getzola.org/themes/zola-paper/screenshot_dark.png" alt="Dark Mode Screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>The easiest way to install this theme is to either clone it ...</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/schoenenberg/zola-paper.git themes/zola-paper
+</span></code></pre>
+<p>... or to use it as a submodule.</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git submodule add https://github.com/schoenenberg/zola-paper.git themes/zola-paper
+</span></code></pre>
+<p>Either way, you will have to enable the theme in your <code>config.toml</code>.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;zola-paper&quot;
+</span></code></pre>
+<h2 id="open-graph-integration">Open Graph Integration</h2>
+<p>This theme has an integration of Open Graph <em>meta</em> tags. These are set based on context and available information. See the following example:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>title = &quot;Lorem ipsum!&quot;
+</span><span>
+</span><span>[extra]
+</span><span>author = &quot;Max Mustermann&quot;
+</span><span>author_url = &quot;</span><span style="text-decoration:underline;color:#86c20e;">https://www.facebook.com/example.profile.3&quot;
+</span><span>banner_path = &quot;default-banner&quot;
+</span><span>
+</span><span>[taxonomies]
+</span><span>tags = [&quot;rust&quot;, &quot;zola&quot;, &quot;blog&quot;]
+</span><span>+++
+</span><span>
+</span><span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc eu feugiat sapien. Aenean ligula nunc, laoreet id sem in, interdum bibendum felis. Donec vel dui neque.
+</span><span style="color:#95815e;">&lt;!-- more --&gt;
+</span><span>Ut luctus dolor ut tortor hendrerit, sed hendrerit augue scelerisque. Suspendisse quis sodales dui, at tempus ante. Nulla at tempor metus. Aliquam vitae rutrum diam. Curabitur iaculis massa dui, quis varius nulla finibus a. Praesent eu blandit justo. Suspendisse pharetra, arcu in rhoncus rutrum, magna magna viverra erat, ...
+</span><span>
+</span></code></pre>
+<p>Required attributes of the <code>extra</code> section is <code>author</code>. All other attributes are optional. The path for the <code>banner_path</code> attribute has to be relative to the content directory.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

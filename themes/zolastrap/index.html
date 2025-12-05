@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>zolastrap | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zolastrap&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>zolastrap</h1>
+            <p>A bootstrap theme for zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;marcodpt.github.io">Marco Tomic</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.14.1 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;marcodpt&#x2F;zolastrap">https:&#x2F;&#x2F;github.com&#x2F;marcodpt&#x2F;zolastrap</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;marcodpt.github.io&#x2F;zolastrap&#x2F;">https:&#x2F;&#x2F;marcodpt.github.io&#x2F;zolastrap&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2022-02-20T19:12:59-03:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zolastrap">zolastrap</h1>
+<p>A bootstrap theme for zola</p>
+<p><a class="external" href="https://marcodpt.github.io/zolastrap/">Live Demo</a></p>
+<h2 id="config-toml-extra-variables"><code>config.toml</code> [extra] variables</h2>
+<h3 id="banner">banner</h3>
+<ul>
+<li>type: string</li>
+<li>default: ""</li>
+</ul>
+<p>Path of a banner image, use empty string for no banner</p>
+<h3 id="date-format">date_format</h3>
+<ul>
+<li>type: string</li>
+<li>default: "%d/%m/%Y"</li>
+</ul>
+<p>date format expression</p>
+<h3 id="theme">theme</h3>
+<ul>
+<li>type: string</li>
+<li>default: "default"</li>
+</ul>
+<p>one of the <a class="external" href="https://bootswatch.com">Bootswatch</a> themes</p>
+<h3 id="bg">bg</h3>
+<ul>
+<li>type: string</li>
+<li>default: "dark"</li>
+</ul>
+<p>one of the available backgrounds in
+<a class="external" href="https://getbootstrap.com/docs/5.1/utilities/background/">Bootstrap5</a>
+for <code>navbar</code> and <code>footer</code></p>
+<h3 id="inverted">inverted</h3>
+<ul>
+<li>type: boolean</li>
+<li>default: false</li>
+</ul>
+<p>Invert font for <code>navbar</code> and <code>footer</code> in case default choice is bad</p>
+<h3 id="themes">themes</h3>
+<ul>
+<li>type: string</li>
+<li>default: "Choose a Theme"</li>
+</ul>
+<p>Navbar label for themes dropdown.</p>
+<p>This dropdown will allow user to change
+<a class="external" href="https://bootswatch.com">Bootswatch</a> theme.</p>
+<p>Use empty string in case you do not want the user choose a theme.</p>
+<h3 id="schemes">schemes</h3>
+<ul>
+<li>type: string</li>
+<li>default: "Choose a Color Scheme"</li>
+</ul>
+<p>Navbar label for schemes dropdown.</p>
+<p>This dropdown will allow user to change footer and navbar
+<a class="external" href="https://getbootstrap.com/docs/5.1/utilities/background/">background</a>
+color.</p>
+<p>Use empty string in case you do not want the user choose a theme.</p>
+<h3 id="search">search</h3>
+<ul>
+<li>type: string</li>
+<li>default: "Search"</li>
+</ul>
+<p>Placeholder for navbar search input.</p>
+<p>Remember that to enable and disable search you should set variable
+<a class="external" href="https://www.getzola.org/documentation/getting-started/configuration/">build_search_index</a>.</p>
+<h3 id="tag">tag</h3>
+<ul>
+<li>type: string</li>
+<li>default: "Posts by Topic"</li>
+</ul>
+<p>Taxonomy <code>tag</code> single label. Useful for translations.</p>
+<h3 id="tags">tags</h3>
+<ul>
+<li>type: string</li>
+<li>default: "Posts by Topics"</li>
+</ul>
+<p>Taxonomy <code>tag</code> list label. Useful for translations.
+You can have a nice tag list at the bottom of a page using <code>extra.tags</code> = true
+in the <code>_index.md</code></p>
+<h3 id="links">links</h3>
+<ul>
+<li>type: array</li>
+<li>default: []</li>
+</ul>
+<p>Navbar links. Use an empty array to ignore this.</p>
+<p>Items (object):</p>
+<ul>
+<li>title (String): label of the navbar link</li>
+<li>url (String): href of associate link</li>
+</ul>
+<h3 id="email">email</h3>
+<ul>
+<li>type: string</li>
+<li>default: ""</li>
+</ul>
+<p>Footer email. Use an empty string to ignore this.</p>
+<h3 id="icons">icons</h3>
+<ul>
+<li>type: array</li>
+<li>default: []</li>
+</ul>
+<p>Footer social icons. Use an empty array to ignore this.</p>
+<p>Items (object):</p>
+<ul>
+<li>title (string): Optional title string for icon</li>
+<li>icon (string): One of</li>
+<li>url (string): href of the icon</li>
+</ul>
+<h3 id="utterances">utterances</h3>
+<ul>
+<li>type: string</li>
+<li>default: ""</li>
+</ul>
+<p><a class="external" href="https://github.com/utterance/utterances">utterances</a> repo url.</p>
+<p>Use an empty string to ignore utterances widget.</p>
+<h3 id="utterances-label">utterances_label</h3>
+<ul>
+<li>type: string</li>
+<li>default: "Comments"</li>
+</ul>
+<p><a class="external" href="https://github.com/utterance/utterances">utterances</a> widget label.</p>
+<h3 id="utterances-theme">utterances_theme</h3>
+<ul>
+<li>type: string</li>
+<li>default: "github-light"</li>
+</ul>
+<p><a class="external" href="https://github.com/utterance/utterances">utterances</a> widget theme.</p>
+<h3 id="utterances-issue-term">utterances_issue_term</h3>
+<ul>
+<li>type: string</li>
+<li>default: "pathname"</li>
+</ul>
+<p><a class="external" href="https://github.com/utterance/utterances">utterances</a> widget pathname.</p>
+<h2 id="contributing">Contributing</h2>
+<p>Any help is greatly appreciated!</p>
+<ul>
+<li><a class="external" href="https://tera.netlify.app/docs">Tera template engine</a></li>
+<li><a class="external" href="https://www.getzola.org/documentation/templates/overview/">Zola SSG templates</a></li>
+<li><a class="external" href="https://getbootstrap.com/docs/5.1/getting-started/introduction/">Bootstrap5 docs</a></li>
+<li><a class="external" href="https://bootswatch.com">Bootswatch</a></li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

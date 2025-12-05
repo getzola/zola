@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>adidoks | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;adidoks&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>adidoks</h1>
+            <p>AdiDoks is a Zola theme helping you build modern documentation.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;aaranxu">Aaran Xu</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.15.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;aaranxu&#x2F;adidoks">https:&#x2F;&#x2F;github.com&#x2F;aaranxu&#x2F;adidoks</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;adidoks.netlify.app&#x2F;">https:&#x2F;&#x2F;adidoks.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2022-03-14T08:19:13+08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zola-theme-adidoks">Zola Theme AdiDoks</h1>
+<p>AdiDoks is a modern documentation theme, which is a port of the Hugo
+theme <a class="external" href="https://github.com/h-enk/doks">Doks</a> for Zola.</p>
+<h2 id="demo">Demo</h2>
+<p><a class="external" href="https://adidoks.netlify.app/">Live Preview</a>.</p>
+<h2 id="requirements">Requirements</h2>
+<p>Before using the theme, you need to install the <a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">Zola</a> ≥ 0.15.0.</p>
+<h2 id="quick-start">Quick Start</h2>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone https://github.com/aaranxu/adidoks.git
+</span><span style="color:#da4939;">cd</span><span> adidoks
+</span><span>zola serve
+</span><span style="font-style:italic;color:#7c7865;"># open http://127.0.0.1:1111/ in the browser
+</span></code></pre>
+<p>Read more from <a class="external" href="https://adidoks.org/docs/getting-started/introduction/">the document of the AdiDoks</a>.</p>
+<h2 id="installation">Installation</h2>
+<p>Just earlier we showed you how to run the theme directly. Now we start to
+install the theme in an existing site step by step.</p>
+<h3 id="step-1-create-a-new-zola-site">Step 1: Create a new zola site</h3>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola init mysite
+</span></code></pre>
+<h3 id="step-2-install-adidoks">Step 2: Install AdiDoks</h3>
+<p>Download this theme to your themes directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> mysite/themes
+</span><span>git clone https://github.com/aaranxu/adidoks.git
+</span></code></pre>
+<p>Or install as a submodule:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> mysite
+</span><span>git init  </span><span style="font-style:italic;color:#7c7865;"># if your project is a git repository already, ignore this command
+</span><span>git submodule add https://github.com/aaranxu/adidoks.git themes/adidoks
+</span></code></pre>
+<h3 id="step-3-configuration">Step 3: Configuration</h3>
+<p>Enable the theme in your <code>config.toml</code> in the site directory:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;adidoks&quot;
+</span></code></pre>
+<p>Or copy the <code>config.toml.example</code> from the theme directory to your project's
+root directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>cp themes/adidoks/config.toml.example config.toml
+</span></code></pre>
+<h3 id="step-4-add-new-content">Step 4: Add new content</h3>
+<p>You can copy the content from the theme directory to your project:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>cp</span><span style="font-style:italic;color:#fd971f;"> -r</span><span> themes/adidoks/content .
+</span></code></pre>
+<p>You can modify or add new posts in the <code>content/blog</code>, <code>content/docs</code> or other
+content directories as needed.</p>
+<h3 id="step-5-run-the-project">Step 5: Run the project</h3>
+<p>Just run <code>zola serve</code> in the root path of the project:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola serve
+</span></code></pre>
+<p>AdiDoks will start the Zola development web server accessible by default at
+<code>http://127.0.0.1:1111</code>. Saved changes will live reload in the browser.</p>
+<h2 id="customisation">Customisation</h2>
+<p>You can customize your configurations, templates and content for yourself. Look
+at the <code>config.toml</code>, <code>theme.toml</code>, <code>content</code> files and templates files in this
+repo for an idea.</p>
+<h3 id="global-configuration">Global Configuration</h3>
+<p>There are some configuration options that you can customize in <code>config.toml</code>.</p>
+<h4 id="configuration-options-before-extra-options">Configuration options before <code>extra</code> options</h4>
+<p>Set the authors's taxonomies for the site.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>  {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;authors&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>Use search function for the content.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h4 id="configuration-options-under-the-extra">Configuration options under the <code>extra</code></h4>
+<p>The following options should be under the <code>[extra]</code> in <code>config.toml</code></p>
+<ul>
+<li><code>language_code</code> - set HTML file language (default to <code>en-US</code>)</li>
+<li><code>theme_color</code> - your site's HTML color (default to <code>#fff</code>)</li>
+<li><code>title_separator</code> - the separator to your site title, like <code>|</code> and <code>-</code> (defaults to <code>|</code>)</li>
+<li><code>title_addition</code> - the additon content for the title of the homepage</li>
+<li><code>timeformat</code> - the timeformat for the blog article published date</li>
+<li><code>timezone</code> - the timezone for the blog article published date</li>
+<li><code>edit_page</code> (and <code>docs_repo</code>, <code>repo_branch</code>) - whether to show the edit page in the github repo for your docs</li>
+<li><code>math</code> (and <code>library</code>) - set KaTeX or MathJax library</li>
+<li><code>[extra.open]</code> - Open Graph + Twitter Cards for the site</li>
+<li><code>[extra.schema]</code> - set JSON-LD for the site</li>
+<li><code>[[extra.menu.main]]</code> - the header navigations for the site</li>
+<li><code>[[extra.menu.social]]</code> - the social links on the header of the page</li>
+<li><code>[extra.footer]</code> - the footer content on the left</li>
+<li><code>[[extra.footer.nav]]</code> - the footer navigations on the right</li>
+</ul>
+<h3 id="templates">Templates</h3>
+<p>All pages are extend to the <code>base.html</code>, and you can customize them as need.</p>
+<h3 id="content">Content</h3>
+<h4 id="homepage">Homepage</h4>
+<p>Go to the <em>content/_index.md</em> file to add your own homepage content.</p>
+<ul>
+<li><code>[extra]</code> - the main content of the homepage</li>
+<li><code>[[extra.ist]]</code> - the lists' content of the homepage</li>
+</ul>
+<h4 id="sections">Sections</h4>
+<p>Each section includes a <code>_index.md</code>, and you can customize it or add your new
+section under the <code>content</code> folder.</p>
+<h4 id="pages">Pages</h4>
+<p>There are mainly three types of pages in the site.</p>
+<ul>
+<li><code>blog</code> - blog article</li>
+<li><code>docs</code> - documentation article</li>
+<li><code>authors</code> - authors page if you need to add some information for a new author</li>
+</ul>
+<h2 id="reporting-issues">Reporting Issues</h2>
+<p>We use GitHub Issues as the official bug tracker for the <strong>AdiDoks</strong>. Please
+search <a class="external" href="https://github.com/aaranxu/adidoks/issues">existing issues</a>. It’s
+possible someone has already reported the same problem.</p>
+<p>If your problem or idea is not addressed yet, <a class="external" href="https://github.com/aaranxu/adidoks/issues/new">open a new issue</a>.</p>
+<h2 id="contributing">Contributing</h2>
+<p>We'd love your help! Please see <a href="https://www.getzola.org/themes/adidoks/./CONTRIBUTING.md">CONTRIBUTING.md</a> to learn
+about the kinds of contributions we're looking for.</p>
+<h2 id="license">License</h2>
+<p><strong>AdiDoks</strong> is distributed under the terms of the
+<a class="external" href="https://github.com/aaranxu/adidoks/blob/main/LICENSE">MIT license</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

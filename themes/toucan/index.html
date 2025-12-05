@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Toucan | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;toucan&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Toucan</h1>
+            <p>Inspired from Pelican default theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;trentesaux.fr&#x2F;">Hugo Trentesaux</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.8.0 and above</p>
+            
+            <p><b>License:</b> AGPL</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;git.42l.fr&#x2F;HugoTrentesaux&#x2F;toucan">https:&#x2F;&#x2F;git.42l.fr&#x2F;HugoTrentesaux&#x2F;toucan</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;toucan.coinduf.eu&#x2F;">https:&#x2F;&#x2F;toucan.coinduf.eu&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-10-03T16:44:28+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="toucan">Toucan</h1>
+<p>A light theme for Zola adapted from Pelican.</p>
+<p><img src="https://www.getzola.org/themes/toucan/./screenshot.png" alt="screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>You can add the theme as a submodule :</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git submodule add</span><span style="font-style:italic;color:#fd971f;"> --name</span><span> toucan https://git.42l.fr/HugoTrentesaux/toucan.git themes/toucan
+</span></code></pre>
+<p>and enable the theme in your <code>config.toml</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;toucan&quot;
+</span></code></pre>
+<h2 id="usage">Usage</h2>
+<p>Categories will be added to the menu, and all articles from categories with</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">transparent </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>will be listed in the home page.</p>
+<p>You can personalize the following options :</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Toucan theme&quot;
+</span><span style="color:#e8bf6a;">title_pic </span><span>= </span><span style="color:#c1be91;">&quot;/favicon.ico&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Theme for Zola inspired from Pelican website theme&quot;
+</span><span style="color:#e8bf6a;">license </span><span>= </span><span style="color:#a5c261;">&quot;&quot;&quot;Content under &lt;a href=&quot;https://creativecommons.org/licenses/by-sa/4.0/&quot;&gt;CC BY-SA&lt;/a&gt; Licence&quot;&quot;&quot;
+</span></code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

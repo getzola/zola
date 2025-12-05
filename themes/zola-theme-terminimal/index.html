@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>terminimal | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zola-theme-terminimal&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>terminimal</h1>
+            <p>A simple, minimal retro theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;pawroman">Paweł Romanowski</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.11.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;pawroman&#x2F;zola-theme-terminimal">https:&#x2F;&#x2F;github.com&#x2F;pawroman&#x2F;zola-theme-terminimal</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;pawroman.github.io&#x2F;zola-theme-terminimal&#x2F;">https:&#x2F;&#x2F;pawroman.github.io&#x2F;zola-theme-terminimal&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-08-17T17:49:29+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="terminimal">Terminimal</h1>
+<p><a class="external" href="https://github.com/pawroman/zola-theme-terminimal/actions/workflows/pages/pages-build-deployment"><img src="https://github.com/pawroman/zola-theme-terminimal/actions/workflows/pages/pages-build-deployment/badge.svg" alt="Build Status" /></a>
+<img src="https://img.shields.io/badge/JavaScript-none-brightgreen.svg" alt="No JavaScript" /></p>
+<p><img src="../master/screenshot.png?raw=true" alt="Screenshot" /></p>
+<p>See the live demo (of the default configuration) here:
+https://pawroman.github.io/zola-theme-terminimal/</p>
+<p>Tested with Zola v0.19.2.</p>
+<p>Please note that earlier (and older) versions might not work because of breaking changes across Zola versions.</p>
+<h4 id="fork-disclaimer">Fork disclaimer</h4>
+<p>This theme is a fork (not a port) of "Terminal" Hugo theme
+by Radosław Kozieł (aka. panr):
+https://github.com/panr/hugo-theme-terminal</p>
+<p>Many thanks for that outstanding original theme, Radek!</p>
+<p>For more information about this fork and the differences to the original theme, please see:
+Changes compared to the original theme below.</p>
+<h2 id="versioning">Versioning</h2>
+<p>This theme used to be non-versioned, e.g. you'd pull the master branch, and occasionally new features or fixes would
+be released.</p>
+<p>Starting from version v1.0.0, the project adopted <a class="external" href="https://semver.org/">Semantic Versioning</a>.</p>
+<p>Please check the <a class="external" href="https://github.com/pawroman/zola-theme-terminimal/releases">GitHub releases</a> to see a change log
+and work out if there's any breaking changes.</p>
+<h2 id="how-to-start">How to start</h2>
+<p>Option A: clone the theme directly into your Zola site folder:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$ git clone https://github.com/pawroman/zola-theme-terminimal.git themes/terminimal
+</span></code></pre>
+<p>Option B: include it as a git submodule (it's better if you plan to use CI builders):</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$ git submodule add https://github.com/pawroman/zola-theme-terminimal.git themes/terminimal
+</span></code></pre>
+<p>Then in your <code>config.toml</code> set:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;terminimal&quot;
+</span><span>
+</span><span style="color:#95815e;"># Sass compilation is required
+</span><span style="color:#e8bf6a;">compile_sass </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>Also see the Zola documentation on using themes:
+https://www.getzola.org/documentation/themes/installing-and-using-themes/</p>
+<h2 id="shortcodes">Shortcodes</h2>
+<p>The theme adds two custom shortcodes related to image handling.</p>
+<h3 id="image"><code>image</code></h3>
+<p>Used to show images.</p>
+<p>Required arguments:</p>
+<ul>
+<li><strong><code>src</code></strong></li>
+</ul>
+<p>Optional arguments:</p>
+<ul>
+<li><strong><code>alt</code></strong></li>
+<li><strong><code>position</code></strong> (center [default] | left | right)</li>
+<li><strong><code>style</code></strong></li>
+</ul>
+<p>Example:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{{ image(src=&quot;/img/hello.png&quot;, alt=&quot;Hello Friend&quot;,
+</span><span>         position=&quot;left&quot;, style=&quot;border-radius: 8px;&quot;) }}
+</span></code></pre>
+<h3 id="figure"><code>figure</code></h3>
+<p>Same as <code>image</code>, but with a few extra optional arguments:</p>
+<ul>
+<li><strong><code>caption</code></strong> (supports markdown)</li>
+<li><strong><code>caption_position</code></strong> (center [default] | left | right)</li>
+<li><strong><code>caption_style</code></strong></li>
+</ul>
+<p>Example:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{{ figure(src=&quot;http://rustacean.net/assets/rustacean-flat-gesture.png&quot;,
+</span><span>          style=&quot;width: 25%;&quot;,
+</span><span>          position=&quot;right&quot;,
+</span><span>          caption_position=&quot;left&quot;,
+</span><span>          caption=&quot;**Ferris**, the (unofficial) Rust mascot&quot;,
+</span><span>          caption_style=&quot;font-style: italic;&quot;) }}
+</span></code></pre>
+<h2 id="opengraph">OpenGraph</h2>
+<p>To add an image to a post, set the <code>og_image</code> extra option to the desired image
+in the same directory of the markdown file:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">og_image </span><span>= </span><span style="color:#c1be91;">&quot;colocated_image.png&quot;
+</span></code></pre>
+<p>Additionally, for the section pages and for posts to have a fallback image, add
+<code>default_og_image</code> to the <code>[extra]</code> section:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">default_og_image </span><span>= </span><span style="color:#c1be91;">&quot;static/ocean.jpg&quot;
+</span></code></pre>
+<h2 id="configuration">Configuration</h2>
+<h3 id="only-show-the-post-s-description">Only show the post's description</h3>
+<p>On each post you can specify the following:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;test description&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">show_only_description </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>This will render <code>test description</code> under this
+particular post on the homepage instead of a summary.</p>
+<h3 id="colors">Colors</h3>
+<p>Both the accent colors and background colors are
+configurable.</p>
+<p>By default, both accent and background are set
+to <code>blue</code>.</p>
+<p>To configure menu, add this in <code>[extra]</code> section
+of your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># One of: blue, green, orange, pink, red.
+</span><span style="color:#95815e;"># Defaults to blue.
+</span><span style="color:#95815e;"># Append -light for light themes, e.g. blue-light
+</span><span style="color:#95815e;"># Or append -auto, e.g. blue-auto
+</span><span style="color:#e8bf6a;">accent_color </span><span>= </span><span style="color:#c1be91;">&quot;green&quot;
+</span><span>
+</span><span style="color:#95815e;"># One of: blue, dark, green, orange, pink, red, light, auto
+</span><span style="color:#95815e;"># Enabling dark background will also modify primary font color to be darker.
+</span><span style="color:#95815e;"># Defaults to accent color (or, if not accent color specified, to blue).
+</span><span style="color:#e8bf6a;">background_color </span><span>= </span><span style="color:#c1be91;">&quot;dark&quot;
+</span></code></pre>
+<h3 id="logo-text-and-link">Logo text and link</h3>
+<p>You can set the "logo" text and what it links to,
+by modifying <code>config.toml</code> like so:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># The logo text - defaults to &quot;Terminimal theme&quot;
+</span><span style="color:#e8bf6a;">logo_text </span><span>= </span><span style="color:#c1be91;">&quot;My blog&quot;
+</span><span>
+</span><span style="color:#95815e;"># The logo link - defaults to base_url.
+</span><span style="color:#e8bf6a;">logo_home_link </span><span>= </span><span style="color:#c1be91;">&quot;/take/me/away!&quot;
+</span></code></pre>
+<h3 id="author-and-copyright">Author and copyright</h3>
+<p>You can set the footer's copyright author name like this:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Author name: when specified, modifies the default
+</span><span style="color:#95815e;"># copyright text. Apart from author, it will
+</span><span style="color:#95815e;"># contain current year and a link to the theme.
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;My Name&quot;
+</span></code></pre>
+<p>If you don't like the default copyright text,
+you can set it to completely custom HTML:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Copyright text in HTML format. If specified,
+</span><span style="color:#95815e;"># entirely replaces default copyright and author.
+</span><span style="color:#e8bf6a;">copyright_html </span><span>= </span><span style="color:#c1be91;">&quot;My custom&amp;nbsp;&lt;b&gt;copyright&lt;/b&gt;&quot;
+</span></code></pre>
+<h3 id="menu">Menu</h3>
+<p>The menu is optional, static (all items are always shown,
+no matter what the screen size) and fully user-configurable.</p>
+<p>To configure menu, add this in <code>[extra]</code> section
+of your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># menu is enabled by adding menu_items (optional)
+</span><span style="color:#e8bf6a;">menu_items </span><span>= [
+</span><span>    </span><span style="color:#95815e;"># each of these is optional, name and url are required
+</span><span>    </span><span style="color:#95815e;"># $BASE_URL is going to be substituted by base_url from configuration
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;blog&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL&quot;</span><span>},
+</span><span>    
+</span><span>    </span><span style="color:#95815e;"># tags should only be enabled if you have &quot;tags&quot; taxonomy
+</span><span>    </span><span style="color:#95815e;"># see documentation below for more details
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/tags&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;archive&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/archive&quot;</span><span>},
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;about me&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/about&quot;</span><span>},
+</span><span>    
+</span><span>    </span><span style="color:#95815e;"># set newtab to true to make the link open in new tab
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;github&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;url-to-your-github&quot;</span><span>, </span><span style="color:#e8bf6a;">newtab </span><span>= </span><span style="color:#6e9cbe;">true</span><span>},
+</span><span>]
+</span></code></pre>
+<h3 id="tags">Tags</h3>
+<p>The theme optionally supports tags. To enable them, create
+a "tags" taxonomy in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>    {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>},
+</span><span>]
+</span></code></pre>
+<p>Enabling tags will create a new <code>/tags</code> page, and
+cause them to show up in <code>archive</code> section. Note
+that you still need to create a menu link to the tags
+page manually.</p>
+<h3 id="pagination">Pagination</h3>
+<p>Pagination is fully supported for post list (main site)
+and intra-post (you can navigate to earlier and later posts).</p>
+<p>To make sure pagination works properly, you must first configure
+it in <code>content/_index.md</code>:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>+++
+</span><span># number of pages to paginate by
+</span><span>paginate_by = 2
+</span><span>
+</span><span># sorting order for pagination
+</span><span>sort_by = &quot;date&quot;
+</span><span>+++
+</span></code></pre>
+<p>Then, tweak the theme's pagination config in <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Whether to show links to earlier and later posts
+</span><span style="color:#95815e;"># on each post page (defaults to true).
+</span><span style="color:#e8bf6a;">enable_post_view_navigation </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span style="color:#95815e;"># The text shown at the bottom of a post,
+</span><span style="color:#95815e;"># before earlier/later post links.
+</span><span style="color:#95815e;"># Defaults to &quot;Thanks for reading! Read other posts?&quot;
+</span><span style="color:#e8bf6a;">post_view_navigation_prompt </span><span>= </span><span style="color:#c1be91;">&quot;Read more&quot;
+</span></code></pre>
+<h3 id="language-code">Language code</h3>
+<p>Internationalization / translation is not supported
+but you can set the HTML language code for your
+site:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">default_language </span><span>= </span><span style="color:#c1be91;">&quot;en&quot;
+</span></code></pre>
+<h3 id="hack-font-subset">Hack font subset</h3>
+<p>By default, the theme uses a mixed subset of the Hack font.
+Normal weight font uses full character set
+(for Unicode icons and special symbols), but all others
+(bold, italic etc) use a limited subset.</p>
+<p>This results in much smaller transfer sizes, but the subset
+might not contain all the Unicode characters you need.</p>
+<p>You can enable full unicode support in <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Use full Hack character set, not just a subset.
+</span><span style="color:#95815e;"># Switch this to true if you need full unicode support.
+</span><span style="color:#95815e;"># Defaults to false.
+</span><span style="color:#e8bf6a;">use_full_hack_font </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>Also see <a class="external" href="https://github.com/source-foundry/Hack/blob/master/docs/WEBFONT_USAGE.md">Hack's docs</a>.</p>
+<h3 id="favicon">Favicon</h3>
+<p>The theme supports adding a global favicon (applies to
+all pages) to the site:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># Optional: Global favicon URL and mimetype.
+</span><span style="color:#95815e;">#           Mimetype defaults to &quot;image/x-icon&quot;.
+</span><span style="color:#95815e;">#           The URL should point at a file located
+</span><span style="color:#95815e;">#           in your site&#39;s &quot;static&quot; directory.
+</span><span style="color:#e8bf6a;">favicon </span><span>= </span><span style="color:#c1be91;">&quot;/favicon.png&quot;
+</span><span style="color:#e8bf6a;">favicon_mimetype </span><span>= </span><span style="color:#c1be91;">&quot;image/png&quot;
+</span></code></pre>
+<h3 id="page-titles">Page titles</h3>
+<p>The theme allows you to configure how the page titles (the <code>&lt;title&gt;</code> elements) are rendered.</p>
+<p>Use <code>"combined"</code> to render titles as <code>"Page title | Main title"</code>.</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># Optional: Set how &lt;title&gt; elements are rendered.
+</span><span style="color:#95815e;"># Values:
+</span><span style="color:#95815e;"># - &quot;main_only&quot; -- only the main title (`config.title`) is rendered.
+</span><span style="color:#95815e;"># - &quot;page_only&quot; -- only the page title (if defined) is rendered,
+</span><span style="color:#95815e;">#                  falling back to `config.title` if not defined or empty.
+</span><span style="color:#95815e;"># - &quot;combined&quot; -- combine like so: &quot;page_title | main_title&quot;,
+</span><span style="color:#95815e;">#                 or if page_title is not defined or empty, fall back to `main_title`
+</span><span style="color:#95815e;">#
+</span><span style="color:#95815e;"># Note that the main (index) page only has the main title.
+</span><span style="color:#e8bf6a;">page_titles </span><span>= </span><span style="color:#c1be91;">&quot;combined&quot;
+</span></code></pre>
+<p>All the configuration options are also described in
+<a href="../master/config.toml"><code>config.toml</code></a>.</p>
+<h2 id="extending">Extending</h2>
+<p>Each of the templates defines named blocks, so
+it should be quite easy to customize the most common things.</p>
+<p>For example, if you want to add extra <code>&lt;meta&gt;</code> tags to the
+base template, <code>index.html</code>, create file like this in <code>templates/index.html</code>:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* extends &quot;terminimal/templates/index.html&quot; */%}
+</span><span>
+</span><span>{%/* block extra_head */%}
+</span><span>    &lt;</span><span style="color:#e8bf6a;">meta </span><span style="color:#86c20e;">name=</span><span>&quot;</span><span style="color:#c1be91;">description</span><span>&quot; </span><span style="color:#86c20e;">content=</span><span>&quot;</span><span style="color:#c1be91;">My awesome website</span><span>&quot;/&gt;
+</span><span>    &lt;</span><span style="color:#e8bf6a;">meta </span><span style="color:#86c20e;">name=</span><span>&quot;</span><span style="color:#c1be91;">keywords</span><span>&quot; </span><span style="color:#86c20e;">content=</span><span>&quot;</span><span style="color:#c1be91;">Hacking,Programming,Ranting</span><span>&quot;/&gt;
+</span><span>{%/* endblock */%}
+</span></code></pre>
+<h2 id="how-to-contribute">How to contribute</h2>
+<p>If you spot any bugs or wish to contribute new features, please create a new
+<a class="external" href="https://github.com/pawroman/zola-theme-terminimal/pulls">Pull Request</a>.</p>
+<h2 id="changes-compared-to-the-original-theme">Changes compared to the original theme</h2>
+<p>This theme has been forked from https://github.com/panr/hugo-theme-terminal</p>
+<ul>
+<li>
+<p>Slight changes in the layout and styling.</p>
+<ul>
+<li>Content has been centered (instead of left-aligned).</li>
+<li>The header stripes have been spaced out.</li>
+<li>Tweaks to pagination, especially on mobile (small screens).</li>
+<li>The post title underline is dashed instead of doubly-dotted.</li>
+<li>All links are underlined, as per
+<a class="external" href="https://www.brutalist-web.design/">Brutalist Web Design Guidelines</a>.</li>
+<li>Tweaks to header font sizes.</li>
+<li>Minor footer tweaks.</li>
+</ul>
+</li>
+<li>
+<p>Absolutely <strong>no JavaScript</strong>.</p>
+<ul>
+<li>No JavaScript needed to pre-process anything.
+Zola with its Sass pre-processor is the only dependency.</li>
+<li>There's no menu trigger.</li>
+<li>Things load crazy fast, as it's all static content.</li>
+<li>Prism.js syntax highlighting is not supported (you can use
+<a class="external" href="https://www.getzola.org/documentation/content/syntax-highlighting/">Zola's</a>).</li>
+</ul>
+</li>
+<li>
+<p>All references to social media (e.g. Twitter) have been removed.</p>
+</li>
+<li>
+<p>All references to external URLs (e.g. Google CDN) have been removed.
+This theme's static assets are meant to be served from where it's hosted.</p>
+</li>
+<li>
+<p><a class="external" href="https://github.com/source-foundry/Hack">Hack</a> is the default font.</p>
+</li>
+<li>
+<p>The default color theme is blue (original uses orange).</p>
+</li>
+</ul>
+<h3 id="new-features">New features</h3>
+<ul>
+<li>You can pick the accent color as well as background color.
+There's a new <code>dark</code> background. See Configuration
+below for details.</li>
+<li>Active "section" links will change color indicating the
+active section. This is all static, done at template level.</li>
+</ul>
+<h3 id="features-retained-from-the-original">Features retained from the original</h3>
+<ul>
+<li>5 color themes, depending on your preference:
+blue (default), green, orange, pink, red.</li>
+<li>The shortcodes <code>image</code> and <code>figure</code> (See Shortcodes.</li>
+<li>Fully responsive.</li>
+</ul>
+<h2 id="license">License</h2>
+<p>Copyright © 2019 Paweł Romanowski (pawroman)</p>
+<p>Original theme: Copyright © 2019 Radosław Kozieł (<a class="external" href="https://twitter.com/panr">@panr</a>)</p>
+<p>The theme is released under the MIT License.
+Check the <a href="../master/LICENSE.md">license file</a>
+for more information.</p>
+<p>The license for Hack fonts used is included in
+<a href="../master/LICENSE-Hack.md">LICENSE-Hack.md</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

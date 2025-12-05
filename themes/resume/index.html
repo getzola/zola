@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>resume | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;resume&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>resume</h1>
+            <p>A resume theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;www.alongwy.top">Feng Yunlong</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.11.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;alongwy&#x2F;zola-resume">https:&#x2F;&#x2F;github.com&#x2F;alongwy&#x2F;zola-resume</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;resume.alongwy.top">https:&#x2F;&#x2F;resume.alongwy.top</a></p>
+            
+            
+            <p><b>Last updated:</b> 2021-09-04T01:10:58+08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zola-resume">Zola Resume</h1>
+<p><a href="https://www.getzola.org/themes/resume/README.CN.md">Chinese Version</a></p>
+<p>Redesigned form <a class="external" href="https://github.com/eddiewebb/hugo-resume">hugo resume</a>.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>This is basically a single-page website with auto-scrolling based on left-hand nav.</li>
+<li>Dedicated project/publications pages allow more detail.</li>
+<li>Includes a client-side search at '/search'.</li>
+<li>Includes an <code>/admin</code> endpoint that can allow authorized users to use a WYSIWYG editor and commit files back to markdown, but with a Wordpress/CMS like experience.</li>
+</ul>
+<h2 id="quick-start">Quick Start</h2>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>git clone git@github.com:alongwy/zola-resume.git
+</span><span style="color:#da4939;">cd</span><span> zola-resume
+</span><span>zola serve
+</span><span style="font-style:italic;color:#7c7865;"># open http://127.0.0.1:1111/
+</span></code></pre>
+<h2 id="installation">Installation</h2>
+<p>Just earlier we showed you how to run the theme directly. Now we start to install the theme in an existing site step by step.</p>
+<h3 id="step-1-create-a-new-zola-site">Step 1: Create a new zola site</h3>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola init mysite
+</span></code></pre>
+<h3 id="step-2-install-zola-resume">Step 2: Install zola-resume</h3>
+<p>Download this theme to your themes directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> mysite/themes
+</span><span>git clone git@github.com:alongwy/zola-resume.git
+</span></code></pre>
+<p>Or install as a submodule:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> mysite
+</span><span>git init  </span><span style="font-style:italic;color:#7c7865;"># if your project is a git repository already, ignore this command
+</span><span>git submodule add git@github.com:alongwy/zola-resume.git themes/zola-resume
+</span></code></pre>
+<h3 id="step-3-configuration">Step 3: Configuration</h3>
+<p>Enable the theme in your config.toml in the site derectory:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;zola-resume&quot;
+</span></code></pre>
+<p>Or copy the config.toml.example from the theme directory to your project's root directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>cp themes/zola-resume/config.toml.example config.toml
+</span></code></pre>
+<h4 id="for-cms">For CMS</h4>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>cp themes/zola-resume/static/admin/config.yml static/admin/config.yml
+</span></code></pre>
+<p>and change those</p>
+<pre data-lang="yaml" style="background-color:#383838;color:#e6e1dc;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#95815e;"># static/admin/config.yml
+</span><span>
+</span><span style="color:#e8bf6a;">backend</span><span>:
+</span><span>  </span><span style="color:#e8bf6a;">name</span><span>: </span><span style="color:#a5c261;">github
+</span><span>  </span><span style="color:#e8bf6a;">repo</span><span>: </span><span style="color:#a5c261;">USERNAME/REPO
+</span><span>  </span><span style="color:#e8bf6a;">branch</span><span>: </span><span style="color:#a5c261;">BRANCH
+</span><span>  </span><span style="color:#e8bf6a;">cms_label_prefix</span><span>: </span><span style="color:#a5c261;">netlify-cms/
+</span><span>  </span><span style="color:#e8bf6a;">site_domain</span><span>: </span><span style="color:#a5c261;">DOMAIN.netlify.com
+</span></code></pre>
+<h3 id="step-4-add-new-content">Step 4: Add new content</h3>
+<p>You can copy the content from the theme directory to your project:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>cp -r themes/zola-resume/data .
+</span><span>cp -r themes/zola-resume/content .
+</span></code></pre>
+<p>You can modify or add new posts in the content/blog, content/projects or other content directories as needed.</p>
+<h3 id="step-5-run-the-project">Step 5: Run the project</h3>
+<p>Just run zola serve in the root path of the project:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>zola serve
+</span></code></pre>
+<p>This will start the Zola development web server accessible by default at http://127.0.0.1:1111. Saved changes will live reload in the browser.</p>
+<h2 id="examples">Examples</h2>
+<p><img src="https://raw.githubusercontent.com/alongwy/zola-resume/master/screenshot.png" alt="screenshot" /></p>
+<p>See <a class="external" href="https://resume.alongwy.top">along's site</a> for a live example.</p>
+<h2 id="setup-use">Setup &amp; Use</h2>
+<p>This theme uses a combination of custom sections and some data files to drive content.</p>
+<h3 id="summary">Summary</h3>
+<p>Edit the main <code>contents/_index.md with a brief bio/summary</code></p>
+<h3 id="data-files">Data files</h3>
+<p>Data files are used for simple content presented on the homepage.</p>
+<ul>
+<li><a class="external" href="https://github.com/AlongWY/zola-resume/blob/main/data/certifications.json">data/certifications.json</a></li>
+<li><a class="external" href="https://github.com/AlongWY/zola-resume/blob/main/data/social.json">data/social.json</a></li>
+<li><a class="external" href="https://github.com/AlongWY/zola-resume/blob/main/data/skills.json">data/skills.json</a></li>
+<li><a class="external" href="https://github.com/AlongWY/zola-resume/blob/main/data/experience.json">data/experience.json</a></li>
+<li><a class="external" href="https://github.com/AlongWY/zola-resume/blob/main/data/education.json">data/education.json</a></li>
+</ul>
+<h3 id="projects-opensource">Projects/Opensource</h3>
+<p>The difference indicates your role as originator or colaborator.</p>
+<h3 id="publications">Publications</h3>
+<p>Similar to projects, create them under <code>publications</code>. Include any papers, speaking engagements, articles, etc.</p>
+<h3 id="blog-posts">Blog / Posts</h3>
+<p>Similar to posts, create them under <code>blog</code>. Include any thoughts, musiings, etc.
+<strong>This template does not support a <code>posts</code> folder</strong></p>
+<h3 id="template-params">Template params</h3>
+<p>Almost All personal information outside the above details is captured by extra in <a class="external" href="https://github.com/AlongWY/zola-resume/blob/main/config.toml"><code>config.toml</code></a>, or can be edited in the "Settings" collection if using CMS.</p>
+<h2 id="cms-editor-with-netlify-cms">CMS Editor with Netlify CMS</h2>
+<p><strong>Does not require deployment to Netlify!</strong></p>
+<p><a class="external" href="https://www.netlifycms.org/">Netlify CMS</a> is an open source project that enables CMS like experience for static site generation tools like Hugo. This theme includes a fully working integration and guide in <a class="external" href="https://github.com/AlongWY/zola-resume/tree/main/static/admin">static/admin</a></p>
+<h2 id="credits">Credits</h2>
+<p>This project ports the Hugo Resume theme by Feng Yunlong to support zola.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

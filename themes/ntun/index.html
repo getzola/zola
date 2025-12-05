@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>ntun-zola-theme | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;ntun&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>ntun-zola-theme</h1>
+            <p>A classic resume theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;netoun.com">Nicolas Coulonnier</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.1.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;netoun&#x2F;ntun">https:&#x2F;&#x2F;github.com&#x2F;netoun&#x2F;ntun</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;netoun.github.io&#x2F;ntun&#x2F;">https:&#x2F;&#x2F;netoun.github.io&#x2F;ntun&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-09-25T10:40:29+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="ntun"><strong>Ntun</strong></h1>
+<p><img src="https://www.getzola.org/themes/ntun/screenshot.png" alt="alt text" title="Screenshoot" /></p>
+<p><strong>Live demo</strong> : https://netoun.github.io/ntun/</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li>Installation</li>
+<li>Options</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> themes
+</span><span>git clone https://github.com/netoun/ntun.git
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;ntun&quot;
+</span></code></pre>
+<p>This theme requires index section in <code>about</code> (<code>content/about/_index.md</code>)</p>
+<p>The posts should therefore be in directly under the <code>content about</code> folder.</p>
+<h2 id="options">Options</h2>
+<p>Set a field in <code>extra</code> with a key of <code>after_dark_menu</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;Jon Snow&quot;
+</span><span style="color:#e8bf6a;">author_image</span><span>=</span><span style="color:#c1be91;">&quot;me.jpg&quot;
+</span><span style="color:#e8bf6a;">city</span><span>=</span><span style="color:#c1be91;">&quot;Winterfell&quot;
+</span><span style="color:#e8bf6a;">years</span><span>=</span><span style="color:#c1be91;">&quot;281&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">job </span><span>= </span><span style="color:#c1be91;">&quot;King of the north&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;Dragons &amp; Aunt ❤️&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#e8bf6a;">title</span><span>=</span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;fab fa-github&quot;</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#e8bf6a;">title</span><span>=</span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;fab fa-twitter&quot;</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#e8bf6a;">title</span><span>=</span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;fab fa-linkedin&quot;</span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;mailto:&quot;</span><span>, </span><span style="color:#e8bf6a;">title</span><span>=</span><span style="color:#c1be91;">&quot;&quot;</span><span>, </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;fas fa-envelope&quot;</span><span>}
+</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># if you add languages, put your emoji flag on array
+</span><span style="color:#e8bf6a;">languages_flags </span><span>= [
+</span><span>    </span><span style="color:#c1be91;">&quot;🇬🇧&quot;
+</span><span>]
+</span></code></pre>
+<p>If you put <code>$BASE_URL</code> in a url, it will automatically be replaced by the actual
+site URL.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
