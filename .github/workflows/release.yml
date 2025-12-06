@@ -73,7 +73,9 @@ jobs:
         run: |
           mkdir -p artifacts
           cp -av target/${{ matrix.target }}/release/zola .
-          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz zola
+          OUTPUT_DIR="$(find target -path '*/zola-*/out' -type d)"
+          cp -av "$OUTPUT_DIR"/* artifacts
+          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz zola artifacts
         if: ${{ ! startsWith(matrix.os, 'windows') }}
 
       - name: Archive (Windows)
