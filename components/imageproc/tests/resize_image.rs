@@ -745,3 +745,80 @@ fn asymmetric_resize_with_exif_orientations() {
         16,
     );
 }
+
+fn check_icc_data_preserved(source_img: &str, target_format: &str) {
+    let source_path = TEST_IMGS.join(source_img);
+    let mut source_reader = ImageReader::open(&source_path)
+        .and_then(ImageReader::with_guessed_format)
+        .unwrap()
+        .into_decoder()
+        .unwrap();
+    let original_profile = source_reader.icc_profile().ok().flatten();
+    let (original_width, original_height) = source_reader.dimensions();
+
+    let tmpdir = tempfile::tempdir().unwrap().keep();
+    let config = Config::parse(CONFIG).unwrap();
+    let mut proc = Processor::new(tmpdir.clone(), &config);
+    let resize_op = ResizeOperation::Scale(original_width, original_height);
+
+    let resp =
+        proc.enqueue(resize_op, source_img.into(), source_path, target_format, None, None).unwrap();
+    proc.do_process().unwrap();
+
+    let processed_path = PathBuf::from(&resp.static_path);
+    let mut reader = ImageReader::open(&tmpdir.join(&processed_path))
+        .and_then(ImageReader::with_guessed_format)
+        .unwrap()
+        .into_decoder()
+        .unwrap();
+    let new_profile = reader.icc_profile().ok().flatten();
+
+    println!("{source_img} has profile: {}", original_profile.is_some());
+    assert_eq!(
+        original_profile,
+        new_profile,
+        "image processing preserved ICC data from {} to {}",
+        source_img,
+        processed_path.display()
+    )
+}
+
+#[test]
+fn preserve_color_profile() {
+    // TODO:
+    // - Missing a test for preserving color profiles when loading AVIF,
+    //   which we would theoretically support if we could load AVIF.
+    // - Missing a test for preserving color profiles when saving AVIF,
+    //   which is a feature missing from upstream `image`.
+
+    // these all don’t have ICC data
+    check_icc_data_preserved("exif_0.jpg", "jpg");
+    check_icc_data_preserved("exif_0.jpg", "png");
+    check_icc_data_preserved("exif_0.jpg", "webp");
+    check_icc_data_preserved("exif_1.jpg", "jpg");
+    check_icc_data_preserved("exif_1.jpg", "png");
+    check_icc_data_preserved("exif_1.jpg", "webp");
+    check_icc_data_preserved("exif_2.jpg", "jpg");
+    check_icc_data_preserved("exif_2.jpg", "png");
+    check_icc_data_preserved("exif_2.jpg", "webp");
+    check_icc_data_preserved("jpg.jpg", "jpg");
+    check_icc_data_preserved("jpg.jpg", "png");
+    check_icc_data_preserved("jpg.jpg", "webp");
+    check_icc_data_preserved("png.png", "jpg");
+    check_icc_data_preserved("png.png", "png");
+    check_icc_data_preserved("png.png", "webp");
+    check_icc_data_preserved("webp.webp", "jpg");
+    check_icc_data_preserved("webp.webp", "png");
+    check_icc_data_preserved("webp.webp", "webp");
+
+    // these have ICC data
+    check_icc_data_preserved("linear_rec2020.jpg", "jpg");
+    check_icc_data_preserved("linear_rec2020.jpg", "png");
+    check_icc_data_preserved("linear_rec2020.jpg", "webp");
+    check_icc_data_preserved("rec709.jpg", "jpg");
+    check_icc_data_preserved("rec709.jpg", "png");
+    check_icc_data_preserved("rec709.jpg", "webp");
+    check_icc_data_preserved("display_p3.png", "jpg");
+    check_icc_data_preserved("display_p3.png", "png");
+    check_icc_data_preserved("display_p3.png", "webp");
+}

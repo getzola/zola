@@ -7,9 +7,12 @@ use errors::{Context, Result, anyhow};
 use libs::ahash::{HashMap, HashSet};
 use libs::image::codecs::avif::AvifEncoder;
 use libs::image::codecs::jpeg::JpegEncoder;
+use libs::image::codecs::png::PngEncoder;
+use libs::image::codecs::webp::WebPEncoder;
 use libs::image::imageops::FilterType;
-use libs::image::{DynamicImage, GenericImageView, ImageDecoder, ImageReader};
-use libs::image::{EncodableLayout, ImageEncoder, ImageFormat};
+use libs::image::{DynamicImage, ImageDecoder, ImageReader};
+use libs::image::{EncodableLayout, ImageEncoder};
+use libs::log;
 use libs::rayon::prelude::*;
 use libs::webp;
 use serde::{Deserialize, Serialize};
@@ -41,10 +44,12 @@ impl ImageOp {
             return Ok(());
         }
 
+        log::debug!("processing {} with instructions {:?}", self.input_path.display(), self.instr);
         let input_permissions = fs::metadata(&self.input_path)?.permissions();
         let reader =
             ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
         let mut decoder = reader.into_decoder()?;
+        let color_profile = decoder.icc_profile().ok().flatten();
         let raw_metadata = decoder.exif_metadata()?;
         let img = DynamicImage::from_decoder(decoder)?;
 
@@ -68,33 +73,51 @@ impl ImageOp {
         }?;
         let mut tmp_output_writer = BufWriter::new(&tmp_output_file);
 
+        let has_color_profile = color_profile.is_some();
+        let add_color_profile = |encoder: &mut dyn ImageEncoder| {
+            if let Some(color_profile) = color_profile {
+                let _ = encoder.set_icc_profile(color_profile).inspect_err(|_| log::warn!("processing {}: Image encoder for {} does not support color profiles, colors may be incorrect.", self.input_path.display(), self.format.extension()));
+            }
+        };
+
         match self.format {
             Format::Png => {
-                img.write_to(&mut tmp_output_writer, ImageFormat::Png)?;
+                let mut encoder = PngEncoder::new(&mut tmp_output_writer);
+                add_color_profile(&mut encoder);
+                img.write_with_encoder(encoder)?;
             }
             Format::Jpeg { quality } => {
                 let mut encoder = JpegEncoder::new_with_quality(&mut tmp_output_writer, quality);
+                add_color_profile(&mut encoder);
                 encoder.encode_image(&img)?;
             }
             Format::WebP { quality } => {
-                let encoder = webp::Encoder::from_image(&img)
-                    .map_err(|_| anyhow!("Unable to load this kind of image with webp"))?;
-                let memory = match quality {
-                    Some(q) => encoder.encode(q as f32),
-                    None => encoder.encode_lossless(),
-                };
-                tmp_output_writer.write_all(memory.as_bytes())?;
+                // use the `image` builtin encoder for lossless, as it supports color profiles
+                if quality.is_none() && has_color_profile {
+                    let mut encoder = WebPEncoder::new_lossless(&mut tmp_output_writer);
+                    add_color_profile(&mut encoder);
+                    img.write_with_encoder(encoder)?;
+                } else {
+                    if has_color_profile {
+                        log::warn!(
+                            "processing {}: Lossy WebP encoder does not support color profiles, colors may be incorrect.",
+                            self.input_path.display()
+                        );
+                    }
+                    let encoder = webp::Encoder::from_image(&img)
+                        .map_err(|_| anyhow!("Unable to load this kind of image with webp"))?;
+                    let memory = match quality {
+                        Some(q) => encoder.encode(q as f32),
+                        None => encoder.encode_lossless(),
+                    };
+                    tmp_output_writer.write_all(memory.as_bytes())?;
+                }
             }
             Format::Avif { quality, speed } => {
-                let mut avif: Vec<u8> = Vec::new();
-                let encoder = AvifEncoder::new_with_speed_quality(&mut avif, speed, quality);
-                encoder.write_image(
-                    img.as_bytes(),
-                    img.dimensions().0,
-                    img.dimensions().1,
-                    img.color().into(),
-                )?;
-                tmp_output_writer.write_all(avif.as_bytes())?;
+                let mut encoder =
+                    AvifEncoder::new_with_speed_quality(&mut tmp_output_writer, speed, quality);
+                add_color_profile(&mut encoder);
+                img.write_with_encoder(encoder)?;
             }
         };
 
