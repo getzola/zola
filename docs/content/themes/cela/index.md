@@ -3,14 +3,14 @@
 title = "Cela"
 description = "A minimalist documentation/blog theme."
 template = "theme.html"
-date = 2025-11-22T23:52:32+08:00
+date = 2025-12-06T11:43:01+08:00
 
 [taxonomies]
 theme-tags = ['blog', 'documentation', 'lightweight', 'minimal', 'responsive', 'search']
 
 [extra]
-created = 2025-11-22T23:52:32+08:00
-updated = 2025-11-22T23:52:32+08:00
+created = 2025-12-06T11:43:01+08:00
+updated = 2025-12-06T11:43:01+08:00
 repository = "https://github.com/edwardzcn-decade/cela.git"
 homepage = "https://github.com/edwardzcn-decade/cela"
 minimum_version = "0.19.0"
@@ -25,11 +25,14 @@ homepage = "https://github.com/edwardzcn-decade"
 # Cela
 
 <p align="center">
-  <a href="https://edwardzcn-decade.github.io/cela"><img src="https://img.shields.io/badge/Cela-f8f8f8?style=for-the-badge">
+  <a href="https://edwardzcn-decade.github.io/cela"><img src="https://img.shields.io/badge/Cela-f8f8f8?style=for-the-badge"></a>
   <a href="https://www.getzola.org"><img src="https://img.shields.io/badge/Zola-f8f8f8?style=for-the-badge&logo=zola&logoColor=black"></a>
 </p>
 
-*Cela* is an ongoing simple and lightweight theme for Zola.<br>If you like it, Please give a 🌟 on Github :)<br>The style sheet of Cela is adapted from [Catppuccin](https://github.com/catppuccin/catppuccin).
+*Cela* is a simple, lightweight Zola theme, inspired by [Hugo PaperMod](https://github.com/adityatelange/hugo-PaperMod).
+
+The style sheet is adapted from [Catppuccin](https://github.com/catppuccin/catppuccin).
+If you like it, please give it a 🌟 on GitHub. Thanks!
 
 ![screenshot](screenshot.png)
 
@@ -37,20 +40,18 @@ homepage = "https://github.com/edwardzcn-decade"
 
 ## Theme Features
 
-+ [x] Catppuccin color theme support
-+ [x] Light/Dark mode support
-+ [x] Flexible Mathjax support
-+ [x] Blog post RSS feeds
-+ [x] Blog search
++ [x] Catppuccin color theme
++ [x] Light/Dark mode toggle
++ [x] MathJax support
++ [x] Blog RSS feeds
++ [x] Full-text search
 + [x] Robot tools
-+ [ ] Blog post archive (indexing by year)
-+ [ ] Internationalization support (i18n directory and translation)
++ [ ] Blog archive (group by year)
++ [ ] Internationalization (i18n)
 
 ### Tags, Categories, and Taxonomies
 
-Cela provides hexo/hugo categories and tags compatible with zola style taxonomies.
-
-In toml front matter
+Cela provides Hexo/Hugo-like `tags` and `categories`, compatible with Zola `taxonomies`. In front matter:
 
 ```toml
 [taxonomies]
@@ -58,7 +59,7 @@ tags = ["Rust", "Zola"]
 categories = ["Programming"]
 ```
 
-or you can also use yaml front matter
+or in YAML style:
 
 ```yaml
 taxonomies:
@@ -66,31 +67,30 @@ taxonomies:
   categories: ["Programming"]
 ```
 
-Zola taxonomies are more powerful for structuring or indexing your content. For now, Cela native provides tags, categories taxonomies. You can add more taxonomies in `config.toml` file. See [zola taxonomies](https://www.getzola.org/documentation/content/taxonomies/) for more information.
-
-
+Zola `taxonomies` as recommended are more powerful for structuring your contents. See [zola taxonomies](https://www.getzola.org/documentation/content/taxonomies/) for more information.
 
 ## Quick Start
 
-If you just want to know how to install the theme, just skip to Theme Installation.
+If you only need installation of the theme, skip to Theme Installation.
 
 ### Zola Installation
 
 ```bash
-# Choose one of the following according to your OS
 # macOS
 brew install zola
 # Alpine Linux
 apk add zola
 # Arch Linux
 pacman -S zola
-# Through docker
+# Docker
 docker pull ghcr.io/getzola/zola:v0.19.1
 ```
 
-### Create a zola site
+### Create a Zola site
 
-Creates your first zola site (myblog) using the following command. Hints, if `myblog` already exists but only contains hidden files (like `.git`), Zola will alswo populate the site.
+Creates your first Zola site.
+
+If `myblog` already exists but only contains hidden files (like `.git`), Zola will alswo populate the site.
 
 ```bash
 zola init myblog
@@ -108,34 +108,22 @@ Any choices you make during the initialization can be changed later in the `conf
 
 ```bash
 git submodule add https://github.com/edwardzcn-decade/cela themes/cela
-```
-
-or modify the `.gitmodules` file directly
-
-```toml
-[submodule "themes/cela"]
-	path = themes/cela
-	url = https://github.com/edwardzcn-decade/cela
-```
-
-Init your submodule, update and sync.
-
-```bash
 git submodule update --init --force --recursive
 git submodule sync
 ```
 
-Then change the theme in your `config.toml` file.
+Then set the `theme` in your `config.toml` file.
 
 ```toml
 theme = "cela"
 ```
 
-TODO
-
 #### By Download Releases
 
-TODO
+1. Download the latest release archive from the Cela releases.
+2. Unzip to themes/cela in your Zola project.
+3. Set `theme` in config.toml.
+4. (Optional) Delete unused example content under content/ if you start fresh.
 
 ## 👐 Contributing
 
@@ -146,5 +134,6 @@ TODO
 ## LICENSE
 
 MIT
+
 
         

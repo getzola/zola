@@ -3,14 +3,14 @@
 title = "MATbook"
 description = "A zola chapter book theme inspired from book and olivine"
 template = "theme.html"
-date = 2025-11-30T23:49:11-08:00
+date = 2025-12-06T14:37:37-08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-11-30T23:49:11-08:00
-updated = 2025-11-30T23:49:11-08:00
+created = 2025-12-06T14:37:37-08:00
+updated = 2025-12-06T14:37:37-08:00
 repository = "https://github.com/srliu3264/MATbook.git"
 homepage = "https://github.com/srliu3264/MATbook"
 minimum_version = "v1.0"
