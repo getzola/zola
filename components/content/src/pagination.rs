@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use errors::{Context as ErrorContext, Result};
-use libs::tera::{Context, Tera, Value, to_value};
+use tera::{Context, Tera, Value, to_value};
 use utils::templates::{check_template_fallbacks, render_template};
 
 use crate::Section;

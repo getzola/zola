@@ -1,9 +1,9 @@
 use config::{Config, Search};
 use content::{Library, Section};
+use elasticlunr::{Index, IndexBuilder, lang};
 use errors::{Result, bail};
-use libs::elasticlunr::{Index, IndexBuilder, lang};
-use libs::time::OffsetDateTime;
-use libs::time::format_description::well_known::Rfc3339;
+use time::OffsetDateTime;
+use time::format_description::well_known::Rfc3339;
 
 use crate::clean_and_truncate_body;
 
@@ -149,7 +149,7 @@ fn add_section_to_index(
 mod tests {
     use super::*;
     use config::Config;
-    use libs::elasticlunr::IndexBuilder;
+    use elasticlunr::IndexBuilder;
 
     #[test]
     fn can_build_fields() {

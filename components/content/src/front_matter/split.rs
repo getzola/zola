@@ -1,9 +1,8 @@
 use std::path::Path;
 
 use errors::{Context, Result, bail};
-use libs::once_cell::sync::Lazy;
-use libs::regex::Regex;
-use libs::{serde_yaml, toml};
+use once_cell::sync::Lazy;
+use regex::Regex;
 
 use crate::front_matter::page::PageFrontMatter;
 use crate::front_matter::section::SectionFrontMatter;

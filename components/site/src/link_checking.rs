@@ -3,13 +3,13 @@ use std::path::{Path, PathBuf};
 use std::{cmp, collections::HashMap, collections::HashSet, iter::FromIterator, thread};
 
 use config::LinkCheckerLevel;
-use libs::globset::GlobSet;
-use libs::rayon::prelude::*;
+use globset::GlobSet;
+use rayon::prelude::*;
 
 use crate::Site;
 use errors::{Result, bail};
-use libs::rayon;
-use libs::url::Url;
+use rayon;
+use url::Url;
 use utils::anchors::is_special_anchor;
 
 /// Check whether all internal links pointing to explicit anchor fragments are valid.

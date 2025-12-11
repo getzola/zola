@@ -1,11 +1,11 @@
 use core::convert::TryFrom;
 use errors::{Result, anyhow};
-use libs::regex::Regex;
-use libs::tera::{Map, Value};
-use libs::time;
-use libs::time::format_description::well_known::Rfc3339;
-use libs::toml;
+use regex::Regex;
 use serde::{Deserialize, Deserializer};
+use tera::{Map, Value};
+use time;
+use time::format_description::well_known::Rfc3339;
+use toml;
 
 pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     // See https://github.com/getzola/zola/issues/2071#issuecomment-1530610650

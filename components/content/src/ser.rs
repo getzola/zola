@@ -5,7 +5,7 @@ use serde::Serialize;
 
 use crate::library::Library;
 use crate::{Page, Section};
-use libs::tera::{Map, Value};
+use tera::{Map, Value};
 use utils::table_of_contents::Heading;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]

@@ -1,8 +1,8 @@
 mod elasticlunr;
 mod fuse;
 
-use libs::ammonia;
-use libs::once_cell::sync::Lazy;
+use ammonia;
+use once_cell::sync::Lazy;
 use std::collections::{HashMap, HashSet};
 
 pub use elasticlunr::{ELASTICLUNR_JS, build_index as build_elasticlunr};

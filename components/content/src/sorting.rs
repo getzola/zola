@@ -2,8 +2,8 @@ use std::cmp::Ordering;
 use std::path::PathBuf;
 
 use crate::{Page, SortBy};
-use libs::lexical_sort::natural_lexical_cmp;
-use libs::rayon::prelude::*;
+use lexical_sort::natural_lexical_cmp;
+use rayon::prelude::*;
 
 /// Sort by the field picked by the function.
 /// The pages permalinks are used to break the ties

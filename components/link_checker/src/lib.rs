@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::result;
 use std::sync::{Arc, RwLock};
 
-use libs::once_cell::sync::Lazy;
-use libs::reqwest::header::{ACCEPT, HeaderMap};
-use libs::reqwest::{StatusCode, blocking::Client};
+use once_cell::sync::Lazy;
+use reqwest::header::{ACCEPT, HeaderMap};
+use reqwest::{StatusCode, blocking::Client};
 
 use config::LinkChecker;
 use errors::anyhow;
@@ -123,7 +123,7 @@ mod tests {
     use super::{
         LINKS, LinkChecker, check_page_for_anchor, check_url, has_anchor, is_valid, message,
     };
-    use libs::reqwest::StatusCode;
+    use reqwest::StatusCode;
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests

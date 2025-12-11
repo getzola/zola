@@ -4,7 +4,7 @@ mod highlight;
 use std::ops::RangeInclusive;
 
 use errors::{Result, bail};
-use libs::syntect::util::LinesWithEndings;
+use syntect::util::LinesWithEndings;
 
 use crate::codeblock::highlight::SyntaxHighlighter;
 use config::Config;

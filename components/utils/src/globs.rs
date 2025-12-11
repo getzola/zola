@@ -1,4 +1,4 @@
-use libs::globset::{Glob, GlobSet, GlobSetBuilder};
+use globset::{Glob, GlobSet, GlobSetBuilder};
 
 use errors::{Result, bail};
 

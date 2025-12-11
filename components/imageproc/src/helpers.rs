@@ -5,7 +5,7 @@ use std::path::Path;
 
 use crate::ResizeOperation;
 use crate::format::Format;
-use libs::image::DynamicImage;
+use image::DynamicImage;
 
 /// Apply image rotation based on EXIF data
 /// Returns `None` if no transformation is needed

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use libs::toml::Value as Toml;
 use serde::{Deserialize, Serialize};
+use toml::Value as Toml;
 
 use errors::{Context, Result, bail};
 use utils::fs::read_file;
@@ -19,7 +19,7 @@ pub struct Theme {
 impl Theme {
     /// Parses a TOML string to our Theme struct
     pub fn parse(content: &str) -> Result<Theme> {
-        let theme = match content.parse::<Toml>() {
+        let theme = match toml::from_str::<Toml>(content) {
             Ok(t) => t,
             Err(e) => bail!(e),
         };

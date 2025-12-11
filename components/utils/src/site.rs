@@ -1,4 +1,4 @@
-use libs::percent_encoding::percent_decode;
+use percent_encoding::percent_decode;
 use std::collections::HashMap;
 
 use errors::{Result, anyhow};

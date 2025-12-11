@@ -11,15 +11,15 @@ use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
-use libs::once_cell::sync::Lazy;
-use libs::rayon::prelude::*;
-use libs::tera::{Context, Tera};
-use libs::walkdir::{DirEntry, WalkDir};
+use once_cell::sync::Lazy;
+use rayon::prelude::*;
+use tera::{Context, Tera};
+use walkdir::{DirEntry, WalkDir};
 
 use config::{Config, IndexFormat, get_config};
 use content::{Library, Page, Paginator, Section, Taxonomy};
 use errors::{Result, anyhow, bail};
-use libs::relative_path::RelativePathBuf;
+use relative_path::RelativePathBuf;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{

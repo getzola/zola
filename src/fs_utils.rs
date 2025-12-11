@@ -1,8 +1,8 @@
 //! Utilities to simplify working with events raised by the `notify*` family of file system
 //! event-watching libraries.
 
-use libs::ahash::HashMap;
-use libs::globset::GlobSet;
+use ahash::HashMap;
+use globset::GlobSet;
 use notify_debouncer_full::DebouncedEvent;
 use notify_debouncer_full::notify::event::*;
 use std::fs::read_dir;

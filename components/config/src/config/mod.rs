@@ -8,9 +8,9 @@ pub mod taxonomies;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use libs::globset::GlobSet;
-use libs::toml::Value as Toml;
+use globset::GlobSet;
 use serde::{Deserialize, Serialize};
+use toml::Value as Toml;
 
 use crate::theme::Theme;
 use errors::{Result, anyhow, bail};
@@ -143,7 +143,7 @@ impl Config {
     /// Parses a string containing TOML to our Config struct
     /// Any extra parameter will end up in the extra field
     pub fn parse(content: &str) -> Result<Config> {
-        let mut config: Config = match libs::toml::from_str(content) {
+        let mut config: Config = match toml::from_str(content) {
             Ok(c) => c,
             Err(e) => bail!(e),
         };

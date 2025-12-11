@@ -4,11 +4,20 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-serde = { version = "1", features = ["derive"] }
+serde = { workspace = true }
 kamadak-exif = "0.6"
 tempfile = "3"
+ahash = { workspace = true }
+avif-parse = { workspace = true }
+image = { workspace = true }
+log = { workspace = true }
+rayon = { workspace = true }
+svg_metadata = { workspace = true }
+webp = { workspace = true }
 
-errors = { path = "../errors" }
-utils = { path = "../utils" }
-config = { path = "../config" }
-libs = { path = "../libs" }
+errors = { workspace = true }
+utils = { workspace = true }
+config = { workspace = true }
+
+[dev-dependencies]
+once_cell = { workspace = true }

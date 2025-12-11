@@ -3,10 +3,10 @@ use std::path::PathBuf;
 
 use serde::Serialize;
 
+use ahash::AHashMap;
 use config::{Config, TaxonomyConfig};
 use errors::{Context as ErrorContext, Result};
-use libs::ahash::AHashMap;
-use libs::tera::{Context, Tera};
+use tera::{Context, Tera};
 use utils::slugs::slugify_paths;
 use utils::templates::{check_template_fallbacks, render_template};
 

@@ -2,9 +2,9 @@ use std::env;
 use std::path::{MAIN_SEPARATOR as SLASH, PathBuf};
 
 use config::Config;
+use image::{self, DynamicImage, GenericImageView, ImageDecoder, ImageReader, Pixel};
 use imageproc::{ImageMetaResponse, Processor, ResizeOperation, fix_orientation, get_rotated_size};
-use libs::image::{self, DynamicImage, GenericImageView, ImageDecoder, ImageReader, Pixel};
-use libs::once_cell::sync::Lazy;
+use once_cell::sync::Lazy;
 
 /// Assert that `address` matches `prefix` + RESIZED_FILENAME regex + "." + `extension`,
 fn assert_processed_path_matches(path: &str, prefix: &str, extension: &str) {

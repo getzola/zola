@@ -1,4 +1,4 @@
-use libs::globset::GlobSet;
+use globset::GlobSet;
 use serde::{Deserialize, Serialize};
 
 use errors::Result;

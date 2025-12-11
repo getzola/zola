@@ -1,7 +1,7 @@
 use crate::Site;
-use libs::tera::Result as TeraResult;
 use std::sync::Arc;
 use templates::{filters, global_fns};
+use tera::Result as TeraResult;
 
 /// Adds global fns that are to be available to shortcodes while rendering markdown
 pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
@@ -62,7 +62,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
         ),
     );
     {
-        let local = libs::chrono::Local::now();
+        let local = chrono::Local::now();
         let utc = local.to_utc();
         site.tera.register_function("now", global_fns::Now::new(local, utc));
     }

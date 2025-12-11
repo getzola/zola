@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use libs::tera::Tera;
+use tera::Tera;
 
 use config::Config;
 use errors::Result;

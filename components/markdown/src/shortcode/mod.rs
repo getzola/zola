@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use errors::Result;
-use libs::tera;
 use utils::templates::{ShortcodeDefinition, ShortcodeFileType, ShortcodeInvocationCounter};
 
 mod parser;

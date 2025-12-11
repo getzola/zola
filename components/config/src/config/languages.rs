@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use errors::{Result, bail};
-use libs::unic_langid::LanguageIdentifier;
 use serde::{Deserialize, Serialize};
+use unic_langid::LanguageIdentifier;
 
 use crate::config::search;
 use crate::config::taxonomies;

@@ -5,16 +5,16 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
-use libs::csv::Reader;
-use libs::reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderName, HeaderValue};
-use libs::reqwest::{blocking::Client, header};
-use libs::tera::{
+use csv::Reader;
+use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderName, HeaderValue};
+use reqwest::{blocking::Client, header};
+use tera::{
     Error, Error as TeraError, Function as TeraFn, Map, Result, Value, from_value, to_value,
 };
-use libs::url::Url;
-use libs::{nom_bibtex, serde_json, serde_yaml, toml};
+use url::Url;
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, read_file};
+use {nom_bibtex, serde_json, serde_yaml, toml};
 
 use crate::global_fns::helpers::search_for_file;
 
@@ -560,9 +560,8 @@ fn load_csv(csv_data: String) -> Result<Value> {
 /// }
 /// ```
 fn load_xml(xml_data: String) -> Result<Value> {
-    let xml_content: Value =
-        libs::quickxml_to_serde::xml_string_to_json(xml_data, &Default::default())
-            .map_err(|e| format!("{:?}", e))?;
+    let xml_content: Value = quickxml_to_serde::xml_string_to_json(xml_data, &Default::default())
+        .map_err(|e| format!("{:?}", e))?;
     Ok(xml_content)
 }
 
@@ -574,10 +573,10 @@ mod tests {
     use std::path::PathBuf;
 
     use crate::global_fns::load_data::Method;
-    use libs::serde_json::json;
-    use libs::tera::{self, Function, to_value};
+    use serde_json::json;
     use std::fs::{copy, create_dir_all};
     use tempfile::tempdir;
+    use tera::{self, Function, to_value};
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests

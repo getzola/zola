@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
-use libs::unicode_segmentation::UnicodeSegmentation;
-use libs::walkdir::WalkDir;
+use unicode_segmentation::UnicodeSegmentation;
+use walkdir::WalkDir;
 
 use config::Config;
 use utils::fs::is_temp_file;

@@ -4,5 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-errors = { path = "../errors" }
-libs = { path = "../libs" }
+atty = { workspace = true }
+once_cell = { workspace = true }
+termcolor = { workspace = true }
+
+errors = { workspace = true }

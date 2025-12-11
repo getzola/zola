@@ -6,9 +6,9 @@ use std::path::PathBuf;
 use crate::global_fns::helpers::search_for_file;
 use config::Config;
 
-use libs::base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
-use libs::sha2::{Sha256, Sha384, Sha512, digest};
-use libs::tera::{Function as TeraFn, Result, Value, from_value, to_value};
+use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
+use sha2::{Sha256, Sha384, Sha512, digest};
+use tera::{Function as TeraFn, Result, Value, from_value, to_value};
 use utils::site::resolve_internal_link;
 
 fn compute_hash<D>(data: &[u8], as_base64: bool) -> String
@@ -249,8 +249,8 @@ mod tests {
     use std::fs::{copy, create_dir};
     use std::path::PathBuf;
 
-    use libs::tera::{Function, to_value};
     use tempfile::{TempDir, tempdir};
+    use tera::{Function, to_value};
 
     use config::Config;
     use utils::fs::create_file;

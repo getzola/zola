@@ -1,6 +1,6 @@
-use libs::time::Duration;
 use std::convert::TryInto;
 use std::time::Instant;
+use time::Duration;
 
 use errors::Error;
 use site::Site;

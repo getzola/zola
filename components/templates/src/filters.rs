@@ -5,13 +5,13 @@ use std::sync::{Arc, Mutex};
 
 use config::Config;
 
-use libs::base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
-use libs::regex::Regex;
-use libs::tera::{
+use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
+use markdown::{RenderContext, render_content};
+use regex::Regex;
+use tera::{
     Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera, Value, to_value,
     try_get_value,
 };
-use markdown::{RenderContext, render_content};
 
 #[derive(Debug)]
 pub struct MarkdownFilter {
@@ -147,7 +147,7 @@ impl NumFormatFilter {
 
 impl TeraFilter for NumFormatFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
-        use libs::num_format::{Locale, ToFormattedString};
+        use num_format::{Locale, ToFormattedString};
 
         let num = try_get_value!("num_format", "value", i64, value);
         let locale = match args.get("locale") {
@@ -168,7 +168,7 @@ impl TeraFilter for NumFormatFilter {
 mod tests {
     use std::collections::HashMap;
 
-    use libs::tera::{Filter, Tera, to_value};
+    use tera::{Filter, Tera, to_value};
 
     use super::{
         MarkdownFilter, NumFormatFilter, RegexReplaceFilter, base64_decode, base64_encode,

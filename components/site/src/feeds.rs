@@ -1,9 +1,9 @@
 use std::cmp::Ordering;
 use std::path::PathBuf;
 
-use libs::rayon::prelude::*;
-use libs::tera::Context;
+use rayon::prelude::*;
 use serde::Serialize;
+use tera::Context;
 
 use crate::Site;
 use content::{Page, TaxonomyTerm};

@@ -6,8 +6,8 @@ use serde::Serialize;
 
 use config::Config;
 use content::{Library, Taxonomy};
-use libs::tera::{Map, Value};
 use std::cmp::Ordering;
+use tera::{Map, Value};
 
 /// The sitemap only needs links, potentially date and extra for pages in case of updates
 /// for examples so we trim down all entries to only that

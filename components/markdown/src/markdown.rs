@@ -3,17 +3,16 @@ use std::fmt::Write;
 
 use crate::markdown::cmark::CowStr;
 use errors::bail;
-use libs::gh_emoji::Replacer as EmojiReplacer;
-use libs::once_cell::sync::Lazy;
-use libs::pulldown_cmark as cmark;
-use libs::pulldown_cmark_escape as cmark_escape;
-use libs::tera;
+use gh_emoji::Replacer as EmojiReplacer;
+use once_cell::sync::Lazy;
+use pulldown_cmark as cmark;
+use pulldown_cmark_escape as cmark_escape;
 use utils::net::is_external_link;
 
 use crate::context::RenderContext;
 use errors::{Context, Error, Result};
-use libs::pulldown_cmark_escape::escape_html;
-use libs::regex::{Regex, RegexBuilder};
+use pulldown_cmark_escape::escape_html;
+use regex::{Regex, RegexBuilder};
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
 use utils::table_of_contents::{Heading, make_table_of_contents};

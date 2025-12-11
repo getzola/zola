@@ -1,13 +1,13 @@
+use avif_parse::read_avif;
 use errors::{Context, Result, anyhow};
-use libs::avif_parse::read_avif;
-use libs::image::{ImageDecoder, ImageReader};
-use libs::image::{ImageFormat, ImageResult};
-use libs::svg_metadata::Metadata as SvgMetadata;
+use image::{ImageDecoder, ImageReader};
+use image::{ImageFormat, ImageResult};
 use serde::Serialize;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
+use svg_metadata::Metadata as SvgMetadata;
 
 use crate::get_rotated_size;
 

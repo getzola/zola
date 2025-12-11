@@ -2,9 +2,9 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use libs::once_cell::sync::Lazy;
-use libs::regex::Regex;
-use libs::tera::{Context as TeraContext, Tera};
+use once_cell::sync::Lazy;
+use regex::Regex;
+use tera::{Context as TeraContext, Tera};
 
 use config::Config;
 use errors::{Context, Result};
@@ -301,7 +301,7 @@ mod tests {
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
-    use libs::globset::{Glob, GlobSetBuilder};
+    use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
     use templates::ZOLA_TERA;
 

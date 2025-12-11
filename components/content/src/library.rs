@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use ahash::{AHashMap, AHashSet};
 use config::Config;
-use libs::ahash::{AHashMap, AHashSet};
 
 use crate::ser::TranslatedContent;
 use crate::sorting::sort_pages;

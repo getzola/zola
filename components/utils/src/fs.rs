@@ -1,10 +1,10 @@
-use libs::filetime::{FileTime, set_file_mtime};
-use libs::globset::GlobSet;
-use libs::walkdir::WalkDir;
+use filetime::{FileTime, set_file_mtime};
+use globset::GlobSet;
 use std::fs::{File, copy, create_dir_all, metadata, remove_dir_all, remove_file};
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
+use walkdir::WalkDir;
 
 use errors::{Context, Result};
 
@@ -258,7 +258,7 @@ mod tests {
     use std::path::PathBuf;
     use std::str::FromStr;
 
-    use libs::filetime;
+    use filetime;
     use tempfile::tempdir_in;
 
     use super::copy_file;

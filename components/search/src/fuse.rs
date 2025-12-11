@@ -1,7 +1,6 @@
 use config::Search;
 use content::Library;
 use errors::Result;
-use libs::serde_json;
 
 use crate::clean_and_truncate_body;
 

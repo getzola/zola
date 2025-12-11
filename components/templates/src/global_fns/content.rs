@@ -1,9 +1,9 @@
 use content::{Library, Taxonomy, TaxonomyTerm};
-use libs::tera::{Function as TeraFn, Result, Value, from_value, to_value};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
+use tera::{Function as TeraFn, Result, Value, from_value, to_value};
 use utils::slugs::{SlugifyStrategy, slugify_paths};
 
 #[derive(Debug)]

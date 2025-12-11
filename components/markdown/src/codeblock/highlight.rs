@@ -1,15 +1,13 @@
 use std::fmt::Write;
 
 use config::highlighting::{CLASS_STYLE, SyntaxAndTheme};
-use libs::syntect::easy::HighlightLines;
-use libs::syntect::highlighting::{Color, Theme};
-use libs::syntect::html::{
+use syntect::easy::HighlightLines;
+use syntect::highlighting::{Color, Theme};
+use syntect::html::{
     ClassStyle, IncludeBackground, line_tokens_to_classed_spans, styled_line_to_highlighted_html,
 };
-use libs::syntect::parsing::{
-    ParseState, SCOPE_REPO, Scope, ScopeStack, SyntaxReference, SyntaxSet,
-};
-use libs::tera::escape_html;
+use syntect::parsing::{ParseState, SCOPE_REPO, Scope, ScopeStack, SyntaxReference, SyntaxSet};
+use tera::escape_html;
 
 /// Not public, but from syntect::html
 fn write_css_color(s: &mut String, c: Color) {
@@ -212,7 +210,7 @@ mod tests {
     use super::*;
     use config::Config;
     use config::highlighting::resolve_syntax_and_theme;
-    use libs::syntect::util::LinesWithEndings;
+    use syntect::util::LinesWithEndings;
 
     #[test]
     fn can_highlight_with_classes() {

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use libs::tera::{Map, Value};
 use serde::Deserialize;
+use tera::{Map, Value};
 use time::format_description::well_known::Rfc3339;
 use time::macros::{format_description, time};
 use time::{Date, OffsetDateTime, PrimitiveDateTime};
@@ -173,7 +173,7 @@ impl Default for PageFrontMatter {
 mod tests {
     use crate::front_matter::page::PageFrontMatter;
     use crate::front_matter::split::RawFrontMatter;
-    use libs::tera::to_value;
+    use tera::to_value;
     use test_case::test_case;
     use time::macros::datetime;
 

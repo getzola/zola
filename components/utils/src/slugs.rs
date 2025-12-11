@@ -1,5 +1,5 @@
-use libs::slug;
 use serde::{Deserialize, Serialize};
+use slug;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]

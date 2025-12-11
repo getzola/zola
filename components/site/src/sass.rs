@@ -1,9 +1,9 @@
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 
-use libs::globset::Glob;
-use libs::grass::{Options, OutputStyle, from_path as compile_file};
-use libs::walkdir::{DirEntry, WalkDir};
+use globset::Glob;
+use grass::{Options, OutputStyle, from_path as compile_file};
+use walkdir::{DirEntry, WalkDir};
 
 use crate::anyhow;
 use errors::{Result, bail};

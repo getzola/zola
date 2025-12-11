@@ -1,5 +1,5 @@
-use libs::tera::{Map, Value};
 use serde::{Deserialize, Serialize};
+use tera::{Map, Value};
 
 use errors::Result;
 use utils::de::fix_toml_dates;

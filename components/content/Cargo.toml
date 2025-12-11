@@ -4,20 +4,29 @@ version.workspace = true
 edition = "2024"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-time = { version = "0.3", features = ["macros"] }
+serde = { workspace = true }
+time = { workspace = true, features = ["macros"] }
+ahash = { workspace = true }
+lexical-sort = { workspace = true }
+once_cell = { workspace = true }
+rayon = { workspace = true }
+regex = { workspace = true }
+serde_yaml = { workspace = true }
+tera = { workspace = true }
+toml = { workspace = true }
+unicode-segmentation = { workspace = true }
+walkdir = { workspace = true }
 
-errors = { path = "../errors" }
-utils = { path = "../utils" }
-libs = { path = "../libs" }
-config = { path = "../config" }
+errors = { workspace = true }
+utils = { workspace = true }
+config = { workspace = true }
 
 # TODO: remove it?
-markdown = { path = "../markdown" }
+markdown = { workspace = true }
 
 [dev-dependencies]
 # TODO: can we solve that usecase in src/page.rs in a simpler way? A custom macro_rules! maybe
 test-case = "3"
-
+globset = { workspace = true }
 tempfile = "3.3.0"
-templates = { path = "../templates" }
+templates = { workspace = true }

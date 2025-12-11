@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use std::env;
 use std::path::{Path, PathBuf};
 
+use ahash::AHashMap;
 use common::{build_site, build_site_with_setup};
 use config::TaxonomyConfig;
 use content::Page;
-use libs::ahash::AHashMap;
 use site::Site;
 use site::sitemap;
 use utils::types::InsertAnchor;

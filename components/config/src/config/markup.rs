@@ -1,11 +1,11 @@
 use std::{path::Path, sync::Arc};
 
-use libs::syntect::{
+use serde::{Deserialize, Serialize};
+use syntect::{
     highlighting::{Theme, ThemeSet},
     html::css_for_theme_with_class_style,
     parsing::{SyntaxSet, SyntaxSetBuilder},
 };
-use serde::{Deserialize, Serialize};
 
 use errors::{Result, bail};
 use utils::types::InsertAnchor;
