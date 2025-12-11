@@ -3,6 +3,7 @@ use std::time::Instant;
 
 use cli::{Cli, Command};
 use errors::anyhow;
+use log;
 use utils::net::{get_available_port, port_is_available};
 
 use clap::{CommandFactory, Parser};
@@ -58,7 +59,7 @@ fn main() {
             }
         }
         Command::Build { base_url, output_dir, force, drafts, minify } => {
-            console::info("Building site...");
+            log::info!("Building site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
             match cmd::build(
@@ -92,19 +93,19 @@ fn main() {
             debounce,
         } => {
             if port != 1111 && !port_is_available(interface, port) {
-                console::error("The requested port is not available");
+                log::error!("The requested port is not available");
                 std::process::exit(1);
             }
 
             if !port_is_available(interface, port) {
                 port = get_available_port(interface, 1111).unwrap_or_else(|| {
-                    console::error("No port available");
+                    log::error!("No port available");
                     std::process::exit(1);
                 });
             }
 
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
-            console::info("Building site...");
+            log::info!("Building site...");
             if let Err(e) = cmd::serve(
                 &root_dir,
                 interface,
@@ -127,7 +128,7 @@ fn main() {
             }
         }
         Command::Check { drafts, skip_external_links } => {
-            console::info("Checking site...");
+            log::info!("Checking site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
             match cmd::check(&root_dir, &config_file, None, None, drafts, skip_external_links) {
