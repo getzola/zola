@@ -4,6 +4,7 @@ mod highlight;
 use std::ops::RangeInclusive;
 
 use errors::{Result, bail};
+use log;
 use syntect::util::LinesWithEndings;
 
 use crate::codeblock::highlight::SyntaxHighlighter;
@@ -105,7 +106,7 @@ impl<'config> CodeBlock<'config> {
             if config.markdown.error_on_missing_highlight {
                 bail!(msg);
             } else {
-                eprintln!("Warning: {}", msg);
+                log::warn!("{}", msg);
             }
         }
         let highlighter = SyntaxHighlighter::new(config.markdown.highlight_code, syntax_and_theme);
