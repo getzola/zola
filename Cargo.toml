@@ -49,6 +49,7 @@ reqwest = { workspace = true }
 # Direct workspace deps used by the binary
 ahash = { workspace = true }
 globset = { workspace = true }
+log = { workspace = true }
 percent-encoding = { workspace = true }
 relative-path = { workspace = true }
 serde_json = { workspace = true }

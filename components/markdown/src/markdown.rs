@@ -181,7 +181,7 @@ fn fix_link(
                 match context.config.link_checker.internal_level {
                     config::LinkCheckerLevel::Error => bail!(msg),
                     config::LinkCheckerLevel::Warn => {
-                        console::warn(&msg);
+                        log::warn!("{msg}");
                         link.to_string()
                     }
                 }

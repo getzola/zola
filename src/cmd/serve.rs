@@ -47,6 +47,7 @@ use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
 use tokio::sync::broadcast;
 
+use log;
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use relative_path::{RelativePath, RelativePathBuf};
 
@@ -642,16 +643,21 @@ pub fn serve(
         .map(|w| if w == root_dir_str { config_name } else { w })
         .collect::<Vec<&str>>()
         .join(",");
-    println!("Listening for changes in {}{}{{{}}}", root_dir.display(), MAIN_SEPARATOR, watch_list);
+    log::info!(
+        "Listening for changes in {}{}{{{}}}",
+        root_dir.display(),
+        MAIN_SEPARATOR,
+        watch_list
+    );
 
     let preserve_dotfiles_in_output = site.config.preserve_dotfiles_in_output;
 
-    println!("Press Ctrl+C to stop\n");
+    log::info!("Press Ctrl+C to stop\n");
     // Clean the output folder on ctrl+C
     ctrlc::set_handler(move || {
         match clean_site_output_folder(&output_path, preserve_dotfiles_in_output) {
             Ok(()) => (),
-            Err(e) => println!("Errored while cleaning output folder: {e}"),
+            Err(e) => log::error!("Errored while cleaning output folder: {e}"),
         }
         ::std::process::exit(0);
     })
@@ -660,8 +666,7 @@ pub fn serve(
     let reload_sass = |site: &Site, paths: &Vec<&PathBuf>| {
         let combined_paths =
             paths.iter().map(|p| p.display().to_string()).collect::<Vec<String>>().join(", ");
-        let msg = format!("-> Sass file(s) changed {combined_paths}");
-        console::info(&msg);
+        log::info!("Sass file(s) changed {combined_paths}");
         rebuild_done_handling(
             &broadcaster,
             compile_sass(&site.base_path, &site.output_path),
@@ -695,7 +700,7 @@ pub fn serve(
             format!("-> Static file changed {}", path.display())
         };
 
-        console::info(&msg);
+        log::info!("{msg}");
         if path.is_dir() {
             rebuild_done_handling(
                 &broadcaster,
@@ -760,20 +765,17 @@ pub fn serve(
                     let current_time =
                         OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
                     if let Ok(time_str) = current_time {
-                        println!("Change detected @ {time_str}");
+                        log::info!("Change detected @ {time_str}");
                     } else {
                         // if formatting fails for some reason
-                        println!("Change detected");
+                        log::info!("Change detected");
                     };
 
                     let start = Instant::now();
                     match change_kind {
                         ChangeKind::Content => {
                             for (_, full_path, event_kind) in change_group.iter() {
-                                console::info(&format!(
-                                    "-> Content changed {}",
-                                    full_path.display()
-                                ));
+                                log::info!("-> Content changed {}", full_path.display());
 
                                 let can_do_fast_reload =
                                     *event_kind != SimpleFileSystemEventKind::Remove;
@@ -826,8 +828,7 @@ pub fn serve(
                                 .map(|p| p.display().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ");
-                            let msg = format!("-> Template file(s) changed {combined_paths}");
-                            console::info(&msg);
+                            log::info!("-> Template file(s) changed {combined_paths}");
 
                             let shortcodes_updated = partial_paths
                                 .iter()
@@ -838,7 +839,7 @@ pub fn serve(
                                     site = s;
                                 }
                             } else {
-                                println!("Reloading only template");
+                                log::info!("Reloading only template");
                                 reload_templates(&mut site)
                             }
                         }
@@ -853,7 +854,7 @@ pub fn serve(
                         }
                         ChangeKind::Themes => {
                             // No need to iterate over change group since we're rebuilding the site.
-                            console::info("-> Themes changed.");
+                            log::info!("-> Themes changed.");
 
                             if let Some(s) = recreate_site() {
                                 site = s;
@@ -861,7 +862,7 @@ pub fn serve(
                         }
                         ChangeKind::Config => {
                             // No need to iterate over change group since we're rebuilding the site.
-                            console::info(
+                            log::info!(
                                 "-> Config changed. The browser needs to be refreshed to make the changes visible.",
                             );
 
@@ -877,9 +878,7 @@ pub fn serve(
                                 .map(|p| p.display().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ");
-                            console::info(&format!(
-                                "-> {combined_paths} changed. Recreating whole site."
-                            ));
+                            log::info!("-> {combined_paths} changed. Recreating whole site.");
 
                             // We can't know exactly what to update when a user provides the path.
                             if let Some(s) = recreate_site() {
@@ -890,8 +889,8 @@ pub fn serve(
                     messages::report_elapsed_time(start);
                 }
             }
-            Ok(Err(e)) => console::error(&format!("File system event errors: {e:?}")),
-            Err(e) => console::error(&format!("File system event receiver errors: {e:?}")),
+            Ok(Err(e)) => log::error!("File system event errors: {e:?}"),
+            Err(e) => log::error!("File system event receiver errors: {e:?}"),
         };
     }
 }

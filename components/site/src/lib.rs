@@ -11,6 +11,7 @@ use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
+use log;
 use once_cell::sync::Lazy;
 use rayon::prelude::*;
 use tera::{Context, Tera};
@@ -352,7 +353,7 @@ impl Site {
                 messages.join("\n")
             );
             match self.config.link_checker.internal_level {
-                config::LinkCheckerLevel::Warn => console::warn(&msg),
+                config::LinkCheckerLevel::Warn => log::warn!("{msg}"),
                 config::LinkCheckerLevel::Error => return Err(anyhow!(msg)),
             }
         }
@@ -372,7 +373,7 @@ impl Site {
                     messages.join("\n")
                 );
                 match self.config.link_checker.external_level {
-                    config::LinkCheckerLevel::Warn => console::warn(&msg),
+                    config::LinkCheckerLevel::Warn => log::warn!("{msg}"),
                     config::LinkCheckerLevel::Error => return Err(anyhow!(msg)),
                 }
             }
@@ -1255,10 +1256,7 @@ impl Site {
 }
 
 fn log_time(start: Instant, message: &str) -> Instant {
-    let do_print = std::env::var("ZOLA_PERF_LOG").is_ok();
     let now = Instant::now();
-    if do_print {
-        println!("{} took {}ms", message, now.duration_since(start).as_millis());
-    }
+    log::debug!("{} took {}ms", message, now.duration_since(start).as_millis());
     now
 }
