@@ -99,6 +99,10 @@ author =
 #
 taxonomies = []
 
+# Optional base path for all taxonomies. If set, all taxonomy paths will be relative to this path.
+# For example, if taxonomy_root is "blog" and taxonomy is "tags", the path will be /blog/tags/
+# taxonomy_root = "blog"
+
 # When set to "true", a search index is built from the pages and section
 # content for `default_language`.
 build_search_index = false
@@ -140,6 +144,9 @@ external_links_no_follow = false
 
 # Whether to set rel="noreferrer" for all external links
 external_links_no_referrer = false
+
+# Whether to set rel="external" for all external links
+external_links_external = true
 
 # Whether smart punctuation is enabled (changing quotes, dashes, dots in their typographic form)
 # For example, `...` into `…`, `"quote"` into `“curly”` etc

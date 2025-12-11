@@ -8,12 +8,12 @@ pub mod taxonomies;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use libs::globset::GlobSet;
-use libs::toml::Value as Toml;
+use globset::GlobSet;
 use serde::{Deserialize, Serialize};
+use toml::Value as Toml;
 
 use crate::theme::Theme;
-use errors::{anyhow, bail, Result};
+use errors::{Result, anyhow, bail};
 use utils::fs::read_file;
 use utils::globs::build_ignore_glob_set;
 use utils::slugs::slugify_paths;
@@ -66,6 +66,9 @@ pub struct Config {
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
     pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
+    /// Optional base path for all taxonomies. If set, all taxonomy paths will be relative to this path.
+    /// For example, if taxonomy_root is "blog" and taxonomy is "tags", the path will be /blog/tags/
+    pub taxonomy_root: Option<String>,
     /// The default author for pages.
     pub author: Option<String>,
 
@@ -140,7 +143,7 @@ impl Config {
     /// Parses a string containing TOML to our Config struct
     /// Any extra parameter will end up in the extra field
     pub fn parse(content: &str) -> Result<Config> {
-        let mut config: Config = match libs::toml::from_str(content) {
+        let mut config: Config = match toml::from_str(content) {
             Ok(c) => c,
             Err(e) => bail!(e),
         };
@@ -245,8 +248,11 @@ impl Config {
             if base_language_options == languages::LanguageOptions::default() {
                 return Ok(());
             }
-            println!("Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
-                which may cause merge conflicts. Please use only one to specify language specific information", self.default_language);
+            println!(
+                "Warning: config.toml contains both default language specific information at base and under section `[languages.{}]`, \
+                which may cause merge conflicts. Please use only one to specify language specific information",
+                self.default_language
+            );
             base_language_options.merge(section_language_options)?;
         }
         self.languages.insert(self.default_language.clone(), base_language_options);
@@ -335,7 +341,7 @@ impl Config {
         }
     }
 
-    pub fn serialize(&self, lang: &str) -> SerializedConfig {
+    pub fn serialize(&self, lang: &str) -> SerializedConfig<'_> {
         let options = &self.languages[lang];
 
         SerializedConfig {
@@ -384,7 +390,11 @@ pub fn merge(into: &mut Toml, from: &Toml) -> Result<()> {
         }
         _ => {
             // Trying to merge a table with something else
-            Err(anyhow!("Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}", into, from))
+            Err(anyhow!(
+                "Cannot merge config.toml with theme.toml because the following values have incompatibles types:\n- {}\n - {}",
+                into,
+                from
+            ))
         }
     }
 }
@@ -403,6 +413,7 @@ impl Default for Config {
             feed_filenames: vec!["atom.xml".to_string()],
             hard_link_static: false,
             taxonomies: Vec::new(),
+            taxonomy_root: None,
             author: None,
             compile_sass: false,
             minify_html: false,

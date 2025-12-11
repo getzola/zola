@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use libs::tera::{Context, Tera};
+use tera::{Context, Tera};
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 
 const DEFAULT_TPL: &str = include_str!("default_tpl.html");
 
@@ -45,7 +45,7 @@ impl ShortcodeInvocationCounter {
     pub fn get(&mut self, str: &str) -> usize {
         let nth = self.amounts.entry(str.into()).or_insert(0);
         *nth += 1;
-        return *nth;
+        *nth
     }
     pub fn reset(&mut self) {
         self.amounts.clear();
@@ -170,7 +170,7 @@ mod tests {
     use crate::templates::{check_template_fallbacks, get_shortcodes};
 
     use super::rewrite_theme_paths;
-    use libs::tera::Tera;
+    use tera::Tera;
 
     #[test]
     fn can_rewrite_all_paths_of_theme() {

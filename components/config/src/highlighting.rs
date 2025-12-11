@@ -1,8 +1,8 @@
-use libs::once_cell::sync::Lazy;
-use libs::syntect::dumps::from_binary;
-use libs::syntect::highlighting::{Theme, ThemeSet};
-use libs::syntect::html::ClassStyle;
-use libs::syntect::parsing::{SyntaxReference, SyntaxSet};
+use once_cell::sync::Lazy;
+use syntect::dumps::from_binary;
+use syntect::highlighting::{Theme, ThemeSet};
+use syntect::html::ClassStyle;
+use syntect::parsing::{SyntaxReference, SyntaxSet};
 
 use crate::config::Config;
 
@@ -41,15 +41,15 @@ pub fn resolve_syntax_and_theme<'config>(
     let theme = config.markdown.get_highlight_theme();
 
     if let Some(ref lang) = language {
-        if let Some(ref extra_syntaxes) = config.markdown.extra_syntax_set {
-            if let Some(syntax) = extra_syntaxes.find_syntax_by_token(lang) {
-                return SyntaxAndTheme {
-                    syntax,
-                    syntax_set: extra_syntaxes,
-                    theme,
-                    source: HighlightSource::Extra,
-                };
-            }
+        if let Some(ref extra_syntaxes) = config.markdown.extra_syntax_set
+            && let Some(syntax) = extra_syntaxes.find_syntax_by_token(lang)
+        {
+            return SyntaxAndTheme {
+                syntax,
+                syntax_set: extra_syntaxes,
+                theme,
+                source: HighlightSource::Extra,
+            };
         }
         // The JS syntax hangs a lot... the TS syntax is probably better anyway.
         // https://github.com/getzola/zola/issues/1241

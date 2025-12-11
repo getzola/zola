@@ -1,4 +1,4 @@
-use errors::{anyhow, Result};
+use errors::{Result, anyhow};
 use std::hash::{Hash, Hasher};
 
 const QUALITY_MIN_JPEG: u8 = 1;

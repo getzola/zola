@@ -1,11 +1,11 @@
 use core::convert::TryFrom;
-use errors::{anyhow, Result};
-use libs::regex::Regex;
-use libs::tera::{Map, Value};
-use libs::time;
-use libs::time::format_description::well_known::Rfc3339;
-use libs::toml;
+use errors::{Result, anyhow};
+use regex::Regex;
 use serde::{Deserialize, Deserializer};
+use tera::{Map, Value};
+use time;
+use time::format_description::well_known::Rfc3339;
+use toml;
 
 pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     // See https://github.com/getzola/zola/issues/2071#issuecomment-1530610650
@@ -26,7 +26,7 @@ pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
     let fraction_intermediate = fraction_raw.trim_end_matches("0");
     //
     // Prepare for eventual conversion into nanoseconds
-    let fraction = if fraction_intermediate.len() > 0 { fraction_intermediate } else { "0" };
+    let fraction = if !fraction_intermediate.is_empty() { fraction_intermediate } else { "0" };
     let maybe_timezone_hour = captures.name("offset_hour");
     let maybe_timezone_minute = captures.name("offset_minute");
 

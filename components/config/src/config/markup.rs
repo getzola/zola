@@ -1,13 +1,13 @@
 use std::{path::Path, sync::Arc};
 
-use libs::syntect::{
+use serde::{Deserialize, Serialize};
+use syntect::{
     highlighting::{Theme, ThemeSet},
     html::css_for_theme_with_class_style,
     parsing::{SyntaxSet, SyntaxSetBuilder},
 };
-use serde::{Deserialize, Serialize};
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 use utils::types::InsertAnchor;
 
 use crate::highlighting::{CLASS_STYLE, THEME_SET};
@@ -46,6 +46,8 @@ pub struct Markdown {
     pub external_links_no_follow: bool,
     /// Whether to set rel="noreferrer" for all external links
     pub external_links_no_referrer: bool,
+    /// Whether to set rel="external" for all external links
+    pub external_links_external: bool,
     /// Whether smart punctuation is enabled (changing quotes, dashes, dots etc in their typographic form)
     pub smart_punctuation: bool,
     /// Whether parsing of definition lists is enabled
@@ -72,10 +74,10 @@ pub struct Markdown {
 impl Markdown {
     pub fn validate_external_links_class(&self) -> Result<()> {
         // Validate external link class doesn't contain quotes which would break HTML and aren't valid in CSS
-        if let Some(class) = &self.external_links_class {
-            if class.contains('"') || class.contains('\'') {
-                bail!("External link class '{}' cannot contain quotes", class)
-            }
+        if let Some(class) = &self.external_links_class
+            && (class.contains('"') || class.contains('\''))
+        {
+            bail!("External link class '{}' cannot contain quotes", class)
         }
         Ok(())
     }
@@ -169,14 +171,14 @@ impl Markdown {
             let theme_name = &theme.theme;
             if !THEME_SET.themes.contains_key(theme_name) {
                 // Check extra themes
-                if let Some(extra) = &*self.extra_theme_set {
-                    if !extra.themes.contains_key(theme_name) {
-                        bail!(
-                            "Can't export highlight theme {}, as it does not exist.\n\
+                if let Some(extra) = &*self.extra_theme_set
+                    && !extra.themes.contains_key(theme_name)
+                {
+                    bail!(
+                        "Can't export highlight theme {}, as it does not exist.\n\
                         Make sure it's spelled correctly, or your custom .tmTheme' is defined properly.",
-                            theme_name
-                        )
-                    }
+                        theme_name
+                    )
                 }
             }
         }
@@ -188,6 +190,7 @@ impl Markdown {
         self.external_links_target_blank
             || self.external_links_no_follow
             || self.external_links_no_referrer
+            || self.external_links_external
             || self.external_links_class.is_some()
     }
 
@@ -212,6 +215,9 @@ impl Markdown {
         if self.external_links_no_referrer {
             rel_opts.push("noreferrer");
         }
+        if self.external_links_external {
+            rel_opts.push("external");
+        }
         let rel = if rel_opts.is_empty() {
             "".to_owned()
         } else {
@@ -234,6 +240,7 @@ impl Default for Markdown {
             external_links_target_blank: false,
             external_links_no_follow: false,
             external_links_no_referrer: false,
+            external_links_external: true,
             smart_punctuation: false,
             definition_list: false,
             bottom_footnotes: false,

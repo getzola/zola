@@ -3,25 +3,24 @@ use std::fmt::Write;
 
 use crate::markdown::cmark::CowStr;
 use errors::bail;
-use libs::gh_emoji::Replacer as EmojiReplacer;
-use libs::once_cell::sync::Lazy;
-use libs::pulldown_cmark as cmark;
-use libs::pulldown_cmark_escape as cmark_escape;
-use libs::tera;
+use gh_emoji::Replacer as EmojiReplacer;
+use once_cell::sync::Lazy;
+use pulldown_cmark as cmark;
+use pulldown_cmark_escape as cmark_escape;
 use utils::net::is_external_link;
 
 use crate::context::RenderContext;
 use errors::{Context, Error, Result};
-use libs::pulldown_cmark_escape::escape_html;
-use libs::regex::{Regex, RegexBuilder};
+use pulldown_cmark_escape::escape_html;
+use regex::{Regex, RegexBuilder};
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
-use utils::table_of_contents::{make_table_of_contents, Heading};
+use utils::table_of_contents::{Heading, make_table_of_contents};
 use utils::types::InsertAnchor;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag, TagEnd};
 use crate::codeblock::{CodeBlock, FenceSettings};
-use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
+use crate::shortcode::{SHORTCODE_PLACEHOLDER, Shortcode};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const SUMMARY_CUTOFF_TEMPLATE: &str = "summary-cutoff.html";
@@ -38,7 +37,8 @@ static MORE_DIVIDER_RE: Lazy<Regex> = Lazy::new(|| {
 });
 
 static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap()
+    Regex::new(r#"<sup class="footnote-reference"( id=\s*.*?)?><a href=\s*.*?>\s*.*?</a></sup>"#)
+        .unwrap()
 });
 
 /// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
@@ -577,7 +577,7 @@ pub fn markdown_to_html(
                     code_block = Some(block);
                     events.push(Event::Html(begin.into()));
                 }
-                Event::End(TagEnd::CodeBlock { .. }) => {
+                Event::End(TagEnd::CodeBlock) => {
                     if let Some(ref mut code_block) = code_block {
                         let html = code_block.highlight(&accumulated_block);
                         events.push(Event::Html(html.into()));
@@ -678,14 +678,13 @@ pub fn markdown_to_html(
                     //
                     // NOTE: It could be more efficient to remove this search and just keep
                     // track of the shortcodes to come and compare it to that.
-                    if let Some(ref next_shortcode) = next_shortcode {
-                        if next_shortcode.span.start == range.start
-                            && next_shortcode.span.len() == content[range].trim().len()
-                        {
-                            stop_next_end_p = true;
-                            events.push(Event::Html("".into()));
-                            continue;
-                        }
+                    if let Some(ref next_shortcode) = next_shortcode
+                        && next_shortcode.span.start == range.start
+                        && next_shortcode.span.len() == content[range].trim().len()
+                    {
+                        stop_next_end_p = true;
+                        events.push(Event::Html("".into()));
+                        continue;
                     }
 
                     events.push(event);
@@ -824,7 +823,7 @@ pub fn markdown_to_html(
             let mut summary_html = String::new();
             cmark::html::push_html(
                 &mut summary_html,
-                events.iter().cloned().take(continue_reading),
+                events.iter().take(continue_reading).cloned(),
             );
             // remove footnotes
             let mut summary_html = FOOTNOTES_RE.replace_all(&summary_html, "").into_owned();

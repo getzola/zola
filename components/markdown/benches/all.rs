@@ -4,8 +4,8 @@ extern crate test;
 use std::collections::HashMap;
 
 use config::Config;
-use libs::tera::Tera;
-use markdown::{render_content, RenderContext};
+use markdown::{RenderContext, render_content};
+use tera::Tera;
 use utils::types::InsertAnchor;
 
 const CONTENT: &str = r#"

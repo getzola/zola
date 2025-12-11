@@ -4,10 +4,10 @@ pub mod global_fns;
 use std::path::Path;
 
 use config::Config;
-use libs::once_cell::sync::Lazy;
-use libs::tera::{Context, Tera};
+use once_cell::sync::Lazy;
+use tera::{Context, Tera};
 
-use errors::{bail, Context as ErrorContext, Result};
+use errors::{Context as ErrorContext, Result, bail};
 use utils::templates::rewrite_theme_paths;
 
 pub static ZOLA_TERA: Lazy<Tera> = Lazy::new(|| {

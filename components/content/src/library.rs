@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use ahash::{AHashMap, AHashSet};
 use config::Config;
-use libs::ahash::{AHashMap, AHashSet};
 
 use crate::ser::TranslatedContent;
 use crate::sorting::sort_pages;
@@ -594,9 +594,11 @@ mod tests {
             ]
         );
         assert_eq!(french_wiki.ignored_pages.len(), 0);
-        assert!(&library.pages[&PathBuf::from("content/wiki/recipes/chocolate-cake.fr.md")]
-            .higher
-            .is_none());
+        assert!(
+            &library.pages[&PathBuf::from("content/wiki/recipes/chocolate-cake.fr.md")]
+                .higher
+                .is_none()
+        );
         assert_eq!(
             &library.pages[&PathBuf::from("content/wiki/recipes/chocolate-cake.fr.md")].lower,
             &Some(PathBuf::from("content/wiki/recipes/rendang.fr.md"))

@@ -11,22 +11,22 @@ use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
-use libs::once_cell::sync::Lazy;
-use libs::rayon::prelude::*;
-use libs::tera::{Context, Tera};
-use libs::walkdir::{DirEntry, WalkDir};
+use once_cell::sync::Lazy;
+use rayon::prelude::*;
+use tera::{Context, Tera};
+use walkdir::{DirEntry, WalkDir};
 
-use config::{get_config, Config, IndexFormat};
+use config::{Config, IndexFormat, get_config};
 use content::{Library, Page, Paginator, Section, Taxonomy};
-use errors::{anyhow, bail, Result};
-use libs::relative_path::RelativePathBuf;
+use errors::{Result, anyhow, bail};
+use relative_path::RelativePathBuf;
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
     clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
 };
 use utils::net::{get_available_port, is_external_link};
-use utils::templates::{render_template, ShortcodeDefinition};
+use utils::templates::{ShortcodeDefinition, render_template};
 use utils::types::InsertAnchor;
 
 pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
@@ -218,14 +218,10 @@ impl Site {
             };
 
             // ignore excluded content
-            match &self.config.ignored_content_globset {
-                Some(gs) => {
-                    if gs.is_match(path) {
-                        continue;
-                    }
-                }
-
-                None => (),
+            if let Some(gs) = &self.config.ignored_content_globset
+                && gs.is_match(path)
+            {
+                continue;
             }
 
             // we process a section when we encounter the dir
@@ -301,7 +297,10 @@ impl Site {
                 };
 
                 if is_invalid {
-                    bail!("We can't have a page called `index.md` in the same folder as an index section in {:?}", page.file.parent);
+                    bail!(
+                        "We can't have a page called `index.md` in the same folder as an index section in {:?}",
+                        page.file.parent
+                    );
                 }
             }
 
@@ -386,14 +385,15 @@ impl Site {
     /// a _index.md to render the index page at the root of the site
     pub fn create_default_index_sections(&mut self) -> Result<()> {
         for (index_path, lang) in self.index_section_paths() {
-            if let Some(index_section) = self.library.read().unwrap().sections.get(&index_path) {
-                if self.config.build_search_index && !index_section.meta.in_search_index {
-                    bail!(
+            if let Some(index_section) = self.library.read().unwrap().sections.get(&index_path)
+                && self.config.build_search_index
+                && !index_section.meta.in_search_index
+            {
+                bail!(
                     "You have enabled search in the config but disabled it in the index section: \
                     either turn off the search in the config or remove `in_search_index = true` from the \
                     section front-matter."
-                    )
-                }
+                )
             }
             let mut library = self.library.write().expect("Get lock for load");
             // Not in else because of borrow checker
@@ -952,6 +952,10 @@ impl Site {
             components.push(taxonomy.lang.as_ref());
         }
 
+        if let Some(ref taxonomy_root) = self.config.taxonomy_root {
+            components.push(taxonomy_root.as_ref());
+        }
+
         components.push(taxonomy.slug.as_ref());
 
         let list_output =
@@ -987,9 +991,26 @@ impl Site {
 
                 if taxonomy.kind.feed {
                     let tax_path = if taxonomy.lang == self.config.default_language {
-                        PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))
+                        if let Some(ref taxonomy_root) = self.config.taxonomy_root {
+                            PathBuf::from(format!(
+                                "{}/{}/{}",
+                                taxonomy_root, taxonomy.slug, item.slug
+                            ))
+                        } else {
+                            PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))
+                        }
                     } else {
-                        PathBuf::from(format!("{}/{}/{}", taxonomy.lang, taxonomy.slug, item.slug))
+                        if let Some(ref taxonomy_root) = self.config.taxonomy_root {
+                            PathBuf::from(format!(
+                                "{}/{}/{}/{}",
+                                taxonomy.lang, taxonomy_root, taxonomy.slug, item.slug
+                            ))
+                        } else {
+                            PathBuf::from(format!(
+                                "{}/{}/{}",
+                                taxonomy.lang, taxonomy.slug, item.slug
+                            ))
+                        }
                     };
                     self.render_feeds(
                         item.pages.iter().map(|p| library.pages.get(p).unwrap()).collect(),
@@ -1138,7 +1159,7 @@ impl Site {
         }
 
         if let Some(ref redirect_to) = section.meta.redirect_to {
-            let permalink: Cow<String> = if is_external_link(redirect_to) {
+            let permalink: Cow<str> = if is_external_link(redirect_to) {
                 Cow::Borrowed(redirect_to)
             } else {
                 Cow::Owned(self.config.make_permalink(redirect_to))

@@ -2,20 +2,20 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use libs::once_cell::sync::Lazy;
-use libs::regex::Regex;
-use libs::tera::{Context as TeraContext, Tera};
+use once_cell::sync::Lazy;
+use regex::Regex;
+use tera::{Context as TeraContext, Tera};
 
 use config::Config;
 use errors::{Context, Result};
-use markdown::{render_content, RenderContext};
+use markdown::{RenderContext, render_content};
 use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
-use utils::templates::{render_template, ShortcodeDefinition};
+use utils::templates::{ShortcodeDefinition, render_template};
 use utils::types::InsertAnchor;
 
 use crate::file_info::FileInfo;
-use crate::front_matter::{split_page_content, PageFrontMatter};
+use crate::front_matter::{PageFrontMatter, split_page_content};
 use crate::library::Library;
 use crate::ser::SerializingPage;
 use crate::utils::get_reading_analytics;
@@ -27,7 +27,7 @@ use utils::fs::read_file;
 // A regex parsing RFC3339 date followed by {_,-} and some characters
 static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
-        r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)\s?(_|-)(?P<slug>.+$)"
+        r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)(\s?(_|-)(?P<slug>.+$))?"
     ).unwrap()
 });
 
@@ -124,8 +124,11 @@ impl Page {
         };
 
         if let Some(ref caps) = RFC3339_DATE.captures(&file_path_for_slug) {
-            if !config.slugify.paths_keep_dates {
-                slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
+            if caps.name("slug").is_some() {
+                if !config.slugify.paths_keep_dates {
+                    slug_from_dated_filename =
+                        Some(caps.name("slug").unwrap().as_str().to_string());
+                }
             }
             if page.meta.date.is_none() {
                 page.meta.date = Some(caps.name("datetime").unwrap().as_str().to_string());
@@ -146,11 +149,7 @@ impl Page {
         page.path = if let Some(ref p) = page.meta.path {
             let path = p.trim();
 
-            if path.starts_with('/') {
-                path.into()
-            } else {
-                format!("/{}", path)
-            }
+            if path.starts_with('/') { path.into() } else { format!("/{}", path) }
         } else {
             let mut path = if page.file.components.is_empty() {
                 if page.file.name == "index" && page.file.colocated_path.is_none() {
@@ -269,7 +268,7 @@ impl Page {
                 path.pop();
                 path.push(filename);
                 path = path
-                    .strip_prefix(&base_path.join("content"))
+                    .strip_prefix(base_path.join("content"))
                     .expect("Should be able to stripe prefix")
                     .to_path_buf();
                 path
@@ -298,11 +297,11 @@ impl Page {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-    use std::fs::{create_dir, File};
+    use std::fs::{File, create_dir};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
-    use libs::globset::{Glob, GlobSetBuilder};
+    use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
     use templates::ZOLA_TERA;
 
@@ -535,7 +534,7 @@ Hello world
 
     #[test]
     fn strips_footnotes_in_summary() {
-        let config = Config::default_for_test();
+        let mut config = Config::default_for_test();
         let content = r#"
 +++
 +++
@@ -583,6 +582,44 @@ And here's another. [^3]
 <div class="footnote-definition" id="3"><sup class="footnote-definition-label">3</sup>
 <p>This is the third footnote.</p>
 </div>
+"##
+        );
+
+        let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        config.markdown.bottom_footnotes = true;
+        page = res.unwrap();
+        page.render_markdown(
+            &HashMap::default(),
+            &ZOLA_TERA,
+            &config,
+            InsertAnchor::None,
+            &HashMap::new(),
+        )
+        .unwrap();
+        assert_eq!(
+            page.summary,
+            Some("<p>This page use <sup>1.5</sup> and has footnotes, here's one. </p>\n<p>Here's another. </p>".to_string())
+        );
+        assert_eq!(
+            page.content,
+            r##"<p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">1</a></sup></p>
+<p>Here's another. <sup class="footnote-reference" id="fr-2-1"><a href="#fn-2">2</a></sup></p>
+<span id="continue-reading"></span>
+<p>And here's another. <sup class="footnote-reference" id="fr-3-1"><a href="#fn-3">3</a></sup></p>
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn-1">
+<p>This is the first footnote. <a href="#fr-1-1">↩</a></p>
+</li>
+<li id="fn-2">
+<p>This is the second footnote. <a href="#fr-2-1">↩</a></p>
+</li>
+<li id="fn-3">
+<p>This is the third footnote. <a href="#fr-3-1">↩</a></p>
+</li>
+</ol>
+</section>
 "##
         );
     }

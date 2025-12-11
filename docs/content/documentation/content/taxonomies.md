@@ -140,4 +140,17 @@ $BASE_URL/$NAME/ (taxonomy)
 $BASE_URL/$NAME/$SLUG (taxonomy entry)
 ```
 
+
 Note that taxonomies are case-insensitive, so terms that have the same slug will get merged: sections and pages containing the tag "example" will be shown in the same taxonomy page as those containing "Example".
+
+If you have set the `taxonomy_root` configuration option, all taxonomy paths will be prefixed with that root path:
+
+```txt
+$BASE_URL/$TAXONOMY_ROOT/$NAME/ (taxonomy)
+$BASE_URL/$TAXONOMY_ROOT/$NAME/$SLUG (taxonomy entry)
+```
+
+For example, with `taxonomy_root = "blog"` and a taxonomy named `tags` with a term `rust`:
+- Taxonomy list page: `$BASE_URL/blog/tags/`
+- Taxonomy term page: `$BASE_URL/blog/tags/rust/`
+

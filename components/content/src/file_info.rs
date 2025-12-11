@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 
 /// Takes a full path to a file and returns only the components after the first `content` directory
 /// Will not return the filename as last component
@@ -152,7 +152,11 @@ impl FileInfo {
         // The language code is not present in the config: typo or the user forgot to add it to the
         // config
         if !other_languages.contains(&parts[1].as_ref()) {
-            bail!("File {:?} has a language code of {} which isn't present in the config.toml `languages`", self.path, parts[1]);
+            bail!(
+                "File {:?} has a language code of {} which isn't present in the config.toml `languages`",
+                self.path,
+                parts[1]
+            );
         }
 
         self.name = parts.swap_remove(0);
@@ -167,7 +171,7 @@ impl FileInfo {
 mod tests {
     use std::path::{Path, PathBuf};
 
-    use super::{find_content_components, FileInfo};
+    use super::{FileInfo, find_content_components};
 
     #[test]
     fn can_find_content_components() {
