@@ -417,23 +417,24 @@ fn resize_image_png_avif_min_quality_max_speed() {
     );
 }
 
-#[test]
-fn resize_image_png_avif_max_quality_min_speed() {
-    image_op_test(
-        "png.png",
-        "scale",
-        Some(150),
-        Some(150),
-        "avif",
-        Some(100),
-        Some(1),
-        "avif",
-        150,
-        150,
-        300,
-        380,
-    );
-}
+// Too slow to run in practice, 25s on a beefy hardware
+// #[test]
+// fn resize_image_png_avif_max_quality_min_speed() {
+//     image_op_test(
+//         "png.png",
+//         "scale",
+//         Some(150),
+//         Some(150),
+//         "avif",
+//         Some(100),
+//         Some(1),
+//         "avif",
+//         150,
+//         150,
+//         300,
+//         380,
+//     );
+// }
 
 #[test]
 fn resize_image_png_avif_max_quality_max_speed() {
