@@ -12,7 +12,7 @@ pub struct Cli {
     pub root: PathBuf,
 
     /// Path to a config file other than config.toml in the root of project
-    #[clap(short = 'c', long, default_value = "config.toml")]
+    #[clap(short = 'c', long, default_value = "zola.toml")]
     pub config: PathBuf,
 
     #[clap(subcommand)]
