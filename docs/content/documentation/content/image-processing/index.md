@@ -70,6 +70,23 @@ orig_width: u32,
 orig_height: u32,
 ```
 
+### Color and metadata
+
+All EXIF, XMP, and IPTC metadata is discarded during processing.
+
+Zola tries to preserve image color space information as much as possible.
+The following limitations apply:
+- Only ICC-based color data is preserved.
+- For WebP, only lossless encoding supports ICC profiles.
+- AVIF encoding does not currently support ICC profiles.
+
+If the color space were to be lost, a warning is printed.
+The image is converted regardless, without proper color conversion.
+Therefore, if the source color space and the default color space of the target format (usually sRGB or Rec.709) do not match, colors will appear incorrect.
+
+Zola performs image processing on the raw pixel data, without taking the color space into account.
+This is not usually an issue, but non-linear color spaces (including sRGB, Rec.709, AdobeRGB, Display P3, and non-linear Rec2020) may exhibit imprecise color blending, especially when scaling up low-resolution images.
+
 ## Resize operations
 
 The source for all examples is this 300 pixel × 380 pixel image:
