@@ -13,6 +13,9 @@ keywords = ["static", "site", "generator", "blog"]
 include = ["src/**/*", "LICENSE", "README.md"]
 
 [build-dependencies]
+clap = { version = "4", features = ["derive"] }
+clap_complete = "4"
+clap_mangen = "0.2.31"
 winres = "0.1"
 time = "0.3"
 
