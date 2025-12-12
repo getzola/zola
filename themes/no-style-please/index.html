@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>no style, please! | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;no-style-please&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>no style, please!</h1>
+            <p>A (nearly) no-CSS, fast, minimalist Zola theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;gumx.cc">Ahmed Alaa</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;atgumx&#x2F;no-style-please">https:&#x2F;&#x2F;gitlab.com&#x2F;atgumx&#x2F;no-style-please</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;atgumx.gitlab.io&#x2F;no-style-please">https:&#x2F;&#x2F;atgumx.gitlab.io&#x2F;no-style-please</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-11-17T21:44:42+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="no-style-please">no style, please!</h1>
+<p>A (nearly) no-CSS, fast, minimalist <a class="external" href="https://www.getzola.org/">Zola</a> theme.
+Ported from from <a class="external" href="https://riggraz.dev/">riggraz</a>'s <a class="external" href="https://riggraz.dev/no-style-please/">no style, please! Jekyll theme</a>, and you can find the demo <a class="external" href="https://atgumx.gitlab.io/no-style-please/">here</a></p>
+<p><img src="https://www.getzola.org/themes/no-style-please/./screenshot.png" alt="screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> themes
+</span><span>git clone https://gitlab.com/4bcx/no-style-please.git
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;no-style-please&quot;
+</span></code></pre>
+<h2 id="options">Options</h2>
+<h3 id="default-taxonomies">Default taxonomies</h3>
+<p>Special templates for <code>tags</code>, <code>categories</code>, and <code>contexts</code> taxonomies are provided. However, generic templates exist for custom taxonomies.</p>
+<p>To use taxonomies, in a page metadata add</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">taxonomies</span><span>]
+</span><span style="color:#e8bf6a;">tags </span><span>= [ </span><span style="color:#a5c261;">&#39;tag1&#39;</span><span>, </span><span style="color:#a5c261;">&#39;tag2&#39; </span><span>]
+</span><span style="color:#e8bf6a;">categories </span><span>= [ </span><span style="color:#a5c261;">&#39;category A&#39;</span><span>, </span><span style="color:#a5c261;">&#39;B class&#39; </span><span>]
+</span><span style="color:#e8bf6a;">genre </span><span>= [ </span><span style="color:#a5c261;">&#39;rock&#39;</span><span>, </span><span style="color:#a5c261;">&#39;alternative&#39; </span><span>]   </span><span style="color:#95815e;"># custom taxonomy
+</span></code></pre>
+<h3 id="pages-list-in-homepage">Pages list in homepage</h3>
+<p>To enable listing of pages in homepage add the following in <code>config.toml</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">list_pages </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>If you do not want the date of the post added next to the title in the list, add the following as well:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">no_list_date </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h3 id="header-and-footer-nav-links">Header and footer nav links</h3>
+<p>Also in the <code>extra</code> section in <code>config.toml</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span>
+</span><span style="color:#e8bf6a;">header_nav </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;~home&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;#tags&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/tags&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;+categories&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/categories&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;@contexts&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/contexts&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;example&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;http://example.com&quot;</span><span>, </span><span style="color:#e8bf6a;">new_tab</span><span>=</span><span style="color:#6e9cbe;">true </span><span>},
+</span><span>]
+</span><span style="color:#e8bf6a;">footer_nav </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;&lt; previous&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;#&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;webring&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;#&quot; </span><span>},
+</span><span>    { </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;next &gt;&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;#&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<h3 id="add-toc-to-pages">Add TOC to pages</h3>
+<p>In a page frontmatter, set <code>extra.add_toc</code> to <code>true</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">add_toc </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h3 id="extra-data">Extra data</h3>
+<ul>
+<li><code>author</code> can be set in both main config and in pages metadata</li>
+<li><code>image</code> variable can be used in pages to add an image to HTML <code>&lt;meta&gt;</code> tags</li>
+<li>Same for <code>logo</code> in main config, except this one is also used as the site icon</li>
+</ul>
+<h3 id="horizontal-rule-shortcode-hr">Horizontal rule shortcode <code>hr()</code></h3>
+<p>Adds the option to insert text in the thematic break</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{{ hr(data_content=&quot;footnotes&quot;) }}
+</span></code></pre>
+<p>is rendered</p>
+<p><img src="https://www.getzola.org/themes/no-style-please/./hr_footnotes.png" alt="thematic break screenshot" /></p>
+<h3 id="invertable-image-iimg">Invertable image <code>iimg()</code></h3>
+<p>Images are not inverted in darkmode by default. To add an invertable image use the following</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{{ iimg(src=&quot;logo.png&quot;, alt=&quot;alt text&quot;) }}
+</span></code></pre>
+<p>In light mode</p>
+<p><img src="https://www.getzola.org/themes/no-style-please/./iimg_light.png" alt="image in light mode" /></p>
+<p>In dark mode</p>
+<p><img src="https://www.getzola.org/themes/no-style-please/./iimg_dark.png" alt="image in dark mode" /></p>
+<h3 id="disable-twitter-card">Disable Twitter card</h3>
+<p>Twitter metatags are generated by default, to disable them set <code>extra.twitter_card</code> to <code>false</code> in in your <code>config.toml</code></p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">twitter_card </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<h2 id="todo">TODO</h2>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Add RTL support</li>
+<li><input disabled="" type="checkbox"/>
+Write proper test pages</li>
+</ul>
+<h2 id="license">License</h2>
+<p>The theme is available as open source under the terms of the <a class="external" href="https://opensource.org/licenses/MIT">MIT License</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

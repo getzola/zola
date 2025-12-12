@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>simple-dev-blog | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;simple-dev-blog&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>simple-dev-blog</h1>
+            <p>A simple dev blog theme with no javascript, prerendered linked pages and SEO tags.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;bennett.dev">Bennett Hardwick</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;bennetthardwick&#x2F;simple-dev-blog-zola-starter">https:&#x2F;&#x2F;github.com&#x2F;bennetthardwick&#x2F;simple-dev-blog-zola-starter</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;simple-dev-blog-zola-starter.netlify.app&#x2F;">https:&#x2F;&#x2F;simple-dev-blog-zola-starter.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-11-07T09:25:21+10:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><img src="https://i.imgur.com/IWoJtkF.png" alt="preview image" /></p>
+<h1 id="simple-dev-blog-zola-starter">simple-dev-blog-zola-starter</h1>
+<p>A simple dev-blog theme for Zola. It uses no JavaScript, prerenders links between navigation, blog posts and tags and adds common tags for SEO.</p>
+<p>You can view it live <a class="external" href="https://simple-dev-blog-zola-starter.netlify.app/">here</a>.</p>
+<h2 id="how-to-get-started">How to get started</h2>
+<p>To create a new Zola site, first download the CLI and install it on your system. This theme requires Zola version 0.14 or greater.</p>
+<p>You can find installation instructions <a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">on the Zola website</a>.</p>
+<ol>
+<li>
+<p>After you've installed the Zola CLI, run the following command to create a new site:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>zola init my_amazing_site
+</span><span style="color:#da4939;">cd</span><span> my_amazing_site
+</span></code></pre>
+</li>
+<li>
+<p>After you've created the site, install the "Simple Dev Blog" theme like so:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>git clone</span><span style="font-style:italic;color:#fd971f;"> --depth</span><span style="color:#cc7833;">=</span><span>1 \
+</span><span>  https://github.com/bennetthardwick/simple-dev-blog-zola-starter \
+</span><span>  themes/simple-dev-blog
+</span></code></pre>
+</li>
+<li>
+<p>Now in your <code>config.toml</code> file, choose the theme by setting <code>theme = "simple-dev-blog"</code>.</p>
+</li>
+<li>
+<p>This theme uses the <code>tags</code> taxonomy, in your <code>config.toml</code> file set <code>taxonomies = [ { name = "tags" } ]</code></p>
+</li>
+<li>
+<p>Copy across the default content from the theme by running <code>cp themes/simple-dev-blog/content/* ./content -r</code></p>
+</li>
+<li>
+<p>That's it! Now build your site by running the following command, and navigate to <code>127.0.0.1:111</code>:</p>
+<pre data-lang="sh" style="background-color:#383838;color:#e6e1dc;" class="language-sh "><code class="language-sh" data-lang="sh"><span>zola serve
+</span></code></pre>
+</li>
+</ol>
+<p>You should now have a speedy simple dev blog up and running, have fun!</p>
+<h2 id="customisation">Customisation</h2>
+<p>Look at the <code>config.toml</code> and <code>theme.toml</code> in this repo for an idea, here's a list of all the options:</p>
+<h3 id="global">Global</h3>
+<p>The following options should be under the <code>[extra]</code> in <code>config.toml</code></p>
+<ul>
+<li><code>accent_light</code> - a lighter shade of your site's accent color</li>
+<li><code>accent</code> - your site's accent color</li>
+<li><code>blog_path</code> - the path to your blog (defaults to <code>blog</code>)</li>
+<li><code>default_og_image</code> - the path default og:image for your page</li>
+<li><code>footer_about</code> - the content for your footer in markdown</li>
+<li><code>icon</code> - the path to the icon for your site in the content folder
+<ul>
+<li>E.g to add the file <code>icon.png</code> you should put it in <code>content/icon.png</code></li>
+</ul>
+</li>
+<li><code>nav</code> - see <code>theme.toml</code>, the navigation links for your site</li>
+<li><code>not_found_message</code> - the content for your 404 page in markdown</li>
+<li><code>profile_large</code> - the path to a larger vertical version of your profile picture in the content folder</li>
+<li><code>profile_small</code> - the path to a small version of your profile picture in the content folder</li>
+</ul>
+<h3 id="page">Page</h3>
+<p>The following options should be under the <code>[extra]</code> section of each page</p>
+<ul>
+<li><code>thumbnail</code> - the path to your og:image for that page</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

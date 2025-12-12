@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Andromeda | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;andromeda&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Andromeda</h1>
+            <p>Photography journal blog theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;blog.andromeda.is">Parker Lamb</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.16.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;Pixadus&#x2F;andromeda-theme">https:&#x2F;&#x2F;github.com&#x2F;Pixadus&#x2F;andromeda-theme</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;andromeda-theme.netlify.app&#x2F;">https:&#x2F;&#x2F;andromeda-theme.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-11-02T09:34:09-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="andromeda-theme-for-zola">Andromeda Theme for Zola</h1>
+<blockquote>
+<p>Andromeda is a lightweight <strong>photojournal &amp; blog</strong> theme designed for Zola.</p>
+</blockquote>
+<p>With built-in support for galleries and some options for customization, Andromeda is designed for photojournalism without complications.</p>
+<p>Index demo:
+<img src="https://www.getzola.org/themes/andromeda/index_demo.jpg" alt="Index demo graphic" /></p>
+<p>Post demo:
+<img src="https://www.getzola.org/themes/andromeda/post_demo.png" alt="Post demo graphic" /></p>
+<hr />
+<h2 id="installation">Installation</h2>
+<p>Assuming you already have a site set up (see the <a class="external" href="https://www.getzola.org/documentation/getting-started/overview/">Zola guide for setting up a site</a>),</p>
+<ol>
+<li>Create a <code>themes</code> directory in the root of your site if it does not already exist.</li>
+<li>Clone the theme into your themes directory:<pre style="background-color:#383838;color:#e6e1dc;"><code><span>git clone https://github.com/Pixadus/andromeda-theme themes/andromeda
+</span></code></pre>
+</li>
+<li>Duplicate the structure of the the <code>config.toml</code> file found in <code>themes/andromeda/config.toml</code> or <a class="external" href="https://github.com/Pixadus/andromeda-theme/blob/main/config.toml">this repository</a> within your own <code>config.toml</code>.</li>
+<li>Set the theme to Andromeda, by including <code>theme = andromeda</code> in your <code>config.toml</code> file.</li>
+</ol>
+<h2 id="creating-pages">Creating pages</h2>
+<p>To create a new post, create a <code>.md</code> file within <code>/content</code>, with the header format:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>title = &quot;Post title&quot;
+</span><span>date = 2023-04-25
+</span><span>description = &quot;Post description&quot;
+</span><span>extra = {header_img = &quot;image-url&quot;}
+</span><span>+++
+</span></code></pre>
+<p><strong>Note</strong>: The +++ are necessary.</p>
+<p>The <code>header_img</code> field is the image shown on the homepage of the blog and in the heading of each page. It can be a remote URL or local - if local, by default this will be files stored in the <code>static</code> folder, or <code>/images</code> in the URL.</p>
+<h3 id="galleries">Galleries</h3>
+<p>Galleries can be set up by using the following template in your Markdown file:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>&lt;</span><span style="color:#e8bf6a;">div class</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="color:#c1be91;">gallery</span><span>&quot;&gt;
+</span><span>    &lt;</span><span style="color:#e8bf6a;">a </span><span style="color:#86c20e;">href=</span><span>&quot;</span><span style="color:#c1be91;">original_photo1.jpg</span><span>&quot; </span><span style="color:#86c20e;">data-ngthumb=</span><span>&quot;</span><span style="color:#c1be91;">thumbnail_photo1.jpg</span><span>&quot;&gt;&lt;/</span><span style="color:#e8bf6a;">a</span><span>&gt;
+</span><span>    &lt;</span><span style="color:#e8bf6a;">a </span><span style="color:#86c20e;">href=</span><span>&quot;</span><span style="color:#c1be91;">original_photo2.jpg</span><span>&quot; </span><span style="color:#86c20e;">data-ngthumb=</span><span>&quot;</span><span style="color:#c1be91;">thumbnail_photo2.jpg</span><span>&quot;&gt;&lt;/</span><span style="color:#e8bf6a;">a</span><span>&gt;
+</span><span>&lt;/</span><span style="color:#e8bf6a;">div</span><span>&gt;
+</span></code></pre>
+<p>For more or less photos, use <code>&lt;a href&gt;</code> tags. <a class="external" href="https://www.flickr.com/">Flickr</a> provides a good hosting option as it automatically generates thumbnails for you.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Andromeda supports custom navbar links - see <a class="external" href="https://github.com/Pixadus/andromeda-theme/blob/main/config.toml">config.toml</a> for an example. You may also set a custom <code>favicon.ico</code> though <code>config.toml</code>.</p>
+<p>If you wish to customize the design of the gallery, basic Javascript knowledge will be necessary. Andromeda uses <code>nanogallery2</code> by default - the <a class="external" href="https://nanogallery2.nanostudio.org/documentation.html">documentation can be found here</a>. Customizations to the gallery design are done within the <code>{%/* macro pagefooter() */%}</code> block within <code>/templates/macros.html</code>.</p>
+<p>By default, this script is divided into three sections (indicated by <code>item==</code>): single-image, two-image and three+ image gallery setups.</p>
+<h2 id="credits">Credits</h2>
+<p>The demo images used included <a class="external" href="https://www.flickr.com/photos/anishkumar_sugumaran/52831738797/in/explore-2023-04-26/">Antelope Canyon by Anishkumar Sugumaran</a> and <a class="external" href="https://www.flickr.com/photos/27263572@N05/52838617702/in/explore-2023-04-26/">Bryce Canyon by Marco Isler</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
