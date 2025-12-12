@@ -11,11 +11,12 @@ confinement: strict # use 'strict' once you have the right plugs and slots
 
 apps:
   zola:
-    command: zola
+    command: bin/zola
     plugs:
       - home
       - network
       - network-bind
+      - removable-media
 
 parts:
   zola:
