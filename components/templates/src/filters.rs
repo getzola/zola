@@ -173,7 +173,13 @@ mod tests {
     use super::{
         MarkdownFilter, NumFormatFilter, RegexReplaceFilter, base64_decode, base64_encode,
     };
-    use config::Config;
+    use config::{Config, HighlightConfig, HighlightStyle, Highlighting, Registry};
+
+    fn get_test_registry() -> Registry {
+        let mut registry = Registry::builtin().unwrap();
+        registry.link_grammars();
+        registry
+    }
 
     #[test]
     fn markdown_filter() {
@@ -238,7 +244,14 @@ mod tests {
     #[test]
     fn markdown_filter_use_config_options() {
         let mut config = Config::default();
-        config.markdown.highlight_code = true;
+        config.markdown.highlighting = Some(Highlighting {
+            error_on_missing_language: false,
+            style: HighlightStyle::Inline,
+            theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+            extra_grammars: vec![],
+            extra_themes: vec![],
+            registry: get_test_registry(),
+        });
         config.markdown.smart_punctuation = true;
         config.markdown.render_emoji = true;
         config.markdown.external_links_target_blank = true;

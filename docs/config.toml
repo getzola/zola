@@ -13,9 +13,11 @@ taxonomies = [
 index_format = "elasticlunr_json"
 
 [markdown]
-highlight_code = true
-highlight_theme = "kronuz"
 external_links_class = "external"
+
+[markdown.highlighting]
+theme = "github-dark"
+
 #highlight_theme = "css"
 #highlight_themes_css = [
 #  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },

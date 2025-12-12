@@ -8,9 +8,9 @@ include = ["src/**/*"]
 serde = { workspace = true }
 globset = { workspace = true }
 once_cell = { workspace = true }
-syntect = { workspace = true }
 toml = { workspace = true }
 unic-langid = { workspace = true }
+giallo = { workspace = true }
 
 errors = { workspace = true }
 utils = { workspace = true }

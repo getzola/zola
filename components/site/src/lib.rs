@@ -811,16 +811,20 @@ impl Site {
     }
 
     pub fn render_themes_css(&self) -> Result<()> {
-        let themes = &self.config.markdown.highlight_themes_css;
-
+        let themes = self
+            .config
+            .markdown
+            .highlighting
+            .as_ref()
+            .map(|x| x.generate_themes_css())
+            .unwrap_or_default();
         if !themes.is_empty() {
             create_directory(&self.static_path)?;
         }
 
-        for t in themes {
-            let p = self.static_path.join(&t.filename);
+        for (filename, content) in themes {
+            let p = self.static_path.join(&filename);
             if !p.exists() {
-                let content = &self.config.markdown.export_theme_css(&t.theme)?;
                 create_file(&p, content)?;
             }
         }

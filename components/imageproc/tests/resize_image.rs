@@ -21,9 +21,6 @@ title = "imageproc integration tests"
 base_url = "https://example.com"
 compile_sass = false
 build_search_index = false
-
-[markdown]
-highlight_code = false
 "#;
 
 static TEST_IMGS: Lazy<PathBuf> =

@@ -53,7 +53,7 @@ globset = { workspace = true }
 percent-encoding = { workspace = true }
 relative-path = { workspace = true }
 serde_json = { workspace = true }
-time = { workspace = true, features = ["formatting", "macros", "local-offset"] }
+time = { workspace = true, features = ["formatting", "macros", "local-offset", "parsing"] }
 url = { workspace = true }
 
 [dev-dependencies]
@@ -107,7 +107,6 @@ serde_yaml = "0.9"
 sha2 = "0.10"
 slug = "0.1"
 svg_metadata = "0.6"
-syntect = "5"
 tera = { version = "1.17", features = ["preserve_order", "date-locale"] }
 termcolor = "1.0.4"
 time = "0.3"
@@ -117,6 +116,7 @@ unicode-segmentation = "1.2"
 url = "2"
 walkdir = "2"
 webp = "0.3"
+giallo = {path = "../giallo", features = ["dump"]}
 
 # Internal crates
 config = { path = "components/config" }
