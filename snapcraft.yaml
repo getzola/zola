@@ -1,9 +1,9 @@
 name: zola
 version: 0.21.0
-summary: A fast static site generator in a single binary
+title: Zola
+summary: A fast static site generator in a single binary with everything built-in.
 description: |
   A fast static site generator in a single binary with everything built-in.
-title: Zola
 website: https://www.getzola.org
 
 base: core22
