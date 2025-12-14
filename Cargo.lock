@@ -757,10 +757,10 @@ dependencies = [
 name = "console"
 version = "0.1.0"
 dependencies = [
- "atty",
+ "anstream",
+ "anstyle",
  "errors",
  "once_cell",
- "termcolor",
 ]
 
 [[package]]
@@ -1202,6 +1202,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a246d82be1c9d791c5dfde9a2bd045fc3cbba3fa2b11ad558f27d01712f00569"
 
 [[package]]
+name = "env_filter"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1bf3c259d255ca70051b30e2e95b5446cdb8949ac4cd22c0d7fd634d89f568e2"
+dependencies = [
+ "log",
+]
+
+[[package]]
 name = "env_logger"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1212,6 +1221,16 @@ dependencies = [
  "log",
  "regex",
  "termcolor",
+]
+
+[[package]]
+name = "env_logger"
+version = "0.11.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13c863f0904021b108aa8b2f55046443e6b1ebde8fd4a15c399893aae4fa069f"
+dependencies = [
+ "env_filter",
+ "log",
 ]
 
 [[package]]
@@ -2372,7 +2391,7 @@ dependencies = [
  "clap 3.2.25",
  "csv",
  "encoding",
- "env_logger",
+ "env_logger 0.9.3",
  "glob",
  "lindera-core",
  "lindera-decompress",
@@ -2446,7 +2465,7 @@ dependencies = [
  "byteorder",
  "clap 3.2.25",
  "encoding",
- "env_logger",
+ "env_logger 0.9.3",
  "glob",
  "lindera-core",
  "lindera-decompress",
@@ -2467,7 +2486,7 @@ dependencies = [
  "clap 3.2.25",
  "csv",
  "encoding",
- "env_logger",
+ "env_logger 0.9.3",
  "glob",
  "lindera-core",
  "lindera-decompress",
@@ -2487,7 +2506,7 @@ dependencies = [
  "clap 3.2.25",
  "csv",
  "encoding",
- "env_logger",
+ "env_logger 0.9.3",
  "glob",
  "lindera-core",
  "lindera-decompress",
@@ -5994,12 +6013,15 @@ name = "zola"
 version = "0.21.0"
 dependencies = [
  "ahash 0.8.12",
+ "anstream",
+ "anstyle",
  "axum",
  "clap 4.5.53",
  "clap_complete",
  "clap_mangen",
  "console 0.1.0",
  "ctrlc",
+ "env_logger 0.11.8",
  "errors",
  "globset",
  "link_checker",

@@ -1,7 +1,9 @@
 use std::path::{Path, PathBuf};
+use std::sync::LazyLock;
 use std::time::Instant;
 
 use cli::{Cli, Command};
+use env_logger::Env;
 use errors::anyhow;
 use log;
 use utils::net::{get_available_port, port_is_available};
@@ -41,7 +43,43 @@ fn get_config_file_path(dir: &Path, config_path: &Path) -> (PathBuf, PathBuf) {
     (root_dir.to_path_buf(), config_file)
 }
 
+// env-logger prints to stderr, so we detect color configuration by considering the stderr stream (and not stdout)
+static SHOULD_COLOR_OUTPUT: LazyLock<anstream::ColorChoice> =
+    LazyLock::new(|| anstream::AutoStream::choice(&std::io::stderr()));
+
 fn main() {
+    // ensure that logging uses the “info” level for anything in Zola by default
+    let env = Env::new().default_filter_or("zola=info");
+    env_logger::Builder::from_env(env)
+        .format(|f, record| {
+            use std::io::Write;
+            match record.level() {
+                // INFO is used for normal CLI outputs, which we want to print with a little less noise
+                log::Level::Info => {
+                    writeln!(f, "{}", record.args())
+                }
+                _ => {
+                    use anstyle::*;
+                    let style = Style::new()
+                        .fg_color(Some(Color::Ansi(match record.level() {
+                            log::Level::Error => AnsiColor::Red,
+                            log::Level::Warn => AnsiColor::Yellow,
+                            log::Level::Info => AnsiColor::Green,
+                            log::Level::Debug => AnsiColor::Cyan,
+                            log::Level::Trace => AnsiColor::BrightBlack,
+                        })))
+                        .bold();
+                    // Because the formatter erases the “terminal-ness” of stderr, we manually set the color behavior here.
+                    let mut f = anstream::AutoStream::new(
+                        f as &mut dyn std::io::Write,
+                        *SHOULD_COLOR_OUTPUT,
+                    );
+                    writeln!(f, "{style}{:5}{style:#} {}", record.level().as_str(), record.args())
+                }
+            }
+        })
+        .init();
+
     let cli = Cli::parse();
     let cli_dir: PathBuf = cli.root.canonicalize().unwrap_or_else(|e| {
         messages::unravel_errors(
