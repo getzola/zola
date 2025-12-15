@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-11-05T22:15:23+02:00
+date = 2025-12-13T22:51:05+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-11-05T22:15:23+02:00
-updated = 2025-11-05T22:15:23+02:00
+created = 2025-12-13T22:51:05+02:00
+updated = 2025-12-13T22:51:05+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -31,12 +31,9 @@ and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual a
 - The source code is available on [Codeberg](https://codeberg.org/salif/linkita)
   and mirrored on [GitHub](https://github.com/salif/linkita).
 - Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/linkita/issues).
-- See [demo source code](https://codeberg.org/salif/linkita-demo).
-- Live preview in:
-  [English](https://salif.github.io/linkita/),
-  [Bulgarian](https://salif.github.io/linkita/bg/),
-  [Esperanto](https://salif.github.io/linkita/eo/),
-  [Globasa](https://salif.github.io/linkita/gb/).
+- See the [quickstart repository](https://github.com/salif/linkita-start).
+- See a [live preview](https://salif.github.io/linkita/) and
+  [its source code](https://codeberg.org/salif/linkita-demo).
 
 ## Features
 
@@ -64,7 +61,13 @@ and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual a
 - Keyboard shortcuts
 - Relative URLs support
 
-## Installing
+## Installation
+
+The fastest way to create a new site is to use the
+[linkita-start template](https://github.com/salif/linkita-start).
+This gives you a complete blog setup with all the essential configuration ready to go.
+
+### Manual installation
 
 0. Create a new Zola site if you haven't already:
 
@@ -299,7 +302,7 @@ For example, you can add JavaScript files and CSS stylesheets in the `templates/
 | Table of contents | <kbd>Alt</kbd>+<kbd>\=</kbd> |
 | Skip to footer    | <kbd>Alt</kbd>+<kbd>\_</kbd> |
 
-## Configuring
+## Configuration
 
 Copy and paste the examples into your `config.toml` file
 and comment out the variables you don't use instead of setting empty values.
@@ -824,7 +827,7 @@ Live preview is available in following languages:
 ## Sites using Linkita
 
 - [Zola Themes Collection](https://github.com/salif/zola-themes-collection)
-- [salif.eu](https://codeberg.org/salif/personal-web-page)
+- [Salif's site](https://codeberg.org/salif/personal-web-page)
 - [Rratic's blog](https://github.com/Rratic/rratic.github.io)
 
 If your blog is using Linkita and is open source, feel free to create a pull request to add it to this list.
