@@ -2,6 +2,9 @@
 
 ## 0.22.0 (unreleased)
 
+- Add proper logging; log output can be controlled with `RUST_LOG` environment variable
+- Remove `ZOLA_PERF_LOG` environment variable; set `RUST_LOG=site=debug,zola=info` instead
+
 ## 0.21.0 (2025-07-14)
 
 - Allow `github_alerts` at config.toml level

@@ -1,5 +1,7 @@
 use std::ops::RangeInclusive;
 
+use log;
+
 fn parse_range(s: &str) -> Option<RangeInclusive<usize>> {
     match s.find('-') {
         Some(dash) => {
@@ -119,7 +121,7 @@ impl<'a> Iterator for FenceIter<'a> {
                 "copy" => return Some(FenceToken::EnableCopy),
                 lang => {
                     if tok_split.next().is_some() {
-                        eprintln!("Warning: Unknown annotation {}", lang);
+                        log::warn!("Unknown annotation {}", lang);
                         continue;
                     }
                     return Some(FenceToken::Language(lang));
