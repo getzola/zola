@@ -243,7 +243,7 @@ async fn handle_websocket(mut socket: WebSocket, reload_tx: broadcast::Sender<St
                     Some(Ok(Message::Pong(_))) => continue,
                     Some(Ok(_)) => {} // Ignore other message types
                     Some(Err(e)) => {
-                        console::error(&format!("WebSocket error: {e}"));
+                        log::error!("WebSocket error: {e}");
                         break;
                     }
                     None => break,
