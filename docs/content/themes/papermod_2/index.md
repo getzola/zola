@@ -3,14 +3,14 @@
 title = "PaperMod"
 description = "A fast, clean, responsive theme ported to Zola."
 template = "theme.html"
-date = 2025-09-16T22:16:54-04:00
+date = 2025-12-12T10:01:47-05:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-09-16T22:16:54-04:00
-updated = 2025-09-16T22:16:54-04:00
+created = 2025-12-12T10:01:47-05:00
+updated = 2025-12-12T10:01:47-05:00
 repository = "https://github.com/dawnandrew100/zola-theme-papermod-2"
 homepage = "https://github.com/cydave/zola-theme-papermod"
 minimum_version = "0.4.0"

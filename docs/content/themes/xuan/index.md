@@ -3,14 +3,14 @@
 title = "xuan"
 description = "Modern, pretty, and clean theme"
 template = "theme.html"
-date = 2025-12-02T16:21:05+08:00
+date = 2025-12-14T15:52:42+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-12-02T16:21:05+08:00
-updated = 2025-12-02T16:21:05+08:00
+created = 2025-12-14T15:52:42+08:00
+updated = 2025-12-14T15:52:42+08:00
 repository = "https://github.com/jhq223/xuan.git"
 homepage = "https://github.com/jhq223/xuan"
 minimum_version = "0.21.0"
@@ -19,7 +19,7 @@ demo = "https://xuan-theme.jhq223.workers.dev"
 
 [extra.author]
 name = "jhq223"
-homepage = "https://blog.900803.xyz"
+homepage = "https://blog.guiio.com"
 +++        
 
 # Xuan
