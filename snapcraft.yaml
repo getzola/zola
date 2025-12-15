@@ -1,13 +1,26 @@
-name: zola 
+name: zola
 version: 0.21.0
+title: Zola
 summary: A fast static site generator in a single binary with everything built-in.
 description: |
   A fast static site generator in a single binary with everything built-in.
-  https://www.getzola.org
+website: https://www.getzola.org
 
 base: core22
-grade: stable # must be 'stable' to release into candidate/stable channels
-confinement: strict # use 'strict' once you have the right plugs and slots
+grade: stable  # must be 'stable' to release into candidate/stable channels
+confinement: strict  # use 'strict' once you have the right plugs and slots
+
+parts:
+  zola:
+    plugin: rust
+    rust-channel: stable
+    source: https://github.com/getzola/zola.git
+    source-tag: v0.21.0
+    build-packages:
+      - build-essential
+      - cmake
+      - pkg-config
+      - libssl-dev
 
 apps:
   zola:
@@ -16,17 +29,4 @@ apps:
       - home
       - network
       - network-bind
-      - removable-media
-
-parts:
-  zola:
-    source-type: git
-    source: https://github.com/getzola/zola.git
-    source-tag: v0.21.0
-    plugin: rust
-    rust-channel: stable
-    build-packages:
-    - build-essential
-    - cmake
-    - libssl-dev
-    - pkg-config
+      
