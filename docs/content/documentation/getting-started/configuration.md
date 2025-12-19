@@ -115,19 +115,6 @@ generate_robots_txt = true
 
 # Configuration of the Markdown rendering
 [markdown]
-# When set to "true", all code blocks are highlighted.
-highlight_code = false
-
-# When set to "true", missing highlight languages are treated as errors. Defaults to false.
-error_on_missing_highlight = false
-
-# A list of directories used to search for additional `.sublime-syntax` and `.tmTheme` files.
-extra_syntaxes_and_themes = []
-
-# The theme to use for code highlighting.
-# See below for list of allowed values.
-highlight_theme = "base16-ocean-dark"
-
 # When set to "true", emoji aliases translated to their corresponding
 # Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
 render_emoji = false
@@ -186,6 +173,27 @@ github_alerts = false
 # "heading" means the full heading becomes the text of the anchor.
 # See "Internal links & deep linking" in the documentation for more information.
 insert_anchor_links = "none"
+
+# Syntax highlighting configuration (optional)
+[markdown.highlighting]
+# When set to "true", missing highlight languages are treated as errors. Defaults to false.
+error_on_missing_language = false
+
+# Whether to use inline hex colours (`inline`) or CSS classes (`class`) 
+style = "inline"
+
+# If you use a single theme, put its name here. See the syntax highlighting  page for the possible choices.
+theme = ""
+
+# If you want light/dark themes, use the 2 fields below instead. See the syntax highlighting  page for the possible choices.
+light_theme = ""
+dark_theme = ""
+
+# A list of files for additional JSON TextMate grammars
+extra_grammars = []
+
+# A list of files for additional JSON TextMate themes
+extra_themes = []
 
 # Configuration of the link checker.
 [link_checker]
@@ -271,18 +279,6 @@ index_format = "elasticlunr_javascript"
 #
 [extra]
 ```
-
-## Syntax highlighting
-
-Zola currently has the following highlight themes available:
-
-{{ grid_gallery() }}
-
-Zola uses the Sublime Text themes, making it very easy to add more.
-If you want a theme not listed above, please open an issue or a pull request on the [Zola repo](https://github.com/getzola/zola).
-
-Alternatively you can use the `extra_syntaxes_and_themes` configuration option to load your own custom themes from a .tmTheme file.
-See [Syntax Highlighting](@/documentation/content/syntax-highlighting.md) for more details.
 
 ## Slugification strategies
 

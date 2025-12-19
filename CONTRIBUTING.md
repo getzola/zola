@@ -19,6 +19,6 @@ If you want to work on an issue, please mention it in a comment to avoid potenti
 any questions on how to approach it do not hesitate to ping me (@keats).
 Easy issues are tagged with `help wanted` and/or `good first issue`
 
-## Adding syntax highlighting languages and themes
+## Adding syntax highlighting languages, themes or aliases
 
 Open an issue on the [Giallo repository](https://github.com/getzola/giallo).

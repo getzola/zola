@@ -54,7 +54,6 @@ impl Highlighting {
             registry.add_theme_from_path(config_dir.join(theme))?;
         }
 
-        registry.add_plain_grammar(&["txt"])?;
         registry.link_grammars();
 
         match &self.theme {
@@ -83,7 +82,7 @@ impl Highlighting {
         self.style == HighlightStyle::Class
     }
 
-    pub fn generate_themes_css(&self) -> Vec<(String, String)> {
+    pub fn generate_themes_css(&self) -> Vec<(&'static str, String)> {
         let mut out = Vec::new();
 
         if self.style == HighlightStyle::Inline {
@@ -94,17 +93,17 @@ impl Highlighting {
         match &self.theme {
             HighlightConfig::Single { theme } => {
                 out.push((
-                    theme.clone(),
+                    "giallo.css",
                     self.registry.generate_css(theme, "z-").expect("theme to be present"),
                 ));
             }
             HighlightConfig::Dual { light_theme, dark_theme } => {
                 out.push((
-                    light_theme.clone(),
+                    "giallo-light.css",
                     self.registry.generate_css(light_theme, "z-").expect("theme to be present"),
                 ));
                 out.push((
-                    dark_theme.clone(),
+                    "giallo-dark.css",
                     self.registry.generate_css(dark_theme, "z-").expect("theme to be present"),
                 ));
             }

@@ -16,13 +16,7 @@ index_format = "elasticlunr_json"
 external_links_class = "external"
 
 [markdown.highlighting]
-theme = "github-dark"
-
-#highlight_theme = "css"
-#highlight_themes_css = [
-#  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
-#  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
-#]
+theme = "catppuccin-mocha"
 
 [link_checker]
 internal_level = "warn"
