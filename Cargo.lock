@@ -1603,10 +1603,12 @@ dependencies = [
 
 [[package]]
 name = "giallo"
-version = "0.0.1"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e38674eaf44eef520832d4076861c544ded6e69611453f8d54283e4fba1576ad"
 dependencies = [
  "flate2",
- "onig",
+ "onig-regset",
  "rmp-serde",
  "serde",
  "serde_json",
@@ -3188,9 +3190,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
-name = "onig"
-version = "6.5.1"
-source = "git+https://github.com/Keats/rust-onig?branch=main#a9881c81f743345a32385df1280b3954a723005d"
+name = "onig-regset"
+version = "6.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6677cde75158351827ddee167c3dfd914c724cb7689e7f655334f9fae0dabec6"
 dependencies = [
  "bitflags 2.10.0",
  "libc",
@@ -3201,7 +3204,8 @@ dependencies = [
 [[package]]
 name = "onig_sys"
 version = "69.9.1"
-source = "git+https://github.com/Keats/rust-onig?branch=main#a9881c81f743345a32385df1280b3954a723005d"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7f86c6eef3d6df15f23bcfb6af487cbd2fed4e5581d58d5bf1f5f8b7f6727dc"
 dependencies = [
  "cc",
  "pkg-config",

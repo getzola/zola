@@ -1,4 +1,4 @@
-use giallo::{HighlightOptions, Registry};
+use giallo::{HighlightOptions, Registry, ThemeVariant};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -114,16 +114,15 @@ impl Highlighting {
     }
 
     pub fn highlight_options<'a>(&'a self, lang: &'a str) -> HighlightOptions<'a> {
-        let mut opt = HighlightOptions::new(lang);
-
-        match &self.theme {
+        let mut opt = match &self.theme {
             HighlightConfig::Single { theme } => {
-                opt = opt.single_theme(theme);
+                HighlightOptions::new(lang, ThemeVariant::Single(theme))
             }
-            HighlightConfig::Dual { light_theme, dark_theme } => {
-                opt = opt.light_dark_themes(light_theme, dark_theme);
-            }
-        }
+            HighlightConfig::Dual { light_theme, dark_theme } => HighlightOptions::new(
+                lang,
+                ThemeVariant::Dual { light: light_theme, dark: dark_theme },
+            ),
+        };
 
         if !self.error_on_missing_language {
             opt = opt.fallback_to_plain(true);
