@@ -46,6 +46,10 @@ impl<'a> RenderContext<'a> {
         }
     }
 
+    pub(crate) fn is_highlighting(&self) -> bool {
+        self.config.markdown.highlighting.is_some()
+    }
+
     /// Set in another step so we don't add one more arg to new.
     /// And it's only used when rendering pages/section anyway
     pub fn set_shortcode_definitions(&mut self, def: &'a HashMap<String, ShortcodeDefinition>) {

@@ -27,7 +27,7 @@ taxonomies = [
 build_search_index = true
 
 [markdown]
-highlight_code = false
+# Highlighting is disabled (no highlighting section)
 
 
 [extra]

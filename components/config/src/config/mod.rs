@@ -188,7 +188,10 @@ impl Config {
             .ok_or_else(|| anyhow!("Failed to find directory containing the config file."))?;
 
         // this is the step at which missing extra syntax and highlighting themes are raised as errors
-        config.markdown.init_extra_syntaxes_and_highlight_themes(config_dir)?;
+        if let Some(highlight) = config.markdown.highlighting.as_mut() {
+            highlight.init(config_dir)?;
+        }
+
         config.markdown.validate_external_links_class()?;
 
         Ok(config)
@@ -316,7 +319,7 @@ impl Config {
     pub fn enable_check_mode(&mut self) {
         self.mode = Mode::Check;
         // Disable syntax highlighting since the results won't be used and it is slow
-        self.markdown.highlight_code = false;
+        self.markdown.highlighting = None;
     }
 
     pub fn get_translation(&self, lang: &str, key: &str) -> Result<String> {
@@ -999,21 +1002,6 @@ title = "Zola"
         let config = Config::parse(config).unwrap();
         let serialised = config.serialize(&config.default_language);
         assert_eq!(serialised.title, &config.title);
-    }
-
-    #[test]
-    fn markdown_config_in_serializedconfig() {
-        let config = r#"
-base_url = "https://www.getzola.org/"
-title = "Zola"
-[markdown]
-highlight_code = true
-highlight_theme = "css"
-    "#;
-
-        let config = Config::parse(config).unwrap();
-        let serialised = config.serialize(&config.default_language);
-        assert_eq!(serialised.markdown.highlight_theme, config.markdown.highlight_theme);
     }
 
     #[test]
