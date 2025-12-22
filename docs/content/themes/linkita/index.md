@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-12-13T22:51:05+02:00
+date = 2025-12-19T19:22:37+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-12-13T22:51:05+02:00
-updated = 2025-12-13T22:51:05+02:00
+created = 2025-12-19T19:22:37+02:00
+updated = 2025-12-19T19:22:37+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -28,12 +28,12 @@ A clean and elegant blog theme for [Zola](https://www.getzola.org/).
 Linkita is based on [Kita](https://github.com/st1020/kita)
 and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual and SEO friendly.
 
-- The source code is available on [Codeberg](https://codeberg.org/salif/linkita)
-  and mirrored on [GitHub](https://github.com/salif/linkita).
-- Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/linkita/issues).
 - See the [quickstart repository](https://github.com/salif/linkita-start).
 - See a [live preview](https://salif.github.io/linkita/) and
   [its source code](https://codeberg.org/salif/linkita-demo).
+- Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/linkita/issues).
+- The source code is available on [Codeberg](https://codeberg.org/salif/linkita)
+  and mirrored on [GitHub](https://github.com/salif/linkita).
 
 ## Features
 
@@ -80,12 +80,14 @@ git init
 1. Add the theme as a git submodule:
 
 ```sh
-git submodule add -b linkita https://codeberg.org/salif/linkita.git themes/linkita
+git submodule add -b v4 https://codeberg.org/salif/linkita.git themes/linkita
 ```
 
 If you don't want to use git submodules, you can clone the repository instead:
 
-`git clone https://codeberg.org/salif/linkita.git themes/linkita`
+```sh
+git clone -b v4 https://codeberg.org/salif/linkita.git themes/linkita
+```
 
 2. Enable the theme in your `config.toml` file:
 
@@ -103,9 +105,11 @@ To update the theme, run:
 git submodule update --remote themes/linkita
 ```
 
-Check the [changelog](https://codeberg.org/salif/linkita/src/branch/linkita/CHANGELOG.md)
-for all versions after the one you are using.
-There may be breaking changes that require manual involvement.
+If you use the `linkita` branch of the theme, check the
+[changelog/linkita.md](https://codeberg.org/salif/linkita/src/branch/linkita/changelog/linkita.md) file.  
+Otherwise, find the changelog file for your version in the `changelog` directory.
+
+If you switch to newer version, there may be breaking changes that require manual involvement.
 
 ## Usage
 
@@ -792,6 +796,7 @@ loading = "lazy"
 This project is under the [MIT License](https://codeberg.org/salif/linkita/src/branch/linkita/LICENSE).
 
 Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [Github](https://github.com/salif/linkita).
+The main branch is `linkita`.
 
 ### Localization
 
@@ -838,6 +843,5 @@ Linkita is one of several Zola themes I maintain.
 Other themes include:
 
 - [Tukan](https://codeberg.org/salif/tukan) – Fork of zola-blog-theme, inspired from Toucan theme.
-- [Trankwilo](https://codeberg.org/salif/trankwilo) – Fork of the Goyo theme, for documentation.
 
         
