@@ -3,14 +3,14 @@
 title = "Goyo"
 description = "A simplicity and clean documentation theme"
 template = "theme.html"
-date = 2025-12-15T01:00:28+09:00
+date = 2025-12-20T18:40:10+09:00
 
 [taxonomies]
 theme-tags = ['documentation', 'Multilingual', 'Responsive', 'minimal']
 
 [extra]
-created = 2025-12-15T01:00:28+09:00
-updated = 2025-12-15T01:00:28+09:00
+created = 2025-12-20T18:40:10+09:00
+updated = 2025-12-20T18:40:10+09:00
 repository = "https://github.com/hahwul/goyo"
 homepage = "https://github.com/hahwul/goyo"
 minimum_version = "0.17.0"
@@ -49,7 +49,7 @@ homepage = "https://www.hahwul.com"
 - Comments (Giscus, Utterances)
 - Various shortcodes (Mermaid, Asciinema, Katex, Alert, Badge, YouTube, Gist, Carousel, Collapse, etc.)
 - Custom Font Support
-- Edit Page & Share Buttons
+- Edit Page, Share Buttons and Taxonomies
 - Customization
 
 ## Installation
