@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Blow | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;blow&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Blow</h1>
+            <p>A Zola theme made with Tailwindcss</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;tchartron.com">Thomas Chartron</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.9.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;tchartron&#x2F;blow">https:&#x2F;&#x2F;github.com&#x2F;tchartron&#x2F;blow</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;tchartron.com">https:&#x2F;&#x2F;tchartron.com</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-09-29T16:55:23+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="blow">Blow</h1>
+<p>A <a class="external" href="https://www.getzola.org/">Zola</a> theme built with <a class="external" href="https://tailwindcss.com/">tailwindcss</a></p>
+<p>(WIP) Example : <a class="external" href="https://tchartron.com">Here</a></p>
+<h2 id="preview">Preview</h2>
+<p><img src="https://www.getzola.org/themes/blow/screenshot.png" alt="preview" /></p>
+<h2 id="usage">Usage</h2>
+<p>You should follow the <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">official documentation</a> about installing a Zola theme.</p>
+<p>I recommend adding the theme as a git submodule :</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> my-zola-website
+</span><span>git submodule add</span><span style="font-style:italic;color:#fd971f;"> -b</span><span> main git@github.com:tchartron/blow.git themes/blow
+</span></code></pre>
+<p>Edit the theme used in your <code>config.toml</code> file</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># The site theme to use.
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;blow&quot;
+</span></code></pre>
+<p>Then edit your <code>config.toml</code> file to override values from the theme :</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">enable_search </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">enable_sidebar </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">enable_adsense </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">enable_multilingue </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">adsense_link </span><span>= </span><span style="color:#c1be91;">&quot;https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=myclientid&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.lang</span><span>]
+</span><span style="color:#e8bf6a;">items </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">lang </span><span>= </span><span style="color:#c1be91;">&quot;en&quot;</span><span>, </span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>        { </span><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;English&quot; </span><span>},
+</span><span>        { </span><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;/fr&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;French&quot; </span><span>},
+</span><span>    ] },
+</span><span>    { </span><span style="color:#e8bf6a;">lang </span><span>= </span><span style="color:#c1be91;">&quot;fr&quot;</span><span>, </span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>        { </span><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Anglais&quot; </span><span>},
+</span><span>        { </span><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;/fr&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Français&quot; </span><span>},
+</span><span>    ] },
+</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.navbar</span><span>]
+</span><span style="color:#e8bf6a;">items </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">lang </span><span>= </span><span style="color:#c1be91;">&quot;en&quot;</span><span>, </span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot; </span><span>},
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/categories&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Categories&quot; </span><span>},
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/tags&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot; </span><span>},
+</span><span>    ] },
+</span><span>    { </span><span style="color:#e8bf6a;">lang </span><span>= </span><span style="color:#c1be91;">&quot;fr&quot;</span><span>, </span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/fr&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Accueil&quot; </span><span>},
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/fr/categories&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Categories&quot; </span><span>},
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/fr/tags&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot; </span><span>},
+</span><span>    ] },
+</span><span>]
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;title&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.sidebar</span><span>]
+</span><span style="color:#e8bf6a;">items </span><span>= [
+</span><span>    { </span><span style="color:#e8bf6a;">lang </span><span>= </span><span style="color:#c1be91;">&quot;en&quot;</span><span>, </span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/markdown&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Markdown&quot; </span><span>},
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/blog&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Blog&quot; </span><span>},
+</span><span>    ] },
+</span><span>    { </span><span style="color:#e8bf6a;">lang </span><span>= </span><span style="color:#c1be91;">&quot;fr&quot;</span><span>, </span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/fr/markdown&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Markdown&quot; </span><span>},
+</span><span>        { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;/fr/blog&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Blog&quot; </span><span>},
+</span><span>    ] },
+</span><span>]
+</span><span>
+</span><span style="color:#95815e;"># Index page
+</span><span>[</span><span style="color:#e8bf6a;">extra.index</span><span>]
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Main title&quot;
+</span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;https://via.placeholder.com/200&quot;
+</span><span style="color:#e8bf6a;">image_alt </span><span>= </span><span style="color:#c1be91;">&quot;Placeholder text describing the index&#39;s image.&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.default_author</span><span>]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;John Doe&quot;
+</span><span style="color:#e8bf6a;">avatar </span><span>= </span><span style="color:#c1be91;">&quot;https://via.placeholder.com/200&quot;
+</span><span style="color:#e8bf6a;">avatar_alt </span><span>= </span><span style="color:#c1be91;">&quot;Placeholder text describing the default author&#39;s avatar.&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.social</span><span>]
+</span><span style="color:#e8bf6a;">codeberg </span><span>= </span><span style="color:#c1be91;">&quot;https://codeberg.org/johndoe&quot;
+</span><span style="color:#e8bf6a;">github </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/johndoe&quot;
+</span><span style="color:#e8bf6a;">gitlab </span><span>= </span><span style="color:#c1be91;">&quot;https://gitlab.com/johndoe&quot;
+</span><span style="color:#e8bf6a;">twitter </span><span>= </span><span style="color:#c1be91;">&quot;https://twitter.com/johndoe&quot;
+</span><span style="color:#e8bf6a;">mastodon </span><span>= </span><span style="color:#c1be91;">&quot;https://social.somewhere.com/users/johndoe&quot;
+</span><span style="color:#e8bf6a;">linkedin </span><span>= </span><span style="color:#c1be91;">&quot;https://www.linkedin.com/in/john-doe-b1234567/&quot;
+</span><span style="color:#e8bf6a;">stackoverflow </span><span>= </span><span style="color:#c1be91;">&quot;https://stackoverflow.com/users/01234567/johndoe&quot;</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span>
+</span><span style="color:#e8bf6a;">telegram </span><span>= </span><span style="color:#c1be91;">&quot;https://t.me/johndoe&quot;
+</span><span style="color:#e8bf6a;">email </span><span>= </span><span style="color:#c1be91;">&quot;john.doe@gmail.com&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.favicon</span><span>]
+</span><span style="color:#e8bf6a;">favicon </span><span>= </span><span style="color:#c1be91;">&quot;/icons/favicon.ico&quot;
+</span><span style="color:#e8bf6a;">favicon_16x16 </span><span>= </span><span style="color:#c1be91;">&quot;/icons/favicon-16x16.png&quot;
+</span><span style="color:#e8bf6a;">favicon_32x32 </span><span>= </span><span style="color:#c1be91;">&quot;/icons/favicon-32x32.png&quot;
+</span><span style="color:#e8bf6a;">apple_touch_icon </span><span>= </span><span style="color:#c1be91;">&quot;/icons/apple-touch-icon.png&quot;
+</span><span style="color:#e8bf6a;">android_chrome_512 </span><span>= </span><span style="color:#c1be91;">&quot;/icons/android-chrome-512x512.png&quot;
+</span><span style="color:#e8bf6a;">android_chrome_192 </span><span>= </span><span style="color:#c1be91;">&quot;/icons/android-chrome-192x192.png&quot;
+</span><span style="color:#e8bf6a;">manifest </span><span>= </span><span style="color:#c1be91;">&quot;/icons/site.webmanifest&quot;
+</span></code></pre>
+<p>You can now run <code>zola serve</code> and visit : <code>http://127.0.0.1:1111/</code> to see your site</p>
+<h2 id="syntax-highlighting">Syntax Highlighting</h2>
+<p>Blow makes use of Zola code highlighting feature.<br />
+It supports setting a different color scheme depending on the user selected theme (Dark / Light)<br />
+In order to use it you should select the color scheme you want to use for light and dark themes in the list provided <a class="external" href="https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting">here</a> and edit your <code>config.toml</code> file like this example :</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">highlight_theme </span><span>= </span><span style="color:#c1be91;">&quot;css&quot;
+</span><span>
+</span><span style="color:#e8bf6a;">highlight_themes_css </span><span>= [
+</span><span>  { </span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;ayu-dark&quot;</span><span>, </span><span style="color:#e8bf6a;">filename </span><span>= </span><span style="color:#c1be91;">&quot;syntax-dark.css&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;ayu-light&quot;</span><span>, </span><span style="color:#e8bf6a;">filename </span><span>= </span><span style="color:#c1be91;">&quot;syntax-light.css&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<h2 id="custom-footer-content">Custom Footer Content</h2>
+<p>To overwrite the default footer (copyright notice), extend the <code>layout.html</code> template of the theme as described in the <a class="external" href="https://www.getzola.org/documentation/themes/extending-a-theme/#overriding-a-block">Zola documentation</a> by creating a <code>layout.html</code> with the following content in your <code>templates</code> directory:</p>
+<pre data-lang="jinja" style="background-color:#383838;color:#e6e1dc;" class="language-jinja "><code class="language-jinja" data-lang="jinja"><span>{%</span><span style="color:#cc7833;">/* </span><span style="color:#d0d0ff;">extends </span><span style="color:#c1be91;">&quot;blow/templates/layout.html&quot; </span><span style="color:#cc7833;">*/</span><span>%}
+</span><span>
+</span><span>{%</span><span style="color:#cc7833;">/* block </span><span style="color:#d0d0ff;">content_footer </span><span style="color:#cc7833;">*/</span><span>%}
+</span><span>Here is my own footer with a &lt;a href=&quot;http://example.com&quot;&gt;link&lt;/a&gt;.
+</span><span>{%</span><span style="color:#cc7833;">/* </span><span style="color:#d0d0ff;">endblock </span><span style="color:#cc7833;">*/</span><span>%}
+</span></code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Dark/Light modes (with syntax highlighting depending on selected theme)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Customizable navbar links</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Tags and Categories taxonomies</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Search functionality supporting Command + K shortcut</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Social links (github, gitlab, twitter, linkedin, email)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Postcss build process with cssnano (and tailwindcss tree shaking to reduce final bundle size)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Uglifyjs build process with minification</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Example script to deploy to Github Pages</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Pagination</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Sidemenu menu with sections links</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Table of content (2 levels and currently viewed part highlighted)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Multilingue</li>
+<li><input disabled="" type="checkbox" checked=""/>
+404</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Mobile responsive</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Favicon</li>
+<li><input disabled="" type="checkbox"/>
+Adsense</li>
+</ul>
+<h2 id="deployment">Deployment</h2>
+<p>There is a section about deployment in Zola <a class="external" href="https://www.getzola.org/documentation/deployment/overview/">documentation</a> but you'll find an <a class="external" href="https://github.com/tchartron/blow/blob/main/deploy-github.sh">example</a> to deploy your site to github pages</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

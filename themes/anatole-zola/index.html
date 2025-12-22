@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>anatole-zola | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;anatole-zola&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>anatole-zola</h1>
+            <p>A port of farbox-theme-Anatole for zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;longfangsong">longfangsong</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;longfangsong&#x2F;anatole-zola">https:&#x2F;&#x2F;github.com&#x2F;longfangsong&#x2F;anatole-zola</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;longfangsong.github.io">https:&#x2F;&#x2F;longfangsong.github.io</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-02-21T01:54:46+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="anatole-theme-for-zola">Anatole Theme for Zola</h1>
+<p><em><a class="external" href="https://github.com/hi-caicai/farbox-theme-Anatole">Anatole theme for Farbox</a> ported to Zola</em></p>
+<hr />
+<p><a class="external" href="https://www.getzola.org/themes/anatole-zola/">Zola Homepage</a> | <a class="external" href="https://longfangsong.github.io/">Demo with customizations</a></p>
+<hr />
+<p><img src="https://www.getzola.org/themes/anatole-zola/./screenshot.png" alt="screenshot" /></p>
+<p><img src="https://www.getzola.org/themes/anatole-zola/./screenshot-mobile.png" alt="screenshot-mobile" /></p>
+<p><img src="https://www.getzola.org/themes/anatole-zola/./screenshot-dark.png" alt="screenshot-dark" /></p>
+<p><img src="https://www.getzola.org/themes/anatole-zola/./screenshot-mobile-dark.png" alt="screenshot-mobile-dark" /></p>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>$ cd themes
+</span><span>$ git clone https://github.com/longfangsong/anatole-zola.git
+</span></code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;anatole-zola&quot;
+</span></code></pre>
+<p>And copy the <code>content/about</code>, <code>content/archive</code>, <code>content/_index.md</code> in the theme folder to your own content folder. And edit the <code>_index.md</code> in <code>about</code> folder to edit the content of your <code>about</code> page.</p>
+<h2 id="options">Options</h2>
+<h3 id="basic">Basic</h3>
+<p>Add <code>title</code>, <code>description</code> and <code>base_url</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Anatole&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;A other zola theme&quot;
+</span><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;https://example.com&quot;
+</span></code></pre>
+<h3 id="mode">Mode</h3>
+<p>Though the origin theme only support light mode, we added a dark mode option here.</p>
+<p>You can either</p>
+<ul>
+<li>set the <code>extra.mode</code> field in <code>config.toml</code> to use the dark/light mode</li>
+<li>or set the <code>extra.default_mode</code> field in <code>config.toml</code> to read the dark/light mode from <code>localStorage</code> (the key is <code>'mode'</code>), and use some Javascript to control the theme each reader is using</li>
+<li>or do nothing, we'll use light mode by default</li>
+</ul>
+<h3 id="language">Language</h3>
+<p>Currently, we have English, Chinese, German and Swedish translations, set the <code>default_language</code> if necessary:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#95815e;"># 如果你想要中文
+</span><span style="color:#e8bf6a;">default_language </span><span>= </span><span style="color:#c1be91;">&quot;zh&quot;
+</span></code></pre>
+<p>If there are complications, you can copy this snippet to your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">languages.en.translations</span><span>]
+</span><span style="color:#e8bf6a;">language_name </span><span>= </span><span style="color:#c1be91;">&quot;English&quot;
+</span><span style="color:#e8bf6a;">about </span><span>= </span><span style="color:#c1be91;">&quot;About&quot;
+</span><span style="color:#e8bf6a;">home </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot;
+</span><span style="color:#e8bf6a;">tags </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot;
+</span><span style="color:#e8bf6a;">archive </span><span>= </span><span style="color:#c1be91;">&quot;Archive&quot;
+</span><span style="color:#e8bf6a;">links </span><span>= </span><span style="color:#c1be91;">&quot;Links&quot;
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%Y-%m-%d&quot;
+</span><span style="color:#e8bf6a;">next_page </span><span>= </span><span style="color:#c1be91;">&quot;Next Page&quot;
+</span><span style="color:#e8bf6a;">last_page </span><span>= </span><span style="color:#c1be91;">&quot;Last Page&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.zh.translations</span><span>]
+</span><span style="color:#e8bf6a;">language_name </span><span>= </span><span style="color:#c1be91;">&quot;中文&quot;
+</span><span style="color:#e8bf6a;">home </span><span>= </span><span style="color:#c1be91;">&quot;首页&quot;
+</span><span style="color:#e8bf6a;">about </span><span>= </span><span style="color:#c1be91;">&quot;关于&quot;
+</span><span style="color:#e8bf6a;">tags </span><span>= </span><span style="color:#c1be91;">&quot;标签&quot;
+</span><span style="color:#e8bf6a;">archive </span><span>= </span><span style="color:#c1be91;">&quot;归档&quot;
+</span><span style="color:#e8bf6a;">links </span><span>= </span><span style="color:#c1be91;">&quot;友链&quot;
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%Y-%m-%d&quot;
+</span><span style="color:#e8bf6a;">next_page </span><span>= </span><span style="color:#c1be91;">&quot;下一页&quot;
+</span><span style="color:#e8bf6a;">last_page </span><span>= </span><span style="color:#c1be91;">&quot;上一页&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.de.translations</span><span>]
+</span><span style="color:#e8bf6a;">language_name </span><span>= </span><span style="color:#c1be91;">&quot;Deutsch&quot;
+</span><span style="color:#e8bf6a;">about </span><span>= </span><span style="color:#c1be91;">&quot;Info&quot;
+</span><span style="color:#e8bf6a;">home </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot;
+</span><span style="color:#e8bf6a;">tags </span><span>= </span><span style="color:#c1be91;">&quot;Kategorien&quot;
+</span><span style="color:#e8bf6a;">archive </span><span>= </span><span style="color:#c1be91;">&quot;Archiv&quot;
+</span><span style="color:#e8bf6a;">links </span><span>= </span><span style="color:#c1be91;">&quot;Links&quot;
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%d-%m-%Y&quot;
+</span><span style="color:#e8bf6a;">next_page </span><span>= </span><span style="color:#c1be91;">&quot;Nächste Seite&quot;
+</span><span style="color:#e8bf6a;">last_page </span><span>= </span><span style="color:#c1be91;">&quot;Vorherige Seite&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.sv.translations</span><span>]
+</span><span style="color:#e8bf6a;">language_name </span><span>= </span><span style="color:#c1be91;">&quot;Svenska&quot;
+</span><span style="color:#e8bf6a;">about </span><span>= </span><span style="color:#c1be91;">&quot;Info&quot;
+</span><span style="color:#e8bf6a;">home </span><span>= </span><span style="color:#c1be91;">&quot;Hem&quot;
+</span><span style="color:#e8bf6a;">tags </span><span>= </span><span style="color:#c1be91;">&quot;Etiketter&quot;
+</span><span style="color:#e8bf6a;">archive </span><span>= </span><span style="color:#c1be91;">&quot;Arkiv&quot;
+</span><span style="color:#e8bf6a;">links </span><span>= </span><span style="color:#c1be91;">&quot;Länkar&quot;
+</span><span style="color:#e8bf6a;">date_format </span><span>= </span><span style="color:#c1be91;">&quot;%Y-%m-%d&quot;
+</span><span style="color:#e8bf6a;">next_page </span><span>= </span><span style="color:#c1be91;">&quot;Nästa Sidan&quot;
+</span><span style="color:#e8bf6a;">last_page </span><span>= </span><span style="color:#c1be91;">&quot;Sista Sidan&quot;
+</span></code></pre>
+<p>Feel free to create a pull request if you want to translate the theme into other languages!</p>
+<h4 id="multilingual">Multilingual</h4>
+<p>The theme will become multilingual automatically if you specify another language except <code>default_language</code>.</p>
+<p>You'll see a language-switching button on top right.</p>
+<h3 id="sections">Sections</h3>
+<p>Tags and links sections are optional.</p>
+<ul>
+<li>
+<p>If you want to enable the tags page, add</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">taxonomies </span><span>= [
+</span><span>  {</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;tags&quot;</span><span>},
+</span><span>]
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.show</span><span>]
+</span><span style="color:#e8bf6a;">tags </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>To your <code>config.toml</code></p>
+</li>
+<li>
+<p>If you want to enable the links page, add</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.show</span><span>]
+</span><span style="color:#e8bf6a;">links </span><span>= </span><span style="color:#6e9cbe;">true
+</span></code></pre>
+<p>and copy <code>content/links</code> to your own <code>content</code> library. And edit the <code>_index.md</code> in it to modify its content.</p>
+</li>
+<li>
+<p>If you want to add the author's name on each page, add:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">author </span><span>= </span><span style="color:#c1be91;">&quot;John Doe&quot;
+</span></code></pre>
+</li>
+</ul>
+<h3 id="sidebar-menu">Sidebar menu</h3>
+<p>We support a bunch of social links:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.social</span><span>]
+</span><span style="color:#e8bf6a;">github </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">gitlab </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">stackoverflow </span><span>= </span><span style="color:#c1be91;">&quot;&quot; </span><span style="color:#95815e;"># use user_id
+</span><span style="color:#e8bf6a;">twitter </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">mastodon </span><span>= </span><span style="color:#c1be91;">&quot;&quot; </span><span style="color:#95815e;"># use hostname/@username
+</span><span style="color:#e8bf6a;">facebook </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">instagram </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">dribbble </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">weibo </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">linkedin </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span><span style="color:#e8bf6a;">flickr </span><span>= </span><span style="color:#c1be91;">&quot;&quot;
+</span></code></pre>
+<p>Fill in your username if you want! And the logo won't appear if you leave it empty.</p>
+<h3 id="comment-system">Comment system</h3>
+<p>We currently support...</p>
+<ul>
+<li><a class="external" href="https://valine.js.org/quickstart.html">Valine</a>:</li>
+</ul>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.comment.valine</span><span>]
+</span><span style="color:#e8bf6a;">appid </span><span>= </span><span style="color:#c1be91;">&quot;Your appid goes here&quot;
+</span><span style="color:#e8bf6a;">appkey </span><span>= </span><span style="color:#c1be91;">&quot;Your appkey goes here&quot;
+</span><span style="color:#e8bf6a;">notify </span><span>= </span><span style="color:#6e9cbe;">false </span><span style="color:#95815e;"># true/false: mail notify https://github.com/xCss/Valine/wiki/Valine-%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F%E4%B8%AD%E7%9A%84%E9%82%AE%E4%BB%B6%E6%8F%90%E9%86%92%E8%AE%BE%E7%BD%AE
+</span><span style="color:#e8bf6a;">verify </span><span>= </span><span style="color:#6e9cbe;">false </span><span style="color:#95815e;"># true/false: verify code
+</span><span style="color:#e8bf6a;">avatar </span><span>= </span><span style="color:#c1be91;">&quot;mm&quot; </span><span style="color:#95815e;"># avatar style https://github.com/xCss/Valine/wiki/avatar-setting-for-valine
+</span><span style="color:#e8bf6a;">placeholder </span><span>= </span><span style="color:#c1be91;">&quot;Say something here&quot;
+</span></code></pre>
+<ul>
+<li><a class="external" href="https://disqus.com/admin/create/">Disqus</a>, note that Disqus does not work in Mainland China:</li>
+</ul>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.comment.disqus</span><span>]
+</span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;longfangsong&quot;
+</span></code></pre>
+<ul>
+<li><a class="external" href="https://utteranc.es/">Utterances</a>:</li>
+</ul>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.comment.utterances</span><span>]
+</span><span style="color:#e8bf6a;">repo </span><span>= </span><span style="color:#c1be91;">&quot;Your repo for comments&quot;
+</span><span style="color:#e8bf6a;">issue_term </span><span>= </span><span style="color:#c1be91;">&quot;pathname&quot;
+</span><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;github-light&quot;
+</span></code></pre>
+<h2 id="customize">Customize</h2>
+<p>There are several options I left in the origin templates for you to customize your site.</p>
+<h3 id="more-style">More style</h3>
+<p>You can create a <code>blog.scss</code> or something similiar in the your <code>sass</code> folder, add a <code>templates.html</code> with following content:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* extends &quot;anatole-zola/templates/basic.html&quot; */%}
+</span><span>{%/* block extra_head */%}
+</span><span>&lt;</span><span style="color:#e8bf6a;">link </span><span style="color:#86c20e;">rel=</span><span>&quot;</span><span style="color:#c1be91;">stylesheet</span><span>&quot; </span><span style="color:#86c20e;">href=</span><span>&quot;</span><span style="color:#c1be91;">{{ get_url(path=</span><span>&quot;</span><span style="color:#86c20e;">blog.css</span><span style="background-color:#b90622;color:#f8f8f0;">&quot;</span><span style="color:#86c20e;">) }}</span><span style="background-color:#b90622;color:#f8f8f0;">&quot;</span><span>&gt;
+</span><span>{%/* endblock */%}
+</span></code></pre>
+<h3 id="more-social-links">More social links</h3>
+<p>You can add more social links by adding a <code>templates.html</code> with some content added to <code>more_social_link</code> block:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* extends &quot;anatole-zola/templates/basic.html&quot; */%}
+</span><span>{%/* block more_social_link */%}
+</span><span>&lt;</span><span style="color:#e8bf6a;">div id</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="color:#c1be91;">pirate</span><span>&quot; </span><span style="color:#86c20e;">data-wordart-src=</span><span>&quot;</span><span style="color:#c1be91;">//cdn.wordart.com/json/685czi4rqil5</span><span>&quot; </span><span style="color:#e8bf6a;">style</span><span style="color:#86c20e;">=</span><span>&quot;</span><span style="font-style:italic;color:#6e9cbe;">width</span><span>: </span><span style="color:#a5c261;">100</span><span style="color:#cc7833;">%</span><span>;&quot; </span><span style="color:#86c20e;">data-wordart-show-attribution</span><span>&gt;&lt;/</span><span style="color:#e8bf6a;">div</span><span>&gt;
+</span><span>{%/* endblock */%}
+</span></code></pre>
+<p>If you want to use some awesome logos, <a class="external" href="https://fontawesome.com/icons?d=gallery">FontAwesome icons</a> are already available.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

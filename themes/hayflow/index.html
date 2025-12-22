@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>HayFlow | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;hayflow&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>HayFlow</h1>
+            <p>HayFlow is a minimal and completely modular Zola theme for anyone wishing to have their own landing page.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;cyril-marpaud.gitlab.io">Cyril Marpaud</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> CC-BY-SA 4.0</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;cyril-marpaud&#x2F;hayflow">https:&#x2F;&#x2F;gitlab.com&#x2F;cyril-marpaud&#x2F;hayflow</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;cyril-marpaud.gitlab.io">https:&#x2F;&#x2F;cyril-marpaud.gitlab.io</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-03-15T12:00:30+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="hayflow-modular-zola-theme">HayFlow - Modular Zola Theme</h1>
+<h2 id="about">About</h2>
+<div align="center">
+![Preview screenshot](https://gitlab.com/cyril-marpaud/hayflow/-/raw/main/screenshot.png "Preview screenshot")
+</div>
+<p><a class="external" href="https://gitlab.com/cyril-marpaud/hayflow">HayFlow</a> is a modular landing page made as a theme for <a class="external" href="https://www.getzola.org">Zola</a>, a static site generator written in <a class="external" href="https://www.rust-lang.org">Rust</a>. It features a dark theme with a particles background, vertical arrows for navigation and a few card types which you are free to include to best suit your needs. Nearly all UI elements are subtly animated to convey a professional look (although I'm no designer 🤷 merely an <a class="external" href="https://www.linkedin.com/in/cyrilmarpaud">embedded systems engineer</a>).</p>
+<p>It has been designed to require only <a class="external" href="https://www.markdownguide.org">Markdown</a> editing (no HTML/CSS), but feel free to do so if you need to. I'll be glad to review a <a class="external" href="https://gitlab.com/cyril-marpaud/hayflow/-/merge_requests">Merge Request</a> if you implement a new card type !</p>
+<p>[[<em>TOC</em>]]</p>
+<h2 id="live-demo">Live demo</h2>
+<p>See <a class="external" href="https://cyril-marpaud.gitlab.io">my personal website</a> for an example of what can be accomplished in a few minutes with this theme. Its source code is also available as an example in my <a class="external" href="https://gitlab.com/cyril-marpaud/cyril-marpaud.gitlab.io">Gitlab website repository</a>.</p>
+<h2 id="built-with">Built with</h2>
+<ul>
+<li><a class="external" href="https://www.getzola.org">Zola</a></li>
+<li><a class="external" href="https://vincentgarreau.com/particles.js/">Particles.js</a></li>
+<li><a class="external" href="https://fontawesome.com">Font Awesome</a></li>
+<li><a class="external" href="https://github.com/sindresorhus/modern-normalize">Modern Normalize</a></li>
+<li>Inspiration came from <a class="external" href="https://github.com/svavs/particle-zola">particle-zola</a>, another theme.</li>
+</ul>
+<h2 id="quick-start">Quick start</h2>
+<p>Initialize a Zola website and install HayFlow:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola init mywebsite
+</span><span style="color:#da4939;">cd</span><span> mywebsite
+</span><span>git clone git@gitlab.com:cyril-marpaud/hayflow.git themes/hayflow
+</span></code></pre>
+<p>Add <code>theme = "hayflow"</code> at the top of <code>config.toml</code> file to tell Zola to use HayFlow (as described in <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">the documentation</a>).</p>
+<p>Finally, run...</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>zola serve
+</span></code></pre>
+<p>...and go to <a class="external" href="http://localhost:1111">http://localhost:1111</a> to see the landing page in action with the default name displayed (John Doe).</p>
+<h2 id="landing-page-customization">Landing page customization</h2>
+<p>Customizing the landing page boils down to two things:</p>
+<ul>
+<li>adding the <code>name</code> and <code>links</code> variables to the <code>config.toml</code>'s <code>[extra]</code> section (<code>links</code> is optional. So is <code>name</code> if your name is John Doe)</li>
+<li>adding the <code>roles</code> variable to the <code>content/_index.md</code>'s <code>[extra]</code> section (also optional)</li>
+</ul>
+<p>The difference comes from the fact that you might need to translate the <code>roles</code> into other languages. For that to be possible, they must be placed in a MarkDown file. See multilingual support for more info.</p>
+<ul>
+<li><code>name</code> speaks for itself.</li>
+<li><code>roles</code> is an array of strings. Each string is displayed on a separate line.</li>
+<li><code>links</code> is an array of <code>{icon, url}</code> objects. You can use any <strong>free</strong> icon from <a class="external" href="https://fontawesome.com/search?o=r&amp;m=free">Font Awesome</a> here, all you need is the icon's code. The <a class="external" href="https://fontawesome.com/icons/envelope?s=solid&amp;f=classic">enveloppe icon</a>'s code is <code>fa-solid fa-envelope</code>. The <a class="external" href="https://fontawesome.com/icons/pizza-slice?s=solid&amp;f=classic">pizza-slice icon</a>'s code is <code>fa-solid fa-pizza-slice</code>.</li>
+</ul>
+<p>This is what the <code>config.toml</code>'s <code>[extra]</code> section might look like after customization:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">name </span><span>= { </span><span style="color:#e8bf6a;">first </span><span>= </span><span style="color:#c1be91;">&quot;ninja&quot;</span><span>, </span><span style="color:#e8bf6a;">last </span><span>= </span><span style="color:#c1be91;">&quot;turtle&quot; </span><span>}
+</span><span>
+</span><span style="color:#e8bf6a;">links </span><span>= [
+</span><span>   { </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;fa-solid fa-envelope&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;mailto:slice@pizza.it&quot; </span><span>},
+</span><span>   { </span><span style="color:#e8bf6a;">icon </span><span>= </span><span style="color:#c1be91;">&quot;fa-solid fa-pizza-slice&quot;</span><span>, </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://en.wikipedia.org/wiki/Pizza&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<p>And here's a customized version of <code>content/_index.md</code>:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">roles </span><span>= [</span><span style="color:#c1be91;">&quot;Green 🟢&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Turtle 🐢&quot;</span><span>, </span><span style="color:#c1be91;">&quot;Pizza enthusiast 🍕&quot;</span><span>]
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<h2 id="adding-a-section">Adding a section</h2>
+<p>Inside the <code>content</code> directory, create a <code>pizza</code> folder and place this <code>_index.md</code> file inside:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Pizza&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span>
+</span><span style="color:#e8bf6a;">What</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">a</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">mouthful</span><span style="background-color:#b90622;color:#f8f8f0;"> !</span><span>
+</span></code></pre>
+<p>Then, add this <code>sections</code> variable (an array of strings) to the <code>config.toml</code>'s <code>[extra]</code> section:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">sections </span><span>= [</span><span style="color:#c1be91;">&quot;pizza&quot;</span><span>]
+</span></code></pre>
+<p>A new internal link pointing to that section will appear on the landing page. Click it and see what happens ! This is called a "simple card" section.</p>
+<h2 id="customizing-sections">Customizing sections</h2>
+<p>HayFlow currently supports three card types : <code>simple</code>, <code>columns</code> and <code>list</code>. If left unspecified, the type will default to <code>simple</code>. To change it, add a <code>card_type</code> variable to the <code>_index.md</code>'s <code>[extra]</code> section:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Pizza&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">card_type </span><span>= </span><span style="color:#c1be91;">&quot;simple&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span>
+</span><span style="color:#e8bf6a;">What</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">a</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">mouthful</span><span style="background-color:#b90622;color:#f8f8f0;"> !</span><span>
+</span></code></pre>
+<h3 id="columns-card">Columns card</h3>
+<p>Add a new section and set its card type to <code>columns</code>. Then, alongside the <code>_index.md</code> file, create three other files: <code>one.md</code>, <code>two.md</code> and <code>three.md</code>. These will be the ingredients of your new pizza. Their content is similar to <code>_index.md</code>:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Tomato&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">icons </span><span>= [</span><span style="color:#c1be91;">&quot;fa-solid fa-tomato&quot;</span><span>]
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span>
+</span><span style="color:#e8bf6a;">The</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">basis</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">of</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">any</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">self-respecting</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">pizza. It</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">is</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">the</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">edible</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">berry</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">of</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">the</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">plant</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">Solanum</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">lycopersicum</span><span style="background-color:#b90622;color:#f8f8f0;">.</span><span>
+</span></code></pre>
+<p>The <code>icons</code> variable is optional.</p>
+<h3 id="list-card">List card</h3>
+<p>Add a new section and set its card type to <code>list</code>. Then, alongside the <code>_index.md</code> file, create three other files: <code>one.md</code>, <code>two.md</code> and <code>three.md</code>. These will be your favourite pizzas. Their content is similar to <code>_index.md</code>:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Margherita&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">link </span><span>= </span><span style="color:#c1be91;">&quot;https://en.wikipedia.org/wiki/Pizza_Margherita&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span>
+</span><span style="color:#e8bf6a;">Margherita</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">pizza</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">is</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">a</span><span style="background-color:#b90622;color:#f8f8f0;"> </span><span style="color:#e8bf6a;">typical</span><span style="background-color:#b90622;color:#f8f8f0;"> [Neapolitan pizza](https://en.wikipedia.org/wiki/Neapolitan_pizza), made with San Marzano tomatoes, mozzarella cheese, fresh basil, salt, and extra-virgin olive oil.</span><span>
+</span></code></pre>
+<p>The <code>link</code> variable is optional.</p>
+<h2 id="multilingual-support">Multilingual support</h2>
+<p>HayFlow supports multilingual websites out of the box.</p>
+<h3 id="declare-more-languages">Declare more languages</h3>
+<p>In <code>config.toml</code>, add the languages you want to support like so:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="color:#e8bf6a;">default_language </span><span>= </span><span style="color:#c1be91;">&quot;fr&quot;
+</span><span>[</span><span style="color:#e8bf6a;">translations</span><span>]
+</span><span style="color:#e8bf6a;">flag </span><span>= </span><span style="color:#c1be91;">&quot;🇫🇷&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.en</span><span>]
+</span><span>[</span><span style="color:#e8bf6a;">languages.en.translations</span><span>]
+</span><span style="color:#e8bf6a;">flag </span><span>= </span><span style="color:#c1be91;">&quot;🇬🇧&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">languages.italian</span><span>]
+</span><span>[</span><span style="color:#e8bf6a;">languages.italian.translations</span><span>]
+</span><span style="color:#e8bf6a;">flag </span><span>= </span><span style="color:#c1be91;">&quot;🇮🇹&quot;
+</span></code></pre>
+<p>This will make the language-select block in the top-right corner visible. It consists of clickable links to the translated versions of your website.
+The <code>flag</code> variable is optional and you can use simple text instead of an emoji flag. If left unspecified, it will default to the country code you chose for that language (<code>fr</code>, <code>en</code> and <code>italian</code> in this example).</p>
+<h3 id="translate-the-content">Translate the content</h3>
+<p>Each <code>.md</code> file in the <code>content</code> folder now needs to be translated into every additional language previously declared in <code>config.toml</code>.</p>
+<p>Following the above example (three languages, french, english and italian) and given this initial filetree:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>content/
+</span><span>   _index.md
+</span><span>   pizzas/
+</span><span>      _index.md
+</span><span>      margherita.md
+</span><span>      capricciosa.md
+</span></code></pre>
+<p>The final filetree should look like this for the translation to be complete:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>content/
+</span><span>   _index.md
+</span><span>   _index.en.md
+</span><span>   _index.italian.md
+</span><span>   pizzas/
+</span><span>      _index.md
+</span><span>      _index.en.md
+</span><span>      _index.italian.md
+</span><span>      margherita.md
+</span><span>      margherita.en.md
+</span><span>      margherita.italian.md
+</span><span>      capricciosa.md
+</span><span>      capricciosa.en.md
+</span><span>      capricciosa.italian.md
+</span></code></pre>
+<h3 id="list-cards">List cards</h3>
+<p>Additionally, if your website includes any "list card" sections, you might want to specify a <code>discover</code> variable in their <code>[extra]</code> sections like so:</p>
+<pre data-lang="TOML" style="background-color:#383838;color:#e6e1dc;" class="language-TOML "><code class="language-TOML" data-lang="TOML"><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;List Card Section&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">card_type </span><span>= </span><span style="color:#c1be91;">&quot;list&quot;
+</span><span style="color:#e8bf6a;">discover </span><span>= </span><span style="color:#c1be91;">&quot;Découvrir&quot;
+</span><span style="background-color:#b90622;color:#f8f8f0;">+++</span><span>
+</span></code></pre>
+<h2 id="whoami">Whoami</h2>
+<p>My name is Cyril Marpaud, I'm an embedded systems freelance engineer and a Rust enthusiast 🦀 I have nearly 10 years experience and am currently living in Lyon (France).</p>
+<div align="center">
+<p><a class="external" href="https://www.linkedin.com/in/cyrilmarpaud/"><img src="https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&amp;logo=linkedin&amp;colorB=grey&amp;logoColor=blue" alt="LinkedIn" /></a></p>
+</div>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

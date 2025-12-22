@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>kangae | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;kangae&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>kangae</h1>
+            <p>a lightweight microblog theme for zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;microblog.ayushnix.com">Ayush Agarwal</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.15.0 and above</p>
+            
+            <p><b>License:</b> NCSA</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;ayushnix&#x2F;kangae">https:&#x2F;&#x2F;github.com&#x2F;ayushnix&#x2F;kangae</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;kangae.ayushnix.com&#x2F;">https:&#x2F;&#x2F;kangae.ayushnix.com&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-06-20T18:32:08-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="kangae-kao-e-idea-or-thought">kangae (考え, idea or thought)</h1>
+<p><a class="external" href="https://kangae.ayushnix.com/">kangae</a> is a lightweight microblog theme for <a class="external" href="https://www.getzola.org/">zola</a>.</p>
+<details>
+  <summary>kangae screenshots on desktop and mobile</summary>
+<p><img src="https://www.getzola.org/themes/kangae/static/images/kangae-desktop-light.webp" alt="kangae screenshot light mode on desktop" />
+<img src="https://www.getzola.org/themes/kangae/static/images/kangae-desktop-dark.webp" alt="kangae screenshot dark mode on desktop" />
+<img src="https://www.getzola.org/themes/kangae/static/images/kangae-mobile-light.webp" alt="kangae screenshot light mode on mobile" />
+<img src="https://www.getzola.org/themes/kangae/static/images/kangae-mobile-dark.webp" alt="kangae screenshot dark mode on mobile" /></p>
+</details>
+<p>I've created kangae from scratch and it is not based on any other theme. However, I was inspired to
+create kangae after I came across <a class="external" href="https://zunzuncito.oriole.systems/">Wolfgang Müller's microblog</a>. Thanks Wolf!</p>
+<p>kangae is licensed under the <a href="https://www.getzola.org/themes/kangae/LICENSE">NCSA license</a>, which is quite similar to the BSD-3-Clause license.
+Unlike BSD-3-Clause, NCSA also covers documentation of a project.</p>
+<h1 id="showcase">Showcase</h1>
+<p>Here's a list of websites using the kangae theme</p>
+<ul>
+<li><a class="external" href="https://microblog.ayushnix.com">ayushnix microblog</a></li>
+</ul>
+<p>If you want to mention your website in this section, please raise a pull request.</p>
+<h1 id="installation">Installation</h1>
+<p>Before using this theme, <a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">install zola</a>. After you've installed zola,</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$ zola init microblog
+</span><span>&gt; What is the URL of your site? (https://example.com):
+</span><span>&gt; Do you want to enable Sass compilation? [Y/n]:
+</span><span>&gt; Do you want to enable syntax highlighting? [y/N]:
+</span><span>&gt; Do you want to build a search index of the content? [y/N]:
+</span><span>$ cd microblog/
+</span></code></pre>
+<p>kangae doesn't use Sass or syntax highlighting so if you don't want to use custom Sass code or
+enable syntax highlighting, answer the 2nd and 3rd question with a 'no'. kangae also doesn't use any
+JavaScript library to search content. If you don't intend to install a JavaScript library to enable
+search on your microblog, answer 'no' to the last question as well.</p>
+<p>If you intend to publish your microblog on a forge like GitHub, initialize an empty git repository
+using</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$ git init
+</span><span>$ git commit --allow-empty -m &#39;initial empty root commit&#39;
+</span></code></pre>
+<p>If you don't want to make an empty commit, add and commit a README or a LICENSE file instead.</p>
+<p>At this point, you can install kangae using one of the following methods</p>
+<h2 id="using-git-subtree">using <code>git subtree</code></h2>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$ git subtree add -P themes/kangae/ --squash https://github.com/ayushnix/kangae.git master
+</span></code></pre>
+<h2 id="using-git-submodule">using <code>git submodule</code></h2>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$ git submodule add https://github.com/ayushnix/kangae.git themes/kangae
+</span></code></pre>
+<h2 id="download-kangae-in-themes-directory">download kangae in themes directory</h2>
+<p>If you want to keep things simple and figure out version control later, you can</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$ git clone https://github.com/ayushnix/kangae.git themes/kangae
+</span></code></pre>
+<h1 id="configuration">Configuration</h1>
+<p>To begin using kangae after installing it,</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>$ cp themes/kangae/config.toml ./
+</span><span>$ sed -i &#39;s;# theme =\(.*\);theme =\1;&#39; config.toml
+</span></code></pre>
+<p>The <a href="https://www.getzola.org/themes/kangae/config.toml"><code>config.toml</code></a> file of kangae has been documented carefully using TOML comments. If you have
+any questions about configuring kangae which haven't been answered in the <code>config.toml</code> file itself,
+please <a class="external" href="https://github.com/ayushnix/kangae/issues/new">raise an issue</a>.</p>
+<h2 id="shortcodes">Shortcodes</h2>
+<p>kangae provides several shortcodes that can be used to add content in an accessible manner</p>
+<h3 id="kaomoji-no">kaomoji <code>(・_・)ノ</code></h3>
+<p>If you want to use kaomoji in your posts, you can use insert them in an accessbile manner using</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>I don&#39;t know. {{ kaomoji(label=&quot;shrug kaomoji&quot;, text=&quot;╮( ˘_˘ )╭&quot;) }} I&#39;ve never thought about it.
+</span></code></pre>
+<p>Providing a value for the <code>label</code> is optional but highly recommended. A short text should be
+mentioned that explains what the kaomoji means to convey. The value of <code>text</code> should be the actual
+emoticon itself.</p>
+<p>This shortcode can also be used for any other ASCII emoticon that can fit in an inline paragraph.
+This includes western emoticons such as <code>;)</code> and combination emoticons such as <code>&lt;(^_^&lt;)</code>.</p>
+<h3 id="quotes">Quotes</h3>
+<p>You can add quotes in your microblog posts using</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% quote(author=&quot;Nara Shikamaru&quot;) %}
+</span><span>You would think just this once, when it was life or death, I could pull through.
+</span><span>{% end %}
+</span></code></pre>
+<p>This is the most basic form of improvement in writing quotes over simply using <code>&gt;</code> in markdown.</p>
+<p>If you want to mention the name of the source from where the quote has been taken, such as the name
+of the book or a movie, you can use</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% quote(citation=&quot;Mass Effect 3&quot;, author=&quot;Javik&quot;) %}
+</span><span>Stand in the ashes of a trillion dead souls, and ask the ghosts if honor matters. The silence is your answer.
+</span><span>{% end %}
+</span></code></pre>
+<p>A <code>citeurl</code> can also be given as an argument to this shortcode to provide the actual URL from where
+the source is borrowed.</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>{% quote(author=&quot;Edward Snowden&quot;, citeurl=&quot;https://old.reddit.com/r/IAmA/comments/36ru89/just_days_left_to_kill_mass_surveillance_under/crglgh2/&quot;) %}
+</span><span>Arguing that you don&#39;t care about the right to privacy because you have nothing to hide is no different than saying you don&#39;t care about free speech because you have nothing to say.
+</span><span>{% end %}
+</span></code></pre>
+<p>A live preview of these how these shortcodes look like can be found on <a class="external" href="https://kangae.ayushnix.com/being-shikamaru-102/">this blog post</a>.</p>
+<h2 id="optional-features">Optional Features</h2>
+<p>kangae includes some optional features that aren't enabled by default</p>
+<ul>
+<li><a class="external" href="https://github.com/ayushnix/kangae/blob/master/static/css/style-external-links.css">style external links using a ↗ unicode symbol</a></li>
+</ul>
+<h1 id="donate">Donate</h1>
+<p>If you found kangae helpful in creating your own microblog website, please consider supporting me by
+buying me a coffee :coffee:</p>
+<p><a href='https://www.buymeacoffee.com/ayushnix' target='_blank' rel="noopener"><img src='https://cdn.buymeacoffee.com/buttons/default-blue.png' alt='buy ayushnix a coffee at buymeacoffee.com' border='0' height='36'></a>
+<a href='https://ko-fi.com/O5O64SQ4C' target='_blank' rel="noopener"><img src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' alt='buy ayusnix a coffee at ko-fi.com' border='0' height='36'></a></p>
+<p>If you're in India, you can also use UPI for donations. My UPI address is <code>ayushnix@ybl</code>.</p>
+<h1 id="notes">Notes</h1>
+<p>Although I'm not a web developer, I am interested in learning HTML and CSS to create lightweight
+textual websites. You may be interested in reading <a class="external" href="https://wiki.ayushnix.com/frontend/creating-a-website/">my log about how I learned HTML and CSS</a>.
+However, that page is just an unorganized dump of my thoughts and isn't a polished blog post.
+<a class="external" href="https://seirdy.one/2020/11/23/website-best-practices.html">Seirdy's blog post on creating textual websites</a> is probably a better reference.</p>
+<h1 id="todo-maybe">TODO (maybe?)</h1>
+<ul>
+<li>(responsive) image shortcodes</li>
+<li>run prettier on HTML and CSS before deployment</li>
+<li>twitter and mastodon shortcodes</li>
+<li>add optional support for cross posting and commenting on mastodon without using JS</li>
+<li>add optional support for <a class="external" href="https://giscus.app/">giscus</a> and <a class="external" href="https://carlschwan.eu/2020/12/29/adding-comments-to-your-static-blog-with-mastodon/">loading mastodon comments</a></li>
+<li>add shortcode for asciinema</li>
+<li>add shortcode for blockquote and citation</li>
+<li>pagination</li>
+<li>light and dark mode switch</li>
+<li>content tabs</li>
+<li>microdata and microformats2</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

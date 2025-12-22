@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>zerm | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zerm&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>zerm</h1>
+            <p>A minimalistic and dark theme based on Radek Kozieł&#x27;s theme for Hugo</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;ejmg">elias julian marko garcia</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.8.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;ejmg&#x2F;zerm">https:&#x2F;&#x2F;github.com&#x2F;ejmg&#x2F;zerm</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zerm.ejmg.now.sh&#x2F;">https:&#x2F;&#x2F;zerm.ejmg.now.sh&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2022-06-13T20:01:34-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zerm">zerm</h1>
+<p>a minimalist and dark theme for <a class="external" href="https://getzola.org">Zola</a>.</p>
+<p><img src="../master/zerm-preview.png?raw=true" alt="Screenshot" /></p>
+<p><a class="external" href="https://zerm.ejmg.now.sh/"><strong>Live Preview!</strong></a></p>
+<p>Largely a port of Radek Kozieł's <a class="external" href="https://github.com/panr/hugo-theme-terminal">Terminal
+Theme</a> for Hugo. 4/5ths of my way
+through porting this theme, I discovered Paweł Romanowski own independent fork
+for Zola, <a class="external" href="https://github.com/pawroman/zola-theme-terminimal">Terminimal</a>,
+which helped me get the PostCSS to Sass styling conversion done more
+quickly. My sincerest thanks to both of you!</p>
+<h2 id="differences">differences</h2>
+<p>This theme is largely true to the original by Radek, but there are some mild
+differences. They are almost all stylistic in nature and are intended to
+emphasize minimalism even more. Some of them are as follows:</p>
+<ul>
+<li>tags are now included in a post's meta data.</li>
+<li>no post image previews.</li>
+<li>categories are included in the taxonomy.</li>
+<li>bullet points have slightly more margin and different symbols for nesting.</li>
+<li>no social media or comment support.</li>
+</ul>
+<p>Some of these might be added later and <a class="external" href="https://github.com/ejmg/zerm/pulls">PR's are always
+welcomed</a>.</p>
+<h2 id="configuration">configuration</h2>
+<p>Please follow the Zola documentation for <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/#installing-a-theme">how to use a
+theme</a>.</p>
+<p>In <code>config.toml</code>, you will find all values for customization that are supported
+thus far have documentation explaining how they are used. If there is any confusion or something is not working as intended, <a class="external" href="https://github.com/ejmg/zerm/issues">please open an issue</a>!</p>
+<h2 id="math">math</h2>
+<p>You can use KaTeX for mathematical typesetting.
+Assets are only available if you opt-in on a per-page level through
+a single line (<code>math=true</code>) on the extra section of the page frontmatter.</p>
+<pre data-lang="md" style="background-color:#383838;color:#e6e1dc;" class="language-md "><code class="language-md" data-lang="md"><span style="color:#fd971f;"># index.md
+</span><span>+++
+</span><span>title=&quot;this page title&quot;
+</span><span>...
+</span><span>
+</span><span>[extra]
+</span><span>math=true
+</span><span>+++
+</span><span>
+</span><span>Content
+</span></code></pre>
+<p>Pages wich doesn't opt-in are not affected in any way, so you doesn't have
+to worry about any performance hit.</p>
+<h2 id="license">license</h2>
+<p>MIT. See <code>LICENSE.md</code> for more details.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
