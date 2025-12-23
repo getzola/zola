@@ -1,9 +1,9 @@
 use std::cmp::Ordering;
 use std::path::PathBuf;
 
-use libs::rayon::prelude::*;
-use libs::tera::Context;
+use rayon::prelude::*;
 use serde::Serialize;
+use tera::Context;
 
 use crate::Site;
 use content::{Page, TaxonomyTerm};
@@ -38,11 +38,7 @@ pub fn render_feeds(
 
     pages.par_sort_unstable_by(|a, b| {
         let ord = b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap());
-        if ord == Ordering::Equal {
-            a.permalink.cmp(&b.permalink)
-        } else {
-            ord
-        }
+        if ord == Ordering::Equal { a.permalink.cmp(&b.permalink) } else { ord }
     });
 
     let mut context = Context::new();

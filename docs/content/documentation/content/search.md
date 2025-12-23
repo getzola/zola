@@ -19,7 +19,7 @@ implements it (using elasticlunr) to get an idea: [search.js](https://github.com
 
 ## Configuring the search index
 In some cases, the default indexing strategy is not suitable. You can customize which fields to include and whether
-to truncate the content in the [search configuration](@/documentation/getting-started/configuration/index.md).
+to truncate the content in the [search configuration](@/documentation/getting-started/configuration.md).
 
 ## Index Formats
 

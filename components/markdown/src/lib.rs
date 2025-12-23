@@ -1,4 +1,3 @@
-mod codeblock;
 mod context;
 mod markdown;
 mod shortcode;
@@ -7,8 +6,8 @@ use shortcode::{extract_shortcodes, insert_md_shortcodes};
 
 use errors::Result;
 
-use crate::markdown::markdown_to_html;
 pub use crate::markdown::Rendered;
+use crate::markdown::markdown_to_html;
 pub use context::RenderContext;
 
 pub fn render_content(content: &str, context: &RenderContext) -> Result<markdown::Rendered> {

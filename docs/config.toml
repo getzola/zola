@@ -13,14 +13,10 @@ taxonomies = [
 index_format = "elasticlunr_json"
 
 [markdown]
-highlight_code = true
-highlight_theme = "kronuz"
 external_links_class = "external"
-#highlight_theme = "css"
-#highlight_themes_css = [
-#  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
-#  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
-#]
+
+[markdown.highlighting]
+theme = "catppuccin-mocha"
 
 [link_checker]
 internal_level = "warn"

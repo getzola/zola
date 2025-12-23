@@ -1,6 +1,0 @@
----
-source: components/markdown/tests/markdown.rs
-assertion_line: 148
-expression: body
----
-<p><a href="https://getzola.org/about/">about</a></p>

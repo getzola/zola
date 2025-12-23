@@ -1,6 +1,6 @@
 use std::io::{self, BufRead, Write};
 
-use libs::url::Url;
+use url::Url;
 
 use errors::{Result, anyhow};
 

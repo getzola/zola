@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 
 use config::Config;
-use libs::tera::{Context, Tera};
+use tera::{Context, Tera};
 use utils::templates::ShortcodeDefinition;
 use utils::types::InsertAnchor;
 
@@ -44,6 +44,10 @@ impl<'a> RenderContext<'a> {
             lang,
             shortcode_definitions: Cow::Owned(HashMap::new()),
         }
+    }
+
+    pub(crate) fn is_highlighting(&self) -> bool {
+        self.config.markdown.highlighting.is_some()
     }
 
     /// Set in another step so we don't add one more arg to new.

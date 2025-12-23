@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 
 use errors::Result;
-use libs::tera;
 use utils::templates::{ShortcodeDefinition, ShortcodeFileType, ShortcodeInvocationCounter};
 
 mod parser;
 
-pub(crate) use parser::{parse_for_shortcodes, Shortcode, SHORTCODE_PLACEHOLDER};
+pub(crate) use parser::{SHORTCODE_PLACEHOLDER, Shortcode, parse_for_shortcodes};
 
 /// Extracts the shortcodes present in the source, check if we know them and errors otherwise
 pub fn extract_shortcodes(
