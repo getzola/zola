@@ -25,7 +25,6 @@ use std::cell::Cell;
 use std::ffi::OsStr;
 use std::net::{IpAddr, SocketAddr, TcpListener};
 use std::path::{MAIN_SEPARATOR, Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -597,10 +596,6 @@ pub fn serve(
     let (reload_tx, _) = broadcast::channel::<String>(100);
     let broadcaster = reload_tx.clone();
 
-    // Shutdown signal for graceful termination
-    let shutdown_flag = Arc::new(AtomicBool::new(false));
-    let shutdown_flag_server = shutdown_flag.clone();
-
     // Start Axum server in a separate thread
     thread::spawn(move || {
         let rt = tokio::runtime::Builder::new_current_thread()
@@ -633,15 +628,7 @@ pub fn serve(
                 eprintln!("Failed to open URL in your browser: {err}");
             }
 
-            axum::serve(listener, app)
-                .with_graceful_shutdown(async move {
-                    // Poll the shutdown flag
-                    while !shutdown_flag_server.load(Ordering::Relaxed) {
-                        tokio::time::sleep(Duration::from_millis(100)).await;
-                    }
-                })
-                .await
-                .expect("Could not start web server");
+            axum::serve(listener, app).await.expect("Could not start web server");
         });
     });
 
@@ -662,14 +649,6 @@ pub fn serve(
     println!("Press Ctrl+C to stop\n");
     // Clean the output folder on ctrl+C
     ctrlc::set_handler(move || {
-        println!("\nShutting down...");
-
-        // Signal the server to stop accepting new connections
-        shutdown_flag.store(true, Ordering::Relaxed);
-
-        // Give in-flight requests time to complete (up to 2 seconds)
-        thread::sleep(Duration::from_secs(2));
-
         match clean_site_output_folder(&output_path, preserve_dotfiles_in_output) {
             Ok(()) => (),
             Err(e) => println!("Errored while cleaning output folder: {e}"),
