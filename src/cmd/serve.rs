@@ -25,25 +25,33 @@ use std::cell::Cell;
 use std::ffi::OsStr;
 use std::net::{IpAddr, SocketAddr, TcpListener};
 use std::path::{MAIN_SEPARATOR, Path, PathBuf};
-use std::sync::Mutex;
 use std::sync::mpsc::channel;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use axum::Router;
-use axum::body::Body;
-use axum::extract::{Request, State};
-use axum::http::{HeaderValue, Method, StatusCode, header};
-use axum::response::Response;
+use axum::{
+    Router,
+    body::Body,
+    extract::{
+        State, WebSocketUpgrade,
+        ws::{Message, WebSocket},
+    },
+    http::{HeaderValue, Method, StatusCode, header},
+    middleware,
+    response::{IntoResponse, Response},
+    routing::get,
+};
 use mime_guess::from_path as mimetype_from_path;
 use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
+use tokio::sync::broadcast;
 
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use relative_path::{RelativePath, RelativePathBuf};
-use ws::{Message, Sender, WebSocket};
 
 use errors::{Context, Error, Result, anyhow};
+use serde_json::json;
 use site::sass::compile_sass;
 use site::{BuildMode, SITE_CONTENT, Site};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
@@ -66,10 +74,10 @@ const LIVE_RELOAD: &str = include_str!("livereload.js");
 
 static SERVE_ERROR: Mutex<Cell<Option<(&'static str, Error)>>> = Mutex::new(Cell::new(None));
 
-#[derive(Clone)]
 struct AppState {
     static_root: PathBuf,
     base_path: String,
+    reload_tx: broadcast::Sender<String>,
 }
 
 fn clear_serve_error() {
@@ -82,7 +90,23 @@ fn set_serve_error(msg: &'static str, e: Error) {
     }
 }
 
-async fn handle_request(State(state): State<AppState>, req: Request) -> Response {
+/// Creates a LiveReload protocol reload message for the given path.
+fn make_reload_message(path: &str) -> String {
+    json!({
+        "command": "reload",
+        "path": path,
+        "originalPath": "",
+        "liveCSS": true,
+        "liveImg": true,
+        "protocol": ["http://livereload.com/protocols/official-7"]
+    })
+    .to_string()
+}
+
+async fn handle_request(
+    State(state): State<Arc<AppState>>,
+    req: axum::extract::Request,
+) -> Response {
     let path_str = req.uri().path();
     let base_path = &state.base_path;
     let mut root = state.static_root.clone();
@@ -110,15 +134,6 @@ async fn handle_request(State(state): State<AppState>, req: Request) -> Response
 
     for c in decoded_path.split('/') {
         path.push(c);
-    }
-
-    // livereload.js is served using the LIVE_RELOAD str, not a file
-    if path == "livereload.js" {
-        if req.method() == Method::GET {
-            return livereload_js();
-        } else {
-            return method_not_allowed();
-        }
     }
 
     if let Some(content) = SITE_CONTENT.read().unwrap().get(&path) {
@@ -180,24 +195,100 @@ async fn handle_request(State(state): State<AppState>, req: Request) -> Response
         .unwrap()
 }
 
+/// WebSocket handler for live reload
+async fn ws_handler(ws: WebSocketUpgrade, State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let reload_tx = state.reload_tx.clone();
+    ws.on_upgrade(move |socket| handle_websocket(socket, reload_tx))
+}
+
+/// Handle WebSocket connection for live reload
+async fn handle_websocket(mut socket: WebSocket, reload_tx: broadcast::Sender<String>) {
+    let mut rx = reload_tx.subscribe();
+    let mut ping_interval = tokio::time::interval(Duration::from_secs(30));
+
+    loop {
+        tokio::select! {
+            // Periodic ping to keep connection alive
+            _ = ping_interval.tick() => {
+                if socket.send(Message::Ping(vec![].into())).await.is_err() {
+                    break;
+                }
+            }
+            // Send reload messages to client
+            Ok(msg) = rx.recv() => {
+                if socket.send(Message::Text(msg.into())).await.is_err() {
+                    break;
+                }
+            }
+            // Handle incoming messages (livereload protocol)
+            msg_result = socket.recv() => {
+                match msg_result {
+                    Some(Ok(Message::Text(text))) => {
+                        // Handle "hello" message from client
+                        if text.contains("\"hello\"") {
+                            let hello_response = json!({
+                                "command": "hello",
+                                "protocols": ["http://livereload.com/protocols/official-7"],
+                                "serverName": "Zola"
+                            })
+                            .to_string();
+
+                            if socket.send(Message::Text(hello_response.into())).await.is_err() {
+                                break;
+                            }
+                        }
+                    }
+                    Some(Ok(Message::Close(_))) => break,
+                    Some(Ok(Message::Pong(_))) => continue,
+                    Some(Ok(_)) => {} // Ignore other message types
+                    Some(Err(e)) => {
+                        console::error(&format!("WebSocket error: {e}"));
+                        break;
+                    }
+                    None => break,
+                }
+            }
+        }
+    }
+}
+
+/// Serve livereload.js
+async fn serve_livereload_js() -> impl IntoResponse {
+    Response::builder()
+        .header(header::CONTENT_TYPE, "text/javascript")
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+        .status(StatusCode::OK)
+        .body(Body::from(LIVE_RELOAD))
+        .expect("Could not build livereload.js response")
+}
+
 /// Inserts build error message boxes into HTML responses when needed.
 /// Used as axum middleware via `map_response`.
 async fn error_injection_middleware(response: Response) -> Response {
     use axum::body::to_bytes;
 
-    // Return response as-is if not HTML or if there are no error messages.
+    // Return response as-is if there are no error messages.
+    let has_error = SERVE_ERROR.lock().unwrap().get_mut().is_some();
+    if !has_error {
+        return response;
+    }
+
+    // Only inject errors into HTML responses or 404 responses.
+    // Don't interfere with WebSocket upgrades (101) or other special responses.
     let is_html = response
         .headers()
         .get(header::CONTENT_TYPE)
         .map(|val| val == HeaderValue::from_static("text/html"))
         .unwrap_or(false);
+    let is_not_found = response.status() == StatusCode::NOT_FOUND;
 
-    if !is_html || SERVE_ERROR.lock().unwrap().get_mut().is_none() {
+    // Pass through non-HTML, non-404 responses unchanged (e.g., WebSocket upgrades)
+    if !is_html && !is_not_found {
         return response;
     }
 
     let (parts, body) = response.into_parts();
-    let mut bytes = match to_bytes(body, usize::MAX).await {
+    let bytes = match to_bytes(body, usize::MAX).await {
         Ok(b) => b.to_vec(),
         Err(_) => return Response::from_parts(parts, Body::empty()),
     };
@@ -218,25 +309,30 @@ async fn error_injection_middleware(response: Response) -> Response {
             cause = e.source();
         }
 
-        // Push the error message (wrapped in an HTML dialog box) to the end of the HTML body.
-        //
-        // The message will be outside of <html> and <body> but web browsers are flexible enough
-        // that they will move it to the end of <body> at page load.
         let html_error = format!(
             r#"<div style="all:revert;position:fixed;display:flex;align-items:center;justify-content:center;background-color:rgb(0,0,0,0.5);top:0;right:0;bottom:0;left:0;"><div style="background-color:white;padding:0.5rem;border-radius:0.375rem;filter:drop-shadow(0,25px,25px,rgb(0,0,0/0.15));overflow-x:auto;"><p style="font-weight:700;color:black;font-size:1.25rem;margin:0;margin-bottom:0.5rem;">Zola Build Error:</p><pre style="padding:0.5rem;margin:0;border-radius:0.375rem;background-color:#363636;color:#CE4A2F;font-weight:700;">{error_str}</pre></div></div>"#
         );
-        bytes.extend(html_error.as_bytes());
+
+        if is_html {
+            // Inject error dialog into existing HTML response
+            let mut new_bytes = bytes;
+            new_bytes.extend(html_error.as_bytes());
+            return Response::from_parts(parts, Body::from(new_bytes));
+        } else if is_not_found {
+            // Return a full HTML page with the error dialog for 404s
+            // Include livereload.js so the page can receive reload messages when the error is fixed
+            let html_page = format!(
+                r#"<!DOCTYPE html><html><head><title>Zola Build Error</title><script src="/livereload.js"></script></head><body>{html_error}</body></html>"#
+            );
+            return Response::builder()
+                .header(header::CONTENT_TYPE, "text/html")
+                .status(StatusCode::OK)
+                .body(Body::from(html_page))
+                .expect("Could not build error response");
+        }
     }
 
     Response::from_parts(parts, Body::from(bytes))
-}
-
-fn livereload_js() -> Response {
-    Response::builder()
-        .header(header::CONTENT_TYPE, "text/javascript")
-        .status(StatusCode::OK)
-        .body(Body::from(LIVE_RELOAD))
-        .expect("Could not build livereload.js response")
 }
 
 fn in_memory_content(path: &RelativePathBuf, content: &str) -> Response {
@@ -294,32 +390,24 @@ fn not_found() -> Response {
         .expect("Could not build Not Found response")
 }
 
-fn rebuild_done_handling(broadcaster: &Sender, res: Result<()>, reload_path: &str) {
+fn rebuild_done_handling(
+    broadcaster: &broadcast::Sender<String>,
+    res: Result<()>,
+    reload_path: &str,
+) {
     match res {
         Ok(_) => {
             clear_serve_error();
-            broadcaster
-                .send(format!(
-                    r#"
-                {{
-                    "command": "reload",
-                    "path": {},
-                    "originalPath": "",
-                    "liveCSS": true,
-                    "liveImg": true,
-                    "protocol": ["http://livereload.com/protocols/official-7"]
-                }}"#,
-                    serde_json::to_string(&reload_path).unwrap()
-                ))
-                .unwrap();
         }
         Err(e) => {
             let msg = "Failed to build the site";
-
             messages::unravel_errors(msg, &e);
             set_serve_error(msg, e);
         }
     }
+
+    // Always send reload so the client fetches the page (with error dialog if needed)
+    let _ = broadcaster.send(make_reload_message(reload_path));
 }
 
 fn construct_url(base_url: &str, no_port_append: bool, interface_port: u16) -> String {
@@ -363,7 +451,6 @@ fn create_new_site(
     include_drafts: bool,
     store_html: bool,
     mut no_port_append: bool,
-    ws_port: Option<u16>,
 ) -> Result<(Site, SocketAddr, String)> {
     SITE_CONTENT.write().unwrap().clear();
 
@@ -400,11 +487,8 @@ fn create_new_site(
         site.include_drafts();
     }
     site.load()?;
-    if let Some(p) = ws_port {
-        site.enable_live_reload_with_port(p);
-    } else {
-        site.enable_live_reload(interface, interface_port);
-    }
+    // With Axum, WebSocket runs on the same server as HTTP
+    site.enable_live_reload_with_port(interface_port);
     messages::notify_site_size(&site);
     messages::warn_about_ignored_pages(&site);
     site.build()?;
@@ -441,7 +525,6 @@ pub fn serve(
         include_drafts,
         store_html,
         no_port_append,
-        None,
     )?;
     let base_path = match constructed_base_url.splitn(4, '/').nth(3) {
         Some(path) => format!("/{path}"),
@@ -503,82 +586,51 @@ pub fn serve(
         }
     }
 
-    let ws_port = site.live_reload;
-    let ws_address = format!("{}:{}", interface, ws_port.unwrap());
     let output_path = site.output_path.clone();
     create_directory(&output_path)?;
 
     // static_root needs to be canonicalized because we do the same for the http server.
     let static_root = std::fs::canonicalize(&output_path).unwrap();
 
-    let broadcaster = {
-        thread::spawn(move || {
-            let rt = tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .expect("Could not build tokio runtime");
+    // Create broadcast channel for WebSocket live reload
+    let (reload_tx, _) = broadcast::channel::<String>(100);
+    let broadcaster = reload_tx.clone();
 
-            rt.block_on(async {
-                use axum::middleware;
+    // Start Axum server in a separate thread
+    thread::spawn(move || {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("Could not build tokio runtime");
 
-                let state = AppState { static_root, base_path };
+        rt.block_on(async {
+            let state = Arc::new(AppState { static_root, base_path, reload_tx });
 
-                let app = Router::new()
-                    .fallback(handle_request)
-                    .layer(middleware::map_response(error_injection_middleware))
-                    .with_state(state);
+            let app = Router::new()
+                .route("/livereload.js", get(serve_livereload_js))
+                .route("/livereload", get(ws_handler))
+                .fallback(handle_request)
+                .layer(middleware::map_response(error_injection_middleware))
+                .with_state(state);
 
-                let listener = tokio::net::TcpListener::bind(&bind_address)
-                    .await
-                    .expect("Could not bind to address");
+            let listener = tokio::net::TcpListener::bind(&bind_address)
+                .await
+                .expect("Could not bind to address");
 
-                let local_addr = listener.local_addr().unwrap();
+            let local_addr = listener.local_addr().unwrap();
 
-                println!(
-                    "Web server is available at {} (bound to {})\n",
-                    &constructed_base_url
-                        .replace(&bind_address.to_string(), &local_addr.to_string()),
-                    &local_addr
-                );
-                if open && let Err(err) = open::that(&constructed_base_url) {
-                    eprintln!("Failed to open URL in your browser: {err}");
-                }
-
-                axum::serve(listener, app).await.expect("Could not start web server");
-            });
-        });
-
-        // The websocket for livereload
-        let ws_server = WebSocket::new(|output: Sender| {
-            move |msg: Message| {
-                if msg.into_text().unwrap().contains("\"hello\"") {
-                    return output.send(Message::text(
-                        r#"
-                        {
-                            "command": "hello",
-                            "protocols": [ "http://livereload.com/protocols/official-7" ],
-                            "serverName": "Zola"
-                        }
-                    "#,
-                    ));
-                }
-                Ok(())
+            println!(
+                "Web server is available at {} (bound to {})\n",
+                &constructed_base_url.replace(&bind_address.to_string(), &local_addr.to_string()),
+                &local_addr
+            );
+            if open && let Err(err) = open::that(&constructed_base_url) {
+                eprintln!("Failed to open URL in your browser: {err}");
             }
-        })
-        .unwrap();
 
-        let broadcaster = ws_server.broadcaster();
-
-        let ws_server = ws_server
-            .bind(&*ws_address)
-            .map_err(|_| anyhow!("Cannot bind to address {} for the websocket server. Maybe the port is already in use?", &ws_address))?;
-
-        thread::spawn(move || {
-            ws_server.run().unwrap();
+            axum::serve(listener, app).await.expect("Could not start web server");
         });
-
-        broadcaster
-    };
+    });
 
     // We watch for changes in the config by monitoring its parent directory, but we ignore all
     // ordinary peer files. Map the parent directory back to the config file name to not confuse
@@ -670,7 +722,6 @@ pub fn serve(
         include_drafts,
         store_html,
         no_port_append,
-        ws_port,
     ) {
         Ok((s, _, _)) => {
             clear_serve_error();
@@ -683,6 +734,9 @@ pub fn serve(
 
             messages::unravel_errors(msg, &e);
             set_serve_error(msg, e);
+
+            // Send reload so the client fetches the page with the error dialog
+            let _ = broadcaster.send(make_reload_message("/x.js"));
 
             None
         }
@@ -893,7 +947,6 @@ mod tests {
         output_dir: Option<&Path>,
         base_url: Option<&str>,
         no_port_append: bool,
-        ws_port: Option<u16>,
         expected_base_url: String,
     ) {
         let cli_dir = Path::new("./test_site").canonicalize().unwrap();
@@ -917,7 +970,6 @@ mod tests {
             include_drafts,
             false,
             no_port_append,
-            ws_port,
         )
         .unwrap();
 
@@ -926,8 +978,8 @@ mod tests {
         assert!(site.base_path.exists());
         assert_eq!(site.base_path, root_dir);
         assert_eq!(site.config.base_url, constructed_base_url);
-        assert_ne!(site.live_reload, None);
-        assert_ne!(site.live_reload, Some(1111));
+        // With Axum, WebSocket runs on the same port as HTTP
+        assert_eq!(site.live_reload, Some(interface_port));
         assert_eq!(site.output_path, root_dir.join(&site.config.output_dir));
         assert_eq!(site.static_path, root_dir.join("static"));
 
@@ -952,7 +1004,6 @@ mod tests {
         let output_dir: Option<PathBuf> = None;
         let base_url: Option<String> = None;
         let no_port_append = false;
-        let ws_port: Option<u16> = None;
         let expected_base_url = String::from("http://127.0.0.1:1111");
 
         create_and_verify_new_site(
@@ -961,7 +1012,6 @@ mod tests {
             output_dir.as_deref(),
             base_url.as_deref(),
             no_port_append,
-            ws_port,
             expected_base_url,
         );
     }
@@ -974,7 +1024,6 @@ mod tests {
         let output_dir: Option<PathBuf> = None;
         let base_url: Option<String> = Some(String::from("localhost/path/to/site"));
         let no_port_append = false;
-        let ws_port: Option<u16> = None;
         let expected_base_url = String::from("http://localhost:1111/path/to/site");
 
         create_and_verify_new_site(
@@ -983,7 +1032,6 @@ mod tests {
             output_dir.as_deref(),
             base_url.as_deref(),
             no_port_append,
-            ws_port,
             expected_base_url,
         );
     }
@@ -996,7 +1044,6 @@ mod tests {
         let output_dir: Option<PathBuf> = None;
         let base_url: Option<String> = Some(String::from("example.com"));
         let no_port_append = true;
-        let ws_port: Option<u16> = None;
         let expected_base_url = String::from("http://example.com");
 
         // Note that no_port_append only works if we define a base_url
@@ -1007,7 +1054,6 @@ mod tests {
             output_dir.as_deref(),
             base_url.as_deref(),
             no_port_append,
-            ws_port,
             expected_base_url,
         );
     }
@@ -1020,7 +1066,6 @@ mod tests {
         let output_dir: Option<PathBuf> = None;
         let base_url: Option<String> = Some(String::from("https://example.com"));
         let no_port_append = true;
-        let ws_port: Option<u16> = None;
         let expected_base_url = String::from("https://example.com");
 
         // Note that no_port_append only works if we define a base_url
@@ -1031,7 +1076,6 @@ mod tests {
             output_dir.as_deref(),
             base_url.as_deref(),
             no_port_append,
-            ws_port,
             expected_base_url,
         );
     }
@@ -1043,7 +1087,6 @@ mod tests {
         let output_dir: Option<PathBuf> = None;
         let base_url: Option<String> = Some(String::from("https://example.com/path/to/site"));
         let no_port_append = true;
-        let ws_port: Option<u16> = None;
         let expected_base_url = String::from("https://example.com/path/to/site");
 
         // Note that no_port_append only works if we define a base_url
@@ -1054,7 +1097,6 @@ mod tests {
             output_dir.as_deref(),
             base_url.as_deref(),
             no_port_append,
-            ws_port,
             expected_base_url,
         );
     }
@@ -1067,7 +1109,6 @@ mod tests {
         let output_dir: Option<PathBuf> = None;
         let base_url: Option<String> = Some(String::from("https://example.com/path/to/site"));
         let no_port_append = false;
-        let ws_port: Option<u16> = None;
         let expected_base_url = String::from("https://example.com:1111/path/to/site");
 
         // Note that no_port_append only works if we define a base_url
@@ -1078,7 +1119,6 @@ mod tests {
             output_dir.as_deref(),
             base_url.as_deref(),
             no_port_append,
-            ws_port,
             expected_base_url,
         );
     }

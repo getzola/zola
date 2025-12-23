@@ -26,10 +26,9 @@ name = "zola"
 clap = { version = "4", features = ["derive"] }
 clap_complete = "4"
 # Below is for the serve cmd
-axum = { version = "0.8", default-features = false, features = ["http1", "tokio"] }
-tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time", "net"] }
+axum = { version = "0.8", default-features = false, features = ["http1", "tokio", "ws"] }
+tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time", "net", "sync"] }
 notify-debouncer-full = "0.6"
-ws = "0.9"
 ctrlc = "3"
 open = "5"
 # For mimetype detection in serve mode
