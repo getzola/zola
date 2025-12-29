@@ -3,14 +3,14 @@
 title = "Anpu"
 description = "A port of the Hugo Anubis theme"
 template = "theme.html"
-date = 2024-11-30T14:50:54+09:00
+date = 2025-12-14T11:16:37Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2024-11-30T14:50:54+09:00
-updated = 2024-11-30T14:50:54+09:00
+created = 2025-12-14T11:16:37Z
+updated = 2025-12-14T11:16:37Z
 repository = "https://github.com/zbrox/anpu-zola-theme.git"
 homepage = "https://github.com/zbrox/anpu-zola-theme"
 minimum_version = "0.11.0"

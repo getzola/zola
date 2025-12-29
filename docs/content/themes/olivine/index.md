@@ -3,14 +3,14 @@
 title = "Olivine"
 description = "A Zola theme for a personal knowledge base"
 template = "theme.html"
-date = 2025-08-13T23:27:48-07:00
+date = 2025-12-22T10:21:49-08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-08-13T23:27:48-07:00
-updated = 2025-08-13T23:27:48-07:00
+created = 2025-12-22T10:21:49-08:00
+updated = 2025-12-22T10:21:49-08:00
 repository = "https://github.com/dongryul-kim/olivine.git"
 homepage = "https://github.com/dongryul-kim/olivine"
 minimum_version = "0.20.0"
@@ -78,6 +78,14 @@ template = "internal/journal.html"
 extra.siblings = true
 +++
 ```
+
+## Acknowledgments
+
+Special thanks to
+* [year-calendar](https://github.com/year-calendar/js-year-calendar) for the
+  calendar widget,
+* [cytoscape](https://github.com/cytoscape/cytoscape.js) for the graph widget,
+* [tikzjax](https://github.com/maker-jr/tikzjax) for rendering TikZ diagrams.
 
 
         
