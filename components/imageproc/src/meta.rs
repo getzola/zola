@@ -77,7 +77,13 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
     let path = path.as_ref();
     let ext = path.extension().and_then(OsStr::to_str).unwrap_or("").to_lowercase();
 
-    let err_context = || format!("Failed to read image: {}", path.display());
+    let err_context = || {
+        format!(
+            "Failed to read image (ext: {}) metadata: {}",
+            if ext.is_empty() { "?" } else { ext.as_str() },
+            path.display()
+        )
+    };
 
     match ext.as_str() {
         "svg" => {
