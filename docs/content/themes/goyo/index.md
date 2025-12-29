@@ -3,14 +3,14 @@
 title = "Goyo"
 description = "A simplicity and clean documentation theme"
 template = "theme.html"
-date = 2025-12-20T18:40:10+09:00
+date = 2025-12-28T23:08:42+09:00
 
 [taxonomies]
 theme-tags = ['documentation', 'Multilingual', 'Responsive', 'minimal']
 
 [extra]
-created = 2025-12-20T18:40:10+09:00
-updated = 2025-12-20T18:40:10+09:00
+created = 2025-12-28T23:08:42+09:00
+updated = 2025-12-28T23:08:42+09:00
 repository = "https://github.com/hahwul/goyo"
 homepage = "https://github.com/hahwul/goyo"
 minimum_version = "0.17.0"
@@ -42,7 +42,7 @@ homepage = "https://www.hahwul.com"
 - Beautiful Landing Page
 - Responsive Design
 - SEO-Friendly (Sitemap, RSS Feed)
-- Multi-Language Support
+- Multi-Language Support (including RTL)
 - Auto-Generated Sidebar & Custom Nav
 - Built-in Search
 - Built-in resources (FontAwesome, Mermaid.js)
@@ -87,19 +87,6 @@ Add extra field in config.toml
 
 ```toml
 [extra]
-# Footer Configuration
-footer_html = "Powered by <a href='https://www.getzola.org'>Zola</a> and <a href='https://github.com/hahwul/goyo'>Goyo</a>"  # Footer HTML content
-
-# Thumbnail Configuration
-default_thumbnail = "images/default_thumbnail.jpg"  # Default thumbnail image path
-
-# Google Tag Configuration
-gtag = ""  # Google Analytics tracking ID
-
-# Language display names for the language selector
-# If not defined, the language code will be displayed
-lang_aliases = { en = "English", ko = "한국어" }
-
 # Navigation Configuration
 nav = [
   { name = "Documents", url = "/introduction", type = "url", icon = "fa-solid fa-book" },
@@ -119,6 +106,20 @@ nav_ko = [
         { name = "제작자 블로그", url = "https://www.hahwul.com", type = "url", icon = "fa-solid fa-fire-flame-curved" },
     ] },
 ]
+
+# Footer Configuration
+footer_html = "Powered by <a href='https://www.getzola.org'>Zola</a> and <a href='https://github.com/hahwul/goyo'>Goyo</a>"  # Footer HTML content
+
+# Thumbnail Configuration
+default_thumbnail = "images/default_thumbnail.jpg"  # Default thumbnail image path
+
+# Google Tag Configuration
+gtag = ""  # Google Analytics tracking ID
+
+# Language Configuration
+[extra.lang]
+rtl = []  # List of RTL languages e.g. ["ar", "he"]
+aliases = { en = "English", ko = "한국어" }  # Language display names for the language selector
 
 # Edit URL Configuration
 edit_url = ""  # Base URL for editing pages (e.g., "https://github.com/user/repo/edit/main")
