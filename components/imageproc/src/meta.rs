@@ -52,11 +52,11 @@ pub struct ImageMetaResponse {
 }
 
 impl ImageMetaResponse {
-    pub fn new_svg(width: u32, height: u32) -> Self {
+    fn new_svg(width: u32, height: u32) -> Self {
         Self { width, height, format: Some("svg"), mime: Some("text/svg+xml") }
     }
 
-    pub fn new_avif(width: u32, height: u32) -> Self {
+    fn new_avif(width: u32, height: u32) -> Self {
         Self { width, height, format: Some("avif"), mime: Some("image/avif") }
     }
 }
