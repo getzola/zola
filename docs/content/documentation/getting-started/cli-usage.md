@@ -92,6 +92,15 @@ $ zola serve --interface 0.0.0.0 --base-url 127.0.0.1
 $ zola serve --interface 0.0.0.0 --base-url /
 $ zola serve --interface 0.0.0.0 --port 2000 --output-dir www/public
 $ zola serve --open
+$ zola serve -v
+```
+
+Use `-v` for verbose output showing debug information, or `-vv` for trace-level detail.
+
+The `--log-serve` flag controls HTTP request/response logging during serve (enabled by default when using `-v`). To disable it:
+
+```bash
+$ zola serve -v --log-serve=false
 ```
 
 The serve command will watch all your content and provide live reload without
@@ -140,12 +149,19 @@ To force the use of colors, you can set the following environment variable:
 
 - `CLICOLOR_FORCE=1`
 
-## Extra information
+## Verbose output
 
-Zola can provide detailed logging about its behavior via the `RUST_LOG` variable:
+Zola can provide detailed logging about its behavior using the `-v` flag:
 
-- To see timing information from Zola, set `RUST_LOG=zola=info,site=debug`.
-- To see debug information, set `RUST_LOG=debug`. *Note*: The output will be **very noisy**, use with caution.
-- To disable all log output entirely, set `RUST_LOG=off`.
+```bash
+$ zola -v build    # debug-level output
+$ zola -vv serve   # trace-level output (very verbose)
+```
+
+For finer control, use the `RUST_LOG` environment variable:
+
+- `RUST_LOG=zola=info,site=debug` - debug output for the site crate only
+- `RUST_LOG=debug` - debug output for everything (*very* noisy)
+- `RUST_LOG=off` - disable all log output
 
 See the [tracing_subscriber::EnvFilter documentation](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html) for a full reference on `RUST_LOG`.
