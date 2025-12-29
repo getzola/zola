@@ -27,6 +27,7 @@ clap = { version = "4", features = ["derive"] }
 clap_complete = "4"
 # Below is for the serve cmd
 axum = { version = "0.8", default-features = false, features = ["http1", "tokio", "ws"] }
+tower-http = { version = "0.6", default-features = false, features = ["trace"] }
 tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time", "net", "sync"] }
 notify-debouncer-full = "0.6"
 ctrlc = "3"
@@ -35,6 +36,7 @@ open = "5"
 mime_guess = "2.0"
 # For essence_str() function, see https://github.com/getzola/zola/issues/1845
 mime = "0.3.16"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 site = { workspace = true }
 errors = { workspace = true }
@@ -48,7 +50,10 @@ reqwest = { workspace = true }
 
 # Direct workspace deps used by the binary
 ahash = { workspace = true }
+anstream = { workspace = true }
+anstyle = { workspace = true }
 globset = { workspace = true }
+tracing = { workspace = true }
 percent-encoding = { workspace = true }
 relative-path = { workspace = true }
 serde_json = { workspace = true }
@@ -75,7 +80,8 @@ version = "0.21.0"
 # External dependencies
 ahash = "0.8"
 ammonia = "4"
-atty = "0.2.11"
+anstream = "0.6"
+anstyle = "1"
 avif-parse = "1.3.2"
 base64 = "0.22"
 chrono = { version = "0.4.27", default-features = false, features = ["std", "clock"] }
@@ -87,7 +93,7 @@ globset = "0.4"
 grass = { version = "0.13", default-features = false, features = ["random"] }
 image = { version = "0.25", default-features = true, features = ["avif"] }
 lexical-sort = "0.3"
-log = "0.4"
+tracing = { version = "0.1", features = ["attributes"] }
 minify-html = "0.18"
 nom-bibtex = "0.5"
 num-format = "0.4"
@@ -107,7 +113,6 @@ sha2 = "0.10"
 slug = "0.1"
 svg_metadata = "0.6"
 tera = { version = "1.17", features = ["preserve_order", "date-locale"] }
-termcolor = "1.0.4"
 time = "0.3"
 toml = "0.9"
 unic-langid = "0.9"

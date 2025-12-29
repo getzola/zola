@@ -6,6 +6,7 @@ edition = "2024"
 include = ["src/**/*"]
 
 [dependencies]
+tracing = { workspace = true }
 serde = { workspace = true }
 filetime = { workspace = true }
 globset = { workspace = true }
