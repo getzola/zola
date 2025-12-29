@@ -49,6 +49,7 @@ use tokio::sync::broadcast;
 
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use relative_path::{RelativePath, RelativePathBuf};
+use tower_http::trace::TraceLayer;
 use tracing::{error, info, instrument};
 
 use errors::{Context, Error, Result, anyhow};
@@ -515,6 +516,7 @@ pub fn serve(
     utc_offset: UtcOffset,
     extra_watch_paths: Vec<String>,
     debounce: u64,
+    log_serve: bool,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, bind_address, constructed_base_url) = create_new_site(
@@ -609,13 +611,6 @@ pub fn serve(
         rt.block_on(async {
             let state = Arc::new(AppState { static_root, base_path, reload_tx });
 
-            let app = Router::new()
-                .route("/livereload.js", get(serve_livereload_js))
-                .route("/livereload", get(ws_handler))
-                .fallback(handle_request)
-                .layer(middleware::map_response(error_injection_middleware))
-                .with_state(state);
-
             let listener = tokio::net::TcpListener::bind(&bind_address)
                 .await
                 .expect("Could not bind to address");
@@ -631,7 +626,19 @@ pub fn serve(
                 eprintln!("Failed to open URL in your browser: {err}");
             }
 
-            axum::serve(listener, app).await.expect("Could not start web server");
+            let base_router = Router::new()
+                .route("/livereload.js", get(serve_livereload_js))
+                .route("/livereload", get(ws_handler))
+                .fallback(handle_request)
+                .layer(middleware::map_response(error_injection_middleware))
+                .with_state(state);
+
+            if log_serve {
+                let app = base_router.layer(TraceLayer::new_for_http());
+                axum::serve(listener, app).await.expect("Could not start web server");
+            } else {
+                axum::serve(listener, base_router).await.expect("Could not start web server");
+            }
         });
     });
 

@@ -109,6 +109,10 @@ pub enum Command {
         /// Debounce time in milliseconds for the file watcher (at least 1ms)
         #[clap(short = 'd', long, default_value_t = 1000, value_parser = clap::value_parser!(u64).range(1..))]
         debounce: u64,
+
+        /// Enable request/response logging when using -v (default: true)
+        #[clap(long, default_value_t = true, action = clap::ArgAction::Set)]
+        log_serve: bool,
     },
 
     /// Try to build the project without rendering it. Checks links

@@ -61,8 +61,10 @@ fn main() {
             1 => "debug",
             _ => "trace",
         };
-        let filter_str =
+        let mut filter_str =
             ZOLA_CRATES.split(',').map(|c| format!("{c}={level}")).collect::<Vec<_>>().join(",");
+        // Include tower_http for request logging when verbose
+        filter_str.push_str(&format!(",tower_http={level}"));
         EnvFilter::new(filter_str)
     } else {
         EnvFilter::try_from_default_env().unwrap_or_else(|_| {
@@ -136,6 +138,7 @@ fn main() {
             no_port_append,
             extra_watch_path,
             debounce,
+            log_serve,
         } => {
             if port != 1111 && !port_is_available(interface, port) {
                 error!("The requested port is not available");
@@ -167,6 +170,7 @@ fn main() {
                 UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC),
                 extra_watch_path,
                 debounce,
+                log_serve,
             ) {
                 messages::unravel_errors("Failed to serve the site", &e);
                 std::process::exit(1);

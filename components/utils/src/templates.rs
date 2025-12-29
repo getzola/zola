@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use tera::{Context, Tera};
-use tracing::debug;
+use tracing::trace;
 
 use errors::{Result, bail};
 
@@ -99,7 +99,7 @@ pub fn render_template(
     theme: &Option<String>,
 ) -> Result<String> {
     if let Some(template) = check_template_fallbacks(name, tera, theme) {
-        debug!(template, requested = name, "Rendering template");
+        trace!(template, requested = name, "Rendering template");
         return tera.render(template, &context).map_err(std::convert::Into::into);
     }
 
