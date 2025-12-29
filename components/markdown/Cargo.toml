@@ -8,7 +8,7 @@ include = ["src/**/*"]
 pest = "2"
 pest_derive = "2"
 gh-emoji = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 once_cell = { workspace = true }
 pulldown-cmark = { workspace = true }
 pulldown-cmark-escape = { workspace = true }

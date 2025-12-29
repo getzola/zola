@@ -10,7 +10,7 @@ serde = { workspace = true }
 chrono = { workspace = true }
 globset = { workspace = true }
 grass = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 minify-html = { workspace = true }
 once_cell = { workspace = true }
 rayon = { workspace = true }

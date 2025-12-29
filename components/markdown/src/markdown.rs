@@ -181,7 +181,7 @@ fn fix_link(
                 match context.config.link_checker.internal_level {
                     config::LinkCheckerLevel::Error => bail!(msg),
                     config::LinkCheckerLevel::Warn => {
-                        log::warn!("{msg}");
+                        tracing::warn!("{msg}");
                         link.to_string()
                     }
                 }
@@ -584,7 +584,7 @@ pub fn markdown_to_html(
                                 if hl.error_on_missing_language {
                                     bail!(warning);
                                 } else {
-                                    log::warn!("{warning}");
+                                    tracing::warn!("{warning}");
                                 }
                             }
                             let highlighted = hl

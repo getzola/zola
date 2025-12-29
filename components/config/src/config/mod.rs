@@ -251,7 +251,7 @@ impl Config {
             if base_language_options == languages::LanguageOptions::default() {
                 return Ok(());
             }
-            log::warn!(
+            tracing::warn!(
                 "config.toml contains both default language specific information at base and under section `[languages.{}]`, \
                 which may cause merge conflicts. Please use only one to specify language specific information",
                 self.default_language

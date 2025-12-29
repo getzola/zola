@@ -42,7 +42,11 @@ impl ImageOp {
             return Ok(());
         }
 
-        log::debug!("processing {} with instructions {:?}", self.input_path.display(), self.instr);
+        tracing::debug!(
+            "processing {} with instructions {:?}",
+            self.input_path.display(),
+            self.instr
+        );
         let input_permissions = fs::metadata(&self.input_path)?.permissions();
         let reader =
             ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
@@ -74,7 +78,7 @@ impl ImageOp {
         let has_color_profile = color_profile.is_some();
         let add_color_profile = |encoder: &mut dyn ImageEncoder| {
             if let Some(color_profile) = color_profile {
-                let _ = encoder.set_icc_profile(color_profile).inspect_err(|_| log::warn!("processing {}: Image encoder for {} does not support color profiles, colors may be incorrect.", self.input_path.display(), self.format.extension()));
+                let _ = encoder.set_icc_profile(color_profile).inspect_err(|_| tracing::warn!("processing {}: Image encoder for {} does not support color profiles, colors may be incorrect.", self.input_path.display(), self.format.extension()));
             }
         };
 
@@ -97,7 +101,7 @@ impl ImageOp {
                     img.write_with_encoder(encoder)?;
                 } else {
                     if has_color_profile {
-                        log::warn!(
+                        tracing::warn!(
                             "processing {}: Lossy WebP encoder does not support color profiles, colors may be incorrect.",
                             self.input_path.display()
                         );

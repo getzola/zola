@@ -35,7 +35,7 @@ open = "5"
 mime_guess = "2.0"
 # For essence_str() function, see https://github.com/getzola/zola/issues/1845
 mime = "0.3.16"
-env_logger = { version ="0.11", default-features = false }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 site = { workspace = true }
 errors = { workspace = true }
@@ -52,7 +52,7 @@ ahash = { workspace = true }
 anstream = { workspace = true }
 anstyle = { workspace = true }
 globset = { workspace = true }
-log = { workspace = true }
+tracing = { workspace = true }
 percent-encoding = { workspace = true }
 relative-path = { workspace = true }
 serde_json = { workspace = true }
@@ -92,7 +92,7 @@ globset = "0.4"
 grass = { version = "0.13", default-features = false, features = ["random"] }
 image = { version = "0.25", default-features = true, features = ["avif"] }
 lexical-sort = "0.3"
-log = "0.4"
+tracing = "0.1"
 minify-html = "0.18"
 nom-bibtex = "0.5"
 num-format = "0.4"

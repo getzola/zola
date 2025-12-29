@@ -47,9 +47,9 @@ use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
 use tokio::sync::broadcast;
 
-use log;
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use relative_path::{RelativePath, RelativePathBuf};
+use tracing;
 
 use errors::{Context, Error, Result, anyhow};
 use serde_json::json;
@@ -243,7 +243,7 @@ async fn handle_websocket(mut socket: WebSocket, reload_tx: broadcast::Sender<St
                     Some(Ok(Message::Pong(_))) => continue,
                     Some(Ok(_)) => {} // Ignore other message types
                     Some(Err(e)) => {
-                        log::error!("WebSocket error: {e}");
+                        tracing::error!("WebSocket error: {e}");
                         break;
                     }
                     None => break,
@@ -643,7 +643,7 @@ pub fn serve(
         .map(|w| if w == root_dir_str { config_name } else { w })
         .collect::<Vec<&str>>()
         .join(",");
-    log::info!(
+    tracing::info!(
         "Listening for changes in {}{}{{{}}}",
         root_dir.display(),
         MAIN_SEPARATOR,
@@ -652,12 +652,12 @@ pub fn serve(
 
     let preserve_dotfiles_in_output = site.config.preserve_dotfiles_in_output;
 
-    log::info!("Press Ctrl+C to stop\n");
+    tracing::info!("Press Ctrl+C to stop\n");
     // Clean the output folder on ctrl+C
     ctrlc::set_handler(move || {
         match clean_site_output_folder(&output_path, preserve_dotfiles_in_output) {
             Ok(()) => (),
-            Err(e) => log::error!("Errored while cleaning output folder: {e}"),
+            Err(e) => tracing::error!("Errored while cleaning output folder: {e}"),
         }
         ::std::process::exit(0);
     })
@@ -666,7 +666,7 @@ pub fn serve(
     let reload_sass = |site: &Site, paths: &Vec<&PathBuf>| {
         let combined_paths =
             paths.iter().map(|p| p.display().to_string()).collect::<Vec<String>>().join(", ");
-        log::info!("Sass file(s) changed {combined_paths}");
+        tracing::info!("Sass file(s) changed {combined_paths}");
         rebuild_done_handling(
             &broadcaster,
             compile_sass(&site.base_path, &site.output_path),
@@ -700,7 +700,7 @@ pub fn serve(
             format!("-> Static file changed {}", path.display())
         };
 
-        log::info!("{msg}");
+        tracing::info!("{msg}");
         if path.is_dir() {
             rebuild_done_handling(
                 &broadcaster,
@@ -765,17 +765,17 @@ pub fn serve(
                     let current_time =
                         OffsetDateTime::now_utc().to_offset(utc_offset).format(&format);
                     if let Ok(time_str) = current_time {
-                        log::info!("Change detected @ {time_str}");
+                        tracing::info!("Change detected @ {time_str}");
                     } else {
                         // if formatting fails for some reason
-                        log::info!("Change detected");
+                        tracing::info!("Change detected");
                     };
 
                     let start = Instant::now();
                     match change_kind {
                         ChangeKind::Content => {
                             for (_, full_path, event_kind) in change_group.iter() {
-                                log::info!("-> Content changed {}", full_path.display());
+                                tracing::info!("-> Content changed {}", full_path.display());
 
                                 let can_do_fast_reload =
                                     *event_kind != SimpleFileSystemEventKind::Remove;
@@ -828,7 +828,7 @@ pub fn serve(
                                 .map(|p| p.display().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ");
-                            log::info!("-> Template file(s) changed {combined_paths}");
+                            tracing::info!("-> Template file(s) changed {combined_paths}");
 
                             let shortcodes_updated = partial_paths
                                 .iter()
@@ -839,7 +839,7 @@ pub fn serve(
                                     site = s;
                                 }
                             } else {
-                                log::info!("Reloading only template");
+                                tracing::info!("Reloading only template");
                                 reload_templates(&mut site)
                             }
                         }
@@ -854,7 +854,7 @@ pub fn serve(
                         }
                         ChangeKind::Themes => {
                             // No need to iterate over change group since we're rebuilding the site.
-                            log::info!("-> Themes changed.");
+                            tracing::info!("-> Themes changed.");
 
                             if let Some(s) = recreate_site() {
                                 site = s;
@@ -862,7 +862,7 @@ pub fn serve(
                         }
                         ChangeKind::Config => {
                             // No need to iterate over change group since we're rebuilding the site.
-                            log::info!(
+                            tracing::info!(
                                 "-> Config changed. The browser needs to be refreshed to make the changes visible.",
                             );
 
@@ -878,7 +878,7 @@ pub fn serve(
                                 .map(|p| p.display().to_string())
                                 .collect::<Vec<String>>()
                                 .join(", ");
-                            log::info!("-> {combined_paths} changed. Recreating whole site.");
+                            tracing::info!("-> {combined_paths} changed. Recreating whole site.");
 
                             // We can't know exactly what to update when a user provides the path.
                             if let Some(s) = recreate_site() {
@@ -889,8 +889,8 @@ pub fn serve(
                     messages::report_elapsed_time(start);
                 }
             }
-            Ok(Err(e)) => log::error!("File system event errors: {e:?}"),
-            Err(e) => log::error!("File system event receiver errors: {e:?}"),
+            Ok(Err(e)) => tracing::error!("File system event errors: {e:?}"),
+            Err(e) => tracing::error!("File system event receiver errors: {e:?}"),
         };
     }
 }

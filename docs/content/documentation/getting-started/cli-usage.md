@@ -148,4 +148,4 @@ Zola can provide detailed logging about its behavior via the `RUST_LOG` variable
 - To see debug information, set `RUST_LOG=debug`. *Note*: The output will be **very noisy**, use with caution.
 - To disable all log output entirely, set `RUST_LOG=off`.
 
-See the [env_logger documentation](https://docs.rs/env_logger/0.11.8/env_logger/#enabling-logging) for a full reference on `RUST_LOG`.
+See the [tracing_subscriber::EnvFilter documentation](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html) for a full reference on `RUST_LOG`.
