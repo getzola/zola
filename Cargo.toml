@@ -92,7 +92,7 @@ globset = "0.4"
 grass = { version = "0.13", default-features = false, features = ["random"] }
 image = { version = "0.25", default-features = true, features = ["avif"] }
 lexical-sort = "0.3"
-tracing = "0.1"
+tracing = { version = "0.1", features = ["attributes"] }
 minify-html = "0.18"
 nom-bibtex = "0.5"
 num-format = "0.4"

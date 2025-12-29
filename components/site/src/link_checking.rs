@@ -5,7 +5,7 @@ use std::{cmp, collections::HashMap, collections::HashSet, iter::FromIterator, t
 use config::LinkCheckerLevel;
 use globset::GlobSet;
 use rayon::prelude::*;
-use tracing;
+use tracing::{info, instrument, warn};
 
 use crate::Site;
 use errors::{Result, bail};
@@ -19,8 +19,9 @@ use utils::anchors::is_special_anchor;
 /// is always performed (while external ones only conditionally in `zola check`).  If broken links
 /// are encountered, the `internal_level` setting in config.toml will determine whether they are
 /// treated as warnings or errors.
+#[instrument(skip(site), level = "info")]
 pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
-    tracing::info!("Checking all internal links with anchors.");
+    info!("Checking all internal links with anchors");
     let library = site.library.write().expect("Get lock for check_internal_links_with_anchors");
 
     // Chain all internal links, from both sections and pages.
@@ -94,12 +95,12 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
 
     // Finally emit a summary, and return overall anchors-checking result.
     if messages.is_empty() {
-        tracing::info!("> Successfully checked {} internal link(s) with anchors.", anchors_total);
+        info!(links_checked = anchors_total, "Successfully checked internal links with anchors");
     } else {
-        tracing::warn!(
-            "> Checked {} internal link(s) with anchors: {} target(s) missing.",
-            anchors_total,
-            messages.len(),
+        warn!(
+            links_checked = anchors_total,
+            missing_targets = messages.len(),
+            "Internal links check completed with missing targets"
         );
     }
     messages
@@ -125,6 +126,7 @@ fn get_link_domain(link: &str) -> Result<String> {
 
 /// Checks all external links and returns all the errors that were encountered.
 /// Empty vec == all good
+#[instrument(skip(site), level = "info")]
 pub fn check_external_links(site: &Site) -> Vec<String> {
     let library = site.library.write().expect("Get lock for check_external_links");
 
@@ -187,15 +189,11 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
     )
     .len();
 
-    tracing::info!(
-        "Checking {} external link(s). Skipping {} external link(s).{}",
-        unique_links_count,
-        skipped_link_count,
-        if invalid_url_links == 0 {
-            "".to_string()
-        } else {
-            format!(" {} link(s) had unparseable URLs.", invalid_url_links)
-        }
+    info!(
+        unique_links = unique_links_count,
+        skipped_links = skipped_link_count,
+        invalid_urls = invalid_url_links,
+        "Checking external links"
     );
 
     if checked_links.is_empty() {
@@ -275,10 +273,10 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
                     .collect::<Vec<_>>()
             });
 
-            tracing::info!(
-                "> Checked {} external link(s): {} error(s) found.",
-                unique_links_count,
-                errors.len()
+            info!(
+                links_checked = unique_links_count,
+                errors_found = errors.len(),
+                "External links check completed"
             );
 
             for (page_path, link, check_res) in errors {

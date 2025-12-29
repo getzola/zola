@@ -11,6 +11,7 @@ use std::path::{Path, PathBuf};
 use globset::GlobSet;
 use serde::{Deserialize, Serialize};
 use toml::Value as Toml;
+use tracing::warn;
 
 use crate::theme::Theme;
 use errors::{Result, anyhow, bail};
@@ -251,7 +252,7 @@ impl Config {
             if base_language_options == languages::LanguageOptions::default() {
                 return Ok(());
             }
-            tracing::warn!(
+            warn!(
                 "config.toml contains both default language specific information at base and under section `[languages.{}]`, \
                 which may cause merge conflicts. Please use only one to specify language specific information",
                 self.default_language

@@ -15,6 +15,10 @@ pub struct Cli {
     #[clap(short = 'c', long, default_value = "config.toml")]
     pub config: PathBuf,
 
+    /// Increase logging verbosity (-v for debug, -vv for trace)
+    #[clap(short = 'v', long, action = clap::ArgAction::Count, global = true)]
+    pub verbose: u8,
+
     #[clap(subcommand)]
     pub command: Command,
 }

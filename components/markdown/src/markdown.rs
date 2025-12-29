@@ -8,6 +8,7 @@ use giallo::{HtmlRenderer, ParsedFence, parse_markdown_fence};
 use once_cell::sync::Lazy;
 use pulldown_cmark as cmark;
 use pulldown_cmark_escape as cmark_escape;
+use tracing::{debug, warn};
 
 use crate::context::RenderContext;
 use errors::{Context, Error, Result};
@@ -181,7 +182,7 @@ fn fix_link(
                 match context.config.link_checker.internal_level {
                     config::LinkCheckerLevel::Error => bail!(msg),
                     config::LinkCheckerLevel::Warn => {
-                        tracing::warn!("{msg}");
+                        warn!("{msg}");
                         link.to_string()
                     }
                 }
@@ -409,6 +410,14 @@ pub fn markdown_to_html(
         .get("page")
         .or_else(|| context.tera_context.get("section"))
         .map(|x| x.as_object().unwrap().get("relative_path").unwrap().as_str().unwrap());
+
+    debug!(
+        path = path.unwrap_or("<unknown>"),
+        content_len = content.len(),
+        shortcodes = html_shortcodes.len(),
+        "Rendering markdown"
+    );
+
     // the rendered html
     let mut html = String::with_capacity(content.len());
     let mut summary = None;
@@ -584,7 +593,7 @@ pub fn markdown_to_html(
                                 if hl.error_on_missing_language {
                                     bail!(warning);
                                 } else {
-                                    tracing::warn!("{warning}");
+                                    warn!("{warning}");
                                 }
                             }
                             let highlighted = hl

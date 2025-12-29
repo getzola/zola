@@ -14,14 +14,13 @@ use std::sync::{Arc, Mutex, RwLock};
 use once_cell::sync::Lazy;
 use rayon::prelude::*;
 use tera::{Context, Tera};
-use tracing;
+use tracing::{debug_span, instrument, warn};
 use walkdir::{DirEntry, WalkDir};
 
 use config::{Config, IndexFormat, get_config};
 use content::{Library, Page, Paginator, Section, Taxonomy};
 use errors::{Result, anyhow, bail};
 use relative_path::RelativePathBuf;
-use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
     clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
@@ -353,7 +352,7 @@ impl Site {
                 messages.join("\n")
             );
             match self.config.link_checker.internal_level {
-                config::LinkCheckerLevel::Warn => tracing::warn!("{msg}"),
+                config::LinkCheckerLevel::Warn => warn!("{msg}"),
                 config::LinkCheckerLevel::Error => return Err(anyhow!(msg)),
             }
         }
@@ -373,7 +372,7 @@ impl Site {
                     messages.join("\n")
                 );
                 match self.config.link_checker.external_level {
-                    config::LinkCheckerLevel::Warn => tracing::warn!("{msg}"),
+                    config::LinkCheckerLevel::Warn => warn!("{msg}"),
                     config::LinkCheckerLevel::Error => return Err(anyhow!(msg)),
                 }
             }
@@ -731,47 +730,53 @@ impl Site {
     }
 
     /// Deletes the `public` directory (only for `zola build`) and builds the site
+    #[instrument(skip(self), level = "debug")]
     pub fn build(&self) -> Result<()> {
-        let mut start = Instant::now();
         // Do not clean on `zola serve` otherwise we end up copying assets all the time
         if self.build_mode == BuildMode::Disk {
+            let _span = debug_span!("clean_folder").entered();
             self.clean()?;
         }
-        start = log_time(start, "Cleaned folder");
 
         // Generate/move all assets before markdown any content
         if let Some(ref theme) = self.config.theme {
             let theme_path = self.base_path.join("themes").join(theme);
             if theme_path.join("sass").exists() {
+                let _span = debug_span!("compile_theme_sass").entered();
                 sass::compile_sass(&theme_path, &self.output_path)?;
-                start = log_time(start, "Compiled theme Sass");
             }
         }
 
         if self.config.compile_sass {
+            let _span = debug_span!("compile_sass").entered();
             sass::compile_sass(&self.base_path, &self.output_path)?;
-            start = log_time(start, "Compiled own Sass");
         }
 
         if self.config.build_search_index {
+            let _span = debug_span!("build_search_index").entered();
             self.build_search_index()?;
-            start = log_time(start, "Built search index");
         }
 
-        // Render aliases first to allow overwriting
-        self.render_aliases()?;
-        start = log_time(start, "Rendered aliases");
-        self.render_sections()?;
-        start = log_time(start, "Rendered sections");
-        self.render_orphan_pages()?;
-        start = log_time(start, "Rendered orphan pages");
+        {
+            let _span = debug_span!("render_aliases").entered();
+            self.render_aliases()?;
+        }
+        {
+            let _span = debug_span!("render_sections").entered();
+            self.render_sections()?;
+        }
+        {
+            let _span = debug_span!("render_orphan_pages").entered();
+            self.render_orphan_pages()?;
+        }
         if self.config.generate_sitemap {
+            let _span = debug_span!("render_sitemap").entered();
             self.render_sitemap()?;
-            start = log_time(start, "Rendered sitemap");
         }
 
         let library = self.library.read().unwrap();
         if self.config.generate_feeds {
+            let _span = debug_span!("generate_default_feed").entered();
             let is_multilingual = self.config.is_multilingual();
             let pages: Vec<_> = if is_multilingual {
                 library.pages.values().filter(|p| p.lang == self.config.default_language).collect()
@@ -779,34 +784,43 @@ impl Site {
                 library.pages.values().collect()
             };
             self.render_feeds(pages, None, &self.config.default_language, |c| c)?;
-            start = log_time(start, "Generated feed in default language");
         }
 
         for (code, language) in &self.config.other_languages() {
             if !language.generate_feeds {
                 continue;
             }
+            let _span = debug_span!("generate_feed", lang = %code).entered();
             let pages: Vec<_> = library.pages.values().filter(|p| &p.lang == code).collect();
             self.render_feeds(pages, Some(&PathBuf::from(code)), code, |c| c)?;
-            start = log_time(start, "Generated feed in other language");
         }
-        self.render_themes_css()?;
-        start = log_time(start, "Rendered themes css");
-        self.render_404()?;
-        start = log_time(start, "Rendered 404");
+        {
+            let _span = debug_span!("render_themes_css").entered();
+            self.render_themes_css()?;
+        }
+        {
+            let _span = debug_span!("render_404").entered();
+            self.render_404()?;
+        }
         if self.config.generate_robots_txt {
+            let _span = debug_span!("render_robots").entered();
             self.render_robots()?;
-            start = log_time(start, "Rendered robots.txt");
         }
-        self.render_taxonomies()?;
-        start = log_time(start, "Rendered taxonomies");
-        // We process images at the end as we might have picked up images to process from markdown
-        // or from templates
-        self.process_images()?;
-        start = log_time(start, "Processed images");
-        // Processed images will be in static so the last step is to copy it
-        self.copy_static_directories()?;
-        log_time(start, "Copied static dir");
+        {
+            let _span = debug_span!("render_taxonomies").entered();
+            self.render_taxonomies()?;
+        }
+        {
+            // We process images at the end as we might have picked up images to process from markdown
+            // or from templates
+            let _span = debug_span!("process_images").entered();
+            self.process_images()?;
+        }
+        {
+            // Processed images will be in static so the last step is to copy it
+            let _span = debug_span!("copy_static").entered();
+            self.copy_static_directories()?;
+        }
 
         Ok(())
     }
@@ -1253,10 +1267,4 @@ impl Site {
             })
             .collect::<Result<()>>()
     }
-}
-
-fn log_time(start: Instant, message: &str) -> Instant {
-    let now = Instant::now();
-    tracing::debug!("{} took {}ms", message, now.duration_since(start).as_millis());
-    now
 }

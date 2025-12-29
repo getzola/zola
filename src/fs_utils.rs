@@ -7,7 +7,7 @@ use notify_debouncer_full::DebouncedEvent;
 use notify_debouncer_full::notify::event::*;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
-use tracing;
+use tracing::error;
 use utils::fs::is_temp_file;
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
@@ -83,9 +83,9 @@ pub fn filter_events(
 
         // We currently only handle notify events that report a single path per event.
         if event.event.paths.len() != 1 {
-            tracing::error!(
-                "Skipping unsupported file system event with multiple paths: {:?}",
-                event.event.kind
+            error!(
+                event_kind = ?event.event.kind,
+                "Skipping unsupported file system event with multiple paths"
             );
             continue;
         }

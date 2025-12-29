@@ -4,7 +4,7 @@ use std::time::Instant;
 
 use cli::{Cli, Command};
 use errors::anyhow;
-use tracing;
+use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 use utils::net::{get_available_port, port_is_available};
 
@@ -48,8 +48,29 @@ static SHOULD_COLOR_OUTPUT: LazyLock<anstream::ColorChoice> =
     LazyLock::new(|| anstream::AutoStream::choice(&std::io::stderr()));
 
 fn main() {
-    // ensure that logging uses the "info" level for anything in Zola by default
-    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("zola=info"));
+    let cli = Cli::parse();
+
+    // Build filter based on -v flag or RUST_LOG env var
+    // -v: debug level for zola crates
+    // -vv: trace level for zola crates
+    // -vvv+: trace level for everything
+    const ZOLA_CRATES: &str = "zola,config,console,content,errors,imageproc,link_checker,markdown,search,site,templates,utils";
+
+    let filter = if cli.verbose > 0 {
+        let level = match cli.verbose {
+            1 => "debug",
+            _ => "trace",
+        };
+        let filter_str =
+            ZOLA_CRATES.split(',').map(|c| format!("{c}={level}")).collect::<Vec<_>>().join(",");
+        EnvFilter::new(filter_str)
+    } else {
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+            let filter_str =
+                ZOLA_CRATES.split(',').map(|c| format!("{c}=info")).collect::<Vec<_>>().join(",");
+            EnvFilter::new(filter_str)
+        })
+    };
 
     // Determine if we should use ANSI colors
     let use_ansi = matches!(
@@ -67,8 +88,6 @@ fn main() {
         .with_level(true)
         .without_time()
         .init();
-
-    let cli = Cli::parse();
     let cli_dir: PathBuf = cli.root.canonicalize().unwrap_or_else(|e| {
         messages::unravel_errors(
             &format!("Could not find canonical path of root dir: {}", cli.root.display()),
@@ -85,7 +104,7 @@ fn main() {
             }
         }
         Command::Build { base_url, output_dir, force, drafts, minify } => {
-            tracing::info!("Building site...");
+            info!("Building site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
             match cmd::build(
@@ -119,19 +138,19 @@ fn main() {
             debounce,
         } => {
             if port != 1111 && !port_is_available(interface, port) {
-                tracing::error!("The requested port is not available");
+                error!("The requested port is not available");
                 std::process::exit(1);
             }
 
             if !port_is_available(interface, port) {
                 port = get_available_port(interface, 1111).unwrap_or_else(|| {
-                    tracing::error!("No port available");
+                    error!("No port available");
                     std::process::exit(1);
                 });
             }
 
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
-            tracing::info!("Building site...");
+            info!("Building site...");
             if let Err(e) = cmd::serve(
                 &root_dir,
                 interface,
@@ -154,7 +173,7 @@ fn main() {
             }
         }
         Command::Check { drafts, skip_external_links } => {
-            tracing::info!("Checking site...");
+            info!("Checking site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli.config);
             match cmd::check(&root_dir, &config_file, None, None, drafts, skip_external_links) {

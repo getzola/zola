@@ -1,7 +1,8 @@
 use std::convert::TryInto;
 use std::time::Instant;
+
 use time::Duration;
-use tracing;
+use tracing::{error, info, warn};
 
 use errors::Error;
 use site::Site;
@@ -9,11 +10,11 @@ use site::Site;
 /// Display in the console the number of pages/sections in the site
 pub fn notify_site_size(site: &Site) {
     let library = site.library.read().unwrap();
-    tracing::info!(
-        "-> Creating {} pages ({} orphan) and {} sections",
-        library.pages.len(),
-        library.get_all_orphan_pages().len(),
-        library.sections.len() - 1, // -1 since we do not count the index as a section there
+    info!(
+        pages = library.pages.len(),
+        orphan_pages = library.get_all_orphan_pages().len(),
+        sections = library.sections.len() - 1,
+        "Creating site content"
     );
 }
 
@@ -21,15 +22,15 @@ pub fn notify_site_size(site: &Site) {
 pub fn check_site_summary(site: &Site) {
     let library = site.library.read().unwrap();
     let orphans = library.get_all_orphan_pages();
-    tracing::info!(
-        "-> Site content: {} pages ({} orphan), {} sections",
-        library.pages.len(),
-        orphans.len(),
-        library.sections.len() - 1, // -1 since we do not count the index as a section there
+    info!(
+        pages = library.pages.len(),
+        orphan_pages = orphans.len(),
+        sections = library.sections.len() - 1,
+        "Site content summary"
     );
 
     for orphan in orphans {
-        tracing::warn!("Orphan page found: {}", orphan.path);
+        warn!(path = orphan.path, "Orphan page found");
     }
 }
 
@@ -43,12 +44,12 @@ pub fn warn_about_ignored_pages(site: &Site) {
         .collect();
 
     if !ignored_pages.is_empty() {
-        tracing::warn!(
-            "{} page(s) ignored (missing date or weight in a sorted section):",
-            ignored_pages.len()
+        warn!(
+            count = ignored_pages.len(),
+            "Pages ignored (missing date or weight in a sorted section)"
         );
         for path in ignored_pages {
-            tracing::warn!("- {}", path.display());
+            warn!(path = %path.display(), "Ignored page");
         }
     }
 }
@@ -59,22 +60,22 @@ pub fn report_elapsed_time(instant: Instant) {
     let duration_ms = duration.whole_milliseconds() as f64;
 
     if duration_ms < 1000.0 {
-        tracing::info!("Done in {duration_ms}ms.\n");
+        info!(duration_ms = duration_ms, "Done");
     } else {
-        let duration_sec = duration_ms / 1000.0;
-        tracing::info!("Done in {:.1}s.\n", ((duration_sec * 10.0).round() / 10.0));
+        let duration_sec = (duration_ms / 100.0).round() / 10.0;
+        info!(duration_sec = duration_sec, "Done");
     }
 }
 
 /// Display an error message and the actual error(s)
-pub fn unravel_errors(message: &str, error: &Error) {
+pub fn unravel_errors(message: &str, err: &Error) {
     if !message.is_empty() {
-        tracing::error!("{message}");
+        error!(message = message, "Error");
     }
-    tracing::error!("{error}");
-    let mut cause = error.source();
+    error!(error = %err, "Error details");
+    let mut cause = err.source();
     while let Some(e) = cause {
-        tracing::error!("Reason: {e}");
+        error!(reason = %e, "Caused by");
         cause = e.source();
     }
 }

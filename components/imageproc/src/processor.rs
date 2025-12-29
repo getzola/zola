@@ -15,6 +15,7 @@ use image::{EncodableLayout, ImageEncoder};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use tempfile::NamedTempFile;
+use tracing::{debug, instrument, warn};
 use utils::fs as ufs;
 
 use crate::format::Format;
@@ -37,15 +38,15 @@ pub struct ImageOp {
 }
 
 impl ImageOp {
+    #[instrument(skip(self), fields(path = %self.input_path.display(), format = %self.format.extension()))]
     fn perform(&self) -> Result<()> {
         if self.ignore {
             return Ok(());
         }
 
-        tracing::debug!(
-            "processing {} with instructions {:?}",
-            self.input_path.display(),
-            self.instr
+        debug!(
+            instructions = ?self.instr,
+            "Processing image"
         );
         let input_permissions = fs::metadata(&self.input_path)?.permissions();
         let reader =
@@ -76,9 +77,17 @@ impl ImageOp {
         let mut tmp_output_writer = BufWriter::new(&tmp_output_file);
 
         let has_color_profile = color_profile.is_some();
+        let input_path_display = self.input_path.display();
+        let format_ext = self.format.extension();
         let add_color_profile = |encoder: &mut dyn ImageEncoder| {
             if let Some(color_profile) = color_profile {
-                let _ = encoder.set_icc_profile(color_profile).inspect_err(|_| tracing::warn!("processing {}: Image encoder for {} does not support color profiles, colors may be incorrect.", self.input_path.display(), self.format.extension()));
+                let _ = encoder.set_icc_profile(color_profile).inspect_err(|_| {
+                    warn!(
+                        path = %input_path_display,
+                        format = format_ext,
+                        "Image encoder does not support color profiles, colors may be incorrect"
+                    );
+                });
             }
         };
 
@@ -101,9 +110,9 @@ impl ImageOp {
                     img.write_with_encoder(encoder)?;
                 } else {
                     if has_color_profile {
-                        tracing::warn!(
-                            "processing {}: Lossy WebP encoder does not support color profiles, colors may be incorrect.",
-                            self.input_path.display()
+                        warn!(
+                            path = %self.input_path.display(),
+                            "Lossy WebP encoder does not support color profiles, colors may be incorrect"
                         );
                     }
                     let encoder = webp::Encoder::from_image(&img)
