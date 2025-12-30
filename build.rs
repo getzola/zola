@@ -3,11 +3,7 @@ fn generate_pe_header() {
 
     let today = OffsetDateTime::now_utc();
     let copyright = format!("Copyright © 2017-{} Vincent Prouillet", today.year());
-    let mut res = winres::WindowsResource::new();
-    // needed for MinGW cross-compiling
-    if cfg!(unix) {
-        res.set_windres_path("x86_64-w64-mingw32-windres");
-    }
+    let mut res = tauri_winres::WindowsResource::new();
     res.set_icon("docs/static/favicon.ico");
     res.set("LegalCopyright", &copyright);
     res.compile().expect("Failed to compile Windows resources!");

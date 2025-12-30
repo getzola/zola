@@ -16,7 +16,7 @@ include = ["src/**/*", "LICENSE", "README.md"]
 clap = { version = "4", features = ["derive"] }
 clap_complete = "4"
 clap_mangen = "0.2.31"
-winres = "0.1"
+tauri-winres = "0.3"
 time = "0.3"
 
 [[bin]]
