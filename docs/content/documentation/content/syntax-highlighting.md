@@ -30,6 +30,7 @@ In any cases, you will need to add the following CSS to your site CSS for things
 ```css
 .giallo-l {
   display: block;
+  min-height: 1lh;
 }
 .giallo-ln {
   display: inline-block;
