@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>austere | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;austere&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>austere</h1>
+            <p>A minimal theme for Zola with a focus on writing.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;www.tomwrw.com">tomwrw</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.17.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;tomwrw&#x2F;austere-theme-zola">https:&#x2F;&#x2F;github.com&#x2F;tomwrw&#x2F;austere-theme-zola</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;dark&#x2F;">dark</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;blog&#x2F;">blog</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;minimal&#x2F;">minimal</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;personal&#x2F;">personal</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;responsive&#x2F;">responsive</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;seo&#x2F;">seo</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;writing&#x2F;">writing</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2025-12-21T15:33:47Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <p align="center">
+  <img src="logo.svg" alt="austere" width="200">
+</p>
+<h1 align="center">austere</h1>
+<p align="center">A minimal theme for <a href="https://getzola.org">Zola</a> with a focus on writing.</p>
+<hr />
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Lightweight</strong> - ~2KB inline CSS, no external stylesheets</li>
+<li><strong>Dark/Light mode</strong> - Toggle with system preference detection</li>
+<li><strong>Customizable colours</strong> - Configure all theme colours in <code>config.toml</code></li>
+<li><strong>Responsive images</strong> - Automatic resizing and srcset generation</li>
+<li><strong>Search</strong> - Client-side search powered by Fuse.js</li>
+<li><strong>Feeds</strong> - Atom and RSS feed generation</li>
+<li><strong>SEO</strong> - OpenGraph and Twitter Card meta tags</li>
+<li><strong>Accessibility</strong> - Skip links, semantic HTML, focus states</li>
+<li><strong>Projects page</strong> - Showcase your work with a dedicated projects section</li>
+<li><strong>Analytics</strong> - Optional Umami or Google Analytics support</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<ol>
+<li>
+<p>Download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#da4939;">cd</span><span> your-zola-site
+</span><span>git clone https://github.com/tomwrw/austere-theme-zola themes/austere
+</span></code></pre>
+</li>
+<li>
+<p>Set the theme in your <code>config.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">theme </span><span>= </span><span style="color:#c1be91;">&quot;austere&quot;
+</span></code></pre>
+</li>
+<li>
+<p>Copy the example content to get started:</p>
+<pre data-lang="bash" style="background-color:#383838;color:#e6e1dc;" class="language-bash "><code class="language-bash" data-lang="bash"><span>cp</span><span style="font-style:italic;color:#fd971f;"> -r</span><span> themes/austere/content/</span><span style="color:#cc7833;">*</span><span> content/
+</span></code></pre>
+</li>
+</ol>
+<h2 id="configuration">Configuration</h2>
+<h3 id="required-settings">Required Settings</h3>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#e8bf6a;">base_url </span><span>= </span><span style="color:#c1be91;">&quot;https://yoursite.com&quot;
+</span><span>
+</span><span style="color:#95815e;"># Required for search
+</span><span style="color:#e8bf6a;">build_search_index </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">search</span><span>]
+</span><span style="color:#e8bf6a;">index_format </span><span>= </span><span style="color:#c1be91;">&quot;fuse_javascript&quot;
+</span><span>
+</span><span style="color:#95815e;"># Required for syntax highlighting
+</span><span>[</span><span style="color:#e8bf6a;">markdown</span><span>]
+</span><span style="color:#e8bf6a;">highlight_code </span><span>= </span><span style="color:#6e9cbe;">true
+</span><span style="color:#e8bf6a;">highlight_theme </span><span>= </span><span style="color:#c1be91;">&quot;css&quot;
+</span></code></pre>
+<h3 id="theme-options">Theme Options</h3>
+<p>All theme options go under <code>[extra]</code> in your <code>config.toml</code>:</p>
+<h4 id="site-identity">Site Identity</h4>
+<table><thead><tr><th>Option</th><th>Description</th><th>Default</th></tr></thead><tbody>
+<tr><td><code>strapline</code></td><td>Tagline shown in header</td><td><em>(none)</em></td></tr>
+<tr><td><code>favicon</code></td><td>Path to favicon</td><td><em>(none)</em></td></tr>
+<tr><td><code>profile_picture</code></td><td>Profile image on home page</td><td><em>(none)</em></td></tr>
+<tr><td><code>keywords</code></td><td>SEO meta keywords</td><td><em>(none)</em></td></tr>
+<tr><td><code>footer_text</code></td><td>Footer HTML content</td><td><em>(none)</em></td></tr>
+</tbody></table>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">strapline </span><span>= </span><span style="color:#c1be91;">&quot;Welcome to my website&quot;
+</span><span style="color:#e8bf6a;">favicon </span><span>= </span><span style="color:#c1be91;">&quot;/favicon.ico&quot;
+</span><span style="color:#e8bf6a;">profile_picture </span><span>= </span><span style="color:#c1be91;">&quot;/images/me.png&quot;
+</span><span style="color:#e8bf6a;">keywords </span><span>= </span><span style="color:#c1be91;">&quot;blog, writing, zola&quot;
+</span><span style="color:#e8bf6a;">footer_text </span><span>= </span><span style="color:#c1be91;">&quot;Made with &lt;a href=&#39;https://getzola.org&#39;&gt;Zola&lt;/a&gt;&quot;
+</span></code></pre>
+<h4 id="navigation">Navigation</h4>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">menu_links </span><span>= [
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Home&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/posts/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Posts&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/about/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;About&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/projects/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Projects&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/tags/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Tags&quot; </span><span>},
+</span><span>  { </span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;$BASE_URL/search/&quot;</span><span>, </span><span style="color:#e8bf6a;">name </span><span>= </span><span style="color:#c1be91;">&quot;Search&quot; </span><span>},
+</span><span>]
+</span></code></pre>
+<h4 id="colours">Colours</h4>
+<p>Customize the color scheme for light and dark modes:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra.colours.light</span><span>]
+</span><span style="color:#e8bf6a;">background </span><span>= </span><span style="color:#c1be91;">&quot;#FAF7F2&quot;
+</span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;#1a1a1a&quot;
+</span><span style="color:#e8bf6a;">text_muted </span><span>= </span><span style="color:#c1be91;">&quot;#3a3a3a&quot;
+</span><span style="color:#e8bf6a;">accent </span><span>= </span><span style="color:#c1be91;">&quot;#B85450&quot;
+</span><span style="color:#e8bf6a;">code_bg </span><span>= </span><span style="color:#c1be91;">&quot;#f0ebe3&quot;
+</span><span style="color:#e8bf6a;">border </span><span>= </span><span style="color:#c1be91;">&quot;#e0d9ce&quot;
+</span><span>
+</span><span>[</span><span style="color:#e8bf6a;">extra.colours.dark</span><span>]
+</span><span style="color:#e8bf6a;">background </span><span>= </span><span style="color:#c1be91;">&quot;#141413&quot;
+</span><span style="color:#e8bf6a;">text </span><span>= </span><span style="color:#c1be91;">&quot;#e8e8e8&quot;
+</span><span style="color:#e8bf6a;">text_muted </span><span>= </span><span style="color:#c1be91;">&quot;#a0a0a0&quot;
+</span><span style="color:#e8bf6a;">accent </span><span>= </span><span style="color:#c1be91;">&quot;#E07A5F&quot;
+</span><span style="color:#e8bf6a;">code_bg </span><span>= </span><span style="color:#c1be91;">&quot;#1e1e1d&quot;
+</span><span style="color:#e8bf6a;">border </span><span>= </span><span style="color:#c1be91;">&quot;#2a2a29&quot;
+</span></code></pre>
+<h4 id="responsive-images">Responsive Images</h4>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#e8bf6a;">image_format </span><span>= </span><span style="color:#c1be91;">&quot;auto&quot;      </span><span style="color:#95815e;"># auto, webp, jpg, png
+</span><span style="color:#e8bf6a;">image_quality </span><span>= </span><span style="color:#a5c261;">80         </span><span style="color:#95815e;"># 1-100
+</span><span style="color:#e8bf6a;">images_default_size </span><span>= </span><span style="color:#a5c261;">1024
+</span><span style="color:#e8bf6a;">images_sizes </span><span>= [</span><span style="color:#a5c261;">512</span><span>, </span><span style="color:#a5c261;">1024</span><span>, </span><span style="color:#a5c261;">2048</span><span>]
+</span></code></pre>
+<h4 id="analytics-optional">Analytics (Optional)</h4>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[</span><span style="color:#e8bf6a;">extra</span><span>]
+</span><span style="color:#95815e;"># Umami Analytics
+</span><span style="color:#e8bf6a;">umami_website_id </span><span>= </span><span style="color:#c1be91;">&quot;your-website-id&quot;
+</span><span style="color:#e8bf6a;">umami_src </span><span>= </span><span style="color:#c1be91;">&quot;https://cloud.umami.is/script.js&quot;  </span><span style="color:#95815e;"># optional, custom domain
+</span><span style="color:#e8bf6a;">umami_domains </span><span>= </span><span style="color:#c1be91;">&quot;yoursite.com&quot;                  </span><span style="color:#95815e;"># optional, limit tracking
+</span><span>
+</span><span style="color:#95815e;"># OR Google Analytics
+</span><span style="color:#e8bf6a;">google_analytics_tag_id </span><span>= </span><span style="color:#c1be91;">&quot;G-XXXXXXXXXX&quot;
+</span></code></pre>
+<h2 id="content">Content</h2>
+<h3 id="posts">Posts</h3>
+<p>Create posts in <code>content/posts/</code>:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>title = &quot;My Post Title&quot;
+</span><span>date = 2024-01-15
+</span><span>description = &quot;A brief description for SEO&quot;
+</span><span>[taxonomies]
+</span><span>tags = [&quot;zola&quot;, &quot;blogging&quot;]
+</span><span>+++
+</span><span>
+</span><span>Your content here...
+</span></code></pre>
+<p>For posts with images, use a folder structure:</p>
+<pre style="background-color:#383838;color:#e6e1dc;"><code><span>content/posts/my-post/
+</span><span>├── index.md
+</span><span>└── image.jpg
+</span></code></pre>
+<h3 id="pages">Pages</h3>
+<p>Create standalone pages in <code>content/</code>:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>title = &quot;About&quot;
+</span><span>template = &quot;page.html&quot;
+</span><span>+++
+</span><span>
+</span><span>Page content...
+</span></code></pre>
+<h3 id="projects">Projects</h3>
+<p>Create <code>content/projects/_index.md</code>:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>title = &quot;Projects&quot;
+</span><span>template = &quot;projects.html&quot;
+</span><span>+++
+</span></code></pre>
+<p>Then create <code>content/projects/projects.toml</code>:</p>
+<pre data-lang="toml" style="background-color:#383838;color:#e6e1dc;" class="language-toml "><code class="language-toml" data-lang="toml"><span>[[</span><span style="color:#e8bf6a;">projects</span><span>]]
+</span><span style="color:#e8bf6a;">title </span><span>= </span><span style="color:#c1be91;">&quot;Project Name&quot;
+</span><span style="color:#e8bf6a;">emoji </span><span>= </span><span style="color:#c1be91;">&quot;🚀&quot;
+</span><span style="color:#e8bf6a;">description </span><span>= </span><span style="color:#c1be91;">&quot;What this project does&quot;
+</span><span style="color:#e8bf6a;">url </span><span>= </span><span style="color:#c1be91;">&quot;https://github.com/you/project&quot;
+</span><span style="color:#e8bf6a;">image </span><span>= </span><span style="color:#c1be91;">&quot;screenshot.png&quot;  </span><span style="color:#95815e;"># optional, relative to projects folder
+</span><span style="color:#e8bf6a;">date </span><span>= </span><span style="color:#c1be91;">&quot;2024&quot;
+</span><span style="color:#e8bf6a;">status </span><span>= </span><span style="color:#c1be91;">&quot;Active&quot;
+</span><span style="color:#e8bf6a;">tags </span><span>= [</span><span style="color:#c1be91;">&quot;rust&quot;</span><span>, </span><span style="color:#c1be91;">&quot;web&quot;</span><span>]
+</span></code></pre>
+<h3 id="search">Search</h3>
+<p>Create <code>content/search.md</code>:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>title = &quot;Search&quot;
+</span><span>template = &quot;search.html&quot;
+</span><span>+++
+</span></code></pre>
+<h2 id="shortcodes">Shortcodes</h2>
+<h3 id="responsive-image">Responsive Image</h3>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>{{ image(src=&quot;photo.jpg&quot;, alt=&quot;Description&quot;) }}
+</span></code></pre>
+<h3 id="youtube-embed">YouTube Embed</h3>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>{{ youtube(id=&quot;dQw4w9WgXcQ&quot;) }}
+</span><span>{{ youtube(id=&quot;dQw4w9WgXcQ&quot;, autoplay=true) }}
+</span></code></pre>
+<h3 id="spotify-embed">Spotify Embed</h3>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>{{ spotify(id=&quot;album-id&quot;) }}
+</span></code></pre>
+<h2 id="customization">Customization</h2>
+<h3 id="template-hooks">Template Hooks</h3>
+<p>Override these macros in your own <code>templates/macros/hooks.html</code>:</p>
+<pre data-lang="html" style="background-color:#383838;color:#e6e1dc;" class="language-html "><code class="language-html" data-lang="html"><span>{%/* macro post_above_content(page) */%}
+</span><span style="color:#95815e;">&lt;!-- Content before post body --&gt;
+</span><span>{%/* endmacro */%}
+</span><span>
+</span><span>{%/* macro post_below_content(page) */%}
+</span><span style="color:#95815e;">&lt;!-- Content after post body --&gt;
+</span><span>{%/* endmacro */%}
+</span><span>
+</span><span>{%/* macro post_below_tags(page) */%}
+</span><span style="color:#95815e;">&lt;!-- Content after post tags --&gt;
+</span><span>{%/* endmacro */%}
+</span><span>
+</span><span>{%/* macro posts_below_title(page) */%}
+</span><span style="color:#95815e;">&lt;!-- Content after post title in list view --&gt;
+</span><span>{%/* endmacro */%}
+</span></code></pre>
+<h3 id="opengraph-images">OpenGraph Images</h3>
+<p>Add a preview image to any page:</p>
+<pre data-lang="markdown" style="background-color:#383838;color:#e6e1dc;" class="language-markdown "><code class="language-markdown" data-lang="markdown"><span>+++
+</span><span>[extra]
+</span><span>og_preview_img = &quot;preview.jpg&quot;
+</span><span>+++
+</span></code></pre>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Zola 0.17.0 or later</li>
+</ul>
+<h2 id="license">License</h2>
+<p>MIT</p>
+<h2 id="credits">Credits</h2>
+<ul>
+<li><a class="external" href="https://github.com/jimmyff/zap">Zap</a> by <a class="external" href="https://github.com/jimmyff">jimmyff</a> - Original theme inspiration</li>
+<li><a class="external" href="https://getzola.org">Zola</a> - Static site generator</li>
+<li><a class="external" href="https://fusejs.io">Fuse.js</a> - Client-side search</li>
+<li><a class="external" href="https://fonts.google.com/specimen/Source+Serif+4">Source Serif 4</a> - Typography</li>
+<li>Favicon by <a class="external" href="https://iconarchive.com/artist/iconsmind.html">IconsMind</a></li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2025 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
