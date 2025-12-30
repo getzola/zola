@@ -11,7 +11,7 @@ documentation for information on its structure.
 
 Here is an example of using that field to render a two-level table of contents:
 
-```jinja2
+```jinja
 {% if page.toc %}
     <ul>
     {% for h1 in page.toc %}

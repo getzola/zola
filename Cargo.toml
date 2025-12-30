@@ -115,7 +115,7 @@ unicode-segmentation = "1.2"
 url = "2"
 walkdir = "2"
 webp = "0.3"
-giallo = {version = "0.1", features = ["dump"]}
+giallo = {version = "0.2", features = ["dump"]}
 
 # Internal crates
 config = { path = "components/config" }

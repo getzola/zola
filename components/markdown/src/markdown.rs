@@ -576,9 +576,13 @@ pub fn markdown_to_html(
                     let html = if let Some(code) = code_block.take() {
                         if let Some(hl) = &context.config.markdown.highlighting {
                             if !hl.registry.contains_grammar(&code.lang) {
-                                // TODO: add current file path? or are we passing context?
+                                let location = if let Some(p) = path {
+                                    format!(" in {p:?}")
+                                } else {
+                                    String::new()
+                                };
                                 let warning = format!(
-                                    "Language `{}` not found for syntax highlighting.`",
+                                    "Language `{}` not found for syntax highlighting{location}.`",
                                     code.lang
                                 );
                                 if hl.error_on_missing_language {
@@ -589,7 +593,7 @@ pub fn markdown_to_html(
                             }
                             let highlighted = hl
                                 .registry
-                                .highlight(&code_block_content, hl.highlight_options(&code.lang))?;
+                                .highlight(&code_block_content, &hl.highlight_options(&code.lang))?;
                             let renderer = HtmlRenderer {
                                 other_metadata: code.rest,
                                 css_class_prefix: if hl.uses_classes() {

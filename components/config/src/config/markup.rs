@@ -112,7 +112,7 @@ impl Highlighting {
         out
     }
 
-    pub fn highlight_options<'a>(&'a self, lang: &'a str) -> HighlightOptions<'a> {
+    pub fn highlight_options<'a>(&'a self, lang: &'a str) -> HighlightOptions {
         let mut opt = match &self.theme {
             HighlightConfig::Single { theme } => {
                 HighlightOptions::new(lang, ThemeVariant::Single(theme))

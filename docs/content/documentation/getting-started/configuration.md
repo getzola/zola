@@ -176,7 +176,7 @@ insert_anchor_links = "none"
 
 # Syntax highlighting configuration (optional)
 [markdown.highlighting]
-# When set to "true", missing highlight languages are treated as errors. Defaults to false.
+# When set to "true", missing highlight languages are treated as errors. Defaults to false but recommended to set to true.
 error_on_missing_language = false
 
 # Whether to use inline hex colours (`inline`) or CSS classes (`class`) 
