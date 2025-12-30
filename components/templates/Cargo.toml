@@ -10,7 +10,7 @@ csv = { workspace = true }
 nom-bibtex = { workspace = true }
 num-format = { workspace = true }
 once_cell = { workspace = true }
-quickxml_to_serde = { workspace = true }
+roxmltree_to_serde = { workspace = true }
 regex = { workspace = true }
 reqwest = { workspace = true }
 serde_json = { workspace = true }

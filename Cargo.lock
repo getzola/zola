@@ -2659,15 +2659,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "minidom"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe549115a674f5ec64c754d85e37d6f42664bd0ef4ffb62b619489ad99c6cb1a"
-dependencies = [
- "quick-xml",
-]
-
-[[package]]
 name = "minify-html"
 version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3876,28 +3867,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a993555f31e5a609f617c12db6250dedcac1b0a85076912c436e6fc9b2c8e6a3"
 
 [[package]]
-name = "quick-xml"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe1e430bdcf30c9fdc25053b9c459bb1a4672af4617b6c783d7d91dc17c6bbb0"
-dependencies = [
- "memchr",
-]
-
-[[package]]
-name = "quickxml_to_serde"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "286b05c7a00b356ff6ac5218e10d628e0a3be02e777d067ca7286d353c3c407e"
-dependencies = [
- "minidom",
- "regex",
- "serde",
- "serde_derive",
- "serde_json",
-]
-
-[[package]]
 name = "quinn"
 version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4283,6 +4252,19 @@ name = "roxmltree"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c20b6793b5c2fa6553b250154b78d6d0db37e72700ae35fad9387a46f487c97"
+
+[[package]]
+name = "roxmltree_to_serde"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4eabe602f48dfc72e56d9beefcefe457c2898b3b4853ba4aa836804e49732460"
+dependencies = [
+ "regex",
+ "roxmltree",
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
 
 [[package]]
 name = "rust-stemmers"
@@ -4819,9 +4801,9 @@ dependencies = [
  "nom-bibtex",
  "num-format",
  "once_cell",
- "quickxml_to_serde",
  "regex",
  "reqwest",
+ "roxmltree_to_serde",
  "serde_json",
  "serde_yaml",
  "sha2",

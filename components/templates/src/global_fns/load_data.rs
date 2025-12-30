@@ -560,7 +560,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
 /// }
 /// ```
 fn load_xml(xml_data: String) -> Result<Value> {
-    let xml_content: Value = quickxml_to_serde::xml_string_to_json(xml_data, &Default::default())
+    let xml_content: Value = roxmltree_to_serde::xml_string_to_json(xml_data, &Default::default())
         .map_err(|e| format!("{:?}", e))?;
     Ok(xml_content)
 }

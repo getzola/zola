@@ -2,4 +2,4 @@
 source: components/markdown/tests/shortcodes.rs
 expression: body
 ---
-<div><pre class="giallo" style="color: #E1E4E8; background-color: #24292E;"><code data-lang="plain"><span class="giallo-l"><span>some code;</span></span><span class="giallo-l"></span></code></pre></div>
+<div><pre class="giallo" style="color: #E1E4E8; background-color: #24292E;"><code data-lang="plain"><span class="giallo-l"><span>some code;</span></span></code></pre></div>
