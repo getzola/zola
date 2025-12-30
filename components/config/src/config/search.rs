@@ -62,7 +62,7 @@ impl Default for Search {
 }
 
 impl Search {
-    pub fn serialize(&self) -> SerializedSearch {
+    pub fn serialize(&self) -> SerializedSearch<'_> {
         SerializedSearch { index_format: &self.index_format }
     }
 }

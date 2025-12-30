@@ -15,7 +15,7 @@ you can place `{{ __tera_context }}` in the template to print the whole context.
 
 A few variables are available on all templates except feeds and the sitemap:
 
-- `config`: the language aware [configuration](@/documentation/getting-started/configuration/index.md)
+- `config`: the language aware [configuration](@/documentation/getting-started/configuration.md)
 - `current_path`: the path (full URL without `base_url`) of the current page, always starting with a `/`
 - `current_url`: the full URL for the current page
 - `lang`: the language for the current page
@@ -74,7 +74,7 @@ Converts the given variable to HTML using Markdown. There are a few differences 
 By default, the filter will wrap all text in a paragraph. To disable this behaviour, you can
 pass `true` to the inline argument:
 
-```jinja2
+```jinja
 {{ some_text | markdown(inline=true) }}
 ```
 
@@ -89,7 +89,7 @@ Decode the variable from base64.
 ### regex_replace
 Replace text via regular expressions.
 
-```jinja2
+```jinja
 {{ "World Hello" | regex_replace(pattern=`(?P<subject>\w+), (?P<greeting>\w+)`, rep=`$greeting $subject`) }}
 <!-- Hello World -->
 ```
@@ -97,7 +97,7 @@ Replace text via regular expressions.
 ### num_format
 Format a number into its string representation.
 
-```jinja2
+```jinja
 {{ 1000000 | num_format }}
 <!-- 1,000,000 -->
 ```
@@ -106,7 +106,7 @@ By default this will format the number using the locale set by `config.default_l
 
 To format a number for a specific locale, you can use the `locale` argument and pass the name of the desired locale:
 
-```jinja2
+```jinja
 {{ 1000000 | num_format(locale="en-IN") }}
 <!-- 10,00,000 -->
 ```
@@ -137,13 +137,13 @@ It will error if the path is outside the Zola directory.
 ### `get_page`
 Takes a path to an `.md` file and returns the associated page. The base path is the `content` directory.
 
-```jinja2
+```jinja
 {% set page = get_page(path="blog/page2.md") %}
 ```
 
 If selecting a specific language for the page, you can pass `lang` with the language code to the function:
 
-```jinja2
+```jinja
 {% set page = get_page(path="blog/page2.md", lang="fr") %}
 
 {# If "fr" is the default language, this is equivalent to #}
@@ -156,19 +156,19 @@ If selecting a specific language for the page, you can pass `lang` with the lang
 ### `get_section`
 Takes a path to an `_index.md` file and returns the associated section. The base path is the `content` directory.
 
-```jinja2
+```jinja
 {% set section = get_section(path="blog/_index.md") %}
 ```
 
 If you only need the metadata of the section, you can pass `metadata_only=true` to the function:
 
-```jinja2
+```jinja
 {% set section = get_section(path="blog/_index.md", metadata_only=true) %}
 ```
 
 If selecting a specific language for the section, you can pass `lang` with the language code to the function:
 
-```jinja2
+```jinja
 {% set section = get_section(path="blog/_index.md", lang="fr") %}
 
 {# If "fr" is the default language, this is equivalent to #}
@@ -181,7 +181,7 @@ If selecting a specific language for the section, you can pass `lang` with the l
 ### `get_taxonomy_url`
 Gets the permalink for the taxonomy item found.
 
-```jinja2
+```jinja
 {% set url = get_taxonomy_url(kind="categories", name=page.taxonomies.category, lang=page.lang) %}
 ```
 
@@ -195,7 +195,7 @@ the value should be the same as the one in the front matter, not the slugified v
 ### `get_taxonomy`
 Gets the whole taxonomy of a specific kind.
 
-```jinja2
+```jinja
 {% set categories = get_taxonomy(kind="categories") %}
 ```
 
@@ -217,7 +217,7 @@ See the [Taxonomies documentation](@/documentation/templates/taxonomies.md) for 
 ### `get_taxonomy_term`
 Gets a single term from a taxonomy of a specific kind.
 
-```jinja2
+```jinja
 {% set categories = get_taxonomy_term(kind="categories", term="term_name") %}
 ```
 
@@ -236,7 +236,7 @@ Gets the permalink for the given path.
 If the path starts with `@/`, it will be treated as an [internal link](@/documentation/content/linking.md#internal-links) to a Markdown file, 
 starting from the root `content` directory as well as validated.
 
-```jinja2
+```jinja
 {% set url = get_url(path="@/blog/_index.md") %}
 ```
 
@@ -246,21 +246,21 @@ It accepts an optional parameter `lang` in order to compute a *language-aware UR
 - return `"http://example.com/en/blog/"` if `config.default_language` is **not** `"en"` and `"en"` appears in `config.languages`
 - fail otherwise, with the error message `"'en' is not an authorized language (check config.languages)."`
 
-```jinja2
+```jinja
 {% set url = get_url(path="@/blog/_index.md", lang="en") %}
 ```
 
 This can also be used to get the permalink for a static file, for example if
 you want to link to the file that is located at `static/css/app.css`:
 
-```jinja2
+```jinja
 {{/* get_url(path="css/app.css") */}}
 ```
 
 By default, the link will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
 An example is:
 
-```jinja2
+```jinja
 {{/* get_url(path="css/app.css", trailing_slash=true) */}}
 ```
 
@@ -280,7 +280,7 @@ It can take the following arguments:
 
 Either `path` or `literal` must be given.
 
-```jinja2
+```jinja
 {{/* get_hash(literal="Hello World", sha_type=256) */}}
 {{/* get_hash(path="static/js/app.js", sha_type=256) */}}
 ```
@@ -289,7 +289,7 @@ The function can also output a base64-encoded hash value when its `base64`
 parameter is set to `true`. This can be used to implement [subresource
 integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity).
 
-```jinja2
+```jinja
 <script src="{{/* get_url(path="static/js/app.js") */}}"
   integrity="sha384-{{ get_hash(path="static/js/app.js", sha_type=384, base64=true) | safe }}"></script>
 ```
@@ -307,7 +307,7 @@ It can take the following arguments:
 
 The method returns a map containing `width`, `height`, `format`, and `mime`. The `format` returned is the most common file extension for the file format, which may not match the one used for the image.
 
-```jinja2
+```jinja
   {% set meta = get_image_metadata(path="...") %}
   Our image (.{{meta.format}}) has format is {{ meta.width }}x{{ meta.height }}
 ```
@@ -321,19 +321,19 @@ Any other file type will be loaded as plain text.
 
 The `path` argument specifies the path to a local data file, according to the [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic).
 
-```jinja2
+```jinja
 {% set data = load_data(path="content/blog/story/data.toml") %}
 ```
 
 Alternatively, the `url` argument specifies the location of a remote URL to load.
 
-```jinja2
+```jinja
 {% set data = load_data(url="https://en.wikipedia.org/wiki/Commune_of_Paris") %}
 ```
 
 Alternatively, the `literal` argument specifies an object literal. Note: if the `format` argument is not specified, then plain text will be what is assumed.
 
-```jinja2
+```jinja
 {% set data = load_data(literal='{"name": "bob"}', format="json") %}
 {{ data["name"] }}
 ```
@@ -344,7 +344,7 @@ The optional `required` boolean argument can be set to false so that missing dat
 
 The snippet below outputs the HTML from a Wikipedia page, or "No data found" if the page was not reachable, or did not return a successful HTTP code:
 
-```jinja2
+```jinja
 {% set data = load_data(url="https://en.wikipedia.org/wiki/Commune_of_Paris", required=false) %}
 {% if data %}{{ data | safe }}{% else %}No data found{% endif %}
 ```
@@ -354,7 +354,7 @@ Valid entries are `toml`, `json`, `csv`, `bibtex`, `yaml`, `xml` or `plain`. If 
 path extension is used. In the case of a literal, `plain` is assumed if `format` is unspecified.
 
 
-```jinja2
+```jinja
 {% set data = load_data(path="content/blog/story/data.txt", format="json") %}
 ```
 
@@ -366,7 +366,7 @@ into a data structure containing *headers* and *records*. See the example below 
 how this works.
 
 In the template:
-```jinja2
+```jinja
 {% set data = load_data(path="content/blog/story/data.csv") %}
 ```
 
@@ -436,7 +436,7 @@ The following is the json-equivalent format of the produced bibtex data structur
 ```
 
 Finally, the bibtex data can be accessed from the template as follows:
-```jinja2
+```jinja
 {% set tags = data.bibliographies[0].tags %}
 This was generated using {{ tags.title }}, authored by {{ tags.author }}.
 ```
@@ -446,7 +446,7 @@ This was generated using {{ tags.title }}, authored by {{ tags.author }}.
 Instead of using a file, you can load data from a remote URL. This can be done by specifying a `url` parameter
 to `load_data` rather than `path`.
 
-```jinja2
+```jinja
 {% set response = load_data(url="https://api.github.com/repos/getzola/zola") %}
 {{ response }}
 ```
@@ -455,7 +455,7 @@ By default, the response body will be returned with no parsing. This can be chan
 as below.
 
 
-```jinja2
+```jinja
 {% set response = load_data(url="https://api.github.com/repos/getzola/zola", format="json") %}
 {{ response }}
 ```
@@ -469,7 +469,7 @@ The parameter `content_type` should be the mimetype of the body.
 
 This example will make a POST request to the kroki service to generate a SVG.
 
-```jinja2
+```jinja
 {% set postdata = load_data(url="https://kroki.io/blockdiag/svg", format="plain", method="POST" ,content_type="text/plain", body="blockdiag {
   'Doing POST' -> 'using load_data'
   'using load_data' -> 'can generate' -> 'block diagrams';
@@ -489,7 +489,7 @@ Please note that the headers will be appended to the default headers set by Zola
 
 This example will make a POST request to the GitHub markdown rendering service.
 
-```jinja2
+```jinja
 {% set postdata = load_data(url="https://api.github.com/markdown", format="plain", method="POST", content_type="application/json", headers=["accept=application/vnd.github.v3+json"], body='{"text":"headers support added in #1710, commit before it: b3918f124d13ec1bedad4860c15a060dd3751368","context":"getzola/zola","mode":"gfm"}')%}
 {{postdata|safe}}
 ```
@@ -499,7 +499,7 @@ If you want to try this example on your own machine, you need to provide a GitHu
 you can acquire the access token at this link: https://github.com/settings/tokens and then set `GITHUB_TOKEN`
 environment variable to the access token you have obtained.
 
-```jinja2
+```jinja
 {% set token = get_env(name="GITHUB_TOKEN") %}
 {% set postdata = load_data(url="https://api.github.com/graphql", format="json", method="POST" ,content_type="application/json", headers=["accept=application/vnd.github.v4.idl", "authorization=Bearer " ~ token], body='{"query":"query { viewer { login }}"}')%}
 {{postdata|safe}}
@@ -530,7 +530,7 @@ different formats.
 ### `trans`
 Gets the translation of the given `key`, for the `default_language`, the `lang`uage given or the active language:
 
-```jinja2
+```jinja
 {{/* trans(key="title") */}}
 {{/* trans(key="title", lang="fr") */}}
 {{/* trans(key="title", lang=lang) */}}

@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
-use libs::unicode_segmentation::UnicodeSegmentation;
-use libs::walkdir::WalkDir;
+use unicode_segmentation::UnicodeSegmentation;
+use walkdir::WalkDir;
 
 use config::Config;
 use utils::fs::is_temp_file;
@@ -67,13 +67,13 @@ pub fn get_reading_analytics(content: &str) -> (usize, usize) {
 
     // https://help.medium.com/hc/en-us/articles/214991667-Read-time
     // 275 seems a bit too high though
-    (word_count, ((word_count + 199) / 200))
+    (word_count, word_count.div_ceil(200))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::{create_dir, File};
+    use std::fs::{File, create_dir};
 
     use config::Config;
     use tempfile::tempdir;

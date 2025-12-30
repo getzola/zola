@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 
 use config::Config;
-use libs::tera::{Context, Tera};
+use tera::{Context, Tera};
 use utils::templates::ShortcodeDefinition;
 use utils::types::InsertAnchor;
 

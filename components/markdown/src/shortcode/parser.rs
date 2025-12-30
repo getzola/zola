@@ -1,10 +1,10 @@
 use std::{collections::HashMap, ops::Range};
 
-use errors::{bail, Context as ErrorContext, Result};
-use libs::tera::{to_value, Context, Map, Tera, Value};
-use pest::iterators::Pair;
+use errors::{Context as ErrorContext, Result, bail};
 use pest::Parser;
+use pest::iterators::Pair;
 use pest_derive::Parser;
+use tera::{Context, Map, Tera, Value, to_value};
 use utils::templates::{ShortcodeDefinition, ShortcodeFileType, ShortcodeInvocationCounter};
 
 pub const SHORTCODE_PLACEHOLDER: &str = "@@ZOLA_SC_PLACEHOLDER@@";
@@ -33,7 +33,11 @@ impl Shortcode {
         if let Some(def) = definitions.get(&self.name) {
             self.tera_name = def.tera_name.clone();
         } else {
-            return Err(errors::anyhow!("Found usage of a shortcode named `{}` but we do not know about. Make sure it's not a typo and that a field name `{}.{{html,md}}` exists in the `templates/shortcodes` directory.", self.name, self.name));
+            return Err(errors::anyhow!(
+                "Found usage of a shortcode named `{}` but we do not know about. Make sure it's not a typo and that a field name `{}.{{html,md}}` exists in the `templates/shortcodes` directory.",
+                self.name,
+                self.name
+            ));
         }
         for inner_sc in self.inner.iter_mut() {
             inner_sc.fill_tera_name(definitions)?;
@@ -102,11 +106,7 @@ impl Shortcode {
         }
 
         let rendered_end = sc_span.start + rendered_length;
-        let delta = if sc_span.end < rendered_end {
-            rendered_end - sc_span.end
-        } else {
-            sc_span.end - rendered_end
-        };
+        let delta = rendered_end.abs_diff(sc_span.end);
 
         if sc_span.end < rendered_end {
             self.span = (self.span.start + delta)..(self.span.end + delta);

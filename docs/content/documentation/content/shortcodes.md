@@ -23,7 +23,7 @@ Let's write a shortcode to embed YouTube videos as an example.
 In a file called `youtube.html` in the `templates/shortcodes` directory, paste the
 following:
 
-```jinja2
+```jinja
 <div {% if class %}class="{{class}}"{% endif %}>
     <iframe
         src="https://www.youtube.com/embed/{{id}}{% if autoplay %}?autoplay=1{% endif %}"
@@ -46,7 +46,7 @@ If you want to disable this behaviour, wrap your shortcode in a `<div>`.
 A Markdown based shortcode in turn will be treated as if what it returned was part of the page's body. If we create
 `books.md` in `templates/shortcodes` for example:
 
-```jinja2
+```jinja
 {% set data = load_data(path=path) -%}
 {% for book in data.books %}
 ### {{ book.title }}
@@ -120,7 +120,7 @@ you will need to escape it by using `{{/*` and `*/}}` instead of `{{` and `}}`.
 ### Shortcodes with body
 Let's imagine that we have the following shortcode `quote.html` template:
 
-```jinja2
+```jinja
 <blockquote>
     {{ body }} <br>
     -- {{ author}}
@@ -145,7 +145,7 @@ Note that for both cases that the parentheses for shortcodes are necessary.
 A shortcode without the parentheses will render as plaintext and no warning will be emitted.
 
 As an example, this is how an `aside` shortcode-with-body with no arguments would be defined in `aside.html`:
-```jinja2
+```jinja
 <aside>
     {{ body }}
 </aside>
@@ -182,7 +182,7 @@ When one of these variables conflict with a variable passed as argument, the arg
 Every shortcode context is passed in a variable named `nth` that tracks how many times a particular shortcode has
 been invoked in the current Markdown file. Given a shortcode `true_statement.html` template:
 
-```jinja2
+```jinja
 <p id="number{{ nth }}">{{ value }} is equal to {{ nth }}.</p>
 ```
 
@@ -203,7 +203,7 @@ If you really need that, you can rewrite your Markdown content to pass `lang` as
 Every shortcode can access the current language in the `lang` variable in the context. 
 This is useful for presenting/filtering information in a shortcode depending in a per-language manner. For example, to display a per-language book cover for the current page in a shortcode called `bookcover.md`:
 
-```jinja2
+```jinja
 ![Book cover in {{ lang }}](cover.{{ lang }}.png)
 ```
 
@@ -221,7 +221,7 @@ A useful attribute to `page` in shortcodes is `colocated_path`.
 This is used when you want to pass the name of some assets to shortcodes without repeating the full folders path.
 Mostly useful when combined with `load_data` or `resize_image`.
 
-```jinja2
+```jinja
 {% set resized = resize_image(format="jpg", path=page.colocated_path ~ img_name, width=width, op="fit_width") %}
 <img alt="{{ alt }}" src="{{ resized.url | safe }}" />
 ```

@@ -1,10 +1,10 @@
 use std::env;
-use std::path::{PathBuf, MAIN_SEPARATOR as SLASH};
+use std::path::{MAIN_SEPARATOR as SLASH, PathBuf};
 
 use config::Config;
-use imageproc::{fix_orientation, get_rotated_size, ImageMetaResponse, Processor, ResizeOperation};
-use libs::image::{self, DynamicImage, GenericImageView, ImageDecoder, ImageReader, Pixel};
-use libs::once_cell::sync::Lazy;
+use image::{self, DynamicImage, GenericImageView, ImageDecoder, ImageReader, Pixel};
+use imageproc::{ImageMetaResponse, Processor, ResizeOperation, fix_orientation, get_rotated_size};
+use once_cell::sync::Lazy;
 
 /// Assert that `address` matches `prefix` + RESIZED_FILENAME regex + "." + `extension`,
 fn assert_processed_path_matches(path: &str, prefix: &str, extension: &str) {
@@ -21,9 +21,6 @@ title = "imageproc integration tests"
 base_url = "https://example.com"
 compile_sass = false
 build_search_index = false
-
-[markdown]
-highlight_code = false
 "#;
 
 static TEST_IMGS: Lazy<PathBuf> =
@@ -47,7 +44,7 @@ fn image_op_test(
     orig_height: u32,
 ) {
     let source_path = TEST_IMGS.join(source_img);
-    let tmpdir = tempfile::tempdir().unwrap().into_path();
+    let tmpdir = tempfile::tempdir().unwrap().keep();
     let config = Config::parse(CONFIG).unwrap();
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args(op, width, height).unwrap();
@@ -64,7 +61,7 @@ fn image_op_test(
     proc.do_process().unwrap();
 
     let processed_path = PathBuf::from(&resp.static_path);
-    let processed_size = imageproc::read_image_metadata(&tmpdir.join(processed_path))
+    let processed_size = imageproc::read_image_metadata(tmpdir.join(processed_path))
         .map(|meta| (meta.width, meta.height))
         .unwrap();
     assert_eq!(processed_size, (expect_width, expect_height));
@@ -417,23 +414,24 @@ fn resize_image_png_avif_min_quality_max_speed() {
     );
 }
 
-#[test]
-fn resize_image_png_avif_max_quality_min_speed() {
-    image_op_test(
-        "png.png",
-        "scale",
-        Some(150),
-        Some(150),
-        "avif",
-        Some(100),
-        Some(1),
-        "avif",
-        150,
-        150,
-        300,
-        380,
-    );
-}
+// Too slow to run in practice, 25s on a beefy hardware
+// #[test]
+// fn resize_image_png_avif_max_quality_min_speed() {
+//     image_op_test(
+//         "png.png",
+//         "scale",
+//         Some(150),
+//         Some(150),
+//         "avif",
+//         Some(100),
+//         Some(1),
+//         "avif",
+//         150,
+//         150,
+//         300,
+//         380,
+//     );
+// }
 
 #[test]
 fn resize_image_png_avif_max_quality_max_speed() {
@@ -519,7 +517,7 @@ fn get_rotated_size_test() {
         let path = TEST_IMGS.join(img_name);
         let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
         let (mut w, mut h) = decoder.dimensions();
-        w = w + 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
+        w += 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
         let metadata = decoder.exif_metadata().unwrap();
         (w, h) = get_rotated_size(w, h, metadata).unwrap_or((w, h));
         w > h
@@ -582,7 +580,7 @@ fn resize_image_applies_exif_rotation() {
 
 fn resize_and_check(source_img: &str) -> bool {
     let source_path = TEST_IMGS.join(source_img);
-    let tmpdir = tempfile::tempdir().unwrap().into_path();
+    let tmpdir = tempfile::tempdir().unwrap().keep();
     let config = Config::parse(CONFIG).unwrap();
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args("scale", Some(16), Some(16)).unwrap();
@@ -591,7 +589,7 @@ fn resize_and_check(source_img: &str) -> bool {
 
     proc.do_process().unwrap();
     let processed_path = PathBuf::from(&resp.static_path);
-    let img = image::open(&tmpdir.join(processed_path)).unwrap();
+    let img = image::open(tmpdir.join(processed_path)).unwrap();
     check_img(img)
 }
 
@@ -744,4 +742,81 @@ fn asymmetric_resize_with_exif_orientations() {
         16,
         16,
     );
+}
+
+fn check_icc_data_preserved(source_img: &str, target_format: &str) {
+    let source_path = TEST_IMGS.join(source_img);
+    let mut source_reader = ImageReader::open(&source_path)
+        .and_then(ImageReader::with_guessed_format)
+        .unwrap()
+        .into_decoder()
+        .unwrap();
+    let original_profile = source_reader.icc_profile().ok().flatten();
+    let (original_width, original_height) = source_reader.dimensions();
+
+    let tmpdir = tempfile::tempdir().unwrap().keep();
+    let config = Config::parse(CONFIG).unwrap();
+    let mut proc = Processor::new(tmpdir.clone(), &config);
+    let resize_op = ResizeOperation::Scale(original_width, original_height);
+
+    let resp =
+        proc.enqueue(resize_op, source_img.into(), source_path, target_format, None, None).unwrap();
+    proc.do_process().unwrap();
+
+    let processed_path = PathBuf::from(&resp.static_path);
+    let mut reader = ImageReader::open(&tmpdir.join(&processed_path))
+        .and_then(ImageReader::with_guessed_format)
+        .unwrap()
+        .into_decoder()
+        .unwrap();
+    let new_profile = reader.icc_profile().ok().flatten();
+
+    println!("{source_img} has profile: {}", original_profile.is_some());
+    assert_eq!(
+        original_profile,
+        new_profile,
+        "image processing preserved ICC data from {} to {}",
+        source_img,
+        processed_path.display()
+    )
+}
+
+#[test]
+fn preserve_color_profile() {
+    // TODO:
+    // - Missing a test for preserving color profiles when loading AVIF,
+    //   which we would theoretically support if we could load AVIF.
+    // - Missing a test for preserving color profiles when saving AVIF,
+    //   which is a feature missing from upstream `image`.
+
+    // these all don’t have ICC data
+    check_icc_data_preserved("exif_0.jpg", "jpg");
+    check_icc_data_preserved("exif_0.jpg", "png");
+    check_icc_data_preserved("exif_0.jpg", "webp");
+    check_icc_data_preserved("exif_1.jpg", "jpg");
+    check_icc_data_preserved("exif_1.jpg", "png");
+    check_icc_data_preserved("exif_1.jpg", "webp");
+    check_icc_data_preserved("exif_2.jpg", "jpg");
+    check_icc_data_preserved("exif_2.jpg", "png");
+    check_icc_data_preserved("exif_2.jpg", "webp");
+    check_icc_data_preserved("jpg.jpg", "jpg");
+    check_icc_data_preserved("jpg.jpg", "png");
+    check_icc_data_preserved("jpg.jpg", "webp");
+    check_icc_data_preserved("png.png", "jpg");
+    check_icc_data_preserved("png.png", "png");
+    check_icc_data_preserved("png.png", "webp");
+    check_icc_data_preserved("webp.webp", "jpg");
+    check_icc_data_preserved("webp.webp", "png");
+    check_icc_data_preserved("webp.webp", "webp");
+
+    // these have ICC data
+    check_icc_data_preserved("linear_rec2020.jpg", "jpg");
+    check_icc_data_preserved("linear_rec2020.jpg", "png");
+    check_icc_data_preserved("linear_rec2020.jpg", "webp");
+    check_icc_data_preserved("rec709.jpg", "jpg");
+    check_icc_data_preserved("rec709.jpg", "png");
+    check_icc_data_preserved("rec709.jpg", "webp");
+    check_icc_data_preserved("display_p3.png", "jpg");
+    check_icc_data_preserved("display_p3.png", "png");
+    check_icc_data_preserved("display_p3.png", "webp");
 }

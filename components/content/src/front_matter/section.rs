@@ -1,12 +1,12 @@
-use libs::tera::{Map, Value};
 use serde::{Deserialize, Serialize};
+use tera::{Map, Value};
 
 use errors::Result;
 use utils::de::fix_toml_dates;
 use utils::types::InsertAnchor;
 
-use crate::front_matter::split::RawFrontMatter;
 use crate::SortBy;
+use crate::front_matter::split::RawFrontMatter;
 
 const DEFAULT_PAGINATE_PATH: &str = "page";
 

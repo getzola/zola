@@ -1,10 +1,10 @@
 use content::{Library, Taxonomy, TaxonomyTerm};
-use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
-use utils::slugs::{slugify_paths, SlugifyStrategy};
+use tera::{Function as TeraFn, Result, Value, from_value, to_value};
+use utils::slugs::{SlugifyStrategy, slugify_paths};
 
 #[derive(Debug)]
 pub struct GetTaxonomyUrl {
@@ -72,7 +72,7 @@ impl TeraFn for GetTaxonomyUrl {
     }
 }
 
-fn add_lang_to_path<'a>(path: &str, lang: &str) -> Result<Cow<'a, String>> {
+fn add_lang_to_path<'a>(path: &str, lang: &str) -> Result<Cow<'a, str>> {
     match path.rfind('.') {
         Some(period_offset) => {
             let prefix = path.get(0..period_offset);
@@ -88,15 +88,15 @@ fn add_lang_to_path<'a>(path: &str, lang: &str) -> Result<Cow<'a, String>> {
 }
 
 fn get_path_with_lang<'a>(
-    path: &'a String,
-    lang: &Option<String>,
+    path: &'a str,
+    lang: Option<&str>,
     default_lang: &str,
     supported_languages: &[String],
-) -> Result<Cow<'a, String>> {
+) -> Result<Cow<'a, str>> {
     if supported_languages.contains(&default_lang.to_string()) {
         lang.as_ref().map_or_else(
             || Ok(Cow::Borrowed(path)),
-            |lang_code| match default_lang == lang_code {
+            |&lang_code| match default_lang == lang_code {
                 true => Ok(Cow::Borrowed(path)),
                 false => add_lang_to_path(path, lang_code),
             },
@@ -139,8 +139,8 @@ impl TeraFn for GetPage {
         let lang =
             optional_arg!(String, args.get("lang"), "`get_section`: `lang` must be a string");
 
-        get_path_with_lang(&path, &lang, &self.default_lang, &self.supported_languages).and_then(
-            |path_with_lang| {
+        get_path_with_lang(&path, lang.as_deref(), &self.default_lang, &self.supported_languages)
+            .and_then(|path_with_lang| {
                 let full_path = self.base_path.join(path_with_lang.as_ref());
                 let library = self.library.read().unwrap();
 
@@ -154,8 +154,7 @@ impl TeraFn for GetPage {
                         None => Err(format!("Page `{}` not found.", path).into()),
                     },
                 }
-            },
-        )
+            })
     }
 }
 
@@ -191,34 +190,38 @@ impl TeraFn for GetSection {
 
         let metadata_only = args
             .get("metadata_only")
-            .map_or(false, |c| from_value::<bool>(c.clone()).unwrap_or(false));
+            .is_some_and(|c| from_value::<bool>(c.clone()).unwrap_or(false));
 
         let lang =
             optional_arg!(String, args.get("lang"), "`get_section`: `lang` must be a string");
 
-        get_path_with_lang(&path, &lang, self.default_lang.as_str(), &self.supported_languages)
-            .and_then(|path_with_lang| {
-                let full_path = self.base_path.join(path_with_lang.as_ref());
-                let library = self.library.read().unwrap();
+        get_path_with_lang(
+            &path,
+            lang.as_deref(),
+            self.default_lang.as_str(),
+            &self.supported_languages,
+        )
+        .and_then(|path_with_lang| {
+            let full_path = self.base_path.join(path_with_lang.as_ref());
+            let library = self.library.read().unwrap();
 
-                match library.sections.get(&full_path) {
-                    Some(s) => {
-                        if metadata_only {
-                            Ok(to_value(s.serialize_basic(&library)).unwrap())
-                        } else {
-                            Ok(to_value(s.serialize(&library)).unwrap())
-                        }
+            match library.sections.get(&full_path) {
+                Some(s) => {
+                    if metadata_only {
+                        Ok(to_value(s.serialize_basic(&library)).unwrap())
+                    } else {
+                        Ok(to_value(s.serialize(&library)).unwrap())
                     }
-                    None => match lang {
-                        Some(lang_code) => Err(format!(
-                            "Section `{}` not found for language `{}`.",
-                            path, lang_code
-                        )
-                        .into()),
-                        None => Err(format!("Section `{}` not found.", path).into()),
-                    },
                 }
-            })
+                None => match lang {
+                    Some(lang_code) => {
+                        Err(format!("Section `{}` not found for language `{}`.", path, lang_code)
+                            .into())
+                    }
+                    None => Err(format!("Section `{}` not found.", path).into()),
+                },
+            }
+        })
     }
 }
 
@@ -544,8 +547,7 @@ mod tests {
             Value::String("programming".to_string())
         );
         assert_eq!(
-            res_obj["items"].clone().as_array().unwrap()[0].clone().as_object().unwrap()
-                ["permalink"],
+            res_obj["items"].clone().as_array().unwrap()[0].clone().as_object().unwrap()["permalink"],
             Value::String("http://a-website.com/tags/programming/".to_string())
         );
         assert_eq!(

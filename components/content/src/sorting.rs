@@ -2,8 +2,8 @@ use std::cmp::Ordering;
 use std::path::PathBuf;
 
 use crate::{Page, SortBy};
-use libs::lexical_sort::natural_lexical_cmp;
-use libs::rayon::prelude::*;
+use lexical_sort::natural_lexical_cmp;
+use rayon::prelude::*;
 
 /// Sort by the field picked by the function.
 /// The pages permalinks are used to break the ties
@@ -39,11 +39,7 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             SortBy::None => unreachable!(),
         };
 
-        if ord == Ordering::Equal {
-            a.permalink.cmp(&b.permalink)
-        } else {
-            ord
-        }
+        if ord == Ordering::Equal { a.permalink.cmp(&b.permalink) } else { ord }
     });
 
     (

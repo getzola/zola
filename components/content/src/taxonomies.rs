@@ -3,10 +3,10 @@ use std::path::PathBuf;
 
 use serde::Serialize;
 
+use ahash::AHashMap;
 use config::{Config, TaxonomyConfig};
 use errors::{Context as ErrorContext, Result};
-use libs::ahash::AHashMap;
-use libs::tera::{Context, Tera};
+use tera::{Context, Tera};
 use utils::slugs::slugify_paths;
 use utils::templates::{check_template_fallbacks, render_template};
 
@@ -67,9 +67,17 @@ impl TaxonomyTerm {
     ) -> Self {
         let item_slug = slugify_paths(name, config.slugify.taxonomies);
         let path = if lang != config.default_language {
-            format!("/{}/{}/{}/", lang, taxo_slug, item_slug)
+            if let Some(ref taxonomy_root) = config.taxonomy_root {
+                format!("/{}/{}/{}/{}/", lang, taxonomy_root, taxo_slug, item_slug)
+            } else {
+                format!("/{}/{}/{}/", lang, taxo_slug, item_slug)
+            }
         } else {
-            format!("/{}/{}/", taxo_slug, item_slug)
+            if let Some(ref taxonomy_root) = config.taxonomy_root {
+                format!("/{}/{}/{}/", taxonomy_root, taxo_slug, item_slug)
+            } else {
+                format!("/{}/{}/", taxo_slug, item_slug)
+            }
         };
         let permalink = config.make_permalink(&path);
 
@@ -166,9 +174,17 @@ impl Taxonomy {
             }
         });
         let path = if tax_found.lang != config.default_language {
-            format!("/{}/{}/", tax_found.lang, slug)
+            if let Some(ref taxonomy_root) = config.taxonomy_root {
+                format!("/{}/{}/{}/", tax_found.lang, taxonomy_root, slug)
+            } else {
+                format!("/{}/{}/", tax_found.lang, slug)
+            }
         } else {
-            format!("/{}/", slug)
+            if let Some(ref taxonomy_root) = config.taxonomy_root {
+                format!("/{}/{}/", taxonomy_root, slug)
+            } else {
+                format!("/{}/", slug)
+            }
         };
         let permalink = config.make_permalink(&path);
 
@@ -296,5 +312,42 @@ mod tests {
 
         let path = format!("{}{}", conf.base_url, "/tags/rust/");
         assert_eq!(ctx.get("current_url").and_then(|x| x.as_str()), Some(path.as_str()));
+    }
+
+    #[test]
+    fn taxonomy_path_with_taxonomy_root() {
+        let mut conf = Config::default_for_test();
+        conf.taxonomy_root = Some("blog".to_string());
+        let tax_conf = TaxonomyConfig::default();
+        let tax_found = TaxonomyFound::new("tags".into(), &conf.default_language, &tax_conf);
+        let tax = Taxonomy::new(tax_found, &conf);
+        let pages = &[];
+        let term = TaxonomyTerm::new("rust", &conf.default_language, "tags", pages, &conf);
+
+        // Verify taxonomy list path
+        assert_eq!(tax.path, "/blog/tags/");
+        assert_eq!(tax.permalink, format!("{}/blog/tags/", conf.base_url));
+
+        // Verify taxonomy term path
+        assert_eq!(term.path, "/blog/tags/rust/");
+        assert_eq!(term.permalink, format!("{}/blog/tags/rust/", conf.base_url));
+    }
+
+    #[test]
+    fn taxonomy_path_without_taxonomy_root() {
+        let conf = Config::default_for_test();
+        let tax_conf = TaxonomyConfig::default();
+        let tax_found = TaxonomyFound::new("tags".into(), &conf.default_language, &tax_conf);
+        let tax = Taxonomy::new(tax_found, &conf);
+        let pages = &[];
+        let term = TaxonomyTerm::new("rust", &conf.default_language, "tags", pages, &conf);
+
+        // Verify taxonomy list path
+        assert_eq!(tax.path, "/tags/");
+        assert_eq!(tax.permalink, format!("{}/tags/", conf.base_url));
+
+        // Verify taxonomy term path
+        assert_eq!(term.path, "/tags/rust/");
+        assert_eq!(term.permalink, format!("{}/tags/rust/", conf.base_url));
     }
 }

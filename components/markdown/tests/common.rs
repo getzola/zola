@@ -2,11 +2,11 @@
 
 use std::collections::HashMap;
 
-use libs::tera::Tera;
+use tera::Tera;
 
 use config::Config;
 use errors::Result;
-use markdown::{render_content, RenderContext, Rendered};
+use markdown::{RenderContext, Rendered, render_content};
 use templates::ZOLA_TERA;
 use utils::types::InsertAnchor;
 

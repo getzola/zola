@@ -6,8 +6,8 @@ use serde::Serialize;
 
 use config::Config;
 use content::{Library, Taxonomy};
-use libs::tera::{Map, Value};
 use std::cmp::Ordering;
+use tera::{Map, Value};
 
 /// The sitemap only needs links, potentially date and extra for pages in case of updates
 /// for examples so we trim down all entries to only that
@@ -44,7 +44,7 @@ impl<'a> SitemapEntry<'a> {
 
 impl<'a> PartialOrd for SitemapEntry<'a> {
     fn partial_cmp(&self, other: &SitemapEntry) -> Option<Ordering> {
-        Some(self.permalink.as_ref().cmp(other.permalink.as_ref()))
+        Some(self.cmp(other))
     }
 }
 
@@ -82,13 +82,13 @@ pub fn find_entries<'a>(
             entries.insert(entry);
         }
 
-        if let Some(paginate_by) = s.paginate_by() {
-            if !config.should_exclude_paginated_pages_in_sitemap() {
-                let number_pagers = (s.pages.len() as f64 / paginate_by as f64).ceil() as isize;
-                for i in 1..=number_pagers {
-                    let permalink = format!("{}{}/{}/", s.permalink, s.meta.paginate_path, i);
-                    entries.insert(SitemapEntry::new(Cow::Owned(permalink), &None));
-                }
+        if let Some(paginate_by) = s.paginate_by()
+            && !config.should_exclude_paginated_pages_in_sitemap()
+        {
+            let number_pagers = (s.pages.len() as f64 / paginate_by as f64).ceil() as isize;
+            for i in 1..=number_pagers {
+                let permalink = format!("{}{}/{}/", s.permalink, s.meta.paginate_path, i);
+                entries.insert(SitemapEntry::new(Cow::Owned(permalink), &None));
             }
         }
     }

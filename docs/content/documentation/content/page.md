@@ -17,9 +17,11 @@ If the file is given any name _other_ than `index.md` or `_index.md`, then it wi
 create a page with that name (without the `.md`). For example, naming a file in the root of your
 content directory `about.md` would create a page at `[base_url]/about`.
 
-Another exception to this rule is that a filename starting with a datetime (YYYY-mm-dd or [an RFC3339 datetime](https://www.ietf.org/rfc/rfc3339.txt)) followed by
-an underscore (`_`) or a dash (`-`) will use that date as the page date, unless already set
-in the front matter. The page name will be anything after `_`/`-`, so the file `2018-10-10-hello-world.md` will
+Another exception to this rule is that a filename starting with a datetime (YYYY-mm-dd or [an RFC3339 datetime](https://www.ietf.org/rfc/rfc3339.txt))
+will use that date as the page date, unless already set
+in the front matter. A datetime filename can optionally be followed by an underscore (`_`) or a dash (`-`), and slug.
+The page name will be either the datetime or anything after `_`/`-`,
+so the file `2018-10-10.md` will be available at `[base_url]/2018-10-10`, and `2018-10-10-hello-world.md` will
 be available at `[base_url]/hello-world`. Note that the full RFC3339 datetime contains colons, which is not a valid
 character in a filename on Windows.
 This behavior can be disabled by setting `slugify.paths_keep_dates` to `true` (the default is `false`). Note that a `_` separating the date would be slugified into a `-` with the default value for `slugify.paths` of `"on"`.

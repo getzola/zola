@@ -17,9 +17,9 @@ compile_sass = %COMPILE_SASS%
 build_search_index = %SEARCH%
 
 [markdown]
-# Whether to do syntax highlighting
-# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
-highlight_code = %HIGHLIGHT%
+
+[markdown.highlighting]
+theme = "catppuccin-mocha"
 
 [extra]
 # Put all your custom variables here
@@ -92,15 +92,13 @@ pub fn create_new_project(name: &str, force: bool) -> Result<()> {
 
     let base_url = ask_url("> What is the URL of your site?", "https://example.com")?;
     let compile_sass = ask_bool("> Do you want to enable Sass compilation?", true)?;
-    let highlight = ask_bool("> Do you want to enable syntax highlighting?", false)?;
     let search = ask_bool("> Do you want to build a search index of the content?", false)?;
 
     let config = CONFIG
         .trim_start()
         .replace("%BASE_URL%", &base_url)
         .replace("%COMPILE_SASS%", &format!("{compile_sass}"))
-        .replace("%SEARCH%", &format!("{search}"))
-        .replace("%HIGHLIGHT%", &format!("{highlight}"));
+        .replace("%SEARCH%", &format!("{search}"));
 
     populate(path, compile_sass, &config)?;
 
