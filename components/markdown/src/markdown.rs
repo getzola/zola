@@ -591,9 +591,10 @@ pub fn markdown_to_html(
                                     log::warn!("{warning}");
                                 }
                             }
-                            let highlighted = hl
-                                .registry
-                                .highlight(&code_block_content, &hl.highlight_options(&code.lang))?;
+                            let highlighted = hl.registry.highlight(
+                                &code_block_content,
+                                &hl.highlight_options(&code.lang),
+                            )?;
                             let renderer = HtmlRenderer {
                                 other_metadata: code.rest,
                                 css_class_prefix: if hl.uses_classes() {
