@@ -48,10 +48,17 @@ impl ImageOp {
             ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
         let mut decoder = reader.into_decoder()?;
         let color_profile = decoder.icc_profile().ok().flatten();
-        let raw_metadata = decoder.exif_metadata()?;
+        let metadata = decoder.exif_metadata()?.and_then(|raw_metadata| {
+            exif::Reader::new()
+                .read_raw(raw_metadata)
+                .inspect_err(|e| {
+                    eprintln!("Failed to parse exif for {}: {}", self.input_path.display(), e)
+                })
+                .ok()
+        });
         let img = DynamicImage::from_decoder(decoder)?;
 
-        let mut img = fix_orientation(&img, raw_metadata).unwrap_or(img);
+        let mut img = fix_orientation(&img, metadata.as_ref()).unwrap_or(img);
 
         let img = match self.instr.crop_instruction {
             Some((x, y, w, h)) => img.crop(x, y, w, h),

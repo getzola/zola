@@ -5,12 +5,13 @@ use std::path::Path;
 
 use crate::ResizeOperation;
 use crate::format::Format;
+use exif::Exif;
 use image::DynamicImage;
 
 /// Apply image rotation based on EXIF data
 /// Returns `None` if no transformation is needed
-pub fn fix_orientation(img: &DynamicImage, raw_metadata: Option<Vec<u8>>) -> Option<DynamicImage> {
-    match get_orientation(raw_metadata)? {
+pub fn fix_orientation(img: &DynamicImage, metadata: Option<&Exif>) -> Option<DynamicImage> {
+    match get_orientation(metadata)? {
         // Values are taken from the page 30 of
         // https://www.cipa.jp/std/documents/e/DC-008-2012_E.pdf
         // For more details check http://sylvana.net/jpegcrop/exif_orientation.html
@@ -28,22 +29,17 @@ pub fn fix_orientation(img: &DynamicImage, raw_metadata: Option<Vec<u8>>) -> Opt
 
 /// Adjusts the width and height of an image based on EXIF rotation data.
 /// Returns `None` if no transformation is needed.
-pub fn get_rotated_size(w: u32, h: u32, raw_metadata: Option<Vec<u8>>) -> Option<(u32, u32)> {
+pub fn get_rotated_size(w: u32, h: u32, metadata: Option<&Exif>) -> Option<(u32, u32)> {
     // See fix_orientation for the meaning of these values.
-    match get_orientation(raw_metadata)? {
+    match get_orientation(metadata)? {
         5..=8 => Some((h, w)),
         _ => None,
     }
 }
 
-fn get_orientation(raw_metadata: Option<Vec<u8>>) -> Option<u32> {
-    match raw_metadata {
-        Some(metadata) => {
-            let exif = exif::Reader::new().read_raw(metadata).ok()?;
-            Some(exif.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?.value.get_uint(0)?)
-        }
-        None => None,
-    }
+fn get_orientation(metadata: Option<&Exif>) -> Option<u32> {
+    let metadata = metadata?;
+    Some(metadata.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?.value.get_uint(0)?)
 }
 
 /// We only use the input_path to get the file stem.
