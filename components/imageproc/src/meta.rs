@@ -10,6 +10,7 @@ use std::path::Path;
 use svg_metadata::Metadata as SvgMetadata;
 
 use crate::get_rotated_size;
+use crate::helpers::{get_created_datetime, get_description};
 
 /// Size and format read cheaply with `image`'s `Reader`.
 #[derive(Debug)]
@@ -17,6 +18,8 @@ pub struct ImageMeta {
     /// (w, h)
     pub size: (u32, u32),
     pub format: Option<ImageFormat>,
+    pub description: Option<String>,
+    pub created: Option<String>,
 }
 
 impl ImageMeta {
@@ -37,7 +40,10 @@ impl ImageMeta {
             size = (w, h);
         }
 
-        Ok(Self { size, format })
+        let description = get_description(metadata);
+        let created = get_created_datetime(metadata);
+
+        Ok(Self { size, format, description, created })
     }
 
     pub fn is_lossy(&self) -> bool {
@@ -55,6 +61,8 @@ pub struct ImageMetaResponse {
     pub height: u32,
     pub format: Option<&'static str>,
     pub mime: Option<&'static str>,
+    pub description: Option<String>,
+    pub created: Option<String>,
 }
 
 impl ImageMetaResponse {
@@ -70,6 +78,9 @@ impl ImageMetaResponse {
             height: h as u32,
             format: Some("svg"),
             mime: Some("text/svg+xml"),
+            // SVG files have these fields, but we'd need a more comprehensive parser to read them.
+            description: None,
+            created: None,
         })
     }
 
@@ -81,6 +92,9 @@ impl ImageMetaResponse {
             height: meta.max_frame_height.get(),
             format: Some("avif"),
             mime: Some("image/avif"),
+            // AVIF files have exif metadata to read these fields from, but we'd  need to enable image's avif-native feature to support decoding it.
+            description: None,
+            created: None,
         })
     }
 }
@@ -92,6 +106,8 @@ impl From<ImageMeta> for ImageMetaResponse {
             height: im.size.1,
             format: im.format.and_then(|f| f.extensions_str().first()).copied(),
             mime: im.format.map(|f| f.to_mime_type()),
+            description: im.description,
+            created: im.created,
         }
     }
 }
