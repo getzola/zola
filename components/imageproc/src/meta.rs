@@ -25,9 +25,15 @@ impl ImageMeta {
         let format = reader.format();
         let mut decoder = reader.into_decoder()?;
         let mut size = decoder.dimensions();
-        let raw_metadata = decoder.exif_metadata()?;
+        let metadata = decoder.exif_metadata()?.and_then(|raw_metadata| {
+            exif::Reader::new()
+                .read_raw(raw_metadata)
+                .inspect_err(|e| eprintln!("Failed to parse exif for {}: {}", path.display(), e))
+                .ok()
+        });
+        let metadata = metadata.as_ref();
 
-        if let Some((w, h)) = get_rotated_size(size.0, size.1, raw_metadata) {
+        if let Some((w, h)) = get_rotated_size(size.0, size.1, metadata) {
             size = (w, h);
         }
 
