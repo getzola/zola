@@ -305,7 +305,7 @@ It can take the following arguments:
 - `path`: mandatory, see [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic) for details
 - `allow_missing`: optional, `true` or `false`, defaults to `false`. Whether a missing file should raise an error or not.
 
-The method returns a map containing `width`, `height`, `format`, and `mime`. The `format` returned is the most common file extension for the file format, which may not match the one used for the image.
+The method returns a map containing `width`, `height`, `format`, `mime`, `description`, and `created`. The `format` returned is the most common file extension for the file format, which may not match the one used for the image. `created` is the date the image was created; for a picture it will be the date the picture was taken.
 
 ```jinja
   {% set meta = get_image_metadata(path="...") %}
