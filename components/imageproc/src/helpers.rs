@@ -42,6 +42,33 @@ fn get_orientation(metadata: Option<&Exif>) -> Option<u32> {
     Some(metadata.get_field(exif::Tag::Orientation, exif::In::PRIMARY)?.value.get_uint(0)?)
 }
 
+fn get_string_field(metadata: Option<&Exif>, tag: exif::Tag, ifd_num: exif::In) -> Option<String> {
+    let metadata = metadata?;
+    let field = metadata.get_field(tag, ifd_num)?;
+    let val = &field.value;
+    let exif::Value::Ascii(bytes) = val else {
+        eprintln!("Found an unexpected field value for {:?}: {:?}", tag, val);
+        return None;
+    };
+
+    if bytes.len() == 0 {
+        eprintln!("String value for {:?} has empty Ascii vec.", tag);
+        return None;
+    }
+
+    let mut s = String::new();
+    s.push_str(&String::from_utf8_lossy(&*bytes[0]));
+    Some(s)
+}
+
+pub fn get_description(metadata: Option<&Exif>) -> Option<String> {
+    get_string_field(metadata, exif::Tag::ImageDescription, exif::In::PRIMARY)
+}
+
+pub fn get_created_datetime(metadata: Option<&Exif>) -> Option<String> {
+    get_string_field(metadata, exif::Tag::DateTimeOriginal, exif::In::PRIMARY)
+}
+
 /// We only use the input_path to get the file stem.
 /// Hashing the resolved `input_path` would include the absolute path to the image
 /// with all filesystem components.

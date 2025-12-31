@@ -459,7 +459,9 @@ fn read_image_metadata_jpg() {
             width: 300,
             height: 380,
             format: Some("jpg"),
-            mime: Some("image/jpeg")
+            mime: Some("image/jpeg"),
+            description: Some("Description for jpg.jpg".to_string()),
+            created: Some("2025:01:15 12:34:56".to_string()),
         }
     );
 }
@@ -468,7 +470,14 @@ fn read_image_metadata_jpg() {
 fn read_image_metadata_png() {
     assert_eq!(
         image_meta_test("png.png"),
-        ImageMetaResponse { width: 300, height: 380, format: Some("png"), mime: Some("image/png") }
+        ImageMetaResponse {
+            width: 300,
+            height: 380,
+            format: Some("png"),
+            mime: Some("image/png"),
+            description: None,
+            created: None,
+        }
     );
 }
 
@@ -480,7 +489,9 @@ fn read_image_metadata_svg() {
             width: 300,
             height: 300,
             format: Some("svg"),
-            mime: Some("text/svg+xml")
+            mime: Some("text/svg+xml"),
+            description: None,
+            created: None,
         }
     );
 }
@@ -493,7 +504,9 @@ fn read_image_metadata_webp() {
             width: 300,
             height: 380,
             format: Some("webp"),
-            mime: Some("image/webp")
+            mime: Some("image/webp"),
+            description: None,
+            created: None,
         }
     );
 }
@@ -506,7 +519,9 @@ fn read_image_metadata_avif() {
             width: 300,
             height: 380,
             format: Some("avif"),
-            mime: Some("image/avif")
+            mime: Some("image/avif"),
+            description: None,
+            created: None,
         }
     );
 }
