@@ -5,6 +5,7 @@ use crate::markdown::cmark::CowStr;
 use errors::bail;
 use gh_emoji::Replacer as EmojiReplacer;
 use giallo::{HtmlRenderer, ParsedFence, parse_markdown_fence};
+use log;
 use once_cell::sync::Lazy;
 use pulldown_cmark as cmark;
 use pulldown_cmark_escape as cmark_escape;
@@ -181,7 +182,7 @@ fn fix_link(
                 match context.config.link_checker.internal_level {
                     config::LinkCheckerLevel::Error => bail!(msg),
                     config::LinkCheckerLevel::Warn => {
-                        console::warn(&msg);
+                        log::warn!("{msg}");
                         link.to_string()
                     }
                 }
