@@ -13,7 +13,7 @@ percent-encoding = { workspace = true }
 regex = { workspace = true }
 slug = { workspace = true }
 tera = { workspace = true }
-time = { workspace = true }
+time = { workspace = true, features = ["formatting"] }
 toml = { workspace = true }
 walkdir = { workspace = true }
 
@@ -21,4 +21,4 @@ errors = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
-time = { workspace = true, features = ["macros"] }
+time = { workspace = true, features = ["formatting", "macros"] }
