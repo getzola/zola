@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-12-19T19:22:37+02:00
+date = 2026-01-01T19:21:22+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-12-19T19:22:37+02:00
-updated = 2025-12-19T19:22:37+02:00
+created = 2026-01-01T19:21:22+02:00
+updated = 2026-01-01T19:21:22+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -109,7 +109,7 @@ If you use the `linkita` branch of the theme, check the
 [changelog/linkita.md](https://codeberg.org/salif/linkita/src/branch/linkita/changelog/linkita.md) file.  
 Otherwise, find the changelog file for your version in the `changelog` directory.
 
-If you switch to newer version, there may be breaking changes that require manual involvement.
+If you switch to a newer version, there may be breaking changes that require manual involvement.
 
 ## Usage
 
@@ -145,9 +145,9 @@ extra:
 title = ""
 description = ""
 # The date of the post
-date = 2025-12-30
+date = 2026-12-30
 # The last updated date of the post
-updated = 2025-12-31
+updated = 2026-12-31
 
 [taxonomies]
 categories = []
@@ -216,7 +216,7 @@ Create a `content/blog/hello.md` file:
 ```md ,name=content/blog/hello.md
 +++
 title = "Title"
-date = 2025-12-30
+date = 2026-12-30
 +++
 
 Summary <!-- more -->
@@ -284,7 +284,7 @@ authors = ["author_username", "author2_username"]
 
 ### Inject support
 
-You can easily use inject to add new features to your side without modifying the theme itself.
+You can easily use inject to add new features to your site without modifying the theme itself.
 
 To use inject, you need to add some HTML files to the `templates/injects` directory.
 
@@ -434,7 +434,7 @@ disable_javascript = false
 # Default value: false
 use_cdn = false
 
-# Use relative urls.
+# Use relative URLs.
 # It doesn't apply for content yet.
 # Default value: false
 relative_urls = false
@@ -535,7 +535,7 @@ If your site is multilingual, you can choose one of the following options or com
 # Replace "your_username" with your username.
 [extra.profiles.your_username]
 
-# The URL of avatar.
+# The URL of the avatar.
 # e.g. "icons/github.svg"
 avatar_url = ""
 
@@ -597,7 +597,7 @@ See [the Open Graph protocol](https://ogp.me/).
 # Replace "your_username" with your username.
 [extra.profiles.your_username.open_graph]
 
-# The URL of social image.
+# The URL of the social image.
 image = ""
 
 # A description of what is in the social image.
@@ -795,7 +795,7 @@ loading = "lazy"
 
 This project is under the [MIT License](https://codeberg.org/salif/linkita/src/branch/linkita/LICENSE).
 
-Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [Github](https://github.com/salif/linkita).
+Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [GitHub](https://github.com/salif/linkita).
 The main branch is `linkita`.
 
 ### Localization
@@ -813,7 +813,7 @@ node ./static/i18n/sync.js
 See also the `static/i18n/menu.json` file and
 the [demo repository](https://codeberg.org/salif/linkita-demo).
 
-Live preview is available in following languages:
+Live preview is available in the following languages:
 
 [Arabic](https://salif.github.io/linkita/ar/),
 [Bulgarian](https://salif.github.io/linkita/bg/),
@@ -842,6 +842,6 @@ If your blog is using Linkita and is open source, feel free to create a pull req
 Linkita is one of several Zola themes I maintain.
 Other themes include:
 
-- [Tukan](https://codeberg.org/salif/tukan) – Fork of zola-blog-theme, inspired from Toucan theme.
+- [Tukan](https://codeberg.org/salif/tukan) – Fork of zola-blog-theme, inspired by the Toucan theme.
 
         
