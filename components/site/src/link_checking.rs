@@ -4,6 +4,7 @@ use std::{cmp, collections::HashMap, collections::HashSet, iter::FromIterator, t
 
 use config::LinkCheckerLevel;
 use globset::GlobSet;
+use log;
 use rayon::prelude::*;
 
 use crate::Site;
@@ -19,7 +20,7 @@ use utils::anchors::is_special_anchor;
 /// are encountered, the `internal_level` setting in config.toml will determine whether they are
 /// treated as warnings or errors.
 pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
-    println!("Checking all internal links with anchors.");
+    log::info!("Checking all internal links with anchors.");
     let library = site.library.write().expect("Get lock for check_internal_links_with_anchors");
 
     // Chain all internal links, from both sections and pages.
@@ -93,9 +94,9 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
 
     // Finally emit a summary, and return overall anchors-checking result.
     if messages.is_empty() {
-        println!("> Successfully checked {} internal link(s) with anchors.", anchors_total);
+        log::info!("> Successfully checked {} internal link(s) with anchors.", anchors_total);
     } else {
-        println!(
+        log::warn!(
             "> Checked {} internal link(s) with anchors: {} target(s) missing.",
             anchors_total,
             messages.len(),
@@ -186,7 +187,7 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
     )
     .len();
 
-    println!(
+    log::info!(
         "Checking {} external link(s). Skipping {} external link(s).{}",
         unique_links_count,
         skipped_link_count,
@@ -274,7 +275,7 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
                     .collect::<Vec<_>>()
             });
 
-            println!(
+            log::info!(
                 "> Checked {} external link(s): {} error(s) found.",
                 unique_links_count,
                 errors.len()

@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-atty = { workspace = true }
+anstream = { workspace = true }
+anstyle = { workspace = true }
 once_cell = { workspace = true }
-termcolor = { workspace = true }
 
 errors = { workspace = true }

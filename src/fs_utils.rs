@@ -3,6 +3,7 @@
 
 use ahash::HashMap;
 use globset::GlobSet;
+use log;
 use notify_debouncer_full::DebouncedEvent;
 use notify_debouncer_full::notify::event::*;
 use std::fs::read_dir;
@@ -82,10 +83,10 @@ pub fn filter_events(
 
         // We currently only handle notify events that report a single path per event.
         if event.event.paths.len() != 1 {
-            console::error(&format!(
+            log::error!(
                 "Skipping unsupported file system event with multiple paths: {:?}",
                 event.event.kind
-            ));
+            );
             continue;
         }
         let path = event.event.paths[0].clone();
