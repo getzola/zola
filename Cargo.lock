@@ -4694,6 +4694,7 @@ dependencies = [
  "once_cell",
  "path-slash",
  "rayon",
+ "regex",
  "relative-path",
  "search",
  "serde",
