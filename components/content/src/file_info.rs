@@ -71,7 +71,7 @@ impl FileInfo {
         // If we have a folder with an asset, don't consider it as a component
         // Splitting on `.` as we might have a language so it isn't *only* index but also index.fr
         // etc
-        if !components.is_empty() && name.split('.').collect::<Vec<_>>()[0] == "index" {
+        if !components.is_empty() && name.split('.').next() == Some("index") {
             colocated_path = Some({
                 let mut val = components.join("/");
                 val.push('/');
@@ -131,7 +131,7 @@ impl FileInfo {
             name,
             components,
             relative,
-            colocated_path: colocated_path,
+            colocated_path,
         }
     }
 
