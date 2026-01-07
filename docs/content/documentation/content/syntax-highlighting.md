@@ -29,18 +29,18 @@ In any cases, you will need to add the following CSS to your site CSS for things
 
 ```css
 .giallo-l {
-  display: block;
-  min-height: 1lh;
+    display: inline-block;
+    min-height: 1lh;
+    width: 100%;
 }
 .giallo-ln {
-  display: inline-block;
-  user-select: none;
-  white-space: pre;
-  margin-right: 0.4em;
-  padding: 0.4em;
-  min-width: 3ch;
-  text-align: right;
-  opacity: 0.8;
+    display: inline-block;
+    user-select: none;
+    margin-right: 0.4em;
+    padding: 0.4em;
+    min-width: 3ch;
+    text-align: right;
+    opacity: 0.8;
 }
 ```
 
