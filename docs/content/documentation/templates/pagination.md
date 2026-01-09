@@ -62,7 +62,7 @@ To exclude paginated pages in sitemap, set the
 
 Here is an example from a theme on how to use pagination on a page (`index.html` in this case):
 
-```jinja2
+```jinja
 <div class="posts">
     {% for page in paginator.pages %}
         <article class="post">

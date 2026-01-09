@@ -1,6 +1,12 @@
-use config::Config;
+use config::{Config, HighlightConfig, HighlightStyle, Highlighting, Registry};
 
 mod common;
+
+fn get_test_registry() -> Registry {
+    let mut registry = Registry::builtin().unwrap();
+    registry.link_grammars();
+    registry
+}
 
 #[test]
 fn can_render_simple_text_with_shortcodes() {
@@ -280,7 +286,14 @@ other code here;
 #[test]
 fn can_render_markdown_in_shortcodes() {
     let mut config = Config::default_for_test();
-    config.markdown.highlight_code = true;
+    config.markdown.highlighting = Some(Highlighting {
+        error_on_missing_language: false,
+        style: HighlightStyle::Inline,
+        theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+        extra_grammars: vec![],
+        extra_themes: vec![],
+        registry: get_test_registry(),
+    });
     let body = common::render_with_config(
         r#"
 {% render_md() %}

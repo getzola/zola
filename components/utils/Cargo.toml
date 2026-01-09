@@ -2,15 +2,23 @@
 name = "utils"
 version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
-edition = "2018"
+edition = "2024"
 include = ["src/**/*"]
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
+serde = { workspace = true }
+filetime = { workspace = true }
+globset = { workspace = true }
+percent-encoding = { workspace = true }
+regex = { workspace = true }
+slug = { workspace = true }
+tera = { workspace = true }
+time = { workspace = true, features = ["formatting"] }
+toml = { workspace = true }
+walkdir = { workspace = true }
 
-errors = { path = "../errors" }
-libs = { path = "../libs" }
+errors = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
-time = { version = "0.3", features = ["macros"] }
+time = { workspace = true, features = ["formatting", "macros"] }

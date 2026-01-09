@@ -1,6 +1,6 @@
-use libs::globset::{Glob, GlobSet, GlobSetBuilder};
+use globset::{Glob, GlobSet, GlobSetBuilder};
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 
 pub fn build_ignore_glob_set(ignore: &Vec<String>, name: &str) -> Result<GlobSet> {
     // Convert the file glob strings into a compiled glob set matcher. We want to do this once,

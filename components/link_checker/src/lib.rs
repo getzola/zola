@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::result;
 use std::sync::{Arc, RwLock};
 
-use libs::once_cell::sync::Lazy;
-use libs::reqwest::header::{HeaderMap, ACCEPT};
-use libs::reqwest::{blocking::Client, StatusCode};
+use once_cell::sync::Lazy;
+use reqwest::header::{ACCEPT, HeaderMap};
+use reqwest::{StatusCode, blocking::Client};
 
 use config::LinkChecker;
 use errors::anyhow;
@@ -15,15 +15,15 @@ pub type Result = result::Result<StatusCode, String>;
 
 pub fn is_valid(res: &Result) -> bool {
     match res {
-        Ok(ref code) => code.is_success() || *code == StatusCode::NOT_MODIFIED,
+        Ok(code) => code.is_success() || *code == StatusCode::NOT_MODIFIED,
         Err(_) => false,
     }
 }
 
 pub fn message(res: &Result) -> String {
     match res {
-        Ok(ref code) => format!("{}", code),
-        Err(ref error) => error.clone(),
+        Ok(code) => format!("{}", code),
+        Err(error) => error.clone(),
     }
 }
 
@@ -59,7 +59,7 @@ pub fn check_url(url: &str, config: &LinkChecker) -> Result {
         Ok(ref mut response) if check_anchor && has_anchor(url) => {
             let body = {
                 let mut buf: Vec<u8> = vec![];
-                response.copy_to(&mut buf).unwrap();
+                response.copy_to(&mut buf).map_err(|e| e.to_string())?;
                 match String::from_utf8(buf) {
                     Ok(s) => s,
                     Err(_) => return Err("The page didn't return valid UTF-8".to_string()),
@@ -121,9 +121,9 @@ fn check_page_for_anchor(url: &str, body: String) -> errors::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::{
-        check_page_for_anchor, check_url, has_anchor, is_valid, message, LinkChecker, LINKS,
+        LINKS, LinkChecker, check_page_for_anchor, check_url, has_anchor, is_valid, message,
     };
-    use libs::reqwest::StatusCode;
+    use reqwest::StatusCode;
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests
@@ -263,8 +263,10 @@ mod tests {
         let res = check_url("https://t6l5cn9lpm.lxizfnzckd", &LinkChecker::default());
         assert!(!is_valid(&res));
         assert!(res.is_err());
-        assert!(message(&res)
-            .starts_with("error sending request for url (https://t6l5cn9lpm.lxizfnzckd/)"));
+        assert!(
+            message(&res)
+                .starts_with("error sending request for url (https://t6l5cn9lpm.lxizfnzckd/)")
+        );
     }
 
     #[test]

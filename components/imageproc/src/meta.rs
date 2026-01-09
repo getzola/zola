@@ -1,13 +1,13 @@
-use errors::{anyhow, Context, Result};
-use libs::avif_parse::read_avif;
-use libs::image::{ImageDecoder, ImageReader};
-use libs::image::{ImageFormat, ImageResult};
-use libs::svg_metadata::Metadata as SvgMetadata;
+use avif_parse::read_avif;
+use errors::{Context, Result, anyhow};
+use image::{ImageDecoder, ImageReader};
+use image::{ImageFormat, ImageResult};
 use serde::Serialize;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
+use svg_metadata::Metadata as SvgMetadata;
 
 use crate::get_rotated_size;
 
@@ -94,10 +94,7 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
             let avif_data =
                 read_avif(&mut BufReader::new(File::open(path)?)).with_context(err_context)?;
             let meta = avif_data.primary_item_metadata()?;
-            return Ok(ImageMetaResponse::new_avif(
-                meta.max_frame_width.get(),
-                meta.max_frame_height.get(),
-            ));
+            Ok(ImageMetaResponse::new_avif(meta.max_frame_width.get(), meta.max_frame_height.get()))
         }
         _ => ImageMeta::read(path).map(ImageMetaResponse::from).with_context(err_context),
     }

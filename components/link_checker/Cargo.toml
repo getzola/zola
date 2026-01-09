@@ -1,13 +1,20 @@
 [package]
 name = "link_checker"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-config = { path = "../config" }
-errors = { path = "../errors" }
-utils = { path = "../utils" }
-libs = { path = "../libs" }
+once_cell = { workspace = true }
+reqwest = { workspace = true }
+
+config = { workspace = true }
+errors = { workspace = true }
+utils = { workspace = true }
 
 [dev-dependencies]
 mockito = "1.6"
+
+[features]
+default = ["rust-tls"]
+rust-tls = ["reqwest/rustls-tls"]
+native-tls = ["reqwest/default-tls"]

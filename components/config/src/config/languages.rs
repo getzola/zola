@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use errors::{bail, Result};
-use libs::unic_langid::LanguageIdentifier;
+use errors::{Result, bail};
 use serde::{Deserialize, Serialize};
+use unic_langid::LanguageIdentifier;
 
 use crate::config::search;
 use crate::config::taxonomies;
@@ -115,7 +115,10 @@ impl Default for LanguageOptions {
 /// We want to ensure the language codes are valid ones
 pub fn validate_code(code: &str) -> Result<()> {
     if LanguageIdentifier::from_bytes(code.as_bytes()).is_err() {
-        bail!("Language `{}` is not a valid Unicode Language Identifier (see http://unicode.org/reports/tr35/#Unicode_language_identifier)", code)
+        bail!(
+            "Language `{}` is not a valid Unicode Language Identifier (see http://unicode.org/reports/tr35/#Unicode_language_identifier)",
+            code
+        )
     }
 
     Ok(())

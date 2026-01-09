@@ -1,5 +1,5 @@
-use errors::{bail, Result};
-use libs::minify_html::{minify, Cfg};
+use errors::{Result, bail};
+use minify_html::{Cfg, minify};
 
 pub fn html(html: String) -> Result<String> {
     let mut cfg = Cfg::new();

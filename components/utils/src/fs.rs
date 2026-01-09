@@ -1,10 +1,10 @@
-use libs::filetime::{set_file_mtime, FileTime};
-use libs::globset::GlobSet;
-use libs::walkdir::WalkDir;
-use std::fs::{copy, create_dir_all, metadata, remove_dir_all, remove_file, File};
+use filetime::{FileTime, set_file_mtime};
+use globset::GlobSet;
+use std::fs::{File, copy, create_dir_all, metadata, remove_dir_all, remove_file};
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
+use walkdir::WalkDir;
 
 use errors::{Context, Result};
 
@@ -77,7 +77,7 @@ pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> 
 /// 2. Its modification timestamp is identical to that of the src file.
 /// 3. Its filesize is identical to that of the src file.
 pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
-    create_parent(&dest)?;
+    create_parent(dest)?;
 
     if hard_link {
         if dest.exists() {
@@ -120,10 +120,10 @@ pub fn copy_directory(
     {
         let relative_path = entry.path().strip_prefix(src).unwrap();
 
-        if let Some(gs) = ignore_globset {
-            if gs.is_match(relative_path) {
-                continue;
-            }
+        if let Some(gs) = ignore_globset
+            && gs.is_match(relative_path)
+        {
+            continue;
         }
 
         let target_path = dest.join(relative_path);
@@ -253,12 +253,12 @@ pub fn clean_site_output_folder(
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{metadata, read_to_string, File};
+    use std::fs::{File, metadata, read_to_string};
     use std::io::Write;
     use std::path::PathBuf;
     use std::str::FromStr;
 
-    use libs::filetime;
+    use filetime;
     use tempfile::tempdir_in;
 
     use super::copy_file;

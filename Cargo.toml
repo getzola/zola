@@ -1,9 +1,9 @@
 [package]
 name = "zola"
-version = "0.21.0"
+version = "0.22.0"
 authors = ["Vincent Prouillet <hello@vincentprouillet.com>"]
 edition = "2024"
-license = "MIT"
+license = "EUPL-1.2"
 readme = "README.md"
 description = "A fast static site generator with everything built-in"
 homepage = "https://www.getzola.org"
@@ -13,7 +13,10 @@ keywords = ["static", "site", "generator", "blog"]
 include = ["src/**/*", "LICENSE", "README.md"]
 
 [build-dependencies]
-winres = "0.1"
+clap = { version = "4", features = ["derive"] }
+clap_complete = "4"
+clap_mangen = "0.2.31"
+tauri-winres = "0.3"
 time = "0.3"
 
 [[bin]]
@@ -23,42 +26,113 @@ name = "zola"
 clap = { version = "4", features = ["derive"] }
 clap_complete = "4"
 # Below is for the serve cmd
-hyper = { version = "0.14.1", default-features = false, features = ["runtime", "server", "http2", "http1"] }
-tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time"] }
-time = { version = "0.3", features = ["formatting", "macros", "local-offset"] }
-notify-debouncer-full = "0.5"
-ws = "0.9"
+axum = { version = "0.8", default-features = false, features = ["http1", "tokio", "ws"] }
+tokio = { version = "1.0.1", default-features = false, features = ["rt", "fs", "time", "net", "sync"] }
+notify-debouncer-full = "0.6"
 ctrlc = "3"
 open = "5"
-pathdiff = "0.2"
 # For mimetype detection in serve mode
 mime_guess = "2.0"
 # For essence_str() function, see https://github.com/getzola/zola/issues/1845
 mime = "0.3.16"
+env_logger = { version ="0.11", default-features = false }
 
+site = { workspace = true }
+errors = { workspace = true }
+console = { workspace = true }
+utils = { workspace = true }
+# For feature forwarding
+link_checker = { workspace = true }
+search = { workspace = true }
+templates = { workspace = true }
+reqwest = { workspace = true }
 
-site = { path = "components/site" }
-errors = { path = "components/errors" }
-console = { path = "components/console" }
-utils = { path = "components/utils" }
-libs = { path = "components/libs" }
-
+# Direct workspace deps used by the binary
+ahash = { workspace = true }
+anstream = { workspace = true }
+anstyle = { workspace = true }
+globset = { workspace = true }
+log = { workspace = true }
+percent-encoding = { workspace = true }
+relative-path = { workspace = true }
+serde_json = { workspace = true }
+time = { workspace = true, features = ["formatting", "macros", "local-offset", "parsing"] }
+url = { workspace = true }
 
 [dev-dependencies]
 same-file = "1"
 
 [features]
 default = ["rust-tls"]
-rust-tls = ["libs/rust-tls"]
-native-tls = ["libs/native-tls"]
-indexing-zh = ["libs/indexing-zh"]
-indexing-ja = ["libs/indexing-ja"]
+rust-tls = ["reqwest/rustls-tls", "link_checker/rust-tls", "templates/rust-tls"]
+native-tls = ["reqwest/default-tls", "link_checker/native-tls", "templates/native-tls"]
+indexing-zh = ["search/indexing-zh"]
+indexing-ja = ["search/indexing-ja"]
 
 [workspace]
 members = ["components/*"]
 
 [workspace.package]
 version = "0.21.0"
+
+[workspace.dependencies]
+# External dependencies
+ahash = "0.8"
+ammonia = "4"
+anstream = "0.6"
+anstyle = "1"
+avif-parse = "1.3.2"
+base64 = "0.22"
+chrono = { version = "0.4.27", default-features = false, features = ["std", "clock"] }
+csv = "1"
+elasticlunr-rs = { version = "3.0.2", features = ["da", "no", "de", "du", "es", "fi", "fr", "hu", "it", "pt", "ro", "ru", "sv", "tr", "ko"] }
+filetime = "0.2"
+gh-emoji = "1"
+globset = "0.4"
+grass = { version = "0.13", default-features = false, features = ["random"] }
+image = { version = "0.25", default-features = true, features = ["avif"] }
+lexical-sort = "0.3"
+log = "0.4"
+minify-html = "0.18"
+nom-bibtex = "0.6"
+num-format = "0.4"
+once_cell = "1"
+percent-encoding = "2"
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html", "simd"] }
+pulldown-cmark-escape = { version = "0.11", default-features = false }
+roxmltree_to_serde = "0.6"
+rayon = "1"
+regex = "1"
+relative-path = "2"
+reqwest = { version = "0.12", default-features = false, features = ["blocking"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+sha2 = "0.10"
+slug = "0.1"
+svg_metadata = "0.6"
+tera = { version = "1.17", features = ["preserve_order", "date-locale"] }
+time = "0.3"
+toml = "0.9"
+unic-langid = "0.9"
+unicode-segmentation = "1.2"
+url = "2"
+walkdir = "2"
+webp = "0.3"
+giallo = {version = "0.2", features = ["dump"]}
+
+# Internal crates
+config = { path = "components/config" }
+console = { path = "components/console" }
+content = { path = "components/content" }
+errors = { path = "components/errors" }
+imageproc = { path = "components/imageproc" }
+link_checker = { path = "components/link_checker" }
+markdown = { path = "components/markdown" }
+search = { path = "components/search" }
+site = { path = "components/site" }
+templates = { path = "components/templates" }
+utils = { path = "components/utils" }
 
 [profile.release]
 lto = true

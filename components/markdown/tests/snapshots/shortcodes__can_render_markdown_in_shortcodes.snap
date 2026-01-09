@@ -1,9 +1,5 @@
 ---
-source: components/rendering/tests/shortcodes.rs
-assertion_line: 371
+source: components/markdown/tests/shortcodes.rs
 expression: body
-
 ---
-<div><pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>some code;
-</span></code></pre>
-</div>
+<div><pre class="giallo" style="color: #E1E4E8; background-color: #24292E;"><code data-lang="plain"><span class="giallo-l"><span>some code;</span></span></code></pre></div>

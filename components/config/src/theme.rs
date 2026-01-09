@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use libs::toml::Value as Toml;
 use serde::{Deserialize, Serialize};
+use toml::Value as Toml;
 
-use errors::{bail, Context, Result};
+use errors::{Context, Result, bail};
 use utils::fs::read_file;
 
 /// Holds the data from a `theme.toml` file.
@@ -19,17 +19,17 @@ pub struct Theme {
 impl Theme {
     /// Parses a TOML string to our Theme struct
     pub fn parse(content: &str) -> Result<Theme> {
-        let theme = match content.parse::<Toml>() {
+        let theme = match toml::from_str::<Toml>(content) {
             Ok(t) => t,
             Err(e) => bail!(e),
         };
 
         let mut extra = HashMap::new();
         if let Some(theme_table) = theme.as_table() {
-            if let Some(ex) = theme_table.get("extra") {
-                if ex.is_table() {
-                    extra = ex.clone().try_into().unwrap();
-                }
+            if let Some(ex) = theme_table.get("extra")
+                && ex.is_table()
+            {
+                extra = ex.clone().try_into().unwrap();
             }
         } else {
             bail!("Expected the `theme.toml` to be a TOML table")

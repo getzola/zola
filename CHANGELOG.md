@@ -1,5 +1,64 @@
 # Changelog
 
+## 0.22.0 (2026-01-09)
+
+### Breaking
+Syntect has been replaced with [Giallo](https://github.com/getzola/giallo) and all the highlighting options
+of the `markdown` section in the config file have been moved/changed in `[markdown.highlighting].
+
+The themes are different so you will need to find something you like from <https://textmate-grammars-themes.netlify.app/>.
+
+Migration:
+
+**Single theme:**
+```toml
+# Before
+[markdown]
+highlight_code = true
+highlight_theme = "base16-ocean-dark"
+
+# Now
+[markdown.highlighting]
+theme = "gruvbox-dark"
+```
+
+**Class output:**
+```toml
+# Before
+[markdown]
+highlight_code = true
+highlight_theme = "css"
+highlight_themes_css = [
+  { theme = "base16-ocean-dark", filename = "syntax-theme-dark.css" },
+  { theme = "base16-ocean-light", filename = "syntax-theme-light.css" },
+]
+
+# Now
+[markdown.highlighting]
+theme = "gruvbox-dark"
+style = "class"
+```
+
+For more information on how to handle light/dark themes as well as details about CSS generation and required CSS, 
+see the [documentation](https://www.getzola.org/documentation/content/syntax-highlighting/).
+
+Some grammar names have changed as well, I recommend to set up the following:
+
+```toml
+[markdown.highlighting]
+error_on_missing_language = true
+```
+
+### Other
+
+- Try to preserve ICC color profile when processing images
+- Fix link checking timeout
+- Generate man pages at build time
+- `zola serve` websockets now listen to the same port as HTTP
+- Add proper logging; log output can be controlled with `RUST_LOG` environment variable
+- Remove `ZOLA_PERF_LOG` environment variable; set `RUST_LOG=site=debug,zola=info` instead
+- Licence changed to EUPL 1.2
+
 ## 0.21.0 (2025-07-14)
 
 - Allow `github_alerts` at config.toml level

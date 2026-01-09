@@ -1,5 +1,5 @@
-name: zola
-version: 0.21.0
+name: zola 
+version: 0.22.0
 title: Zola
 summary: A fast static site generator in a single binary with everything built-in.
 description: |
@@ -15,7 +15,7 @@ parts:
     plugin: rust
     rust-channel: stable
     source: https://github.com/getzola/zola.git
-    source-tag: v0.21.0
+    source-tag: v0.22.0
     build-packages:
       - build-essential
       - cmake

@@ -1,8 +1,9 @@
 //! Utilities to simplify working with events raised by the `notify*` family of file system
 //! event-watching libraries.
 
-use libs::ahash::HashMap;
-use libs::globset::GlobSet;
+use ahash::HashMap;
+use globset::GlobSet;
+use log;
 use notify_debouncer_full::DebouncedEvent;
 use notify_debouncer_full::notify::event::*;
 use std::fs::read_dir;
@@ -82,10 +83,10 @@ pub fn filter_events(
 
         // We currently only handle notify events that report a single path per event.
         if event.event.paths.len() != 1 {
-            console::error(&format!(
+            log::error!(
                 "Skipping unsupported file system event with multiple paths: {:?}",
                 event.event.kind
-            ));
+            );
             continue;
         }
         let path = event.event.paths[0].clone();
@@ -183,7 +184,7 @@ mod tests {
     // event mapping and filtering don't cause us to accidentally ignore things we care about.
     #[test]
     fn test_get_relative_event_kind() {
-        let cases = vec![
+        let cases = [
             (EventKind::Create(CreateKind::File), Some(SimpleFileSystemEventKind::Create)),
             (EventKind::Create(CreateKind::Folder), Some(SimpleFileSystemEventKind::Create)),
             (EventKind::Modify(ModifyKind::Any), Some(SimpleFileSystemEventKind::Modify)),
@@ -223,7 +224,7 @@ mod tests {
             (EventKind::Remove(RemoveKind::Folder), Some(SimpleFileSystemEventKind::Remove)),
         ];
         for (case, expected) in cases.iter() {
-            let ek = get_relevant_event_kind(&case);
+            let ek = get_relevant_event_kind(case);
             assert_eq!(ek, *expected, "case: {case:?}");
         }
     }

@@ -1,12 +1,17 @@
 [package]
 name = "config"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 include = ["src/**/*"]
 
 [dependencies]
-serde = {version = "1.0", features = ["derive"] }
+serde = { workspace = true }
+globset = { workspace = true }
+log = { workspace = true }
+once_cell = { workspace = true }
+toml = { workspace = true }
+unic-langid = { workspace = true }
+giallo = { workspace = true }
 
-errors = { path = "../errors" }
-utils = { path = "../utils" }
-libs = { path = "../libs" }
+errors = { workspace = true }
+utils = { workspace = true }

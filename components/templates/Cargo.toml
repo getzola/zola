@@ -1,18 +1,37 @@
 [package]
 name = "templates"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
-errors = { path = "../errors" }
-utils = { path = "../utils" }
-content = { path = "../content" }
-config = { path = "../config" }
-imageproc = { path = "../imageproc" }
-markdown = { path = "../markdown" }
-libs = { path = "../libs" }
+base64 = { workspace = true }
+chrono = { workspace = true }
+csv = { workspace = true }
+nom-bibtex = { workspace = true }
+num-format = { workspace = true }
+once_cell = { workspace = true }
+roxmltree_to_serde = { workspace = true }
+regex = { workspace = true }
+reqwest = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+sha2 = { workspace = true }
+tera = { workspace = true }
+toml = { workspace = true }
+url = { workspace = true }
 
+errors = { workspace = true }
+utils = { workspace = true }
+content = { workspace = true }
+config = { workspace = true }
+imageproc = { workspace = true }
+markdown = { workspace = true }
 
 [dev-dependencies]
 mockito = "1.6"
 tempfile = "3"
+
+[features]
+default = ["rust-tls"]
+rust-tls = ["reqwest/rustls-tls"]
+native-tls = ["reqwest/default-tls"]

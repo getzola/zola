@@ -3,9 +3,9 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::path::Path;
 
-use crate::format::Format;
 use crate::ResizeOperation;
-use libs::image::DynamicImage;
+use crate::format::Format;
+use image::DynamicImage;
 
 /// Apply image rotation based on EXIF data
 /// Returns `None` if no transformation is needed
@@ -31,7 +31,7 @@ pub fn fix_orientation(img: &DynamicImage, raw_metadata: Option<Vec<u8>>) -> Opt
 pub fn get_rotated_size(w: u32, h: u32, raw_metadata: Option<Vec<u8>>) -> Option<(u32, u32)> {
     // See fix_orientation for the meaning of these values.
     match get_orientation(raw_metadata)? {
-        5 | 6 | 7 | 8 => Some((h, w)),
+        5..=8 => Some((h, w)),
         _ => None,
     }
 }

@@ -1,5 +1,5 @@
-use libs::slug;
 use serde::{Deserialize, Serialize};
+use slug;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -23,7 +23,7 @@ fn strip_chars(s: &str, chars: &str) -> String {
 fn strip_invalid_paths_chars(s: &str) -> String {
     // NTFS forbidden characters : https://gist.github.com/doctaphred/d01d05291546186941e1b7ddc02034d3
     // Also we need to trim whitespaces and `.` from the end of filename
-    let trimmed = s.trim_end_matches(|c| c == ' ' || c == '.');
+    let trimmed = s.trim_end_matches([' ', '.']);
     strip_chars(trimmed, r#"<>:"/\|?*"#)
 }
 

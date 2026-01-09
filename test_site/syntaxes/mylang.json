@@ -1,0 +1,11 @@
+{
+  "name": "mylang",
+  "scopeName": "source.mylang",
+  "fileTypes": ["mylang"],
+  "patterns": [
+    {
+      "match": "\\b(if|else|for|while)\\b",
+      "name": "keyword.control.mylang"
+    }
+  ]
+}

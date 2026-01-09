@@ -27,7 +27,7 @@ The author in the feed is set as
 - The first author in `authors` set in the 
   [front matter](@/documentation/content/page.md#front-matter)
 - If that is not present it falls back to the `author` in the 
-  [Configuration](@/documentation/getting-started/configuration/index.md)
+  [Configuration](@/documentation/getting-started/configuration.md)
 - If that is also not preset it is set to `Unknown`.
 
 Note that `atom.xml` and `rss.xml` require different formats for specifying the

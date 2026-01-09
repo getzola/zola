@@ -8,7 +8,7 @@ which is available in template code as well as in shortcodes.
 
 The function usage is as follows:
 
-```jinja2
+```jinja
 resize_image(path, width, height, op, format, quality, speed)
 ```
 
@@ -69,6 +69,23 @@ orig_width: u32,
 /// Original image height
 orig_height: u32,
 ```
+
+### Color and metadata
+
+All EXIF, XMP, and IPTC metadata is discarded during processing.
+
+Zola tries to preserve image color space information as much as possible.
+The following limitations apply:
+- Only ICC-based color data is preserved.
+- For WebP, only lossless encoding supports ICC profiles.
+- AVIF encoding does not currently support ICC profiles.
+
+If the color space were to be lost, a warning is printed.
+The image is converted regardless, without proper color conversion.
+Therefore, if the source color space and the default color space of the target format (usually sRGB or Rec.709) do not match, colors will appear incorrect.
+
+Zola performs image processing on the raw pixel data, without taking the color space into account.
+This is not usually an issue, but non-linear color spaces (including sRGB, Rec.709, AdobeRGB, Display P3, and non-linear Rec2020) may exhibit imprecise color blending, especially when scaling up low-resolution images.
 
 ## Resize operations
 
@@ -133,7 +150,7 @@ but it can be used in Markdown using [shortcodes](@/documentation/content/shortc
 
 The examples above were generated using a shortcode file named `resize_image.html` with this content:
 
-```jinja2
+```jinja
 {% set image = resize_image(path=path, width=width, height=height, op=op) %}
 <img src="{{ image.url }}" />
 ```
@@ -150,7 +167,7 @@ will need to filter them out in the loop first like in the example below.
 This can be used in shortcodes. For example, we can create a very simple html-only clickable
 picture gallery with the following shortcode named `gallery.html`:
 
-```jinja2
+```jinja
 <div>
 {% for asset in page.assets -%}
   {%- if asset is matching("[.](jpg|png)$") -%}
@@ -168,7 +185,7 @@ the format will default to `"auto"` (choosing PNG or JPEG as appropriate) and th
 
 To call it from a Markdown file, simply do:
 
-```jinja2
+```jinja
 {{/* gallery() */}}
 ```
 
@@ -188,7 +205,7 @@ Sometimes when building a gallery it is useful to know the dimensions of each as
 
 This can also be useful in combination with `resize_image()` to do a relative resizing. So we can create a relative image resizing function with the following shortcode named `resize_image_relative.html`:
 
-```jinja2
+```jinja
 {% set mdata = get_image_metadata(path=path) %}
 {% set image = resize_image(path=path, width=(mdata.width * scale)|int, op="fit_width") %}
 <img src="{{ image.url }}" />
@@ -206,7 +223,7 @@ With the above, we can also create a shortcode that creates a 50% scaled-down ve
 
 Consider the following shortcode named `high_res_image.html`:
 
-```jinja2
+```jinja
 {% set mdata = get_image_metadata(path=path) %}
 {% set w = (mdata.width / 2) | int %}
 {% set h = (mdata.height / 2) | int %}

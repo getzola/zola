@@ -100,6 +100,13 @@ a hard refresh if possible. If you are using WSL2 on Windows, make sure to store
 Some changes cannot be handled automatically and thus live reload may not always work. If you
 fail to see your change or get an error, try restarting `zola serve`.
 
+By default, the live reload will be debounced by one full second so as to more
+gracefully handle multiple changes to your input files in rapid succession. You
+have control over that debouncing duration with the `--debounce <duration_ms>`
+flag.  
+You may use `-d1` to (virtually) disable it altogether: for technical reasons
+(and keeping things simple), a "debounce" of 0 is not supported.
+
 You can also point to a config file other than `config.toml` like so (note that the position of the `config` option is important):
 
 ```bash
@@ -132,3 +139,13 @@ You can disable this behavior by exporting one of the following two environment 
 To force the use of colors, you can set the following environment variable:
 
 - `CLICOLOR_FORCE=1`
+
+## Extra information
+
+Zola can provide detailed logging about its behavior via the `RUST_LOG` variable:
+
+- To see timing information from Zola, set `RUST_LOG=zola=info,site=debug`.
+- To see debug information, set `RUST_LOG=debug`. *Note*: The output will be **very noisy**, use with caution.
+- To disable all log output entirely, set `RUST_LOG=off`.
+
+See the [env_logger documentation](https://docs.rs/env_logger/0.11.8/env_logger/#enabling-logging) for a full reference on `RUST_LOG`.

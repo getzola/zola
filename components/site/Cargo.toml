@@ -2,23 +2,34 @@
 name = "site"
 version = "0.1.0"
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
-edition = "2018"
+edition = "2024"
 include = ["src/**/*"]
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
+serde = { workspace = true }
+chrono = { workspace = true }
+globset = { workspace = true }
+grass = { workspace = true }
+log = { workspace = true }
+minify-html = { workspace = true }
+once_cell = { workspace = true }
+rayon = { workspace = true }
+relative-path = { workspace = true }
+tera = { workspace = true }
+url = { workspace = true }
+walkdir = { workspace = true }
 
-errors = { path = "../errors" }
-config = { path = "../config" }
-console = { path = "../console" }
-utils = { path = "../utils" }
-templates = { path = "../templates" }
-search = { path = "../search" }
-imageproc = { path = "../imageproc" }
-link_checker = { path = "../link_checker" }
-libs = { path = "../libs" }
-content = { path = "../content" }
+errors = { workspace = true }
+config = { workspace = true }
+console = { workspace = true }
+utils = { workspace = true }
+templates = { workspace = true }
+search = { workspace = true }
+imageproc = { workspace = true }
+link_checker = { workspace = true }
+content = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
 path-slash = "0.2"
+ahash = { workspace = true }

@@ -3,25 +3,25 @@ use std::fmt::Write;
 
 use crate::markdown::cmark::CowStr;
 use errors::bail;
-use libs::gh_emoji::Replacer as EmojiReplacer;
-use libs::once_cell::sync::Lazy;
-use libs::pulldown_cmark as cmark;
-use libs::pulldown_cmark_escape as cmark_escape;
-use libs::tera;
-use utils::net::is_external_link;
+use gh_emoji::Replacer as EmojiReplacer;
+use giallo::{HtmlRenderer, ParsedFence, parse_markdown_fence};
+use log;
+use once_cell::sync::Lazy;
+use pulldown_cmark as cmark;
+use pulldown_cmark_escape as cmark_escape;
 
 use crate::context::RenderContext;
 use errors::{Context, Error, Result};
-use libs::pulldown_cmark_escape::escape_html;
-use libs::regex::{Regex, RegexBuilder};
+use pulldown_cmark_escape::escape_html;
+use regex::{Regex, RegexBuilder};
+use utils::net::is_external_link;
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
-use utils::table_of_contents::{make_table_of_contents, Heading};
+use utils::table_of_contents::{Heading, make_table_of_contents};
 use utils::types::InsertAnchor;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag, TagEnd};
-use crate::codeblock::{CodeBlock, FenceSettings};
-use crate::shortcode::{Shortcode, SHORTCODE_PLACEHOLDER};
+use crate::shortcode::{SHORTCODE_PLACEHOLDER, Shortcode};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const SUMMARY_CUTOFF_TEMPLATE: &str = "summary-cutoff.html";
@@ -38,7 +38,8 @@ static MORE_DIVIDER_RE: Lazy<Regex> = Lazy::new(|| {
 });
 
 static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"<sup class="footnote-reference"><a href=\s*.*?>\s*.*?</a></sup>"#).unwrap()
+    Regex::new(r#"<sup class="footnote-reference"( id=\s*.*?)?><a href=\s*.*?>\s*.*?</a></sup>"#)
+        .unwrap()
 });
 
 /// Although there exists [a list of registered URI schemes][uri-schemes], a link may use arbitrary,
@@ -181,7 +182,7 @@ fn fix_link(
                 match context.config.link_checker.internal_level {
                     config::LinkCheckerLevel::Error => bail!(msg),
                     config::LinkCheckerLevel::Warn => {
-                        console::warn(&msg);
+                        log::warn!("{msg}");
                         link.to_string()
                     }
                 }
@@ -415,7 +416,9 @@ pub fn markdown_to_html(
     // Set while parsing
     let mut error = None;
 
-    let mut code_block: Option<CodeBlock> = None;
+    let mut code_block: Option<ParsedFence> = None;
+    let mut code_block_content = String::new();
+
     // Indicates whether we're in the middle of parsing a text node which will be placed in an HTML
     // attribute, and which hence has to be escaped using escape_html rather than push_html's
     // default HTML body escaping for text nodes.
@@ -512,11 +515,10 @@ pub fn markdown_to_html(
             };
         }
 
-        let mut accumulated_block = String::new();
         for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
             match event {
                 Event::Text(text) => {
-                    if let Some(ref mut _code_block) = code_block {
+                    if code_block.is_some() {
                         if contains_shortcode(text.as_ref()) {
                             // mark the start of the code block events
                             let stack_start = events.len();
@@ -525,7 +527,7 @@ pub fn markdown_to_html(
                             // and re-render them as code blocks
                             for event in events[stack_start..].iter() {
                                 match event {
-                                    Event::Html(t) | Event::Text(t) => accumulated_block += t,
+                                    Event::Html(t) | Event::Text(t) => code_block_content += t,
                                     _ => {
                                         error = Some(Error::msg(format!(
                                             "Unexpected event while expanding the code block: {:?}",
@@ -539,7 +541,7 @@ pub fn markdown_to_html(
                             // remove all the original events from shortcode rendering
                             events.truncate(stack_start);
                         } else {
-                            accumulated_block += &text;
+                            code_block_content += &text;
                         }
                     } else {
                         let text = if context.config.markdown.render_emoji {
@@ -564,29 +566,63 @@ pub fn markdown_to_html(
                 }
                 Event::Start(Tag::CodeBlock(ref kind)) => {
                     let fence = match kind {
-                        cmark::CodeBlockKind::Fenced(fence_info) => FenceSettings::new(fence_info),
-                        _ => FenceSettings::new(""),
-                    };
-                    let (block, begin) = match CodeBlock::new(fence, context.config, path) {
-                        Ok(cb) => cb,
-                        Err(e) => {
-                            error = Some(e);
-                            break;
+                        cmark::CodeBlockKind::Fenced(fence_info) => {
+                            parse_markdown_fence(fence_info)
                         }
+                        _ => ParsedFence::default(),
                     };
-                    code_block = Some(block);
-                    events.push(Event::Html(begin.into()));
+                    code_block = Some(fence);
                 }
-                Event::End(TagEnd::CodeBlock { .. }) => {
-                    if let Some(ref mut code_block) = code_block {
-                        let html = code_block.highlight(&accumulated_block);
-                        events.push(Event::Html(html.into()));
-                        accumulated_block.clear();
-                    }
-
-                    // reset highlight and close the code block
+                Event::End(TagEnd::CodeBlock) => {
+                    let html = if let Some(code) = code_block.take() {
+                        if let Some(hl) = &context.config.markdown.highlighting {
+                            if !hl.registry.contains_grammar(&code.lang) {
+                                let location = if let Some(p) = path {
+                                    format!(" in {p:?}")
+                                } else {
+                                    String::new()
+                                };
+                                let warning = format!(
+                                    "Language `{}` not found for syntax highlighting{location}.`",
+                                    code.lang
+                                );
+                                if hl.error_on_missing_language {
+                                    bail!(warning);
+                                } else {
+                                    log::warn!("{warning}");
+                                }
+                            }
+                            let highlighted = hl.registry.highlight(
+                                &code_block_content,
+                                &hl.highlight_options(&code.lang),
+                            )?;
+                            let renderer = HtmlRenderer {
+                                other_metadata: code.rest,
+                                css_class_prefix: if hl.uses_classes() {
+                                    Some("z-".to_string())
+                                } else {
+                                    None
+                                },
+                            };
+                            renderer.render(&highlighted, &code.options)
+                        } else {
+                            let lang = if code.lang != giallo::PLAIN_GRAMMAR_NAME {
+                                format!(r#" data-lang="{}""#, code.lang)
+                            } else {
+                                String::new()
+                            };
+                            let mut escaped = String::new();
+                            escape_html(&mut escaped, &code_block_content)?;
+                            format!("<pre><code{lang}>{escaped}</code></pre>\n")
+                        }
+                    } else {
+                        unreachable!(
+                            "can we get into a TagEnd::CodeBlock without having seen TagStart?"
+                        )
+                    };
+                    events.push(Event::Html(html.into()));
                     code_block = None;
-                    events.push(Event::Html("</code></pre>\n".into()));
+                    code_block_content.clear();
                 }
                 Event::Start(Tag::Image { link_type, dest_url, title, id }) => {
                     let link = if is_colocated_asset_link(&dest_url) {
@@ -678,14 +714,13 @@ pub fn markdown_to_html(
                     //
                     // NOTE: It could be more efficient to remove this search and just keep
                     // track of the shortcodes to come and compare it to that.
-                    if let Some(ref next_shortcode) = next_shortcode {
-                        if next_shortcode.span.start == range.start
-                            && next_shortcode.span.len() == content[range].trim().len()
-                        {
-                            stop_next_end_p = true;
-                            events.push(Event::Html("".into()));
-                            continue;
-                        }
+                    if let Some(ref next_shortcode) = next_shortcode
+                        && next_shortcode.span.start == range.start
+                        && next_shortcode.span.len() == content[range].trim().len()
+                    {
+                        stop_next_end_p = true;
+                        events.push(Event::Html("".into()));
+                        continue;
                     }
 
                     events.push(event);
@@ -824,7 +859,7 @@ pub fn markdown_to_html(
             let mut summary_html = String::new();
             cmark::html::push_html(
                 &mut summary_html,
-                events.iter().cloned().take(continue_reading),
+                events.iter().take(continue_reading).cloned(),
             );
             // remove footnotes
             let mut summary_html = FOOTNOTES_RE.replace_all(&summary_html, "").into_owned();

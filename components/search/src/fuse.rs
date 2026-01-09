@@ -1,7 +1,6 @@
 use config::Search;
 use content::Library;
 use errors::Result;
-use libs::serde_json;
 
 use crate::clean_and_truncate_body;
 
@@ -28,11 +27,11 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
             items.push(Item {
                 url: &section.permalink,
                 title: match config.include_title {
-                    true => Some(&section.meta.title.as_deref().unwrap_or_default()),
+                    true => Some(section.meta.title.as_deref().unwrap_or_default()),
                     false => None,
                 },
                 description: match config.include_description {
-                    true => Some(&section.meta.description.as_deref().unwrap_or_default()),
+                    true => Some(section.meta.description.as_deref().unwrap_or_default()),
                     false => None,
                 },
                 body: match config.include_content {
@@ -53,11 +52,11 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
                     items.push(Item {
                         url: &page.permalink,
                         title: match config.include_title {
-                            true => Some(&page.meta.title.as_deref().unwrap_or_default()),
+                            true => Some(page.meta.title.as_deref().unwrap_or_default()),
                             false => None,
                         },
                         description: match config.include_description {
-                            true => Some(&page.meta.description.as_deref().unwrap_or_default()),
+                            true => Some(page.meta.description.as_deref().unwrap_or_default()),
                             false => None,
                         },
                         body: match config.include_content {

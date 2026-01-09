@@ -5,13 +5,13 @@ use std::sync::{Arc, Mutex};
 
 use config::Config;
 
-use libs::base64::engine::{general_purpose::STANDARD as standard_b64, Engine};
-use libs::regex::Regex;
-use libs::tera::{
-    to_value, try_get_value, Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera,
-    Value,
+use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
+use markdown::{RenderContext, render_content};
+use regex::Regex;
+use tera::{
+    Error as TeraError, Filter as TeraFilter, Result as TeraResult, Tera, Value, to_value,
+    try_get_value,
 };
-use markdown::{render_content, RenderContext};
 
 #[derive(Debug)]
 pub struct MarkdownFilter {
@@ -92,6 +92,12 @@ impl RegexReplaceFilter {
     }
 }
 
+impl Default for RegexReplaceFilter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TeraFilter for RegexReplaceFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
         let text = try_get_value!("regex_replace", "value", String, value);
@@ -100,13 +106,13 @@ impl TeraFilter for RegexReplaceFilter {
             None => {
                 return Err(TeraError::msg(
                     "Filter `regex_replace` expected an arg called `pattern`",
-                ))
+                ));
             }
         };
         let rep = match args.get("rep") {
             Some(val) => try_get_value!("regex_replace", "rep", String, val),
             None => {
-                return Err(TeraError::msg("Filter `regex_replace` expected an arg called `rep`"))
+                return Err(TeraError::msg("Filter `regex_replace` expected an arg called `rep`"));
             }
         };
 
@@ -141,7 +147,7 @@ impl NumFormatFilter {
 
 impl TeraFilter for NumFormatFilter {
     fn filter(&self, value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value> {
-        use libs::num_format::{Locale, ToFormattedString};
+        use num_format::{Locale, ToFormattedString};
 
         let num = try_get_value!("num_format", "value", i64, value);
         let locale = match args.get("locale") {
@@ -162,19 +168,25 @@ impl TeraFilter for NumFormatFilter {
 mod tests {
     use std::collections::HashMap;
 
-    use libs::tera::{to_value, Filter, Tera};
+    use tera::{Filter, Tera, to_value};
 
     use super::{
-        base64_decode, base64_encode, MarkdownFilter, NumFormatFilter, RegexReplaceFilter,
+        MarkdownFilter, NumFormatFilter, RegexReplaceFilter, base64_decode, base64_encode,
     };
-    use config::Config;
+    use config::{Config, HighlightConfig, HighlightStyle, Highlighting, Registry};
+
+    fn get_test_registry() -> Registry {
+        let mut registry = Registry::builtin().unwrap();
+        registry.link_grammars();
+        registry
+    }
 
     #[test]
     fn markdown_filter() {
         let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
-            .filter(&to_value(&"# Hey").unwrap(), &HashMap::new());
+            .filter(&to_value("# Hey").unwrap(), &HashMap::new());
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), to_value(&"<h1 id=\"hey\">Hey</h1>\n").unwrap());
+        assert_eq!(result.unwrap(), to_value("<h1 id=\"hey\">Hey</h1>\n").unwrap());
     }
 
     #[test]
@@ -188,10 +200,10 @@ mod tests {
         let mut tera = Tera::default();
         tera.add_raw_template("shortcodes/explicitlang.html", "a{{ lang }}a").unwrap();
         let filter = MarkdownFilter { config, permalinks, tera };
-        let result = filter.filter(&to_value(&"{{ explicitlang(lang='jp') }}").unwrap(), &args);
+        let result = filter.filter(&to_value("{{ explicitlang(lang='jp') }}").unwrap(), &args);
         println!("{:?}", result);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), to_value(&"ajpa").unwrap());
+        assert_eq!(result.unwrap(), to_value("ajpa").unwrap());
     }
 
     #[test]
@@ -200,11 +212,11 @@ mod tests {
         args.insert("inline".to_string(), to_value(true).unwrap());
         let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
             .filter(
-                &to_value(&"Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
+                &to_value("Using `map`, `filter`, and `fold` instead of `for`").unwrap(),
                 &args,
             );
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), to_value(&"Using <code>map</code>, <code>filter</code>, and <code>fold</code> instead of <code>for</code>").unwrap());
+        assert_eq!(result.unwrap(), to_value("Using <code>map</code>, <code>filter</code>, and <code>fold</code> instead of <code>for</code>").unwrap());
     }
 
     // https://github.com/Keats/gutenberg/issues/417
@@ -215,7 +227,7 @@ mod tests {
         let result = MarkdownFilter::new(Config::default(), HashMap::new(), Tera::default())
             .filter(
                 &to_value(
-                    &r#"
+                    r#"
 |id|author_id|       timestamp_created|title                 |content           |
 |-:|--------:|-----------------------:|:---------------------|:-----------------|
 | 1|        1|2018-09-05 08:03:43.141Z|How to train your ORM |Badly written blog|
@@ -232,20 +244,27 @@ mod tests {
     #[test]
     fn markdown_filter_use_config_options() {
         let mut config = Config::default();
-        config.markdown.highlight_code = true;
+        config.markdown.highlighting = Some(Highlighting {
+            error_on_missing_language: false,
+            style: HighlightStyle::Inline,
+            theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+            extra_grammars: vec![],
+            extra_themes: vec![],
+            registry: get_test_registry(),
+        });
         config.markdown.smart_punctuation = true;
         config.markdown.render_emoji = true;
         config.markdown.external_links_target_blank = true;
 
         let md = "Hello <https://google.com> :smile: ...";
         let result = MarkdownFilter::new(config.clone(), HashMap::new(), Tera::default())
-            .filter(&to_value(&md).unwrap(), &HashMap::new());
+            .filter(&to_value(md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), to_value(&"<p>Hello <a rel=\"noopener\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
+        assert_eq!(result.unwrap(), to_value("<p>Hello <a rel=\"noopener external\" target=\"_blank\" href=\"https://google.com\">https://google.com</a> 😄 …</p>\n").unwrap());
 
         let md = "```py\ni=0\n```";
         let result = MarkdownFilter::new(config, HashMap::new(), Tera::default())
-            .filter(&to_value(&md).unwrap(), &HashMap::new());
+            .filter(&to_value(md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert!(result.unwrap().as_str().unwrap().contains("style"));
     }
@@ -256,11 +275,11 @@ mod tests {
         permalinks.insert("blog/_index.md".to_string(), "/foo/blog".to_string());
         let md = "Hello. Check out [my blog](@/blog/_index.md)!";
         let result = MarkdownFilter::new(Config::default(), permalinks, Tera::default())
-            .filter(&to_value(&md).unwrap(), &HashMap::new());
+            .filter(&to_value(md).unwrap(), &HashMap::new());
         assert!(result.is_ok());
         assert_eq!(
             result.unwrap(),
-            to_value(&"<p>Hello. Check out <a href=\"/foo/blog\">my blog</a>!</p>\n").unwrap()
+            to_value("<p>Hello. Check out <a href=\"/foo/blog\">my blog</a>!</p>\n").unwrap()
         );
     }
 

@@ -1,20 +1,20 @@
-use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
-use libs::csv::Reader;
-use libs::reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE};
-use libs::reqwest::{blocking::Client, header};
-use libs::tera::{
-    from_value, to_value, Error, Error as TeraError, Function as TeraFn, Map, Result, Value,
+use csv::Reader;
+use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderName, HeaderValue};
+use reqwest::{blocking::Client, header};
+use tera::{
+    Error, Error as TeraError, Function as TeraFn, Map, Result, Value, from_value, to_value,
 };
-use libs::url::Url;
-use libs::{nom_bibtex, serde_json, serde_yaml, toml};
+use url::Url;
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, read_file};
+use {nom_bibtex, serde_json, serde_yaml, toml};
 
 use crate::global_fns::helpers::search_for_file;
 
@@ -267,10 +267,7 @@ impl TeraFn for LoadData {
         );
 
         let method = match method_arg {
-            Some(ref method_str) => match Method::from_str(method_str) {
-                Ok(m) => m,
-                Err(e) => return Err(e),
-            },
+            Some(ref method_str) => Method::from_str(method_str)?,
             _ => Method::Get,
         };
         let headers = optional_arg!(
@@ -563,9 +560,8 @@ fn load_csv(csv_data: String) -> Result<Value> {
 /// }
 /// ```
 fn load_xml(xml_data: String) -> Result<Value> {
-    let xml_content: Value =
-        libs::quickxml_to_serde::xml_string_to_json(xml_data, &Default::default())
-            .map_err(|e| format!("{:?}", e))?;
+    let xml_content: Value = roxmltree_to_serde::xml_string_to_json(xml_data, &Default::default())
+        .map_err(|e| format!("{:?}", e))?;
     Ok(xml_content)
 }
 
@@ -577,10 +573,10 @@ mod tests {
     use std::path::PathBuf;
 
     use crate::global_fns::load_data::Method;
-    use libs::serde_json::json;
-    use libs::tera::{self, to_value, Function};
+    use serde_json::json;
     use std::fs::{copy, create_dir_all};
     use tempfile::tempdir;
+    use tera::{self, Function, to_value};
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests
@@ -601,10 +597,12 @@ mod tests {
         args.insert("method".to_string(), to_value("illegalmethod").unwrap());
         let result = static_fn.call(&args);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("`load_data` method must either be POST or GET."));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("`load_data` method must either be POST or GET.")
+        );
     }
 
     #[test]

@@ -1,10 +1,9 @@
 title = "My site"
 base_url = "https://staging.com"
-highlight_code = true
 theme = "sample"
 
-[markdown]
-highlight_code = true
+[markdown.highlighting]
+theme = "github-dark"
 
 [extra.author]
 name = "Vincent Prouillet"

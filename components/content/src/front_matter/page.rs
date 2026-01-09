@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
-use libs::tera::{Map, Value};
 use serde::Deserialize;
+use tera::{Map, Value};
 use time::format_description::well_known::Rfc3339;
 use time::macros::{format_description, time};
 use time::{Date, OffsetDateTime, PrimitiveDateTime};
 
-use errors::{bail, Result};
+use errors::{Result, bail};
 use utils::de::{fix_toml_dates, from_unknown_datetime};
 
 use crate::front_matter::split::RawFrontMatter;
@@ -75,6 +75,7 @@ pub struct PageFrontMatter {
 /// 1. an offset datetime (plain RFC3339)
 /// 2. a local datetime (RFC3339 with timezone omitted)
 /// 3. a local date (YYYY-MM-DD).
+///
 /// This tries each in order.
 fn parse_datetime(d: &str) -> Option<OffsetDateTime> {
     OffsetDateTime::parse(d, &Rfc3339)
@@ -90,16 +91,16 @@ impl PageFrontMatter {
     pub fn parse(raw: &RawFrontMatter) -> Result<PageFrontMatter> {
         let mut f: PageFrontMatter = raw.deserialize()?;
 
-        if let Some(ref slug) = f.slug {
-            if slug.is_empty() {
-                bail!("`slug` can't be empty if present")
-            }
+        if let Some(ref slug) = f.slug
+            && slug.is_empty()
+        {
+            bail!("`slug` can't be empty if present")
         }
 
-        if let Some(ref path) = f.path {
-            if path.is_empty() {
-                bail!("`path` can't be empty if present")
-            }
+        if let Some(ref path) = f.path
+            && path.is_empty()
+        {
+            bail!("`path` can't be empty if present")
         }
 
         f.extra = match fix_toml_dates(f.extra) {
@@ -117,10 +118,10 @@ impl PageFrontMatter {
             }
         }
 
-        if let Some(ref date) = f.date {
-            if f.datetime.is_none() {
-                bail!("`date` could not be parsed: {}.", date);
-            }
+        if let Some(ref date) = f.date
+            && f.datetime.is_none()
+        {
+            bail!("`date` could not be parsed: {}.", date);
         }
 
         Ok(f)
@@ -172,7 +173,7 @@ impl Default for PageFrontMatter {
 mod tests {
     use crate::front_matter::page::PageFrontMatter;
     use crate::front_matter::split::RawFrontMatter;
-    use libs::tera::to_value;
+    use tera::to_value;
     use test_case::test_case;
     use time::macros::datetime;
 

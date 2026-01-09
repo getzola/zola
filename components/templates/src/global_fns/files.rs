@@ -6,15 +6,16 @@ use std::path::PathBuf;
 use crate::global_fns::helpers::search_for_file;
 use config::Config;
 
-use libs::base64::engine::{general_purpose::STANDARD as standard_b64, Engine};
-use libs::sha2::{digest, Sha256, Sha384, Sha512};
-use libs::tera::{from_value, to_value, Function as TeraFn, Result, Value};
+use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
+use sha2::{Sha256, Sha384, Sha512, digest};
+use tera::{Function as TeraFn, Result, Value, from_value, to_value};
 use utils::site::resolve_internal_link;
 
-fn compute_hash<D: digest::Digest>(data: &[u8], as_base64: bool) -> String
+fn compute_hash<D>(data: &[u8], as_base64: bool) -> String
 where
-    digest::Output<D>: core::fmt::LowerHex,
     D: std::io::Write,
+    D: digest::Digest,
+    digest::Output<D>: core::fmt::LowerHex,
 {
     let mut hasher = D::new();
     hasher.update(data);
@@ -85,10 +86,7 @@ impl TeraFn for GetUrl {
 
         // if it starts with @/, resolve it as an internal link
         if path.starts_with("@/") {
-            let path_with_lang = match make_path_with_lang(path, &lang, &self.config) {
-                Ok(x) => x,
-                Err(e) => return Err(e),
-            };
+            let path_with_lang = make_path_with_lang(path, &lang, &self.config)?;
 
             match resolve_internal_link(&path_with_lang, &self.permalinks) {
                 Ok(resolved) => Ok(to_value(resolved.permalink).unwrap()),
@@ -140,7 +138,7 @@ impl TeraFn for GetUrl {
                             "`get_url`: Could not find or open file {}",
                             path_with_lang
                         )
-                        .into())
+                        .into());
                     }
                 };
             }
@@ -251,8 +249,8 @@ mod tests {
     use std::fs::{copy, create_dir};
     use std::path::PathBuf;
 
-    use libs::tera::{to_value, Function};
-    use tempfile::{tempdir, TempDir};
+    use tempfile::{TempDir, tempdir};
+    use tera::{Function, to_value};
 
     use config::Config;
     use utils::fs::create_file;
@@ -526,7 +524,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "141c09bd28899773b772bbe064d8b718fa1d6f2852b7eafd5ed6689d26b74883b79e2e814cd69d5b52ab476aa284c414"
-            );
+        );
     }
 
     #[test]
@@ -603,7 +601,7 @@ title = "A title"
         assert_eq!(
             static_fn.call(&args).unwrap(),
             "99514329186b2f6ae4a1329e7ee6c610a729636335174ac6b740f9028396fcc803d0e93863a7c3d90f86beee782f4f3f"
-            );
+        );
     }
 
     #[test]
