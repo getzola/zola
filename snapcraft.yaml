@@ -1,5 +1,5 @@
 name: zola 
-version: 0.21.0
+version: 0.22.0
 summary: A fast static site generator in a single binary with everything built-in.
 description: |
   A fast static site generator in a single binary with everything built-in.

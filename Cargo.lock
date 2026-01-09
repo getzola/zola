@@ -6085,7 +6085,7 @@ checksum = "2fc5a66a20078bf1251bde995aa2fdcc4b800c70b5d92dd2c62abc5c60f679f8"
 
 [[package]]
 name = "zola"
-version = "0.21.0"
+version = "0.22.0"
 dependencies = [
  "ahash 0.8.12",
  "anstream",

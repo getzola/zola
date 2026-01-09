@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.22.0 (unreleased)
+## 0.22.0 (2026-01-09)
 
 ### Breaking
 Syntect has been replaced with [Giallo](https://github.com/getzola/giallo) and all the highlighting options
