@@ -900,7 +900,7 @@ mod tests {
     use super::{construct_url, create_new_site};
     use crate::get_config_file_path;
     use std::net::{IpAddr, SocketAddr};
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use std::str::FromStr;
     use url::Url;
 
@@ -997,128 +997,69 @@ mod tests {
 
     #[test]
     #[cfg(not(windows))]
-    fn test_create_new_site_without_protocol_with_port_without_mounted_path() {
+    fn test_create_new_site() {
         let interface = IpAddr::from_str("127.0.0.1").unwrap();
         let interface_port = 1111;
-        let output_dir: Option<PathBuf> = None;
-        let base_url: Option<String> = None;
-        let no_port_append = false;
-        let expected_base_url = String::from("http://127.0.0.1:1111");
 
+        // without_protocol_with_port_without_mounted_path
         create_and_verify_new_site(
             interface,
             interface_port,
-            output_dir.as_deref(),
-            base_url.as_deref(),
-            no_port_append,
-            expected_base_url,
+            None,
+            None,
+            false,
+            String::from("http://127.0.0.1:1111"),
         );
-    }
 
-    #[test]
-    #[cfg(not(windows))]
-    fn test_create_new_site_without_protocol_with_port_with_mounted_path() {
-        let interface = IpAddr::from_str("127.0.0.1").unwrap();
-        let interface_port = 1111;
-        let output_dir: Option<PathBuf> = None;
-        let base_url: Option<String> = Some(String::from("localhost/path/to/site"));
-        let no_port_append = false;
-        let expected_base_url = String::from("http://localhost:1111/path/to/site");
-
+        // without_protocol_with_port_with_mounted_path
         create_and_verify_new_site(
             interface,
             interface_port,
-            output_dir.as_deref(),
-            base_url.as_deref(),
-            no_port_append,
-            expected_base_url,
+            None,
+            Some("localhost/path/to/site"),
+            false,
+            String::from("http://localhost:1111/path/to/site"),
         );
-    }
 
-    #[test]
-    #[cfg(not(windows))]
-    fn test_create_new_site_without_protocol_without_port_without_mounted_path() {
-        let interface = IpAddr::from_str("127.0.0.1").unwrap();
-        let interface_port = 1111;
-        let output_dir: Option<PathBuf> = None;
-        let base_url: Option<String> = Some(String::from("example.com"));
-        let no_port_append = true;
-        let expected_base_url = String::from("http://example.com");
-
-        // Note that no_port_append only works if we define a base_url
-
+        // without_protocol_without_port_without_mounted_path
+        // Note: no_port_append only works if we define a base_url
         create_and_verify_new_site(
             interface,
             interface_port,
-            output_dir.as_deref(),
-            base_url.as_deref(),
-            no_port_append,
-            expected_base_url,
+            None,
+            Some("example.com"),
+            true,
+            String::from("http://example.com"),
         );
-    }
 
-    #[test]
-    #[cfg(not(windows))]
-    fn test_create_new_site_with_protocol_without_port_without_mounted_path() {
-        let interface = IpAddr::from_str("127.0.0.1").unwrap();
-        let interface_port = 1111;
-        let output_dir: Option<PathBuf> = None;
-        let base_url: Option<String> = Some(String::from("https://example.com"));
-        let no_port_append = true;
-        let expected_base_url = String::from("https://example.com");
-
-        // Note that no_port_append only works if we define a base_url
-
+        // with_protocol_without_port_without_mounted_path
         create_and_verify_new_site(
             interface,
             interface_port,
-            output_dir.as_deref(),
-            base_url.as_deref(),
-            no_port_append,
-            expected_base_url,
+            None,
+            Some("https://example.com"),
+            true,
+            String::from("https://example.com"),
         );
-    }
 
-    #[test]
-    fn test_create_new_site_with_protocol_without_port_with_mounted_path() {
-        let interface = IpAddr::from_str("127.0.0.1").unwrap();
-        let interface_port = 1111;
-        let output_dir: Option<PathBuf> = None;
-        let base_url: Option<String> = Some(String::from("https://example.com/path/to/site"));
-        let no_port_append = true;
-        let expected_base_url = String::from("https://example.com/path/to/site");
-
-        // Note that no_port_append only works if we define a base_url
-
+        // with_protocol_without_port_with_mounted_path
         create_and_verify_new_site(
             interface,
             interface_port,
-            output_dir.as_deref(),
-            base_url.as_deref(),
-            no_port_append,
-            expected_base_url,
+            None,
+            Some("https://example.com/path/to/site"),
+            true,
+            String::from("https://example.com/path/to/site"),
         );
-    }
 
-    #[test]
-    #[cfg(not(windows))]
-    fn test_create_new_site_with_protocol_with_port_with_mounted_path() {
-        let interface = IpAddr::from_str("127.0.0.1").unwrap();
-        let interface_port = 1111;
-        let output_dir: Option<PathBuf> = None;
-        let base_url: Option<String> = Some(String::from("https://example.com/path/to/site"));
-        let no_port_append = false;
-        let expected_base_url = String::from("https://example.com:1111/path/to/site");
-
-        // Note that no_port_append only works if we define a base_url
-
+        // with_protocol_with_port_with_mounted_path
         create_and_verify_new_site(
             interface,
             interface_port,
-            output_dir.as_deref(),
-            base_url.as_deref(),
-            no_port_append,
-            expected_base_url,
+            None,
+            Some("https://example.com/path/to/site"),
+            false,
+            String::from("https://example.com:1111/path/to/site"),
         );
     }
 }
