@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.2x.x (unreleased)
+
 ## 0.22.0 (2026-01-09)
 
 ### Breaking
