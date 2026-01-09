@@ -57,6 +57,7 @@ error_on_missing_language = true
 - `zola serve` websockets now listen to the same port as HTTP
 - Add proper logging; log output can be controlled with `RUST_LOG` environment variable
 - Remove `ZOLA_PERF_LOG` environment variable; set `RUST_LOG=site=debug,zola=info` instead
+- Licence changed to EUPL 1.2
 
 ## 0.21.0 (2025-07-14)
 
