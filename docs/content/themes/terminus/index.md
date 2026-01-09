@@ -3,14 +3,14 @@
 title = "terminus"
 description = "A dark duotone retro theme for Zola"
 template = "theme.html"
-date = 2025-11-30T23:08:09-05:00
+date = 2025-12-28T23:40:32-05:00
 
 [taxonomies]
 theme-tags = ['dark', 'blog', 'minimal', 'personal', 'responsive', 'seo']
 
 [extra]
-created = 2025-11-30T23:08:09-05:00
-updated = 2025-11-30T23:08:09-05:00
+created = 2025-12-28T23:40:32-05:00
+updated = 2025-12-28T23:40:32-05:00
 repository = "https://github.com/ebkalderon/terminus.git"
 homepage = "https://github.com/ebkalderon/terminus"
 minimum_version = "0.20.0"
@@ -51,15 +51,15 @@ changes.
 ## Features
 
 - [x] Perfect baseline Lighthouse score (Performance, Accessibility, Best Practices and SEO).
-- [x] [Social media icons in footer](./theme.toml#L57-L60)
+- [x] [Social media icons in footer](./theme.toml#L70-L73)
 - [x] [Custom shortcodes](https://ebkalderon.github.io/terminus/blog/shortcodes/)
 - [x] Copy button on code blocks
 - [ ] [Comprehensive documentation] (still working on it!)
 - [ ] Searchable archive page
 - [ ] Projects portfolio page
 - [ ] Site navigation submenus
-- [x] Customizable [color schemes](./sass/colors/)
-- [ ] [KaTeX](https://katex.org/) support for mathematical notation
+- [x] Customizable [color schemes](./theme.toml#L22-L27)
+- [x] [KaTeX](https://katex.org/) support for mathematical notation
 
 [Comprehensive documentation]: https://ebkalderon.github.io/terminus/
 

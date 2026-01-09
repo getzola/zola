@@ -3,14 +3,14 @@
 title = "halve-z"
 description = "Retro two-column theme"
 template = "theme.html"
-date = 2025-11-29T18:16:47-05:00
+date = 2025-11-29T23:18:33Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-11-29T18:16:47-05:00
-updated = 2025-11-29T18:16:47-05:00
+created = 2025-11-29T23:18:33Z
+updated = 2025-11-29T23:18:33Z
 repository = "https://github.com/charlesrocket/halve-z.git"
 homepage = "https://github.com/charlesrocket/halvez"
 minimum_version = "0.21.0"

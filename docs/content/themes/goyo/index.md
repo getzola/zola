@@ -3,14 +3,14 @@
 title = "Goyo"
 description = "A simplicity and clean documentation theme"
 template = "theme.html"
-date = 2025-12-07T23:54:59+09:00
+date = 2026-01-04T16:03:02+09:00
 
 [taxonomies]
 theme-tags = ['documentation', 'Multilingual', 'Responsive', 'minimal']
 
 [extra]
-created = 2025-12-07T23:54:59+09:00
-updated = 2025-12-07T23:54:59+09:00
+created = 2026-01-04T16:03:02+09:00
+updated = 2026-01-04T16:03:02+09:00
 repository = "https://github.com/hahwul/goyo"
 homepage = "https://github.com/hahwul/goyo"
 minimum_version = "0.17.0"
@@ -42,14 +42,14 @@ homepage = "https://www.hahwul.com"
 - Beautiful Landing Page
 - Responsive Design
 - SEO-Friendly (Sitemap, RSS Feed)
-- Multi-Language Support
+- Multi-Language Support (including RTL)
 - Auto-Generated Sidebar & Custom Nav
 - Built-in Search
 - Built-in resources (FontAwesome, Mermaid.js)
 - Comments (Giscus, Utterances)
 - Various shortcodes (Mermaid, Asciinema, Katex, Alert, Badge, YouTube, Gist, Carousel, Collapse, etc.)
 - Custom Font Support
-- Edit Page & Share Buttons
+- Edit Page, Share Buttons and Taxonomies
 - Customization
 
 ## Installation
@@ -87,35 +87,6 @@ Add extra field in config.toml
 
 ```toml
 [extra]
-# Logo Configuration
-logo_text = "Goyo"  # Text to display if no logo image
-logo_image_path = "images/goyo.png"  # Path to logo image
-logo_image_padding = "5px"  # Padding for logo image (optional)
-
-# Footer Configuration
-footer_html = "Powered by <a href='https://www.getzola.org'>Zola</a> and <a href='https://github.com/hahwul/goyo'>Goyo</a>"  # Footer HTML content
-
-# Thumbnail Configuration
-default_thumbnail = "images/default_thumbnail.jpg"  # Default thumbnail image path
-
-# Twitter Configuration
-twitter_site = "@hahwul"  # Site Twitter handle
-twitter_creator = "@hahwul"  # Creator Twitter handle
-
-# Color Configuration
-default_colorset = "dark"  # Default color scheme (dark/light)
-brightness = "normal"  # Options: "darker", "normal", "lighter"
-
-# Google Tag Configuration
-gtag = ""  # Google Analytics tracking ID
-
-# Sidebar Configuration
-sidebar_expand_depth = 1  # Sidebar expansion depth (max 5)
-
-# Language display names for the language selector
-# If not defined, the language code will be displayed
-lang_aliases = { en = "English", ko = "한국어" }
-
 # Navigation Configuration
 nav = [
   { name = "Documents", url = "/introduction", type = "url", icon = "fa-solid fa-book" },
@@ -136,21 +107,88 @@ nav_ko = [
     ] },
 ]
 
-# Language Aliases Configuration
-# Custom display names for languages in the language selector
-# If not defined, language codes will be displayed
-lang_aliases = { en = "English", ko = "한국어" }
+# Footer Configuration
+footer_html = "Powered by <a href='https://www.getzola.org'>Zola</a> and <a href='https://github.com/hahwul/goyo'>Goyo</a>"  # Footer HTML content
 
-# Theme Toggle Configuration
-disable_theme_toggle = false  # Hide theme toggle button (true to disable)
+# Thumbnail Configuration
+default_thumbnail = "images/default_thumbnail.jpg"  # Default thumbnail image path
 
-# Sidebar Visibility Configuration
-disable_root_sidebar_hide = false  # Prevent hiding sidebar on root page
+# Google Tag Configuration
+gtag = ""  # Google Analytics tracking ID
+
+# Language Configuration
+[extra.lang]
+rtl = []  # List of RTL languages e.g. ["ar", "he"]
+aliases = { en = "English", ko = "한국어" }  # Language display names for the language selector
 
 # Edit URL Configuration
 edit_url = ""  # Base URL for editing pages (e.g., "https://github.com/user/repo/edit/main")
 
-# Comments Configuration
+# Logo Configuration (new structured format)
+# Supports theme-specific logos that change when toggling between dark/light themes
+[extra.logo]
+text = "Goyo"  # Text to display if no logo image
+image_path = "images/goyo.png"  # Default logo image path
+# image_padding = "5px"  # Padding for logo image (optional)
+# dark_image_path = "images/goyo-dark.png"  # Logo for dark theme (optional override)
+# light_image_path = "images/goyo-light.png"  # Logo for light theme (optional override)
+
+# Legacy logo configuration (still supported for backward compatibility)
+# logo_text = "Goyo"
+# logo_image_path = "images/goyo.png"
+# logo_image_padding = "5px"
+
+# Twitter Configuration (new structured format)
+[extra.twitter]
+site = "@hahwul"  # Site Twitter handle
+creator = "@hahwul"  # Creator Twitter handle
+
+# Legacy Twitter configuration (still supported for backward compatibility)
+# twitter_site = "@hahwul"
+# twitter_creator = "@hahwul"
+
+# Theme Configuration (new structured format)
+[extra.theme]
+colorset = "dark"           # Default color scheme (dark/light)
+brightness = "normal"       # Common brightness: "darker", "normal", "lighter"
+# dark_brightness = "darker"  # Override brightness for dark theme (optional)
+# light_brightness = "normal" # Override brightness for light theme (optional)
+disable_toggle = false      # Hide theme toggle button
+
+# Legacy theme configuration (still supported for backward compatibility)
+# default_colorset = "dark"
+# brightness = "normal"
+# disable_theme_toggle = false
+
+# Font Configuration (new structured format)
+[extra.font]
+enabled = false  # Set to true to use custom font
+name = ""        # Name of the custom font (e.g., "Roboto", "Noto Sans KR")
+path = ""        # Local path (e.g., "fonts/custom.woff") or remote URL
+
+# Legacy font configuration (still supported for backward compatibility)
+# custom_font_enabled = false
+# custom_font_name = ""
+# custom_font_path = ""
+
+# Sidebar Configuration (new structured format)
+[extra.sidebar]
+expand_depth = 1         # Sidebar expansion depth (max 5)
+disable_root_hide = false # Prevent hiding sidebar on root page
+
+# Legacy sidebar configuration (still supported for backward compatibility)
+# sidebar_expand_depth = 1
+# disable_root_sidebar_hide = false
+
+# Share Buttons Configuration (new structured format)
+[extra.share]
+copy_url = false  # Copy URL button
+x = false         # Share on X button
+
+# Legacy share configuration (still supported for backward compatibility)
+# enable_copy_url = false
+# enable_share_x = false
+
 [extra.comments]
 enabled = false  # Enable comments
 system = ""  # Comment system (e.g., "giscus")

@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2025-11-05T22:15:23+02:00
+date = 2026-01-01T19:21:22+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2025-11-05T22:15:23+02:00
-updated = 2025-11-05T22:15:23+02:00
+created = 2026-01-01T19:21:22+02:00
+updated = 2026-01-01T19:21:22+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -28,15 +28,12 @@ A clean and elegant blog theme for [Zola](https://www.getzola.org/).
 Linkita is based on [Kita](https://github.com/st1020/kita)
 and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual and SEO friendly.
 
+- See the [quickstart repository](https://github.com/salif/linkita-start).
+- See a [live preview](https://salif.github.io/linkita/) and
+  [its source code](https://codeberg.org/salif/linkita-demo).
+- Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/linkita/issues).
 - The source code is available on [Codeberg](https://codeberg.org/salif/linkita)
   and mirrored on [GitHub](https://github.com/salif/linkita).
-- Open bug reports and feature requests on [Codeberg](https://codeberg.org/salif/linkita/issues).
-- See [demo source code](https://codeberg.org/salif/linkita-demo).
-- Live preview in:
-  [English](https://salif.github.io/linkita/),
-  [Bulgarian](https://salif.github.io/linkita/bg/),
-  [Esperanto](https://salif.github.io/linkita/eo/),
-  [Globasa](https://salif.github.io/linkita/gb/).
 
 ## Features
 
@@ -64,7 +61,13 @@ and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual a
 - Keyboard shortcuts
 - Relative URLs support
 
-## Installing
+## Installation
+
+The fastest way to create a new site is to use the
+[linkita-start template](https://github.com/salif/linkita-start).
+This gives you a complete blog setup with all the essential configuration ready to go.
+
+### Manual installation
 
 0. Create a new Zola site if you haven't already:
 
@@ -77,12 +80,14 @@ git init
 1. Add the theme as a git submodule:
 
 ```sh
-git submodule add -b linkita https://codeberg.org/salif/linkita.git themes/linkita
+git submodule add -b v4 https://codeberg.org/salif/linkita.git themes/linkita
 ```
 
 If you don't want to use git submodules, you can clone the repository instead:
 
-`git clone https://codeberg.org/salif/linkita.git themes/linkita`
+```sh
+git clone -b v4 https://codeberg.org/salif/linkita.git themes/linkita
+```
 
 2. Enable the theme in your `config.toml` file:
 
@@ -100,9 +105,11 @@ To update the theme, run:
 git submodule update --remote themes/linkita
 ```
 
-Check the [changelog](https://codeberg.org/salif/linkita/src/branch/linkita/CHANGELOG.md)
-for all versions after the one you are using.
-There may be breaking changes that require manual involvement.
+If you use the `linkita` branch of the theme, check the
+[changelog/linkita.md](https://codeberg.org/salif/linkita/src/branch/linkita/changelog/linkita.md) file.  
+Otherwise, find the changelog file for your version in the `changelog` directory.
+
+If you switch to a newer version, there may be breaking changes that require manual involvement.
 
 ## Usage
 
@@ -138,9 +145,9 @@ extra:
 title = ""
 description = ""
 # The date of the post
-date = 2025-12-30
+date = 2026-12-30
 # The last updated date of the post
-updated = 2025-12-31
+updated = 2026-12-31
 
 [taxonomies]
 categories = []
@@ -209,7 +216,7 @@ Create a `content/blog/hello.md` file:
 ```md ,name=content/blog/hello.md
 +++
 title = "Title"
-date = 2025-12-30
+date = 2026-12-30
 +++
 
 Summary <!-- more -->
@@ -277,7 +284,7 @@ authors = ["author_username", "author2_username"]
 
 ### Inject support
 
-You can easily use inject to add new features to your side without modifying the theme itself.
+You can easily use inject to add new features to your site without modifying the theme itself.
 
 To use inject, you need to add some HTML files to the `templates/injects` directory.
 
@@ -299,7 +306,7 @@ For example, you can add JavaScript files and CSS stylesheets in the `templates/
 | Table of contents | <kbd>Alt</kbd>+<kbd>\=</kbd> |
 | Skip to footer    | <kbd>Alt</kbd>+<kbd>\_</kbd> |
 
-## Configuring
+## Configuration
 
 Copy and paste the examples into your `config.toml` file
 and comment out the variables you don't use instead of setting empty values.
@@ -427,7 +434,7 @@ disable_javascript = false
 # Default value: false
 use_cdn = false
 
-# Use relative urls.
+# Use relative URLs.
 # It doesn't apply for content yet.
 # Default value: false
 relative_urls = false
@@ -528,7 +535,7 @@ If your site is multilingual, you can choose one of the following options or com
 # Replace "your_username" with your username.
 [extra.profiles.your_username]
 
-# The URL of avatar.
+# The URL of the avatar.
 # e.g. "icons/github.svg"
 avatar_url = ""
 
@@ -590,7 +597,7 @@ See [the Open Graph protocol](https://ogp.me/).
 # Replace "your_username" with your username.
 [extra.profiles.your_username.open_graph]
 
-# The URL of social image.
+# The URL of the social image.
 image = ""
 
 # A description of what is in the social image.
@@ -788,7 +795,8 @@ loading = "lazy"
 
 This project is under the [MIT License](https://codeberg.org/salif/linkita/src/branch/linkita/LICENSE).
 
-Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [Github](https://github.com/salif/linkita).
+Pull requests are welcome on [Codeberg](https://codeberg.org/salif/linkita) and [GitHub](https://github.com/salif/linkita).
+The main branch is `linkita`.
 
 ### Localization
 
@@ -805,7 +813,7 @@ node ./static/i18n/sync.js
 See also the `static/i18n/menu.json` file and
 the [demo repository](https://codeberg.org/salif/linkita-demo).
 
-Live preview is available in following languages:
+Live preview is available in the following languages:
 
 [Arabic](https://salif.github.io/linkita/ar/),
 [Bulgarian](https://salif.github.io/linkita/bg/),
@@ -824,7 +832,7 @@ Live preview is available in following languages:
 ## Sites using Linkita
 
 - [Zola Themes Collection](https://github.com/salif/zola-themes-collection)
-- [salif.eu](https://codeberg.org/salif/personal-web-page)
+- [Salif's site](https://codeberg.org/salif/personal-web-page)
 - [Rratic's blog](https://github.com/Rratic/rratic.github.io)
 
 If your blog is using Linkita and is open source, feel free to create a pull request to add it to this list.
@@ -834,7 +842,6 @@ If your blog is using Linkita and is open source, feel free to create a pull req
 Linkita is one of several Zola themes I maintain.
 Other themes include:
 
-- [Tukan](https://codeberg.org/salif/tukan) – Fork of zola-blog-theme, inspired from Toucan theme.
-- [Trankwilo](https://codeberg.org/salif/trankwilo) – Fork of the Goyo theme, for documentation.
+- [Tukan](https://codeberg.org/salif/tukan) – Fork of zola-blog-theme, inspired by the Toucan theme.
 
         
