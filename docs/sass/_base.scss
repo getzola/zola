@@ -24,21 +24,19 @@ body {
 }
 
 .giallo-l {
-  display: block;
+  display: inline-block;
   min-height: 1lh;
+  width: 100%;
 }
-
 .giallo-ln {
   display: inline-block;
   user-select: none;
-  white-space: pre;
   margin-right: 0.4em;
   padding: 0.4em;
   min-width: 3ch;
   text-align: right;
   opacity: 0.8;
 }
-
 img {
   max-width: 100%;
   height: auto;
