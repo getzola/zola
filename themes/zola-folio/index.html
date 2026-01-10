@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>zola-folio | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zola-folio&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>zola-folio</h1>
+            <p>A fork of the Jekyll *folio theme to zola</p>
+            <p><b>Author:</b>
+            
+              <a href="http:&#x2F;&#x2F;everettsprojects.com">Everett Robinson</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.2 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;evjrob&#x2F;zola-folio">https:&#x2F;&#x2F;github.com&#x2F;evjrob&#x2F;zola-folio</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;zola-folio.pages.dev&#x2F;">https:&#x2F;&#x2F;zola-folio.pages.dev&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-12-31T14:02:39-06:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="folio">*folio</h1>
+<p><a class="external" href="https://zola-folio.pages.dev/"><img src="https://www.getzola.org/themes/zola-folio/static/img/zola-folio.png" alt="zola-folio" /></a></p>
+<p>*folio is a <a class="external" href="https://www.getzola.org">Zola</a> theme forked from the <a class="external" href="https://github.com/bogoli/-folio/tree/master">original Jekyll theme by Lia Boegev</a>.</p>
+<p><strong><a class="external" href="https://zola-folio.pages.dev/">Live Demo</a></strong></p>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Menu bar</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Social links</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Tags</li>
+<li><input disabled="" type="checkbox" checked=""/>
+MathJax</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Search</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Customizable color</li>
+<li><input disabled="" type="checkbox" checked=""/>
+SEO tags</li>
+<li><input disabled="" type="checkbox"/>
+Multi-language support</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>In the git repo of your zola site:</p>
+<h3 id="add-the-theme-as-a-git-submodule">Add the theme as a git submodule:</h3>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git submodule add https:&#x2F;&#x2F;github.com&#x2F;evjrob&#x2F;zola-folio themes&#x2F;zola-folio
+git submodule update --init --recursive
+git submodule update --remote --merge
+</code></pre>
+<h3 id="or-clone-the-theme-directly-into-your-themes-directory">Or clone the theme directly into your themes directory:</h3>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git clone https:&#x2F;&#x2F;github.com&#x2F;evjrob&#x2F;zola-folio themes&#x2F;zola-folio
+</code></pre>
+<p>Then set <code>theme = "zola-folio"</code> in your config.toml file. You can now test the theme locally by running <code>zola serve</code> in the terminal and navigating to the localhost URL displayed by the command.</p>
+<h2 id="configuration">Configuration</h2>
+<h3 id="menu-bar">Menu Bar</h3>
+<p>Items in the top menu bar can be controlled with the <code>extra.menu_items</code> setting in config.toml:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">menu_items = [
+    {name = &quot;about&quot;, url = &quot;&#x2F;pages&#x2F;about&quot;},
+    {name = &quot;projects&quot;, url = &quot;&#x2F;pages&#x2F;projects&quot;},
+    {name = &quot;photography&quot;, url = &quot;&#x2F;pages&#x2F;photography&quot;},
+]
+</code></pre>
+<h3 id="about-page-social-contacts">About Page Social Contacts</h3>
+<p>If you have an about page, you can add social contact links using the <code>extra.socials</code> setting in the frontmatter of the page:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">+++
+title = &quot;about&quot;
+template = &quot;about.html&quot;
+[extra]
+socials = [
+	{name = &quot;email&quot;, uri = &quot;mailto:you@example.com&quot;},
+	{name = &quot;github&quot;, uri = &quot;https:&#x2F;&#x2F;github.com&quot;},
+	{name = &quot;instagram&quot;, uri = &quot;https:&#x2F;&#x2F;www.instagram.com&#x2F;&quot;},
+	{name = &quot;bluesky&quot;, uri = &quot;https:&#x2F;&#x2F;bsky.app&#x2F;&quot;}
+]
++++
+</code></pre>
+<h3 id="mathjax">MathJax</h3>
+<p>MathJax can be enabled by setting <code>extra.math</code> in config.toml:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+math = true
+</code></pre>
+<p><a class="external" href="https://zola-folio.pages.dev/math/">Example</a>.</p>
+<h3 id="search">Search</h3>
+<p>Search using elasticlunr.js:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">default_language = &quot;en&quot;
+build_search_index = true
+
+[search]
+include_title = true
+include_description = true
+include_path = true
+include_content = true
+index_format = &quot;elasticlunr_json&quot;
+</code></pre>
+<h3 id="customizable-colors">Customizable Colors</h3>
+<p>Simply set the <code>extra.theme_color</code> in the config.toml:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+theme_color = &quot;red&quot;|&quot;blue&quot;|&quot;green&quot;|&quot;purple&quot;
+</code></pre>
+<p>If the existing colors are not to your liking, then you can create your own by adding a <strong>sass/color/custom.scss</strong> file with the following:</p>
+<pre data-lang="scss" class="language-scss "><code class="language-scss" data-lang="scss">:root {
+    --theme-color: #ffffff;
+    --theme-color-light: #ffffff;
+}
+</code></pre>
+<p>Then set <code>theme_color = "custom"</code>.</p>
+<h3 id="seo-tags">SEO Tags</h3>
+<p>The typical <code>&lt;meta&gt;</code> tags including Open Graph and Twitter are automatically set for posts using the information in the frontmatter of each post. To ensure an image is set for Open Graph and Twitter cards, please ensure the frontmatter contains the <code>extra.feature_image</code> value:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+feature_image = &quot;my_image.ext&quot;
+</code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

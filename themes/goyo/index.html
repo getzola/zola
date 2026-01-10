@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Goyo | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;goyo&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Goyo</h1>
+            <p>A simplicity and clean documentation theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;www.hahwul.com">hahwul</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.17.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;hahwul&#x2F;goyo">https:&#x2F;&#x2F;github.com&#x2F;hahwul&#x2F;goyo</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;goyo.hahwul.com">https:&#x2F;&#x2F;goyo.hahwul.com</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;documentation&#x2F;">documentation</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;multilingual&#x2F;">Multilingual</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;responsive&#x2F;">Responsive</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;minimal&#x2F;">minimal</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2026-01-04T16:03:02+09:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><img src="https://www.getzola.org/themes/goyo/./screenshot.png" alt="" /></p>
+<div align="center">
+  <p>Goyo is a <a href="https://www.getzola.org/">Zola</a> theme that aims for simplicity and clean documentation.</p>
+</div>
+<p align="center">
+  <a href="https://goyo.hahwul.com"><img src="https://img.shields.io/badge/DOCUMENTS-000000?style=for-the-badge&labelColor=000000"></a>
+  <a href="https://github.com/hahwul/goyo/blob/main/CONTRIBUTING.md"><img src="https://img.shields.io/badge/CONTRIBUTIONS-WELCOME-000000?style=for-the-badge&labelColor=000000"></a>
+  <a href="https://www.getzola.org/"><img src="https://img.shields.io/badge/Zola-000000?style=for-the-badge&logo=zola&logoColor=white"></a>
+  <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/TailwindCSS-000000?style=for-the-badge&logo=tailwindcss&logoColor=white"></a>
+  <a href="https://daisyui.com"><img src="https://img.shields.io/badge/DaisyUI-000000?style=for-the-badge&logo=daisyui&logoColor=white"></a>
+</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Dark &amp; Light Themes with Brightness Settings</li>
+<li>Beautiful Landing Page</li>
+<li>Responsive Design</li>
+<li>SEO-Friendly (Sitemap, RSS Feed)</li>
+<li>Multi-Language Support (including RTL)</li>
+<li>Auto-Generated Sidebar &amp; Custom Nav</li>
+<li>Built-in Search</li>
+<li>Built-in resources (FontAwesome, Mermaid.js)</li>
+<li>Comments (Giscus, Utterances)</li>
+<li>Various shortcodes (Mermaid, Asciinema, Katex, Alert, Badge, YouTube, Gist, Carousel, Collapse, etc.)</li>
+<li>Custom Font Support</li>
+<li>Edit Page, Share Buttons and Taxonomies</li>
+<li>Customization</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>Make your zola app</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">zola init yoursite
+cd yoursite
+</code></pre>
+<p>Add the theme as a git submodule:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git init  # if your project is a git repository already, ignore this command
+git submodule add https:&#x2F;&#x2F;github.com&#x2F;hahwul&#x2F;goyo themes&#x2F;goyo
+</code></pre>
+<p>Or clone the theme into your themes directory:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git clone https:&#x2F;&#x2F;github.com&#x2F;hahwul&#x2F;goyo themes&#x2F;goyo
+</code></pre>
+<p>Then set <code>goyo</code> as your theme in <code>config.toml</code>.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">title = &quot;Your Docs&quot;
+theme = &quot;goyo&quot;
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<p>Add extra field in config.toml</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+# Navigation Configuration
+nav = [
+  { name = &quot;Documents&quot;, url = &quot;&#x2F;introduction&quot;, type = &quot;url&quot;, icon = &quot;fa-solid fa-book&quot; },
+  { name = &quot;GitHub&quot;, url = &quot;https:&#x2F;&#x2F;github.com&#x2F;hahwul&#x2F;goyo&quot;, type = &quot;url&quot;, icon = &quot;fa-brands fa-github&quot; },
+  { name = &quot;Links&quot;, type = &quot;dropdown&quot;, icon = &quot;fa-solid fa-link&quot;, members = [
+    { name = &quot;Creator Blog&quot;, url = &quot;https:&#x2F;&#x2F;www.hahwul.com&quot;, type = &quot;url&quot;, icon = &quot;fa-solid fa-fire-flame-curved&quot; }
+  ] }
+]
+
+# Navigation Configuration (i18n &#x2F; optional)
+# `nav_{lang}`: Language-specific navigation menu (e.g., `nav_ko` for Korean).
+# If defined, it will be used instead of the default `nav` for that language.
+nav_ko = [
+    { name = &quot;문서&quot;, url = &quot;&#x2F;ko&#x2F;introduction&quot;, type = &quot;url&quot;, icon = &quot;fa-solid fa-book&quot; },
+    { name = &quot;GitHub&quot;, url = &quot;https:&#x2F;&#x2F;github.com&#x2F;hahwul&#x2F;goyo&quot;, type = &quot;url&quot;, icon = &quot;fa-brands fa-github&quot; },
+    { name = &quot;링크&quot;, type = &quot;dropdown&quot;, icon = &quot;fa-solid fa-link&quot;, members = [
+        { name = &quot;제작자 블로그&quot;, url = &quot;https:&#x2F;&#x2F;www.hahwul.com&quot;, type = &quot;url&quot;, icon = &quot;fa-solid fa-fire-flame-curved&quot; },
+    ] },
+]
+
+# Footer Configuration
+footer_html = &quot;Powered by &lt;a href=&#x27;https:&#x2F;&#x2F;www.getzola.org&#x27;&gt;Zola&lt;&#x2F;a&gt; and &lt;a href=&#x27;https:&#x2F;&#x2F;github.com&#x2F;hahwul&#x2F;goyo&#x27;&gt;Goyo&lt;&#x2F;a&gt;&quot;  # Footer HTML content
+
+# Thumbnail Configuration
+default_thumbnail = &quot;images&#x2F;default_thumbnail.jpg&quot;  # Default thumbnail image path
+
+# Google Tag Configuration
+gtag = &quot;&quot;  # Google Analytics tracking ID
+
+# Language Configuration
+[extra.lang]
+rtl = []  # List of RTL languages e.g. [&quot;ar&quot;, &quot;he&quot;]
+aliases = { en = &quot;English&quot;, ko = &quot;한국어&quot; }  # Language display names for the language selector
+
+# Edit URL Configuration
+edit_url = &quot;&quot;  # Base URL for editing pages (e.g., &quot;https:&#x2F;&#x2F;github.com&#x2F;user&#x2F;repo&#x2F;edit&#x2F;main&quot;)
+
+# Logo Configuration (new structured format)
+# Supports theme-specific logos that change when toggling between dark&#x2F;light themes
+[extra.logo]
+text = &quot;Goyo&quot;  # Text to display if no logo image
+image_path = &quot;images&#x2F;goyo.png&quot;  # Default logo image path
+# image_padding = &quot;5px&quot;  # Padding for logo image (optional)
+# dark_image_path = &quot;images&#x2F;goyo-dark.png&quot;  # Logo for dark theme (optional override)
+# light_image_path = &quot;images&#x2F;goyo-light.png&quot;  # Logo for light theme (optional override)
+
+# Legacy logo configuration (still supported for backward compatibility)
+# logo_text = &quot;Goyo&quot;
+# logo_image_path = &quot;images&#x2F;goyo.png&quot;
+# logo_image_padding = &quot;5px&quot;
+
+# Twitter Configuration (new structured format)
+[extra.twitter]
+site = &quot;@hahwul&quot;  # Site Twitter handle
+creator = &quot;@hahwul&quot;  # Creator Twitter handle
+
+# Legacy Twitter configuration (still supported for backward compatibility)
+# twitter_site = &quot;@hahwul&quot;
+# twitter_creator = &quot;@hahwul&quot;
+
+# Theme Configuration (new structured format)
+[extra.theme]
+colorset = &quot;dark&quot;           # Default color scheme (dark&#x2F;light)
+brightness = &quot;normal&quot;       # Common brightness: &quot;darker&quot;, &quot;normal&quot;, &quot;lighter&quot;
+# dark_brightness = &quot;darker&quot;  # Override brightness for dark theme (optional)
+# light_brightness = &quot;normal&quot; # Override brightness for light theme (optional)
+disable_toggle = false      # Hide theme toggle button
+
+# Legacy theme configuration (still supported for backward compatibility)
+# default_colorset = &quot;dark&quot;
+# brightness = &quot;normal&quot;
+# disable_theme_toggle = false
+
+# Font Configuration (new structured format)
+[extra.font]
+enabled = false  # Set to true to use custom font
+name = &quot;&quot;        # Name of the custom font (e.g., &quot;Roboto&quot;, &quot;Noto Sans KR&quot;)
+path = &quot;&quot;        # Local path (e.g., &quot;fonts&#x2F;custom.woff&quot;) or remote URL
+
+# Legacy font configuration (still supported for backward compatibility)
+# custom_font_enabled = false
+# custom_font_name = &quot;&quot;
+# custom_font_path = &quot;&quot;
+
+# Sidebar Configuration (new structured format)
+[extra.sidebar]
+expand_depth = 1         # Sidebar expansion depth (max 5)
+disable_root_hide = false # Prevent hiding sidebar on root page
+
+# Legacy sidebar configuration (still supported for backward compatibility)
+# sidebar_expand_depth = 1
+# disable_root_sidebar_hide = false
+
+# Share Buttons Configuration (new structured format)
+[extra.share]
+copy_url = false  # Copy URL button
+x = false         # Share on X button
+
+# Legacy share configuration (still supported for backward compatibility)
+# enable_copy_url = false
+# enable_share_x = false
+
+[extra.comments]
+enabled = false  # Enable comments
+system = &quot;&quot;  # Comment system (e.g., &quot;giscus&quot;)
+repo = &quot;&quot;  # Repository for comments (e.g., &quot;hahwul&#x2F;goyo&quot;)
+repo_id = &quot;&quot;  # Repository ID (e.g., &quot;R_kgDOXXXXXXX&quot;)
+category = &quot;&quot;  # Comment category (e.g., &quot;General&quot;)
+category_id = &quot;&quot;  # Category ID (e.g., &quot;DIC_kwDOXXXXXXXXXX&quot;)
+</code></pre>
+<p>More information? <a class="external" href="https://goyo.hahwul.com/get_started/configuration/">Configuration - Goyo Documents</a> and <a class="external" href="https://goyo.hahwul.com/get_started/creating-landing/">Creating Landing - Goyo Documents</a></p>
+<h2 id="run">Run</h2>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">zola serve
+
+# and open http:&#x2F;&#x2F;localhost:1111 in your browser.
+</code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

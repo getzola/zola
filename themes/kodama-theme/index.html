@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>kodama | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;kodama-theme&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>kodama</h1>
+            <p>Theme insipired by wowchemy academic.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;adrien-faure.fr">Adrien Faure</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.15 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;adfaure&#x2F;kodama-theme">https:&#x2F;&#x2F;github.com&#x2F;adfaure&#x2F;kodama-theme</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;adfaure.github.io&#x2F;kodama-theme&#x2F;">https:&#x2F;&#x2F;adfaure.github.io&#x2F;kodama-theme&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-10-11T14:31:25+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="kodama">Kodama</h1>
+<p><img src="https://www.getzola.org/themes/kodama-theme/./screenshot.png" alt="Theme screenshot" /></p>
+<h2 id="summary">Summary</h2>
+<p>This theme is greatly inspired from hugo academic theme.</p>
+<p>First lets introduce some technical details:</p>
+<ul>
+<li>It relies on <a class="external" href="https://www.getzola.org/">zola</a>.</li>
+<li>It has no javascript.</li>
+<li>The CSS is built with <a class="external" href="https://tailwindcss.com/">tailwindcss</a>.
+<ul>
+<li>The blog articles are themed with <a class="external" href="https://tailwindcss-typography.vercel.app">@tailwindcss/typography</a> theme.</li>
+</ul>
+</li>
+</ul>
+<h2 id="getting-started">Getting started</h2>
+<p>The best way to get started is to follow the official <a class="external" href="https://www.getzola.org/documentation/getting-started/overview/">zola tutorial</a>.</p>
+<p>This theme can be installed as any other theme.</p>
+<pre><code>mkdir themes
+cd themes &amp; git clone https:&#x2F;&#x2F;github.com&#x2F;adfaure&#x2F;kodama-theme
+</code></pre>
+<p>and set in the <code>config.toml</code> the variable <code>theme</code> to <code>kodama-theme</code>.</p>
+<h3 id="generate-the-css">Generate the CSS</h3>
+<p><a class="external" href="https://tailwindcss.com/">Tailwindcss</a> is a framework that parses your html files, and generate the minimal CSS required.
+This theme depends on this framework.</p>
+<p>The theme comes with the precompiled style files (<code>static/styles/styles.css</code>). However, if you wish to change the style, or modify the template html, you might need to recompile your styles.</p>
+<p>The most simple way, is to follow the <a class="external" href="https://tailwindcss.com/docs/installation/">installation page of tailwindcss</a>.</p>
+<p>At the end, you should have tailwindcss installed, and I advise to use the following tailwind configuration (for tailwindcss v4):</p>
+<pre data-lang="js" class="language-js "><code class="language-js" data-lang="js"># tailwind.config.js
+module.exports = {
+  content: [&quot;.&#x2F;templates&#x2F;**&#x2F;*.html&quot;, &quot;.&#x2F;themes&#x2F;**&#x2F;*.html&quot;,  &quot;.&#x2F;themes&#x2F;**&#x2F;*.html&quot;],
+};
+</code></pre>
+<p>Create a file <code>styles/styles.css</code>, and use the following command to generate the final CSS file:</p>
+<pre><code>npx tailwindcss -i styles&#x2F;styles.css -o static&#x2F;styles&#x2F;styles.css
+</code></pre>
+<p>or, starting with tailwindcss v4.0, the separate CLI command</p>
+<pre><code>npx @tailwindcss&#x2F;cli -i styles&#x2F;styles.css -o static&#x2F;styles&#x2F;styles.css
+</code></pre>
+<p>The resulting file <code>static/styles/styles.css</code> is loaded in the html.</p>
+<p><em>Note that, for the moment the generation of the css is not automated. As a result, it is necessary to re-run this command when changes are made with the styling.</em></p>
+<h2 id="configuration">Configuration</h2>
+<p>This theme use some extra configuration, that can be set in the extra section of your <code>config.toml</code>.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml"># Title displayed in the index page
+title = &quot;Website title&quot;
+
+# Use this theme
+theme = &quot;kodama-theme&quot;
+
+[extra]
+
+# Image of your avatar displayed on the landing page
+avatar = &quot;static&#x2F;img&#x2F;avatar.jpg&quot;
+# Image of the favicon
+favicon = &quot;static&#x2F;img&#x2F;avatar.jpg&quot;
+
+# Your email address showed in the contact section
+email = &quot;kodama[at]domain.com&quot;
+
+# If you don&#x27;t want to show your contact information in the index
+contact_in_index = true
+
+# Additional menu items
+# `Name` is what it is displayed, `path` is the url
+menu_items = [
+  { path = &quot;#contacts&quot;, name = &quot;Contact&quot; },
+]
+</code></pre>
+<h2 id="index-page">Index page</h2>
+<p>The information needed to build the index page are located in the page <a class="external" href="https://www.getzola.org/documentation/content/page/#front-matter">front matter</a> of root index file (e.g <code>content/_index.md</code>).</p>
+<p>The available configuration options are:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml"># Insert zola front matter variable such as date etc
+
+[extra]
+
+# Show a concise description of what you do below your avatar.
+title = &quot;Concise description&quot;
+
+# The list of interests displayed
+interests = [
+  &quot;Rainbow pony&quot;,
+  &quot;Martian food&quot;,
+  &quot;Quantic science&quot;
+]
+
+# The list of your degrees &#x2F; education
+[[extra.education.courses]]
+  course = &quot;Latest degree&quot;
+  institution = &quot;Some academy&quot;
+  year = 2020
+
+[[extra.education.courses]]
+  course = &quot;Another degree&quot;
+  institution = &quot;Here and there&quot;
+  year = 2016
+
+# Finally, a list of icons with a link displayed below your avatar
+[[extra.avatar_icons]]
+  icon = &quot;github&quot;
+  link = &quot;https:&#x2F;&#x2F;github.com&#x2F;adfaure&quot;
+[[extra.avatar_icons]]
+  icon = &quot;gitlab&quot;
+  link = &quot;https:&#x2F;&#x2F;gitlab.com&#x2F;adfaure&quot;
+[[extra.avatar_icons]]
+  icon = &quot;linkedin&quot;
+  link = &quot;https:&#x2F;&#x2F;www.linkedin.com&#x2F;in&#x2F;adrien-faure-9958978b&#x2F;&quot;
+</code></pre>
+<h2 id="contact">Contact</h2>
+<p>The predefined contact page can be use.
+The front matter extra part should contains a list of the link to show in the contacts.</p>
+<h2 id="sections">Sections</h2>
+<p>The section available in your website are automatically detected and displayed in the nav bar at the top of the page.
+To prevent a section to be displayed in the nav bar, you can set the extra front matter option <code>extra.hidden_nav = false</code> to false.</p>
+<p>The section are sorted by <code>weight</code> defined in the front matter of the section.</p>
+<p>By default, the sections (i.e folders under <code>content/section_name</code>) have a summary showed in the index.
+This is configurable in the front matter of the section (e.g <code>content/section_name/_index.md</code>).</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml"># The name displayed in the section summary
+extra.index_title = &quot;Recent Posts&quot;
+# Set to false to remove the section from the index
+extra.index_show = true
+</code></pre>
+<h3 id="blog">Blog</h3>
+<p>The section <code>blog</code> is the most standard section. It show a list of article with things that you want to share in your website.
+To use the blog template, configure the section with the following front matter:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">template = &quot;section.html&quot;
+page_template = &quot;blog-page.html&quot;
+</code></pre>
+<h3 id="publications">Publications</h3>
+<p>The section <code>publication</code> is very similar to the <code>blog</code> section however it is dedicated to show your list of scientific articles.
+The articles are showed in two subcategories: Thesis and Conference / Workshop.</p>
+<p>To configure a publication section (e.g <code>content/research</code>) and set the following content:</p>
+<pre data-lang="md" class="language-md "><code class="language-md" data-lang="md">+++
+title = &quot;Research&quot;
+sort_by = &quot;date&quot;
+
+# Here the two dedicated templates
+template = &quot;publications.html&quot;
+page_template = &quot;publication-page.html&quot;
+
+# If you want to show your publications under different sections
+# the title will be the displayed text in your website, and the type
+# should be the type of publication.
+# Each individual plublication has an `extra.type` that refers to the
+# publication type (example in content sub-section).
+extra.publications_types = [
+  { title = &quot;Journal articles&quot;, type = &quot;journals&quot; },
+  { title = &quot;Thesis&quot;, type = &quot;thesis&quot; },
+  { title = &quot;Conferences and workshops &quot;, type = &quot;conferences&quot; }
+]
++++
+
+## Content
+
+Any content will be displayed on top of the section.
+</code></pre>
+<p>Article are referenced in subdirectories of this section.</p>
+<pre><code>tree content&#x2F;research
+content&#x2F;research
+├── _index.md
+├── paper1
+│   ├── bib
+│   └── index.md
+└── thesis
+    ├── bib
+    ├── index.md
+    ├── thesis.pdf
+    └── thesis_slides.pdf
+</code></pre>
+<p>The bib files are automatically loaded to get information from it. However, it is also possible to add information in the front matter of the article markdown file.</p>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">+++
+title = &quot;Article 1&quot;
+date = 2021-05-18
+
+[extra]
+type = &quot;Conference&quot;
+authors = [ &quot;Kodama Mononoke&quot; ]
+
+# Should be the type of the publication type it should appears under
+# configured in the front matter of publications&#x2F;_index.md
+type = &quot;conferences&quot;
+
+featured = true
+publication = &quot;2020 IEE rainbow workshop&quot;
+# Add full url for your pdf and your presentation
+url_pdf = &quot;https:&#x2F;&#x2F;your-pdf&quot;
+url_slides = &quot;path_to_slides&quot;
+
+# Add a link to a local pdf inside of your paper folder (example in content&#x2F;publications&#x2F;paper1.index.md)
+pdf = &quot;paper.pdf&quot;
+slides = &quot;path_to_slides.pdf&quot;
++++
+</code></pre>
+<h2 id="extend-the-html-header">Extend the html header</h2>
+<p>In some cases, it is needed to add extra javascript or css files to be loaded by the web browsers.
+The base template of this theme define an empty block named <code>user_head</code>.</p>
+<p>To use this block, you can just create a new template name <code>templates/base.html</code> with the following content:</p>
+<pre data-lang="html" class="language-html "><code class="language-html" data-lang="html">{%&#x2F;* extends &quot;kodama-theme&#x2F;templates&#x2F;base.html&quot; *&#x2F;%}
+
+{%&#x2F;* block user_head *&#x2F;%}
+  &lt;script&gt;
+    console.log(&quot;hello world!&quot;);
+  &lt;&#x2F;script&gt;
+{%&#x2F;* endblock user_head *&#x2F;%}
+</code></pre>
+<h2 id="icons">Icons</h2>
+<p>The icons available in this project are stored in a dedicated macro function in <code>templates/macros/icons.html</code>.
+To add a new svg, you can add a case in the <code>if elif .. else</code> of the function containing the svg copied from <a class="external" href="https://heroicons.com/">heroicons</a> for instance.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>minimal-dark | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;minimal-dark&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>minimal-dark</h1>
+            <p>Clean and minimalistic dark theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;viku.me">Vitaliy Kuznetsov</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.18.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;kuznetsov17&#x2F;minimal-dark">https:&#x2F;&#x2F;github.com&#x2F;kuznetsov17&#x2F;minimal-dark</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;kuznetsov17.github.io&#x2F;minimal-dark&#x2F;">https:&#x2F;&#x2F;kuznetsov17.github.io&#x2F;minimal-dark&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-02-07T14:01:03+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><a class="external" href="https://github.com/kuznetsov17/minimal-dark/actions/workflows/zola-build.yml"><img src="https://github.com/kuznetsov17/minimal-dark/actions/workflows/zola-build.yml/badge.svg" alt="Deploy Zola with GitHub Pages" /></a></p>
+<h1 id="general">General</h1>
+<p>I am not the best webmaster, but should be somewhat responsive.
+I intentionally using the bigger fonts to make, feel free to change it in main.scss</p>
+<h1 id="light-mode">Light mode</h1>
+<p>Now light mode also supported.</p>
+<h1 id="important">Important</h1>
+<p>Please make sure to set up your base_url with trailing slash:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">base_url = &quot;https:&#x2F;&#x2F;kuznetsov17.github.io&#x2F;minimal-dark&#x2F;&quot;
+</code></pre>
+<h1 id="comments">Comments</h1>
+<p>Theme supports <a class="external" href="https://giscuss.app">Giscuss</a> for comments. The configuration is done via config.toml. Here you can see the example section used for this page deployment:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra.giscus]
+data_repo=&quot;kuznetsov17&#x2F;minimal-dark&quot;
+data_repo_id=&quot;R_kgDOLIfXYA&quot;
+data_category=&quot;General&quot;
+data_category_id=&quot;DIC_kwDOLIfXYM4Ccn56&quot;
+data_mapping=&quot;title&quot;
+data_strict=&quot;0&quot;
+data_reactions_enabled=&quot;0&quot;
+data_emit_metadata=&quot;0&quot;
+data_input_position=&quot;top&quot;
+data_theme=&quot;&#x2F;&#x2F;kuznetsov17.github.io&#x2F;minimal-dark&#x2F;css&#x2F;gs_dark.css&quot;
+data_lang=&quot;en&quot;
+crossorigin=&quot;anonymous&quot;
+nonce=&quot;&quot;
+</code></pre>
+<h1 id="page-onfigurations">Page onfigurations</h1>
+<p>Customize the page blocks by setting configuration in <strong>[extra]</strong> section:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">copyright_string = &quot;Сreated in %YEAR% for fun.&quot; # the string displayed in footer. %YEAR% is replaced by current year on build
+show_copyright = true &#x2F; false # enables &#x2F; disables footer with copyright
+show_comments = true &#x2F; false # enables &#x2F; disables comments
+show_shares = true &#x2F; false # enables &#x2F; disables section with social share buttons
+show_toc = true &#x2F; false # enables &#x2F; disable TOC
+show_date = true &#x2F; false # displays publication date in page
+</code></pre>
+<h1 id="blog">Blog</h1>
+<p>I am using this theme for my <a class="external" href="https://viku.me/notes/">notes</a>, or probably blog.
+The section template supports pagination, tags, sorts the pages by publication date. You may see the working example <a href="/notes/">here</a></p>
+<h1 id="config-toml-extras">config.toml extras</h1>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">author = &quot;John Doe&quot; # author. Will be puth in page metadata
+description = &quot;Some description, if you somehow didn&#x27;t set it in page &#x2F; section settings&quot;
+logo_src = &quot;images&#x2F;logo.svg&quot; # logo src
+avatar_src = &quot;images&#x2F;avatar.png&quot; # avatar src
+index_page=&quot;index&quot; # name of the index page. Should be one of top_menu to make things work
+top_menu = [&quot;index&quot;,&quot;features&quot;,&quot;notes&quot;] # Menu items
+copyright_string = &quot;Сreated by John Doe in 2024 – %YEAR% for fun.&quot; # footer content. %YEAR% will be replaced with current year
+nonce = &quot;${SOME_HASH_VALUE}&quot; # used for JavaScript src nonce
+</code></pre>
+<h1 id="shortcodes">Shortcodes</h1>
+<h2 id="callouts">Callouts</h2>
+<pre><code>{% callout(type = &#x27;warning&#x27;) %}
+This is an example of **Warning** callout. [Some link](#)
+{% end %}
+{% callout(type = &#x27;alert&#x27;) %}
+This is an example of **Alert** callout. [Some link](#)
+{% end %}
+{% callout(type = &#x27;info&#x27;) %}
+This is an example of **Info** callout. [Some link](#)
+{% end %}
+</code></pre>
+<h2 id="timeline">Timeline</h2>
+<pre><code>{% timeline() %}
+[{
+    &quot;title&quot;:&quot;Lorem Ipsum Event&quot;,
+    &quot;body&quot;:&quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry.&quot;,
+    &quot;date&quot;:&quot;Jul-2023&quot;
+},
+{
+    &quot;title&quot;:&quot;Lorem Ipsum event 2&quot;,
+    &quot;body&quot;:&quot;Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry&#x27;s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.&quot;,
+    &quot;date&quot;:&quot;Jun-2022&quot;
+}]
+{% end %}
+</code></pre>
+<h1 id="thanks-to">Thanks to</h1>
+<ul>
+<li><a class="external" href="https://giscuss.app">Giscuss</a> for excellent comments system</li>
+<li><a class="external" href="https://icons.getbootstrap.com">bootstrap icons</a> for great social icons</li>
+</ul>
+<h1 id="screenshot">Screenshot</h1>
+<p><img src="https://github.com/kuznetsov17/minimal-dark/blob/main/screenshot.png?raw=true" alt="Screenshot" /></p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

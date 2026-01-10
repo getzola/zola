@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Syntax Highlighting | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+
+<div class="documentation">
+    <aside class="documentation__sidebar">
+        <ul>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Getting Started</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;installation&#x2F;">Installation</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;cli-usage&#x2F;">CLI usage</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;directory-structure&#x2F;">Directory structure</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;configuration&#x2F;">Configuration</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Content</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;section&#x2F;">Section</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;page&#x2F;">Page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;shortcodes&#x2F;">Shortcodes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;linking&#x2F;">Internal links &amp; deep linking</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;table-of-contents&#x2F;">Table of Contents</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;syntax-highlighting&#x2F;">Syntax Highlighting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;search&#x2F;">Search</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;sass&#x2F;">Sass</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;image-processing&#x2F;">Image processing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;multilingual&#x2F;">Multilingual sites</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Templates</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pages-sections&#x2F;">Sections and Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pagination&#x2F;">Pagination</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;feeds&#x2F;">Feeds</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;sitemap&#x2F;">Sitemap</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;robots&#x2F;">Robots.txt</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;404&#x2F;">404 error page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;archive&#x2F;">Archive</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Themes</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;installing-and-using-themes&#x2F;">Installing &amp; using themes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;creating-a-theme&#x2F;">Creating a theme</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;extending-a-theme&#x2F;">Customizing a theme</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Deployment</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;sourcehut&#x2F;">Sourcehut Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;netlify&#x2F;">Netlify</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;github-pages&#x2F;">GitHub Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;gitlab-pages&#x2F;">GitLab Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;codeberg-pages&#x2F;">Codeberg Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;edgio&#x2F;">Edgio</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;vercel&#x2F;">Vercel</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;zeabur&#x2F;">Zeabur</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;azure-static-webapps&#x2F;">Azure Static Web Apps</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;cloudflare-pages&#x2F;">Cloudflare Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;flyio&#x2F;">Fly.io</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;aws-s3&#x2F;">AWS S3 Bucket</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;docker-image&#x2F;">Docker image</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+        </ul>
+    </aside>
+    <div class="documentation__content">
+        
+    <h1>Syntax Highlighting</h1>
+    <p>Zola comes with built-in syntax highlighting but you first
+need to enable it in the <a href="https://www.getzola.org/documentation/getting-started/configuration/">configuration</a>.</p>
+<p>Once this is done, Zola will automatically highlight all code blocks
+in your content. A code block in Markdown looks like the following:</p>
+<pre><code>```rust
+let highlight = true;
+```
+</code></pre>
+<p>You can replace <code>rust</code> with another language or not put anything to get the text
+interpreted as plain text.</p>
+<p>Zola uses <a class="external" href="https://github.com/getzola/giallo">Giallo</a>, a library that uses VSCode syntaxes and themes.</p>
+<p>You can see a full list of supported languages and themes in the README: <a class="external" href="https://github.com/getzola/giallo?tab=readme-ov-file#built-in">https://github.com/getzola/giallo?tab=readme-ov-file#built-in</a></p>
+<p>If a theme or a language you want to highlight is not supported, you can find the JSON grammar files and JSON theme files, copy them somewhere in your site
+and load them from the configurations with <code>extra_grammars</code> and <code>extra_themes</code> in the <code>[markdown.highlighting]</code> section.</p>
+<p>In any cases, you will need to add the following CSS to your site CSS for things to display correctly:</p>
+<pre data-lang="css" class="language-css "><code class="language-css" data-lang="css">.giallo-l {
+    display: inline-block;
+    min-height: 1lh;
+    width: 100%;
+}
+.giallo-ln {
+    display: inline-block;
+    user-select: none;
+    margin-right: 0.4em;
+    padding: 0.4em;
+    min-width: 3ch;
+    text-align: right;
+    opacity: 0.8;
+}
+</code></pre>
+<h2 id="theme-selection"><a class="zola-anchor" href="#theme-selection" aria-label="Anchor link for: theme-selection">🔗</a>Theme selection</h2>
+<p>You can choose to use a single theme or light/dark themes.</p>
+<p>If you want a single theme, use the <code>theme</code> key in the <code>[markdown.highlighting]</code> section of the configuration.</p>
+<p>If you want dual themes, use the <code>light_theme</code> and <code>dark_theme</code> keys:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">light_theme = &quot;github-light&quot;                                                                                     
+dark_theme = &quot;github-dark&quot;
+</code></pre>
+<h2 id="rendering-style"><a class="zola-anchor" href="#rendering-style" aria-label="Anchor link for: rendering-style">🔗</a>Rendering style</h2>
+<p>The default rendering style is <code>inline</code>, meaning the colours are set directly on the <code>&lt;span&gt;</code> elements with the hexadecimal values like
+<code>&lt;span style="color: #83A598;"&gt;base_url&lt;/span&gt;</code> for a single theme and <code>&lt;span style="color: light-dark(#076678, #83A598);"&gt;base_url&lt;/span&gt;</code>
+for dual themes. The <a class="external" href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/color_value/light-dark">light-dark()</a> CSS functions
+will automatically use the preferred color scheme of the user, with no way of overriding it from JS.</p>
+<p>If you want a light/dark theme switch button or have rules against inline styles, you can use the <code>class</code> rendering style which
+will use CSS classes instead and generate one CSS file for each theme in static folder following:</p>
+<ul>
+<li>single theme -&gt; <code>giallo.css</code></li>
+<li>dual themes: light -&gt; <code>giallo-light.css</code>, dark -&gt; <code>giallo-dark.css</code></li>
+</ul>
+<p>The HTML will look like <code>&lt;span class="z-support z-type z-property-name z-css"&gt;  user-select&lt;/span&gt;</code>.</p>
+<p>You can then support light and dark mode like so:</p>
+<pre data-lang="css" class="language-css "><code class="language-css" data-lang="css">@import url(&quot;giallo-dark.css&quot;) (prefers-color-scheme: dark);
+@import url(&quot;giallo-light.css&quot;) (prefers-color-scheme: light);
+</code></pre>
+<p>Alternately, you can reference the stylesheets in your base template to reduce request chains:</p>
+<pre data-lang="html" class="language-html "><code class="language-html" data-lang="html">&lt;head&gt;
+  &lt;!-- Other content --&gt;
+  &lt;link id=&quot;giallo-dark&quot; rel=&quot;stylesheet&quot; type=&quot;text&#x2F;css&quot; href=&quot;&#x2F;giallo-dark.css&quot; media=&quot;(prefers-color-scheme: dark)&quot; &#x2F;&gt;
+  &lt;link id=&quot;giallo-light&quot; rel=&quot;stylesheet&quot; type=&quot;text&#x2F;css&quot; href=&quot;&#x2F;giallo-light.css&quot; media=&quot;(prefers-color-scheme: light)&quot; &#x2F;&gt;
+&lt;&#x2F;head&gt;
+</code></pre>
+<h2 id="annotations"><a class="zola-anchor" href="#annotations" aria-label="Anchor link for: annotations">🔗</a>Annotations</h2>
+<p>You can use additional annotations to customize how code blocks are displayed:</p>
+<ul>
+<li><code>linenos</code> to enable line numbering.</li>
+</ul>
+<pre><code>```rust,linenos
+use highlighter::highlight;
+let code = &quot;...&quot;;
+highlight(code);
+```
+</code></pre>
+<ul>
+<li><code>linenostart</code> to specify the number for the first line (defaults to 1)</li>
+</ul>
+<pre><code>```rust,linenos,linenostart=20
+use highlighter::highlight;
+let code = &quot;...&quot;;
+highlight(code);
+```
+</code></pre>
+<ul>
+<li><code>hl_lines</code> to highlight lines. You must specify a list of inclusive ranges of lines to highlight,
+separated by <code> </code> (whitespace). Ranges are 1-indexed and <code>linenostart</code> doesn't influence the values, it always refers to the codeblock line number.</li>
+</ul>
+<pre><code>```rust,hl_lines=1 3-5 9
+use highlighter::highlight;
+let code = &quot;...&quot;;
+highlight(code);
+```
+</code></pre>
+<ul>
+<li><code>hide_lines</code> to hide lines. You must specify a list of inclusive ranges of lines to hide,
+separated by <code> </code> (whitespace). Ranges are 1-indexed.</li>
+</ul>
+<pre><code>```rust,hide_lines=1-2
+use highlighter::highlight;
+let code = &quot;...&quot;;
+highlight(code);
+```
+</code></pre>
+<ul>
+<li><code>name</code> to specify a name the code block is associated with.</li>
+</ul>
+<pre><code>```rust,name=mod.rs
+use highlighter::highlight;
+let code = &quot;...&quot;;
+highlight(code);
+```
+</code></pre>
+<p>Here's an example with all the options used: <code>scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7</code>.</p>
+<pre data-linenos data-lang="scss" class="language-scss "><code class="language-scss" data-lang="scss"><table><tbody><tr><td>10</td><td>pre mark {
+</td></tr><tr><td><mark>12</mark></td><td><mark>  display: block;
+</mark></td></tr><tr><td><mark>13</mark></td><td><mark>  color: currentcolor;
+</mark></td></tr><tr><td>14</td><td>}
+</td></tr><tr><td>15</td><td>pre table td:nth-of-type(1) {
+</td></tr><tr><td><mark>17</mark></td><td><mark>  color: #6b6b6b;
+</mark></td></tr><tr><td><mark>18</mark></td><td><mark>  font-style: italic;
+</mark></td></tr><tr><td>19</td><td>}
+</td></tr></tbody></table></code></pre>
+<p>Line 2 and 7 are comments that are not shown in the final output.</p>
+
+
+    </div>
+</div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

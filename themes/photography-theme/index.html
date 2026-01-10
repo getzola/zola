@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>photography theme | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;photography-theme&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>photography theme</h1>
+            <p>a theme for a photography portfolio</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;arbs09.dev">arbs09</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.2 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;arbs09.dev&#x2F;projects&#x2F;photography-theme&#x2F;">https:&#x2F;&#x2F;arbs09.dev&#x2F;projects&#x2F;photography-theme&#x2F;</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;blog&#x2F;">Blog</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;portfolio&#x2F;">portfolio</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;photography&#x2F;">photography</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;seo&#x2F;">SEO</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2025-11-29T16:45:05+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="photography-website-theme">photography website theme</h1>
+<p><img src="https://www.getzola.org/themes/photography-theme/screenshot.png" alt="screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>Initialise git:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git init
+</code></pre>
+<p>Add this theme to the <code>themes</code> folder:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git submodule add --depth=1 https:&#x2F;&#x2F;github.com&#x2F;arbs09&#x2F;photography-theme.git themes&#x2F;photography
+git submodule update --init --recursive
+</code></pre>
+<p>You can now enable the theme in your <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;photography&quot;
+</code></pre>
+<h2 id="updating">Updating</h2>
+<p>Just run:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git submodule update --remote --merge
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<h3 id="options">Options</h3>
+<h4 id="home-nav-footer-links">home / nav / footer links</h4>
+<p>You can edit the links on the homepage, in the nav and footer.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+home_links = [
+    {url = &quot;https:&#x2F;&#x2F;example.com&quot;, name = &quot;Example&quot;},
+]
+nav_links = [
+    {url = &quot;https:&#x2F;&#x2F;example.com&quot;, name = &quot;Example&quot;},
+]
+footer_links = [
+    {url = &quot;https:&#x2F;&#x2F;example.com&quot;, name = &quot;Example&quot;},
+]
+</code></pre>
+<h4 id="copyright">Copyright</h4>
+<p>For editing the copyright in the footer just use this:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+copyright = &quot;Example&quot;
+</code></pre>
+<h4 id="ai-opt-out">Ai opt-out</h4>
+<p>If you want to opt out of (some) Ai Bots crawling your site you can add the following to your config.toml.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+no_ai = true
+</code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

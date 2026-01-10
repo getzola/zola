@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>austere | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;austere&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>austere</h1>
+            <p>A minimal theme for Zola with a focus on writing.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;www.tomwrw.com">tomwrw</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.17.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;tomwrw&#x2F;austere-theme-zola">https:&#x2F;&#x2F;github.com&#x2F;tomwrw&#x2F;austere-theme-zola</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;dark&#x2F;">dark</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;blog&#x2F;">blog</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;minimal&#x2F;">minimal</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;personal&#x2F;">personal</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;responsive&#x2F;">responsive</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;seo&#x2F;">seo</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;writing&#x2F;">writing</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2025-12-28T15:39:35Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <p align="center">
+  <img src="logo.svg" alt="austere" width="200">
+</p>
+<h1 align="center">austere</h1>
+<p align="center">A minimal theme for <a href="https://getzola.org">Zola</a> with a focus on writing.</p>
+<hr />
+<p><strong>Live Demo:</strong> <a class="external" href="https://tomwrw.com">My personal website</a></p>
+<p>The austere theme is designed with readability in mind. It uses the core functionality of Zola, and doesn't require additional third-party integrations. Currently, the only external link is to Google Fonts. Styles are internal to the base template, and colour can be applied directly in the site configuration.</p>
+<p>The design and simplicity of austere was heavily influenced by the excellent <a class="external" href="https://github.com/jimmyff/zola-zap">Zap</a> theme by <a class="external" href="https://github.com/jimmyff">jimmyff</a>.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Internal CSS (~2KB) - no external stylesheets</li>
+<li>Configurable color themes for light/dark</li>
+<li>Serif typography</li>
+<li>Light/dark mode toggle</li>
+<li>Responsive images</li>
+<li>Atom and RSS feeds</li>
+<li>Fuse.js search</li>
+</ul>
+<h2 id="screenshot">Screenshot</h2>
+<p align="center">
+  <img src="screenshot.png" alt="austere" width="1000">
+</p>
+<h2 id="installation">Installation</h2>
+<ol>
+<li>
+<p>Download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd your-zola-site
+git submodule add https:&#x2F;&#x2F;github.com&#x2F;tomwrw&#x2F;austere-theme-zola themes&#x2F;austere
+</code></pre>
+</li>
+<li>
+<p>Set the theme in your <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;austere&quot;
+</code></pre>
+</li>
+<li>
+<p>Copy the example content to get started (optional):</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cp -r themes&#x2F;austere&#x2F;content&#x2F;* content&#x2F;
+</code></pre>
+</li>
+</ol>
+<h2 id="configuration">Configuration</h2>
+<h3 id="example-configuration">Example Configuration</h3>
+<p>Here you can find an example config.toml to use for your site with the austere theme. Make sure you change:</p>
+<ul>
+<li>Title</li>
+<li>Description</li>
+<li>Base URL</li>
+</ul>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml"># Site title.
+title = &quot;austere&quot;
+# Site description.
+description = &quot;A minimal theme for Zola with a focus on writing.&quot;
+# Base URL for your site.
+base_url = &quot;https:&#x2F;&#x2F;www.tomwrw.co.uk&quot;
+# No SASS - CSS is internal (located in base.html template).
+compile_sass = false
+# Search index enabled.
+build_search_index = true
+# Default site language.
+default_language = &quot;en&quot;
+# Feeds.
+generate_feeds = true
+# Specify feed filenames.
+feed_filenames = [&quot;atom.xml&quot;, &quot;rss.xml&quot;]
+# Taxonomies.
+taxonomies = [{ name = &quot;tags&quot;, feed = true }]
+
+[search]
+# Required for search page to work.
+index_format = &quot;fuse_javascript&quot;
+
+[markdown]
+# Required for code highlighting blocks.
+highlight_code = true
+highlight_theme = &quot;css&quot;
+
+[slugify]
+# Controls slugification for page&#x2F;section URLs.
+paths = &quot;on&quot;
+# Controls slugification for taxonomy terms (tags, categories, etc.).
+taxonomies = &quot;on&quot;
+# Controls slugification for heading anchors (H1 to H6 etc.).
+anchors = &quot;on&quot;
+
+[extra]
+# Keywords for SEO.
+keywords = &quot;zola, theme, minimal&quot;
+# Site icon in header (optional - comment out to hide).
+site_icon = &quot;quill.svg&quot;
+# Header strapline (optional - comment out to hide).
+strapline = &quot;A minimal theme for Zola&quot;
+# Footer text (optional - comment out to hide).
+footer_text = &quot;austere - made for &lt;a href=&#x27;https:&#x2F;&#x2F;getzola.org&#x27;&gt;Zola&lt;&#x2F;a&gt;&quot;
+# Favicon (optional - comment out to hide).
+favicon = &quot;&#x2F;favicon.ico&quot;
+# Profile picture on home page (optional - comment out to hide).
+profile_picture = &quot;&#x2F;images&#x2F;profile.svg&quot;
+
+# Enable inline SVG icons (uses sprite sheet).
+inline_icons = true
+icon_path = &quot;static&#x2F;icons&#x2F;&quot;
+icons = [&quot;light&quot;, &quot;asleep&quot;, &quot;rss&quot;]
+
+# Responsive images
+image_format = &quot;auto&quot;
+image_quality = 80
+images_default_size = 1024
+images_sizes = [512, 1024, 2048]
+
+# Navigation menu.
+menu_links = [
+  { url = &quot;$BASE_URL&#x2F;&quot;, name = &quot;Home&quot; },
+  { url = &quot;$BASE_URL&#x2F;posts&#x2F;&quot;, name = &quot;Posts&quot; },
+  { url = &quot;$BASE_URL&#x2F;about&#x2F;&quot;, name = &quot;About&quot; },
+  { url = &quot;$BASE_URL&#x2F;projects&#x2F;&quot;, name = &quot;Projects&quot; },
+  { url = &quot;$BASE_URL&#x2F;tags&#x2F;&quot;, name = &quot;Tags&quot; },
+  { url = &quot;$BASE_URL&#x2F;search&#x2F;&quot;, name = &quot;Search&quot; },
+]
+
+# Custom colour themes. Adjust here to apply own colour.
+# Light colours.
+[extra.colours.light]
+background = &quot;#FAF7F2&quot;
+text = &quot;#1a1a1a&quot;
+text_muted = &quot;#3a3a3a&quot;
+accent = &quot;#9E4440&quot;
+accent_hover = &quot;#7A3533&quot;
+code_bg = &quot;#f0ebe3&quot;
+border = &quot;#e0d9ce&quot;
+# Dark colours.
+[extra.colours.dark]
+background = &quot;#141413&quot;
+text = &quot;#e8e8e8&quot;
+text_muted = &quot;#a0a0a0&quot;
+accent = &quot;#E07A5F&quot;
+accent_hover = &quot;#F4A594&quot;
+code_bg = &quot;#1e1e1d&quot;
+border = &quot;#2a2a29&quot;
+
+</code></pre>
+<h3 id="theme-options">Theme Options</h3>
+<p>All theme options go under <code>[extra]</code> in your <code>config.toml</code>:</p>
+<h4 id="site-identity">Site Identity</h4>
+<table><thead><tr><th>Option</th><th>Description</th><th>Default</th></tr></thead><tbody>
+<tr><td><code>strapline</code></td><td>Tagline shown in header</td><td><em>(none)</em></td></tr>
+<tr><td><code>favicon</code></td><td>Path to favicon</td><td><em>(none)</em></td></tr>
+<tr><td><code>profile_picture</code></td><td>Profile image on home page</td><td><em>(none)</em></td></tr>
+<tr><td><code>keywords</code></td><td>SEO meta keywords</td><td><em>(none)</em></td></tr>
+<tr><td><code>footer_text</code></td><td>Footer HTML content</td><td><em>(none)</em></td></tr>
+</tbody></table>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+strapline = &quot;Welcome to my website&quot;
+favicon = &quot;&#x2F;favicon.ico&quot;
+profile_picture = &quot;&#x2F;images&#x2F;me.png&quot;
+keywords = &quot;blog, writing, zola&quot;
+footer_text = &quot;Made with &lt;a href=&#x27;https:&#x2F;&#x2F;getzola.org&#x27;&gt;Zola&lt;&#x2F;a&gt;&quot;
+</code></pre>
+<h4 id="navigation">Navigation</h4>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+menu_links = [
+  { url = &quot;$BASE_URL&#x2F;&quot;, name = &quot;Home&quot; },
+  { url = &quot;$BASE_URL&#x2F;posts&#x2F;&quot;, name = &quot;Posts&quot; },
+  { url = &quot;$BASE_URL&#x2F;about&#x2F;&quot;, name = &quot;About&quot; },
+  { url = &quot;$BASE_URL&#x2F;projects&#x2F;&quot;, name = &quot;Projects&quot; },
+  { url = &quot;$BASE_URL&#x2F;tags&#x2F;&quot;, name = &quot;Tags&quot; },
+  { url = &quot;$BASE_URL&#x2F;search&#x2F;&quot;, name = &quot;Search&quot; },
+]
+</code></pre>
+<h4 id="colours">Colours</h4>
+<p>Customize the color scheme for light and dark modes:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra.colours.light]
+background = &quot;#FAF7F2&quot;
+text = &quot;#1a1a1a&quot;
+text_muted = &quot;#3a3a3a&quot;
+accent = &quot;#9E4440&quot;
+accent_hover = &quot;#7A3533&quot;
+code_bg = &quot;#f0ebe3&quot;
+border = &quot;#e0d9ce&quot;
+
+[extra.colours.dark]
+background = &quot;#141413&quot;
+text = &quot;#e8e8e8&quot;
+text_muted = &quot;#a0a0a0&quot;
+accent = &quot;#E07A5F&quot;
+accent_hover = &quot;#F4A594&quot;
+code_bg = &quot;#1e1e1d&quot;
+border = &quot;#2a2a29&quot;
+</code></pre>
+<h4 id="responsive-images">Responsive Images</h4>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+image_format = &quot;auto&quot;      # auto, webp, jpg, png
+image_quality = 80         # 1-100
+images_default_size = 1024
+images_sizes = [512, 1024, 2048]
+</code></pre>
+<h4 id="analytics-optional">Analytics (Optional)</h4>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+# Umami Analytics
+umami_website_id = &quot;your-website-id&quot;
+umami_src = &quot;https:&#x2F;&#x2F;cloud.umami.is&#x2F;script.js&quot;  # optional, custom domain
+umami_domains = &quot;yoursite.com&quot;                  # optional, limit tracking
+
+# OR Google Analytics
+google_analytics_tag_id = &quot;G-XXXXXXXXXX&quot;
+</code></pre>
+<h2 id="content">Content</h2>
+<h3 id="posts">Posts</h3>
+<p>Create posts in <code>content/posts/</code>:</p>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">+++
+title = &quot;My Post Title&quot;
+date = 2024-01-15
+description = &quot;A brief description for SEO&quot;
+[taxonomies]
+tags = [&quot;zola&quot;, &quot;blogging&quot;]
++++
+
+Your content here...
+</code></pre>
+<p>For posts with images, use a folder structure:</p>
+<pre><code>content&#x2F;posts&#x2F;my-post&#x2F;
+├── index.md
+└── image.jpg
+</code></pre>
+<h3 id="pages">Pages</h3>
+<p>Create standalone pages in <code>content/</code>:</p>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">+++
+title = &quot;About&quot;
+template = &quot;page.html&quot;
++++
+
+Page content...
+</code></pre>
+<h3 id="projects">Projects</h3>
+<p>Create <code>content/projects/_index.md</code>:</p>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">+++
+title = &quot;Projects&quot;
+template = &quot;projects.html&quot;
++++
+</code></pre>
+<p>Then create <code>content/projects/projects.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[[projects]]
+title = &quot;Project Name&quot;
+emoji = &quot;🚀&quot;
+description = &quot;What this project does&quot;
+url = &quot;https:&#x2F;&#x2F;github.com&#x2F;you&#x2F;project&quot;
+image = &quot;screenshot.png&quot;  # optional, relative to projects folder
+date = &quot;2024&quot;
+status = &quot;Active&quot;
+tags = [&quot;rust&quot;, &quot;web&quot;]
+</code></pre>
+<h3 id="search">Search</h3>
+<p>Create <code>content/search.md</code>:</p>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">+++
+title = &quot;Search&quot;
+template = &quot;search.html&quot;
++++
+</code></pre>
+<h2 id="shortcodes">Shortcodes</h2>
+<h3 id="responsive-image">Responsive Image</h3>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">{{ image(src=&quot;photo.jpg&quot;, alt=&quot;Description&quot;) }}
+</code></pre>
+<h3 id="youtube-embed">YouTube Embed</h3>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">{{ youtube(id=&quot;dQw4w9WgXcQ&quot;) }}
+{{ youtube(id=&quot;dQw4w9WgXcQ&quot;, autoplay=true) }}
+</code></pre>
+<h3 id="spotify-embed">Spotify Embed</h3>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">{{ spotify(id=&quot;album-id&quot;) }}
+</code></pre>
+<h2 id="customization">Customization</h2>
+<h3 id="template-hooks">Template Hooks</h3>
+<p>Override these macros in your own <code>templates/macros/hooks.html</code>:</p>
+<pre data-lang="html" class="language-html "><code class="language-html" data-lang="html">{%&#x2F;* macro post_above_content(page) *&#x2F;%}
+&lt;!-- Content before post body --&gt;
+{%&#x2F;* endmacro *&#x2F;%}
+
+{%&#x2F;* macro post_below_content(page) *&#x2F;%}
+&lt;!-- Content after post body --&gt;
+{%&#x2F;* endmacro *&#x2F;%}
+
+{%&#x2F;* macro post_below_tags(page) *&#x2F;%}
+&lt;!-- Content after post tags --&gt;
+{%&#x2F;* endmacro *&#x2F;%}
+
+{%&#x2F;* macro posts_below_title(page) *&#x2F;%}
+&lt;!-- Content after post title in list view --&gt;
+{%&#x2F;* endmacro *&#x2F;%}
+</code></pre>
+<h3 id="opengraph-images">OpenGraph Images</h3>
+<p>Add a preview image to any page:</p>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">+++
+[extra]
+og_preview_img = &quot;preview.jpg&quot;
++++
+</code></pre>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Zola 0.17.0 or later</li>
+</ul>
+<h2 id="license">License</h2>
+<p>MIT</p>
+<h2 id="credits">Credits</h2>
+<ul>
+<li><a class="external" href="https://github.com/jimmyff/zap">Zap</a> by <a class="external" href="https://github.com/jimmyff">jimmyff</a> - Original theme inspiration</li>
+<li><a class="external" href="https://getzola.org">Zola</a> - Static site generator</li>
+<li><a class="external" href="https://fusejs.io">Fuse.js</a> - Client-side search</li>
+<li><a class="external" href="https://fonts.google.com/specimen/Source+Serif+4">Source Serif 4</a> - Typography</li>
+<li>Favicon by <a class="external" href="https://iconarchive.com/artist/iconsmind.html">IconsMind</a></li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

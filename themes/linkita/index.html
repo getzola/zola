@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Linkita | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;linkita&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Linkita</h1>
+            <p>A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;salif.eu">Salif Mehmed</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;codeberg.org&#x2F;salif&#x2F;linkita">https:&#x2F;&#x2F;codeberg.org&#x2F;salif&#x2F;linkita</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;salif.github.io&#x2F;linkita&#x2F;">https:&#x2F;&#x2F;salif.github.io&#x2F;linkita&#x2F;</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;blog&#x2F;">Blog</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;multilingual&#x2F;">Multilingual</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;responsive&#x2F;">Responsive</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;seo&#x2F;">SEO</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;search&#x2F;">Search</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2026-01-01T19:21:22+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="linkita">Linkita</h1>
+<p>A clean and elegant blog theme for <a class="external" href="https://www.getzola.org/">Zola</a>.
+Linkita is based on <a class="external" href="https://github.com/st1020/kita">Kita</a>
+and <a class="external" href="https://github.com/nanxiaobei/hugo-paper">Hugo-Paper</a> and is multilingual and SEO friendly.</p>
+<ul>
+<li>See the <a class="external" href="https://github.com/salif/linkita-start">quickstart repository</a>.</li>
+<li>See a <a class="external" href="https://salif.github.io/linkita/">live preview</a> and
+<a class="external" href="https://codeberg.org/salif/linkita-demo">its source code</a>.</li>
+<li>Open bug reports and feature requests on <a class="external" href="https://codeberg.org/salif/linkita/issues">Codeberg</a>.</li>
+<li>The source code is available on <a class="external" href="https://codeberg.org/salif/linkita">Codeberg</a>
+and mirrored on <a class="external" href="https://github.com/salif/linkita">GitHub</a>.</li>
+</ul>
+<h2 id="features">Features</h2>
+<ul>
+<li>Easy to use and modify</li>
+<li>No preset limits</li>
+<li>Inject support</li>
+<li>Dark mode</li>
+<li>Responsive design</li>
+<li>Social icons</li>
+<li>Taxonomies support</li>
+<li>Projects page</li>
+<li>Archive page</li>
+<li>Table of Content</li>
+<li>Admonition shortcode</li>
+<li>SEO friendly</li>
+<li>Comments using <a class="external" href="https://giscus.app/">Giscus</a></li>
+<li>Mathematical notations using <a class="external" href="https://katex.org/">KaTeX</a></li>
+<li>Diagrams and charts using <a class="external" href="https://mermaid.js.org/">Mermaid</a></li>
+<li>Multilingual support</li>
+<li>Search support (elasticlunr_javascript)</li>
+<li>Improved search engine optimization</li>
+<li>Improved configurability</li>
+<li>Author profiles</li>
+<li>Projects shortcode</li>
+<li>Keyboard shortcuts</li>
+<li>Relative URLs support</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>The fastest way to create a new site is to use the
+<a class="external" href="https://github.com/salif/linkita-start">linkita-start template</a>.
+This gives you a complete blog setup with all the essential configuration ready to go.</p>
+<h3 id="manual-installation">Manual installation</h3>
+<ol start="0">
+<li>Create a new Zola site if you haven't already:</li>
+</ol>
+<pre data-lang="sh" class="language-sh "><code class="language-sh" data-lang="sh">zola init myblog
+cd myblog
+git init
+</code></pre>
+<ol>
+<li>Add the theme as a git submodule:</li>
+</ol>
+<pre data-lang="sh" class="language-sh "><code class="language-sh" data-lang="sh">git submodule add -b v4 https:&#x2F;&#x2F;codeberg.org&#x2F;salif&#x2F;linkita.git themes&#x2F;linkita
+</code></pre>
+<p>If you don't want to use git submodules, you can clone the repository instead:</p>
+<pre data-lang="sh" class="language-sh "><code class="language-sh" data-lang="sh">git clone -b v4 https:&#x2F;&#x2F;codeberg.org&#x2F;salif&#x2F;linkita.git themes&#x2F;linkita
+</code></pre>
+<ol start="2">
+<li>Enable the theme in your <code>config.toml</code> file:</li>
+</ol>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">theme = &quot;linkita&quot;
+</code></pre>
+<p>Place it near the <code>base_url</code> variable, not under <code>[extra]</code>.</p>
+<h2 id="managing-versions">Managing versions</h2>
+<p>To update the theme, run:</p>
+<pre data-lang="sh" class="language-sh "><code class="language-sh" data-lang="sh">git submodule update --remote themes&#x2F;linkita
+</code></pre>
+<p>If you use the <code>linkita</code> branch of the theme, check the
+<a class="external" href="https://codeberg.org/salif/linkita/src/branch/linkita/changelog/linkita.md">changelog/linkita.md</a> file.<br />
+Otherwise, find the changelog file for your version in the <code>changelog</code> directory.</p>
+<p>If you switch to a newer version, there may be breaking changes that require manual involvement.</p>
+<h2 id="usage">Usage</h2>
+<p>Linkita uses the following front matter variables.
+All variables are optional.
+Set the ones you need.</p>
+<h3 id="yaml-frontmatter">YAML frontmatter</h3>
+<pre data-lang="yaml" data-name="frontmatter" class="language-yaml "><code class="language-yaml" data-lang="yaml" data-name="frontmatter">---
+title: &quot;&quot;
+description: &quot;&quot;
+date: 
+updated: 
+taxonomies:
+  categories:
+  tags:
+extra:
+  comment: false
+  math: false
+  mermaid: false
+  cover:
+    image: &quot;&quot;
+    alt: &quot;&quot;
+---
+</code></pre>
+<h3 id="toml-frontmatter">TOML frontmatter</h3>
+<pre data-lang="toml" data-name="frontmatter" class="language-toml "><code class="language-toml" data-lang="toml" data-name="frontmatter">+++
+title = &quot;&quot;
+description = &quot;&quot;
+# The date of the post
+date = 2026-12-30
+# The last updated date of the post
+updated = 2026-12-31
+
+[taxonomies]
+categories = []
+tags = []
+
+[extra]
+# Enable comments
+comment = false
+# Enable KaTeX support
+math = false
+# Enable Mermaid support
+mermaid = false
+[extra.cover]
+# Path to the cover image
+image = &quot;&quot;
+# A description of the cover image
+alt = &quot;&quot;
++++
+</code></pre>
+<h3 id="other-extra-front-matter-variables">Other extra front matter variables</h3>
+<p>Linkita supports <a class="external" href="https://salif.github.io/linkita/extra-frontmatter/">more extra variables, listed here</a>.</p>
+<h3 id="pages-and-posts">Pages and Posts</h3>
+<h4 id="home-page">Home page</h4>
+<p>Create a <code>content/_index.md</code> file and set <code>extra.profile</code> to your username:</p>
+<pre data-lang="toml" data-name="content/_index.md" class="language-toml "><code class="language-toml" data-lang="toml" data-name="content/_index.md">+++
+title = &quot;&quot;
+description = &quot;&quot;
+sort_by = &quot;date&quot;
+paginate_by = 4
+[extra]
+profile = &quot;your_username&quot;
++++
+</code></pre>
+<p>Do it for each language in your site.
+For French, the file name is <code>content/_index.fr.md</code>.</p>
+<p>See Profiles for more.</p>
+<h4 id="posts">Posts</h4>
+<p>In the <code>content</code> directory, create a subdirectory named <code>blog</code> or another name of your choice.</p>
+<p>Create a <code>content/blog/_index.md</code> file:</p>
+<pre data-lang="toml" data-name="content/blog/_index.md" class="language-toml "><code class="language-toml" data-lang="toml" data-name="content/blog/_index.md">+++
+title = &quot;Archive&quot;
+description = &quot;&quot;
+template = &quot;archive.html&quot;
+transparent = true
+[extra]
+date_format = &quot;%m-%d&quot;
++++
+</code></pre>
+<p>Create a <code>content/blog/hello.md</code> file:</p>
+<pre data-lang="md" data-name="content/blog/hello.md" class="language-md "><code class="language-md" data-lang="md" data-name="content/blog/hello.md">+++
+title = &quot;Title&quot;
+date = 2026-12-30
++++
+
+Summary &lt;!-- more --&gt;
+
+## Hello, world!
+</code></pre>
+<h4 id="pages">Pages</h4>
+<p>The default page template <code>page.html</code> is for blog posts.
+For pages that are not blog posts you can use the <code>pages.html</code> template.</p>
+<p>In the <code>content</code> directory, create a subdirectory named <code>pages</code> and
+create a <code>content/pages/_index.md</code> file:</p>
+<pre data-lang="toml" data-name="content/pages/_index.md" class="language-toml "><code class="language-toml" data-lang="toml" data-name="content/pages/_index.md">+++
+render = false
+page_template = &quot;pages.html&quot;
++++
+</code></pre>
+<p>Create a <code>content/pages/about.md</code> file:</p>
+<pre data-lang="md" data-name="content/pages/about.md" class="language-md "><code class="language-md" data-lang="md" data-name="content/pages/about.md">+++
+title = &quot;About me&quot;
+description = &quot;&quot;
+path = &quot;about&quot;
++++
+
+## Hello, world!
+</code></pre>
+<p>If you want, you can also create <a class="external" href="https://salif.github.io/linkita/shortcodes/#projects">a page for your projects</a>.</p>
+<h3 id="setting-page-authors">Setting page authors</h3>
+<p>Choose one of the following options or skip if you don't know what you're doing:</p>
+<h4 id="option-a-using-page-authors-and-config-author">Option A: Using <code>page.authors</code> and <code>config.author</code></h4>
+<p>The default author for posts is set using the <code>author</code> variable in the <code>config.toml</code> file.</p>
+<p>You don't need to set <code>authors</code> in the front matter if the default author is the only author of the post.
+Otherwise, set <code>authors</code>:</p>
+<pre data-lang="toml" data-name="frontmatter" class="language-toml "><code class="language-toml" data-lang="toml" data-name="frontmatter">+++
+authors = [&quot;author_username&quot;]
++++
+</code></pre>
+<h4 id="option-b-using-taxonomies">Option B: Using Taxonomies</h4>
+<p>Useful if the blog has a team of several authors.
+If you choose this option you should set taxonomies in each post.</p>
+<pre data-lang="toml" data-name="frontmatter" class="language-toml "><code class="language-toml" data-lang="toml" data-name="frontmatter">+++
+[taxonomies]
+authors = [&quot;author_username&quot;, &quot;author2_username&quot;]
++++
+</code></pre>
+<h3 id="inject-support">Inject support</h3>
+<p>You can easily use inject to add new features to your site without modifying the theme itself.</p>
+<p>To use inject, you need to add some HTML files to the <code>templates/injects</code> directory.</p>
+<p>The available inject points are: <code>head.html</code>, <code>head_end.html</code>, <code>header_nav.html</code>,
+<code>body_start.html</code>, <code>body_end.html</code>, <code>page_start.html</code>, <code>page_end.html</code>, <code>footer.html</code>.</p>
+<p>For example, you can add JavaScript files and CSS stylesheets in the <code>templates/injects/head_end.html</code> file.</p>
+<h3 id="keyboard-shortcuts">Keyboard shortcuts</h3>
+<table><thead><tr><th>Action</th><th>Shortcut</th></tr></thead><tbody>
+<tr><td>Home</td><td><kbd>Alt</kbd>+<kbd>!</kbd></td></tr>
+<tr><td>Search</td><td><kbd>Alt</kbd>+<kbd>/</kbd></td></tr>
+<tr><td>Toggle menu</td><td><kbd>Alt</kbd>+<kbd>+</kbd></td></tr>
+<tr><td>Toggle dark mode</td><td><kbd>Alt</kbd>+<kbd>$</kbd></td></tr>
+<tr><td>Go to prev page</td><td><kbd>Alt</kbd>+<kbd>,</kbd></td></tr>
+<tr><td>Go to next page</td><td><kbd>Alt</kbd>+<kbd>.</kbd></td></tr>
+<tr><td>Table of contents</td><td><kbd>Alt</kbd>+<kbd>=</kbd></td></tr>
+<tr><td>Skip to footer</td><td><kbd>Alt</kbd>+<kbd>_</kbd></td></tr>
+</tbody></table>
+<h2 id="configuration">Configuration</h2>
+<p>Copy and paste the examples into your <code>config.toml</code> file
+and comment out the variables you don't use instead of setting empty values.
+All variables are optional.</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"># The URL the site will be built for.
+base_url = &quot;https:&#x2F;&#x2F;example.com&quot;
+
+# The site theme to use.
+theme = &quot;linkita&quot;
+
+# The default language.
+# &quot;en&quot; is for English.
+default_language = &quot;en&quot;
+
+# The default author for pages.
+# See &quot;extra.profiles&quot;.
+author = &quot;your_username&quot;
+
+# The site title.
+# Will be in all page titles.
+title = &quot;&quot;
+
+# The site description.
+# Used in feeds by default.
+description = &quot;&quot;
+
+# Automatically generate a feed.
+# Default value: false
+generate_feeds = true
+
+# The filenames to use for the feeds.
+# e.g. [&quot;rss.xml&quot;]
+feed_filenames = [&quot;atom.xml&quot;]
+
+# Build a search index from the pages and section content
+# for &quot;default_language&quot;.
+# build_search_index = true
+</code></pre>
+<p>Zola has built-in support for taxonomies.
+Linkita has special support for taxonomies named <code>tags</code>, <code>categories</code>, and <code>authors</code>.</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[[taxonomies]]
+name = &quot;categories&quot;
+feed = true
+paginate_by = 4
+
+[[taxonomies]]
+name = &quot;tags&quot;
+feed = true
+paginate_by = 4
+
+[[taxonomies]]
+name = &quot;authors&quot;
+feed = true
+paginate_by = 4
+</code></pre>
+<p>You can add more languages by replacing <code>fr</code> from the following example with the language code:</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[languages.fr]
+title = &quot;Site title in French&quot;
+description = &quot;Site description in French&quot;
+generate_feeds = true
+feed_filenames = [&quot;atom.xml&quot;] # or [&quot;rss.xml&quot;]
+build_search_index = true
+taxonomies = [
+    { name = &quot;tags&quot;, feed = true, paginate_by = 4 }
+]
+</code></pre>
+<p>By default, taxonomy pages are sorted in descending order by the number of posts.
+You can customize this behavior using the <code>extra.taxonomy_sorting</code> variable:</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[extra.taxonomy_sorting]
+# &quot;ascending_frequency&quot;, &quot;descending_frequency&quot; or &quot;name&quot;
+# Default value: &quot;descending_frequency&quot;
+categories = &quot;name&quot;
+tags = &quot;descending_frequency&quot;
+authors = &quot;name&quot;
+</code></pre>
+<h3 id="general-config">General config</h3>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[extra]
+# Enable KaTeX math formula support globally.
+# Default value: false
+math = false
+
+# Enable Mermaid support globally.
+# Default value: false
+mermaid = false
+
+# Enable comments globally.
+# Default value: false
+comment = false
+
+# Title separator.
+title_separator = &quot; | &quot;
+
+# The top menu.
+# See &quot;extra.menus&quot;.
+header_menu_name = &quot;menu_name&quot;
+
+# See &quot;extra.menus&quot;.
+menu_i18n = false
+
+# If you disable default favicons, you can use
+# the inject support to set your own favicons.
+# Default value: false
+disable_default_favicon = false
+
+# If you want to implement the JS code
+# yourself, set to true and use the inject support.
+# Default value: false
+disable_javascript = false
+
+# Use a CDN for libraries like KaTeX.
+# Default value: false
+use_cdn = false
+
+# Use relative URLs.
+# It doesn&#x27;t apply for content yet.
+# Default value: false
+relative_urls = false
+
+# If you want to view the site without a webserver
+# set this and &quot;relative_urls&quot; to true.
+# Default value: false
+ugly_urls = false
+
+# Prioritize summary over description.
+# Default value: false
+page_summary_on_paginator = false
+
+# Reverse the order of prev and next post links.
+# Default value: false
+invert_page_navigation = false
+
+# Header buttons.
+# Valid values:
+#  &quot;site_title&quot;, &quot;home_button&quot;, &quot;theme_select&quot;, &quot;theme_button&quot;,
+#  &quot;search_button&quot;, &quot;translations_select&quot;, &quot;translations_button&quot;.
+# Can be set to an empty array.
+# header_buttons = [&quot;site_title&quot;, &quot;theme_select&quot;, &quot;search_button&quot;, &quot;translations_select&quot;]
+
+# What info is shown on post pages.
+# Valid &quot;when&quot; values:
+#  &quot;date&quot;, &quot;date_updated&quot;, &quot;reading_time&quot;, &quot;word_count&quot;, &quot;authors&quot;, &quot;tags&quot;, &quot;&quot;.
+# The &quot;prepend&quot; and &quot;append&quot; are used when the value of &quot;when&quot; is defined for the page.
+# e.g. [{when=&quot;&quot;, prepend=&quot;Page Info: &quot;},{when=&quot;date&quot;,prepend=&quot;Published on &quot;},{when=&quot;authors&quot;,prepend=&quot;By &quot;}]
+# page_info = [{ when=&quot;date&quot; }, { when=&quot;date_updated&quot;, prepend=&quot;(&quot;, append=&quot;)&quot; }, { when=&quot;reading_time&quot; }]
+
+# What info is shown for posts on paginators.
+# page_info_on_paginator = [{ when=&quot;date&quot; }, { when=&quot;reading_time&quot; }]
+
+# Enable table of contents on all pages.
+# If not set, toc is enabled only on posts.
+# If set to false, toc is disabled on all pages.
+# Type: boolean or object
+# toc = true
+</code></pre>
+<h3 id="style-config">Style config</h3>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[extra.style]
+# The custom background color.
+bg_color = &quot;#f4f4f5&quot;
+# The custom background color in dark mode.
+bg_dark_color = &quot;#18181b&quot;
+
+# Enable header blur.
+header_blur = false
+
+# The custom header color, only available
+# when &quot;header_blur&quot; is false.
+header_color = &quot;#e4e4e7&quot;
+# The custom header color in dark mode, only available
+# when &quot;header_blur&quot; is false.
+header_dark_color = &quot;#27272a&quot;
+</code></pre>
+<h3 id="menus">Menus</h3>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[extra.menus]
+menu_name = [
+  { url = &quot;$BASE_URL&#x2F;blog&#x2F;&quot;, name = &quot;Archive&quot; },
+  { url = &quot;$BASE_URL&#x2F;categories&#x2F;&quot;, name = &quot;Categories&quot; },
+  { url = &quot;$BASE_URL&#x2F;tags&#x2F;&quot;, name = &quot;Tags&quot; },
+  { url = &quot;$BASE_URL&#x2F;about&#x2F;&quot;, name = &quot;About&quot; },
+]
+
+# Example multilingual menu using `names`.
+multilingual_menu_name = [
+  { url = &quot;$BASE_URL&#x2F;about&#x2F;&quot;, names = { en = &quot;About&quot;, fr = &quot;About in French&quot; } },
+  { url = &quot;$BASE_URL&#x2F;projects&#x2F;&quot;, names = { en = &quot;Projects&quot;, fr = &quot;Projects in French&quot; } },
+  { url = &quot;$BASE_URL&#x2F;blog&#x2F;&quot;, names = { en = &quot;Archive&quot;, fr = &quot;Archive in French&quot; } },
+  { url = &quot;$BASE_URL&#x2F;categories&#x2F;&quot;, names = { en = &quot;Categories&quot;, fr = &quot;Categories in French&quot; } },
+  { url = &quot;$BASE_URL&#x2F;tags&#x2F;&quot;, names = { en = &quot;Tags&quot;, fr = &quot;Tags in French&quot; } },
+  { url = &quot;$BASE_URL&#x2F;authors&#x2F;&quot;, names = { en = &quot;Authors&quot;, fr = &quot;Authors in French&quot; } },
+]
+</code></pre>
+<p>To use a menu, set <code>extra.header_menu_name</code>.</p>
+<p><code>$BASE_URL</code> in <code>url</code> will be automatically replaced with the language specific base url.
+You can use <a class="external" href="https://www.getzola.org/documentation/content/linking/#internal-links">Internal links</a>
+instead of <code>$BASE_URL</code>.</p>
+<p>If your site is multilingual, you can choose one of the following options or combine them:</p>
+<ol>
+<li>Set <code>names</code> as in the <code>multilingual_menu_name</code> example.</li>
+<li>Set <code>extra.menu_i18n</code> to <code>true</code> in order to use the <code>static/i18n/menu.json</code> file.</li>
+<li>Set <code>header_menu_name</code> for each language using the language specific options.</li>
+</ol>
+<h3 id="profiles">Profiles</h3>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"># Replace &quot;your_username&quot; with your username.
+[extra.profiles.your_username]
+
+# The URL of the avatar.
+# e.g. &quot;icons&#x2F;github.svg&quot;
+avatar_url = &quot;&quot;
+
+# A description of what is in the avatar.
+avatar_alt = &quot;&quot;
+
+# Invert avatar color in dark mode.
+# Default value: false
+avatar_invert = false
+
+# Profile name.
+# Default value: the username
+name = &quot;&quot;
+
+# Profile bio.
+# Supports Markdown.
+bio = &quot;&quot;
+
+# Social icons.
+# &quot;name&quot; should be the file name of &quot;static&#x2F;icons&#x2F;*.svg&quot; or
+# the icon name of https:&#x2F;&#x2F;simpleicons.org&#x2F;
+# &quot;url&quot; supports &quot;$BASE_URL&quot;.
+# Other variables: &quot;urls&quot;, &quot;title&quot;, &quot;titles&quot;.
+social = [
+    { name = &quot;bluesky&quot;, url = &quot;https:&#x2F;&#x2F;bsky.app&#x2F;profile&#x2F;username&quot; },
+    { name = &quot;github&quot;, url = &quot;https:&#x2F;&#x2F;github.com&#x2F;username&quot; },
+    { name = &quot;email&quot;, url = &quot;mailto:example@example.com&quot; },
+    { name = &quot;rss&quot;, url = &quot;$BASE_URL&#x2F;atom.xml&quot; },
+]
+</code></pre>
+<h3 id="profile-translations">Profile translations</h3>
+<p>Skip if your site is not multilingual.</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"># For French. Replace &quot;your_username&quot; with your username.
+[extra.profiles.your_username.languages.fr]
+
+# A description of what is in the avatar.
+avatar_alt = &quot;&quot;
+
+# Profile name.
+name = &quot;&quot;
+
+# Profile bio.
+# Supports Markdown.
+bio = &quot;&quot;
+
+# Social icons.
+social = []
+</code></pre>
+<h3 id="open-graph-for-profiles">Open Graph for profiles</h3>
+<p>See <a class="external" href="https://ogp.me/">the Open Graph protocol</a>.</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"># Replace &quot;your_username&quot; with your username.
+[extra.profiles.your_username.open_graph]
+
+# The URL of the social image.
+image = &quot;&quot;
+
+# A description of what is in the social image.
+# Default value: &quot;&quot;
+image_alt = &quot;&quot;
+
+# Your first name. No default value.
+first_name = &quot;&quot;
+# Your last name. No default value.
+last_name = &quot;&quot;
+# Your username. No default value.
+username = &quot;&quot;
+# e.g. &quot;female&quot; or &quot;male&quot;. No default value.
+gender = &quot;&quot;
+
+# fb_app_id = &quot;Your fb app ID&quot;
+# fb_admins = [&quot;YOUR_USER_ID&quot;]
+
+# Set if you have a Fediverse account.
+#  handle – Your Fediverse handle.
+#  domain – Your Fediverse instance.
+#  url – Your Fediverse account URL. Optional.
+# Example for @me@mastodon.social:
+# { handle = &quot;me&quot;, domain = &quot;mastodon.social&quot; }
+fediverse_creator = { handle = &quot;&quot;, domain = &quot;&quot; }
+</code></pre>
+<p><code>image</code> and <code>image_alt</code> of the default author's profile will be used
+as a fallback open graph image for all pages.</p>
+<h4 id="open-graph-translations">Open Graph translations</h4>
+<p>Skip if your site is not multilingual.</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"># For French. Replace &quot;your_username&quot; with your username.
+[extra.profiles.your_username.open_graph.languages.fr]
+# A description of what is in the social image.
+image_alt = &quot;&quot;
+</code></pre>
+<h3 id="the-page-footer">The page footer</h3>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[extra.footer]
+# Replace with the correct year.
+# Default value: the current year
+since = 2025
+
+# Replace with the URL of the license you want.
+# No default value. Supports &quot;$BASE_URL&quot;.
+license_url = &quot;https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by-sa&#x2F;4.0&#x2F;deed&quot;
+
+# Replace &quot;Your Name&quot; with your name and &quot;CC BY-SA 4.0&quot; with the name of the license you want.
+copyright = &quot;&amp;copy; $YEAR Your Name &amp;vert; [CC BY-SA 4.0]($LICENSE_URL)&quot;
+
+# Not used yet.
+# Supports &quot;$BASE_URL&quot;.
+# privacy_policy_url = &quot;$BASE_URL&#x2F;privacy-policy&#x2F;&quot;
+
+# Not used yet.
+# Supports &quot;$BASE_URL&quot;.
+# terms_of_service_url = &quot;$BASE_URL&#x2F;terms-of-service&#x2F;&quot;
+
+# Not used yet.
+# Supports &quot;$BASE_URL&quot;.
+# search_page_url = &quot;$BASE_URL&#x2F;search&#x2F;&quot;
+</code></pre>
+<p>The <code>copyright</code> variable supports Markdown,
+<code>$BASE_URL</code>, <code>$YEAR</code> (uses <code>since</code>), and <code>$LICENSE_URL</code> (uses <code>license_url</code>).</p>
+<h3 id="language-specific-options">Language specific options</h3>
+<p>For date format, see <a class="external" href="https://docs.rs/chrono/0.4/chrono/format/strftime/index.html">chrono docs</a>.</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"># For English
+[extra.languages.en]
+
+# No default value.
+locale = &quot;en_US&quot;
+
+# Default value: &quot;%F&quot;
+date_format = &quot;%x&quot;
+
+# Default value: extra.page_info
+# page_info = []
+
+# Default value: extra.page_info_on_paginator
+# page_info_on_paginator = []
+
+# Default value: extra.header_menu_name
+# header_menu_name = &quot;menu_name&quot;
+
+# Default value: extra.header_buttons
+# header_buttons = []
+
+# To set a different lang attribute of the document.
+# Also changes the interface language. e.g. &quot;en-GB&quot;.
+# hreflang = &quot;&quot;
+
+# To format numbers for a different locale. e.g. &quot;en-GB&quot;.
+# Useful if lang is not a valid locale.
+# num_format = &quot;&quot;
+
+# Set a description for taxonomy pages.
+[extra.languages.en.taxonomy_descriptions]
+categories = &quot;A map of all categories on this site. Start exploring!&quot;
+tags = &quot;A map of all tags on this site. Start exploring!&quot;
+authors = &quot;A map of all authors on this site. Start exploring!&quot;
+
+# Set a description for term pages.
+# &quot;$NAME&quot; will be automatically replaced.
+[extra.languages.en.term_descriptions]
+categories = &quot;Browse articles related to $NAME. Start exploring!&quot;
+tags = &quot;Browse articles related to $NAME. Start exploring!&quot;
+authors = &quot;Browse articles written by $NAME. Start exploring!&quot;
+</code></pre>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml"># For French
+[extra.languages.fr]
+locale = &quot;fr_FR&quot;
+date_format = &quot;%x&quot;
+</code></pre>
+<h3 id="web-analytics">Web analytics</h3>
+<h4 id="goatcounter">GoatCounter</h4>
+<p>Set only if you use <a class="external" href="https://www.goatcounter.com/">GoatCounter</a>.</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[extra.goatcounter]
+# No default value.
+endpoint = &quot;https:&#x2F;&#x2F;MYCODE.goatcounter.com&#x2F;count&quot;
+
+# To enable tracking pixel, set to an empty string.
+# If your &quot;base_url&quot; includes a subpath, set to
+# the subpath without a trailing slash.
+# noscript_prefix = &quot;&quot;
+</code></pre>
+<h4 id="vercel-analytics">Vercel Analytics</h4>
+<p>Set only if you use <a class="external" href="https://vercel.com/docs/analytics">Vercel Web Analytics</a>.</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[extra.vercel_analytics]
+# No default value.
+src = &quot;&#x2F;_vercel&#x2F;insights&#x2F;script.js&quot;
+</code></pre>
+<h4 id="prevent-tracking-own-pageviews">Prevent tracking own pageviews</h4>
+<p>Open a page of your site, adding <code>#disable-analytics</code> to the page address.
+Do this once for each browser and device.
+For example, open <a class="external" href="http://127.0.0.1:1111/#disable-analytics">http://127.0.0.1:1111/#disable-analytics</a>.</p>
+<h3 id="comments">Comments</h3>
+<p>See <a class="external" href="https://giscus.app/">giscus.app</a>.
+Only available when <code>extra.comment</code> in the front matter or <code>extra.comment</code> in the config is set to <code>true</code>.</p>
+<pre data-lang="toml" data-name="config.toml" class="language-toml "><code class="language-toml" data-lang="toml" data-name="config.toml">[extra.giscus]
+# No default value.
+repo = &quot;&quot;
+# No default value.
+repo_id = &quot;&quot;
+# No default value.
+category = &quot;&quot;
+# No default value.
+category_id = &quot;&quot;
+# Default value: &quot;pathname&quot;
+mapping = &quot;pathname&quot;
+# Default value: 1
+strict = 1
+# Default value: 0
+reactions_enabled = 0
+# Default value: 0
+emit_metadata = 0
+# Default value: &quot;top&quot;
+input_position = &quot;top&quot;
+# Default value: &quot;preferred_color_scheme&quot;
+theme = &quot;preferred_color_scheme&quot;
+# Default value: &quot;en&quot;
+lang = &quot;en&quot;
+# Default value: &quot;lazy&quot;
+loading = &quot;lazy&quot;
+</code></pre>
+<h2 id="contributing">Contributing</h2>
+<p>This project is under the <a class="external" href="https://codeberg.org/salif/linkita/src/branch/linkita/LICENSE">MIT License</a>.</p>
+<p>Pull requests are welcome on <a class="external" href="https://codeberg.org/salif/linkita">Codeberg</a> and <a class="external" href="https://github.com/salif/linkita">GitHub</a>.
+The main branch is <code>linkita</code>.</p>
+<h3 id="localization">Localization</h3>
+<p>Feel free to contribute new translations or improve existing ones.</p>
+<p>To add a new language, create a file <code>LANG_CODE.json</code> in the <code>static/i18n</code> directory.
+See <a class="external" href="https://localizely.com/iso-639-1-list/">ISO 639-1</a> codes.</p>
+<pre data-lang="sh" class="language-sh "><code class="language-sh" data-lang="sh">echo &#x27;{}&#x27; &gt; static&#x2F;i18n&#x2F;LANG_CODE.json
+node .&#x2F;static&#x2F;i18n&#x2F;sync.js
+</code></pre>
+<p>See also the <code>static/i18n/menu.json</code> file and
+the <a class="external" href="https://codeberg.org/salif/linkita-demo">demo repository</a>.</p>
+<p>Live preview is available in the following languages:</p>
+<p><a class="external" href="https://salif.github.io/linkita/ar/">Arabic</a>,
+<a class="external" href="https://salif.github.io/linkita/bg/">Bulgarian</a>,
+<a class="external" href="https://salif.github.io/linkita/cs/">Czech</a>,
+<a class="external" href="https://salif.github.io/linkita/eo/">Esperanto</a>,
+<a class="external" href="https://salif.github.io/linkita/es/">Spanish</a>,
+<a class="external" href="https://salif.github.io/linkita/fi/">Finnish</a>,
+<a class="external" href="https://salif.github.io/linkita/fr/">French</a>,
+<a class="external" href="https://salif.github.io/linkita/gb/">Globasa</a>,
+<a class="external" href="https://salif.github.io/linkita/ja/">Japanese</a>,
+<a class="external" href="https://salif.github.io/linkita/ko/">Korean</a>,
+<a class="external" href="https://salif.github.io/linkita/">English</a>,
+<a class="external" href="https://salif.github.io/linkita/tr/">Turkish</a>,
+<a class="external" href="https://salif.github.io/linkita/zh/">Chinese</a>.</p>
+<h2 id="sites-using-linkita">Sites using Linkita</h2>
+<ul>
+<li><a class="external" href="https://github.com/salif/zola-themes-collection">Zola Themes Collection</a></li>
+<li><a class="external" href="https://codeberg.org/salif/personal-web-page">Salif's site</a></li>
+<li><a class="external" href="https://github.com/Rratic/rratic.github.io">Rratic's blog</a></li>
+</ul>
+<p>If your blog is using Linkita and is open source, feel free to create a pull request to add it to this list.</p>
+<h2 id="other-zola-themes">Other Zola themes</h2>
+<p>Linkita is one of several Zola themes I maintain.
+Other themes include:</p>
+<ul>
+<li><a class="external" href="https://codeberg.org/salif/tukan">Tukan</a> – Fork of zola-blog-theme, inspired by the Toucan theme.</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

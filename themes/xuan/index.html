@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>xuan | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;xuan&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>xuan</h1>
+            <p>Modern, pretty, and clean theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;blog.guiio.com">jhq223</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.21.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;jhq223&#x2F;xuan">https:&#x2F;&#x2F;github.com&#x2F;jhq223&#x2F;xuan</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;xuan-theme.jhq223.workers.dev">https:&#x2F;&#x2F;xuan-theme.jhq223.workers.dev</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-12-14T15:52:42+08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="xuan">Xuan</h1>
+<p><strong>Xuan</strong> 是一个基于 <a class="external" href="https://codeberg.org/daudix/duckquill">Duckquill</a> 二次开发的现代化 <a class="external" href="https://www.getzola.org">Zola</a> 博客主题。</p>
+<p>它保留了原版简洁、美观的设计理念，并在其基础上进行了深度定制，优化了阅读体验并集成了更强大的搜索功能。</p>
+<h2 id="sparkles-zhu-yao-te-xing-yu-xiu-gai">✨ 主要特性与修改</h2>
+<p>相较于原版 Duckquill，Xuan 做了以下改进：</p>
+<ul>
+<li><strong>🎨 视觉风格</strong>：
+<ul>
+<li>代码高亮主题统一为 <strong>One Dark Pro</strong>。</li>
+<li>修改了分割线样式。</li>
+<li>移除原版所有用于定制的 "mods" 样式。</li>
+</ul>
+</li>
+<li><strong>🧩 调整</strong>：
+<ul>
+<li>移除博客列表页的“按标签筛选”功能，界面更清爽。</li>
+<li>移除文章页移动端顶部的按钮列表，改为<strong>右下角悬浮操作按钮</strong>（返回顶部、主页等）。</li>
+<li>移除了alert和vimeo短代码。</li>
+</ul>
+</li>
+<li><strong>🚀 功能增强</strong>：
+<ul>
+<li><strong>新增归档页面</strong>：按时间线查看所有文章。</li>
+<li><strong>新增友情链接页面</strong>：方便展示友链。</li>
+<li><strong>全新搜索体验</strong>：弃用原有搜索，改用 <strong><a class="external" href="https://pagefind.app/">Pagefind</a></strong> 构建静态索引，搜索速度更快，支持中文分词，且无需前端加载大量 JS。</li>
+</ul>
+</li>
+</ul>
+<h2 id="tools-an-zhuang">🛠️ 安装</h2>
+<p>将此主题克隆到你的 Zola 站点的 <code>themes</code> 目录下：</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git clone https:&#x2F;&#x2F;github.com&#x2F;jhq223&#x2F;xuan.git themes&#x2F;xuan
+</code></pre>
+<p>然后在你的 <code>config.toml</code> 中启用它：</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;xuan&quot;
+</code></pre>
+<h2 id="page-facing-up-xu-ke-zheng">📄 许可证</h2>
+<p>本项目遵循 <a class="external" href="https://mit-license.org">MIT License</a>。
+基于 <a class="external" href="https://codeberg.org/daudix/duckquill">Duckquill</a> 开发。</p>
+<hr />
+<p><em>由 <a class="external" href="https://daudix.one">daudix</a> 原创设计，经过二次开发定制。</em></p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

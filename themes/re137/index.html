@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>re137 | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;re137&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>re137</h1>
+            <p>A Chinese friendly zola theme. Inspired by lightspeed.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;tinikov.com">tinikov</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;tinikov&#x2F;re137">https:&#x2F;&#x2F;github.com&#x2F;tinikov&#x2F;re137</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;re137.vercel.app">https:&#x2F;&#x2F;re137.vercel.app</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-02-10T15:39:54+09:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="re137">re137</h1>
+<p><img src="https://www.getzola.org/themes/re137/screenshot.png" alt="screenshot" /></p>
+<p><a class="external" href="https://re137.vercel.app">Demo</a></p>
+<h2 id="installation">Installation</h2>
+<p>Clone this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd themes
+git clone https:&#x2F;&#x2F;github.com&#x2F;tinikov&#x2F;re137
+</code></pre>
+<p>or add it by submodule:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd themes
+git submodule add git@github.com:tinikov&#x2F;re137
+</code></pre>
+<p>Then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;re137&quot;
+</code></pre>
+<h2 id="structure-and-must-configs">Structure and must configs</h2>
+<p>The posts should be directly under the <code>content</code> folder, and the single pages (e.g. <code>about.md</code>) should be under the <code>content/pages</code> folder.</p>
+<p>Your index section in content (<code>content/_index.md</code>) should enable the posts sorted by date:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">sort_by = &quot;date&quot;
+</code></pre>
+<p>And the index section in pages (<code>content/pages/_index.md</code>) should disable the <code>render</code> option:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">render = false
+</code></pre>
+<p>In both index sections, it's recommended to enable the option for anchors:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">insert_anchor_links = &quot;right&quot;
+</code></pre>
+<h2 id="options">Options</h2>
+<h3 id="enable-categories">Enable categories</h3>
+<p>To enable category page, <code>taxonomies</code> should be set in <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">taxonomies = [{ name = &quot;categories&quot; }]
+</code></pre>
+<h3 id="top-menu">Top-menu</h3>
+<p>Set a field in <code>[extra]</code> of <code>config.toml</code> with a key of <code>re137_menu_links</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">re137_menu_links = [
+    { url = &quot;$BASE_URL&quot;, name = &quot;主页&quot; },
+    { url = &quot;$BASE_URL&#x2F;categories&quot;, name = &quot;分类&quot; },
+    { url = &quot;$BASE_URL&#x2F;about&quot;, name = &quot;关于&quot; },
+    { url = &quot;$BASE_URL&#x2F;rss.xml&quot;, name = &quot;RSS&quot; },
+]
+</code></pre>
+<h3 id="page-options">Page options</h3>
+<p>In frontmatter of posts and single pages, supported options are listed below:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">title = &quot; &quot;
+path = &quot;about&quot; # This is only for single page
+authors = [&quot;TC&quot;, &quot;BB&quot;] # If there are several authors
+date = 2000-01-01T00:00:00+00:00
+updated = 2004-01-01T00:00:00+00:00
+description = &quot; &quot;
+draft = true
+[taxonomies]
+categories = [&quot; &quot;]
+[extra]
+author_gen = false # Do not generate author
+toc_gen = true # Generate table of contents
+</code></pre>
+<h3 id="misc">Misc</h3>
+<p>You can add more customed options in <code>[extra]</code> of <code>config.toml</code></p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml"># Image shown when you share this website to others
+ogimage = &quot; &quot;
+
+# SEO settings
+seo = true
+google_search_console = &quot; &quot;
+
+# Show jump buttons for Indiewebring
+indiewebring = true
+
+# For authentication in mastodon
+mastodon = &quot;https:&#x2F;&#x2F;o3o.ca&#x2F;@tinikov&quot;
+
+# Only user name is needed
+github = &quot;tinikov&quot;
+
+# Show establish date in the footer
+establishdate = &quot;2024&quot;
+
+# CC BY-NC 4.0 (https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by-nc&#x2F;4.0&#x2F;)
+license = true
+
+# Show &quot;🫧 Zola theme re137&quot; in the footer
+show_zola_theme = true
+</code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>MATbook | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;matbook&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>MATbook</h1>
+            <p>A zola chapter book theme inspired from book and olivine</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;shurui.people.stanford.edu&#x2F;">Shurui Liu</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version v1.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;srliu3264&#x2F;MATbook">https:&#x2F;&#x2F;github.com&#x2F;srliu3264&#x2F;MATbook</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;srliu3264.github.io&#x2F;MATbook-live-demo&#x2F;">https:&#x2F;&#x2F;srliu3264.github.io&#x2F;MATbook-live-demo&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-12-06T14:37:37-08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="matbook">MATbook</h1>
+<p>A <a class="external" href="https://github.com/getzola/zola">Zola</a> theme for personal notebooks or chapter books. Based on  <a class="external" href="https://www.vincentprouillet.com/">Vincent Prouillet</a>'s <a class="external" href="https://github.com/getzola/book">Book</a>, inspired by <a class="external" href="https://web.stanford.edu/~dkim04/">Dongryul Kim</a>'s <a class="external" href="https://github.com/dongryul-kim/olivine">Olivine</a>.</p>
+<p>Live Demo: <a class="external" href="https://srliu3264.github.io/MATbook-live-demo/">https://srliu3264.github.io/MATbook-live-demo</a></p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li>MATbook
+<ul>
+<li>
+<p>Features</p>
+</li>
+<li>
+<p>Contents</p>
+</li>
+<li>
+<p>Installation</p>
+</li>
+<li>
+<p>Configurations</p>
+<ul>
+<li>Enable the theme</li>
+<li>Numbered chapters</li>
+<li>Current section pages only</li>
+<li>Math</li>
+<li>Paths</li>
+<li>Example toml</li>
+</ul>
+</li>
+<li>
+<p>Usage</p>
+<ul>
+<li>File structure</li>
+<li>Hotkeys</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="features">Features</h2>
+<ul>
+<li>Idle inside Matrix (MATbook is short for Matrix Book)</li>
+<li>Searching</li>
+<li>Light/dark mode</li>
+<li>Book structure (table of chapters and sections in left sidebar, table of contents of current section in right sidebar)</li>
+<li>Keyboard shortcuts</li>
+<li>Backlinks</li>
+<li>Mathjax, Tikzjax, and basic theorem enviroments included for mathematics and commutative diagrams.</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>Please follow the Zola documentation on <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">installing and using themes</a> to install.</p>
+<h2 id="configurations">Configurations</h2>
+<h3 id="enable-the-theme">Enable the theme</h3>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;MATbook&quot;
+build_search_index = true
+</code></pre>
+<h3 id="numbered-chapters">Numbered chapters</h3>
+<p>By default, the <code>MATbook</code> theme will number the chapters and pages in the left menu.
+You can disable that by setting the <code>book_number_chapters</code> in <code>extra.booktheme</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">book_number_chapters = false
+</code></pre>
+<h3 id="current-section-pages-only">Current section pages only</h3>
+<p>By default, the <code>MATbook</code> theme will list all the pages in the current section.
+You can disable that by setting the <code>book_only_current_section_pages</code> in <code>extra.booktheme</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">book_only_current_section_pages = false
+</code></pre>
+<p>NOTE: you need to disabe this if you want to use hotkey <code>v</code> to toggle it.</p>
+<h3 id="math">Math</h3>
+<p>Enable mathjax and tikzjax in <code>extra</code> if you need mathematics and tikzcd diagrams in your book.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">tikzjax = true
+mathjax = true
+</code></pre>
+<h3 id="paths">Paths</h3>
+<p>You need to set up two paths:</p>
+<p>First, in <code>[extra]</code>, you need to make sure that <code>upload_prefix</code> is the path to the directory where you put all images.</p>
+<p>For example, if you put all your images in folder <code>/static/upload</code>, then you should set</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">upload_prefix = &quot;&#x2F;upload&quot;
+</code></pre>
+<p>Second, Home link in <code>[extra.booktheme]</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">home_url=&quot;https:&#x2F;&#x2F;shurui.people.stanford.edu&#x2F;&quot;
+</code></pre>
+<p>It may be link to your homepage, or a guide/TOC page which collects links to all your books (in this way you can organize multiple books with this theme).</p>
+<h3 id="example-toml">Example toml</h3>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">title = &quot;Shurui Liu&#x27;s Coding Notes&quot;
+description = &quot;Personal Notes&quot;
+base_url = &quot;https:&#x2F;&#x2F;web.stanford.edu&#x2F;~srliu&#x2F;Notes&quot;
+theme = &quot;MATbook&quot;
+
+compile_sass = true
+taxonomies = [
+  { name = &quot;tags&quot;, paginate_by = 10, rss = true }
+]
+build_search_index = true
+
+[markdown]
+highlight_code = true
+highlight_theme = &quot;css&quot;
+external_links_target_blank = true
+smart_punctuation = true
+
+[extra]
+upload_prefix = &quot;https:&#x2F;&#x2F;web.stanford.edu&#x2F;~srliu&#x2F;Notes&#x2F;upload&quot;
+tikzjax = true
+mathjax = true
+
+[extra.booktheme]
+book_number_chapters = true
+book_only_current_section_pages = false
+home_url = &quot;https:&#x2F;&#x2F;shurui.sites.stanford.edu&#x2F;&quot;
+</code></pre>
+<h2 id="usage">Usage</h2>
+<h3 id="file-structure">File structure</h3>
+<p>All content should be put in <code>/content</code> folder as general Zola projects. Each chapter should be a folder inside <code>/content</code>, which contains its sections (markdown files). Here is an example of the file structure:</p>
+<pre data-lang="markdown" class="language-markdown "><code class="language-markdown" data-lang="markdown">.
+├── chapter1
+│   ├── _index.md
+│   ├── section1.md
+│   └── section2.md
+├── chapter2
+│   ├── _index.md
+│   └── section1.md
+├── chapter3
+│   ├── _index.md
+│   ├── section1.md
+│   ├── section2.md
+│   └── section3.md
+└── _index.md
+</code></pre>
+<p>In <code>/content</code> folder, there should be one <code>_index.md</code>, which contains title and welcome/preface infomation of the book. In its front matter, you should set <code>sort_by = "weight" </code> to manually control the order of chapters (or you can use sort by slug or date for your notebook).</p>
+<p>Each chapter(folder) must have an <code>_index.md</code> file. It should sets its <code>weight</code> front-matter variable to its chapter number, and set <code>sort_by = "weight"</code> in its front matter.</p>
+<p>Then in each chapter(folder), each section should be a <code>page</code> and should have its <code>weight</code> variable set to its section
+number.</p>
+<p>If you don't want welcome/preface page of the book or of a chapter, you can use <code>redirect_to</code> front-matter variable in the corresponding <code>_index.md</code>.</p>
+<p>You can write a shell scripts to automate creating new chapters or new notes. For example, you can consult my <code>zshconfig</code> project on my <a class="external" href="https://github.com/srliu3264">github</a> (If you can not see it, probably it is bacasue I currently make it private. You can email me for access.)</p>
+<h3 id="hotkeys">Hotkeys</h3>
+<p>In a browser, you can always type <code>?</code> to toggle the help page, reminding you of hotkeys.</p>
+<p>The rule is inspired by Vim, Zathura, and <a class="external" href="https://github.com/dongryul-kim/olivine">Olivine</a>.</p>
+<p>The list of hotkeys may keep expanding, so I will not list all here. You can use <code>?</code> the help page, or see <code>hotkeys.js</code> manually to check existing functions.</p>
+<p>The hotkey <code>i</code> will allow you to idle inside MATRIX (inspired by <a class="external" href="https://github.com/abishekvashok/cmatrix">cmatrix</a>), and since MAT is both initials for matrix and math, I lazily named this project after it.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

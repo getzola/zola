@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>kirifuji | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;kirifuji&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>kirifuji</h1>
+            <p>simple and neat theme for blogging.</p>
+            <p><b>Author:</b>
+            
+              Yukari Kirifuji
+              
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> 0BSD</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;yukari&#x2F;kirifuji-zola">https:&#x2F;&#x2F;github.com&#x2F;yukari&#x2F;kirifuji-zola</a></p>
+            
+            
+              <div>
+              <p>Tags:</p>
+              <ul style="list-style-type: none;">
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;neat&#x2F;">neat</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;purple&#x2F;">purple</a></li>
+                
+              
+                
+                
+                  <li><a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;theme-tags&#x2F;blog&#x2F;">blog</a></li>
+                
+              
+              </div>
+            
+            <p><b>Last updated:</b> 2025-11-07T19:18:47+07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h2 id="kirifuji">Kirifuji</h2>
+<p><img src="https://www.getzola.org/themes/kirifuji/screenshot.png" alt="kirifuji theme looks" /></p>
+<p>Neat, responsive and purple theme for Zola, inspired by <a class="external" href="https://terriblesoftware.org">terriblesoftware.org</a> and <a class="external" href="https://fhur.me">fhur.me</a> website design.</p>
+<p>To install this theme:</p>
+<pre><code>git clone https:&#x2F;&#x2F;codeberg.org&#x2F;yukari&#x2F;kirifuji-zola themes&#x2F;kirifuji
+</code></pre>
+<p>or, this option to keep update with latest change:</p>
+<pre><code>git init # if you not have initiate git
+git submodule add https:&#x2F;&#x2F;codeberg.org&#x2F;yukari&#x2F;kirifuji-zola.git themes&#x2F;kirifuji
+</code></pre>
+<p>Then change <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;kirifuji&quot;
+
+[extra]
+# to hide &quot;Powered by Zola and Kirifuji&quot; footer texts
+# hideThemeName = true
+
+# navigation menu setup
+navigationMenu = [
+    { name = &quot;log&quot;, path = &quot;&#x2F;log&quot;},
+    { name = &quot;fun&quot;, path = &quot;&#x2F;fun&quot;},
+    { name = &quot;contact&quot;, path = &quot;&#x2F;contact&quot;},
+    { name = &quot;misc.&quot;, path = &quot;&#x2F;misc&quot;}
+]
+</code></pre>
+<h3 id="license">License</h3>
+<ul>
+<li><a href="https://www.getzola.org/themes/kirifuji/LICENSE">0BSD</a></li>
+<li>Alan Sans fonts: <a href="https://www.getzola.org/themes/kirifuji/static/AlanSans-LICENSE.txt">OFL-1.1</a></li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

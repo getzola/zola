@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Configuration | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+
+<div class="documentation">
+    <aside class="documentation__sidebar">
+        <ul>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Getting Started</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;installation&#x2F;">Installation</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;cli-usage&#x2F;">CLI usage</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;directory-structure&#x2F;">Directory structure</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;getting-started&#x2F;configuration&#x2F;">Configuration</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Content</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;section&#x2F;">Section</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;page&#x2F;">Page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;shortcodes&#x2F;">Shortcodes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;linking&#x2F;">Internal links &amp; deep linking</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;table-of-contents&#x2F;">Table of Contents</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;syntax-highlighting&#x2F;">Syntax Highlighting</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;search&#x2F;">Search</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;sass&#x2F;">Sass</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;image-processing&#x2F;">Image processing</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;content&#x2F;multilingual&#x2F;">Multilingual sites</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Templates</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pages-sections&#x2F;">Sections and Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;pagination&#x2F;">Pagination</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;taxonomies&#x2F;">Taxonomies</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;feeds&#x2F;">Feeds</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;sitemap&#x2F;">Sitemap</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;robots&#x2F;">Robots.txt</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;404&#x2F;">404 error page</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;templates&#x2F;archive&#x2F;">Archive</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Themes</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;installing-and-using-themes&#x2F;">Installing &amp; using themes</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;creating-a-theme&#x2F;">Creating a theme</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;themes&#x2F;extending-a-theme&#x2F;">Customizing a theme</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+            
+            <li>
+                <span class="documentation__sidebar__title">Deployment</span>
+                <ul>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;overview&#x2F;">Overview</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;sourcehut&#x2F;">Sourcehut Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;netlify&#x2F;">Netlify</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;github-pages&#x2F;">GitHub Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;gitlab-pages&#x2F;">GitLab Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;codeberg-pages&#x2F;">Codeberg Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;edgio&#x2F;">Edgio</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;vercel&#x2F;">Vercel</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;zeabur&#x2F;">Zeabur</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;azure-static-webapps&#x2F;">Azure Static Web Apps</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;cloudflare-pages&#x2F;">Cloudflare Pages</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;flyio&#x2F;">Fly.io</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;aws-s3&#x2F;">AWS S3 Bucket</a>
+                        </li>
+                    
+                        <li class="">
+                            <a href="https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;deployment&#x2F;docker-image&#x2F;">Docker image</a>
+                        </li>
+                    
+                </ul>
+            </li>
+        
+        </ul>
+    </aside>
+    <div class="documentation__content">
+        
+    <h1>Configuration</h1>
+    <p>The default configuration is sufficient to get Zola running locally but not more than that.
+It follows the philosophy of paying for only what you need, almost everything is turned off by default.</p>
+<p>To change the configuration, edit the <code>config.toml</code> file.
+If you are not familiar with TOML, have a look at <a class="external" href="https://github.com/toml-lang/toml">the TOML spec</a>.</p>
+<p>⚠️ If you add keys to your <code>config.toml</code>, you must pay attention to which TOML section it belongs to. A TOML section starts with a header, e.g. <code>[search]</code>, and ends at the next section or EOF.</p>
+<p>Here are the current <code>config.toml</code> sections:</p>
+<ol>
+<li>main (unnamed)</li>
+<li>markdown</li>
+<li>link_checker</li>
+<li>slugify</li>
+<li>search</li>
+<li>translations</li>
+<li>languages</li>
+<li>extra</li>
+</ol>
+<p><strong>Only the <code>base_url</code> variable is mandatory</strong>. Everything else is optional. All configuration variables
+used by Zola as well as their default values are listed below:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml"># The base URL of the site; the only required configuration variable.
+base_url = &quot;https:&#x2F;&#x2F;mywebsite.com&quot;
+
+# The site title and description; used in feeds by default.
+title = &quot;&quot;
+description = &quot;&quot;
+
+# The default language; used in feeds.
+default_language = &quot;en&quot;
+
+# The site theme to use.
+theme = &quot;&quot;
+
+# For overriding the default output directory `public`, set it to another value (e.g.: &quot;docs&quot;)
+output_dir = &quot;public&quot;
+
+# Whether dotfiles at the root level of the output directory are preserved when (re)building the site.
+# Enabling this also prevents the deletion of the output folder itself on rebuilds.
+preserve_dotfiles_in_output = false
+
+# When set to &quot;true&quot;, the Sass files in the `sass` directory in the site root are compiled.
+# Sass files in theme directories are always compiled.
+compile_sass = false
+
+# When set to &quot;true&quot;, the generated HTML files are minified.
+minify_html = false
+
+# A list of glob patterns specifying asset files to ignore when the content
+# directory is processed. Defaults to none, which means that all asset files are
+# copied over to the `public` directory.
+# Example:
+#     ignored_content = [&quot;*.{graphml,xlsx}&quot;, &quot;temp.*&quot;, &quot;**&#x2F;build_folder&quot;]
+ignored_content = []
+
+# Similar to ignored_content, a list of glob patterns specifying asset files to
+# ignore when the static directory is processed. Defaults to none, which means
+# that all asset files are copied over to the `public` directory
+ignored_static = []
+
+# When set to &quot;true&quot;, a feed is automatically generated.
+generate_feeds = false
+
+# When set to &quot;all&quot;, paginated pages are not a part of the sitemap, default is &quot;none&quot;
+exclude_paginated_pages_in_sitemap = &quot;none&quot;
+
+# The filenames to use for the feeds. Used as the template filenames, too.
+# Defaults to [&quot;atom.xml&quot;], which has a built-in template that renders an Atom 1.0 feed.
+# There is also a built-in template &quot;rss.xml&quot; that renders an RSS 2.0 feed.
+feed_filenames = [&quot;atom.xml&quot;]
+
+# The number of articles to include in the feed. All items are included if
+# this limit is not set (the default).
+# feed_limit = 20
+
+# When set to &quot;true&quot;, files in the `static` directory are hard-linked. Useful for large
+# static files. Note that for this to work, both `static` and the
+# output directory need to be on the same filesystem. Note that the theme&#x27;s `static`
+# files are always copied, regardless of this setting.
+hard_link_static = false
+
+# The default author for pages
+author =
+
+# The taxonomies to be rendered for the site and their configuration of the default languages
+# Example:
+#     taxonomies = [
+#       {name = &quot;tags&quot;, feed = true}, # each tag will have its own feed
+#       {name = &quot;tags&quot;}, # you can have taxonomies with the same name in multiple languages
+#       {name = &quot;categories&quot;, paginate_by = 5},  # 5 items per page for a term
+#       {name = &quot;authors&quot;}, # Basic definition: no feed or pagination
+#     ]
+#
+taxonomies = []
+
+# Optional base path for all taxonomies. If set, all taxonomy paths will be relative to this path.
+# For example, if taxonomy_root is &quot;blog&quot; and taxonomy is &quot;tags&quot;, the path will be &#x2F;blog&#x2F;tags&#x2F;
+# taxonomy_root = &quot;blog&quot;
+
+# When set to &quot;true&quot;, a search index is built from the pages and section
+# content for `default_language`.
+build_search_index = false
+
+# When set to &quot;false&quot;, Sitemap.xml is not generated
+generate_sitemap = true
+
+# When set to &quot;false&quot;, robots.txt is not generated
+generate_robots_txt = true
+
+# Configuration of the Markdown rendering
+[markdown]
+# When set to &quot;true&quot;, emoji aliases translated to their corresponding
+# Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: =&gt; 😄)
+render_emoji = false
+
+# CSS class to add to external links (e.g. &quot;external-link&quot;)
+external_links_class =
+
+# Whether external links are to be opened in a new tab
+# If this is true, a `rel=&quot;noopener&quot;` will always automatically be added for security reasons
+external_links_target_blank = false
+
+# Whether to set rel=&quot;nofollow&quot; for all external links
+external_links_no_follow = false
+
+# Whether to set rel=&quot;noreferrer&quot; for all external links
+external_links_no_referrer = false
+
+# Whether to set rel=&quot;external&quot; for all external links
+external_links_external = true
+
+# Whether smart punctuation is enabled (changing quotes, dashes, dots in their typographic form)
+# For example, `...` into `…`, `&quot;quote&quot;` into `“curly”` etc
+smart_punctuation = false
+
+# Whether parsing of definition lists is enabled
+definition_list = false
+
+# Whether to set decoding=&quot;async&quot; and loading=&quot;lazy&quot; for all images
+# When turned on, the alt text must be plain text.
+# For example, `![xx](...)` is ok but `![*x*x](...)` isn’t ok
+lazy_async_image = false
+
+# Whether footnotes are rendered in the GitHub-style (at the bottom, with back references) or plain (in the place, where they are defined)
+bottom_footnotes = false
+
+# When set to &quot;true&quot;, support for GitHub-style alerts, a.k.a. callouts or admonitions, is enabled in the Markdown parser.
+# For example, this Markdown syntax:
+#
+#     &gt; [!NOTE]
+#     &gt; alert note
+#
+# will result in the following generated HTML:
+#
+#     &lt;blockquote class=&quot;markdown-alert-note&quot;&gt;
+#     &lt;p&gt;alert note&lt;&#x2F;p&gt;
+#     &lt;&#x2F;blockquote&gt;
+#
+# where the CSS class name suffix may be `note`, `tip`, `important`, `warning`, or `caution`, depending on the alert type.
+# Visual appearance depends on theme-level support; refer to your theme&#x27;s documentation for more information.
+github_alerts = false
+
+# This determines whether to insert a link for each header like the ones you can see on this site if you hover over
+# a header.
+# The default template can be overridden by creating an `anchor-link.html` file in the `templates` directory.
+# This value can be &quot;left&quot;, &quot;right&quot;, &quot;heading&quot; or &quot;none&quot;.
+# &quot;heading&quot; means the full heading becomes the text of the anchor.
+# See &quot;Internal links &amp; deep linking&quot; in the documentation for more information.
+insert_anchor_links = &quot;none&quot;
+
+# Syntax highlighting configuration (optional)
+[markdown.highlighting]
+# When set to &quot;true&quot;, missing highlight languages are treated as errors. Defaults to false but recommended to set to true.
+error_on_missing_language = false
+
+# Whether to use inline hex colours (`inline`) or CSS classes (`class`) 
+style = &quot;inline&quot;
+
+# If you use a single theme, put its name here. See the syntax highlighting  page for the possible choices.
+theme = &quot;&quot;
+
+# If you want light&#x2F;dark themes, use the 2 fields below instead. See the syntax highlighting  page for the possible choices.
+light_theme = &quot;&quot;
+dark_theme = &quot;&quot;
+
+# A list of files for additional JSON TextMate grammars
+extra_grammars = []
+
+# A list of files for additional JSON TextMate themes
+extra_themes = []
+
+# Configuration of the link checker.
+[link_checker]
+# Skip link checking for external URLs that start with these prefixes
+skip_prefixes = [
+    &quot;http:&#x2F;&#x2F;[2001:db8::]&#x2F;&quot;,
+]
+
+# Skip anchor checking for external URLs that start with these prefixes
+skip_anchor_prefixes = [
+    &quot;https:&#x2F;&#x2F;caniuse.com&#x2F;&quot;,
+]
+
+# Treat internal link problems as either &quot;error&quot; or &quot;warn&quot;, default is &quot;error&quot;
+internal_level = &quot;error&quot;
+
+# Treat external link problems as either &quot;error&quot; or &quot;warn&quot;, default is &quot;error&quot;
+external_level = &quot;error&quot;
+
+# Various slugification strategies, see below for details
+# Defaults to everything being a slug
+[slugify]
+paths = &quot;on&quot;
+taxonomies = &quot;on&quot;
+anchors = &quot;on&quot;
+# Whether to remove date prefixes for page path slugs.
+# For example, content&#x2F;posts&#x2F;2016-10-08_a-post-with-dates.md =&gt; posts&#x2F;a-post-with-dates
+# When true, content&#x2F;posts&#x2F;2016-10-08_a-post-with-dates.md =&gt; posts&#x2F;2016-10-08-a-post-with-dates
+paths_keep_dates = false
+
+[search]
+# Whether to include the title of the page&#x2F;section in the index
+include_title = true
+# Whether to include the description of the page&#x2F;section in the index
+include_description = false
+# Whether to include the RFC3339 datetime of the page in the search index
+include_date = false
+# Whether to include the path of the page&#x2F;section in the index (the permalink is always included)
+include_path = false
+# Whether to include the rendered content of the page&#x2F;section in the index
+include_content = true
+# At which code point to truncate the content to. Useful if you have a lot of pages and the index would
+# become too big to load on the site. Defaults to not being set.
+# truncate_content_length = 100
+
+# Whether to produce the search index as a javascript file or as a JSON file
+# Accepted values:
+# - &quot;elasticlunr_javascript&quot;, &quot;elasticlunr_json&quot;
+# - &quot;fuse_javascript&quot;, &quot;fuse_json&quot;
+index_format = &quot;elasticlunr_javascript&quot;
+
+# Optional translation object for the default language
+# Example:
+#     default_language = &quot;fr&quot;
+#
+#     [translations]
+#     title = &quot;Un titre&quot;
+#
+[translations]
+
+# Additional languages definition
+# You can define language specific config values and translations:
+# title, description, generate_feeds, feed_filenames, taxonomies, build_search_index
+# as well as its own search configuration and translations (see above for details on those)
+[languages]
+# For example
+# [languages.fr]
+# title = &quot;Mon blog&quot;
+# generate_feeds = true
+# taxonomies = [
+#    {name = &quot;auteurs&quot;},
+#    {name = &quot;tags&quot;},
+# ]
+# build_search_index = false
+
+# You can put any kind of data here. The data
+# will be accessible in all templates
+# Example:
+#     [extra]
+#     author = &quot;Famous author&quot;
+#
+# author value will be available using {{ config.extra.author }} in templates
+#
+[extra]
+</code></pre>
+<h2 id="slugification-strategies"><a class="zola-anchor" href="#slugification-strategies" aria-label="Anchor link for: slugification-strategies">🔗</a>Slugification strategies</h2>
+<p>By default, Zola will turn every path, taxonomies and anchors to a slug, an ASCII representation with no special characters.
+You can however change that strategy for each kind of item, if you want UTF-8 characters in your URLs for example. There are 3 strategies:</p>
+<ul>
+<li><code>on</code>: the default one, everything is turned into a slug</li>
+<li><code>safe</code>: characters that cannot exist in files on Windows (<code>&lt;&gt;:"/\|?*</code>) or Unix (<code>/</code>) are removed, everything else stays</li>
+<li><code>off</code>: nothing is changed, your site might not build on some OS and/or break various URL parsers</li>
+</ul>
+<p>Since there are no filename issues with anchors, the <code>safe</code> and <code>off</code> strategies are identical in their case: the only change
+is space being replaced by <code>_</code> since a space is not valid in an anchor.</p>
+<p>Note that if you are using a strategy other than the default, you will have to manually escape whitespace and Markdown
+tokens to be able to link to your pages. For example an internal link to a file named <code>some space.md</code> will need to be
+written like <code>some%20space.md</code> in your Markdown files.</p>
+
+
+    </div>
+</div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

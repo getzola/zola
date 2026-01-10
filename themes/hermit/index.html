@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Hermit_Zola | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;hermit&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Hermit_Zola</h1>
+            <p>Minimal Zola theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;versbinarii.gitlab.io&#x2F;blog&#x2F;">VersBinarii</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;VersBinarii&#x2F;hermit_zola">https:&#x2F;&#x2F;github.com&#x2F;VersBinarii&#x2F;hermit_zola</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;versbinarii.gitlab.io&#x2F;blog&#x2F;">https:&#x2F;&#x2F;versbinarii.gitlab.io&#x2F;blog&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-04-06T11:23:44+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><a class="external" href="https://travis-ci.org/VersBinarii/hermit_zola"><img src="https://travis-ci.org/VersBinarii/hermit_zola.svg?branch=master" alt="Build Status" /></a></p>
+<h1 id="hermit">Hermit</h1>
+<blockquote>
+<p>this is a port of the <a class="external" href="https://github.com/Track3/hermit">Hermit theme</a> for <a class="external" href="https://www.getzola.org/">Zola</a></p>
+</blockquote>
+<p>Hermit is a  minimal &amp; fast Zola theme for bloggers.</p>
+<p><img src="https://www.getzola.org/themes/hermit/screenshot.png" alt="screenshot" /></p>
+<p><a class="external" href="https://versbinarii.gitlab.io/blog/">View demo</a></p>
+<h2 id="installation">Installation</h2>
+<p>First download the theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">$ cd themes
+$ git clone https:&#x2F;&#x2F;github.com&#x2F;VersBinarii&#x2F;hermit_zola
+</code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;hermit_zola&quot;
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+home_subtitle = &quot;Some profound and catchy statement&quot;
+
+footer_copyright = &#x27; &amp;#183; &lt;a href=&quot;https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by-nc&#x2F;4.0&#x2F;&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;CC BY-NC 4.0&lt;&#x2F;a&gt;&#x27;
+
+hermit_menu = [
+    { link = &quot;&#x2F;posts&quot;, name = &quot;Posts&quot; },
+    { link = &quot;&#x2F;about&quot;, name = &quot;About&quot; }
+]
+
+hermit_social = [
+    { name = &quot;twitter&quot;, link = &quot;https:&#x2F;&#x2F;twitter.com&quot; },
+    { name = &quot;github&quot;, link = &quot;https:&#x2F;&#x2F;github.com&quot; },
+    { name = &quot;email&quot;, link = &quot;mailto:author@domain.com&quot; }
+]
+
+
+
+[extra.highlightjs]
+enable = true
+clipboard = true
+theme = &quot;vs2015&quot;
+
+[extra.disqus]
+enable = false
+# Take this from your Disqus account
+shortname = &quot;my-supa-dupa-blog&quot;
+
+[extra.author]
+name = &quot;The Author&quot;
+email = &quot;author@domain.com&quot;
+
+[extra.google_analytics]
+enable = false
+id = &quot;UA-4XXXXXXX-X&quot;
+</code></pre>
+<h3 id="table-of-content">Table of content</h3>
+<p>Table of content can be enabled by adding</p>
+<pre><code>+++
+[extra]
+toc=true
++++
+</code></pre>
+<p>to the page front matter. Icon will then appear above the page title that will
+allow to toggle the ToC.</p>
+<h2 id="license">License</h2>
+<p><a href="https://www.getzola.org/themes/hermit/LICENSE">MIT</a></p>
+<p>Thanks to <a class="external" href="https://github.com/Track3">Track3</a> for creating the original!</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>dinkleberg | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;dinkleberg&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>dinkleberg</h1>
+            <p>The Rust BR theme for Gutenberg</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;guidiego">Guilherme Diego</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;rust-br&#x2F;dinkleberg">https:&#x2F;&#x2F;github.com&#x2F;rust-br&#x2F;dinkleberg</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;">https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2019-10-18T00:30:44-03:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><img src="https://user-images.githubusercontent.com/10289071/40806112-dd79ae78-64f6-11e8-8f24-63f387d5bb8f.jpg" alt="753986_1" /></p>
+<p>Rust BR Blog template for Gutenberg</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>A kind of i18n for base words as: "Next", "Previous", "Pages", "Categories"</li>
+<li>Blog Title and Logo on extra configurations</li>
+<li>Auto-sidebar links by configuration</li>
+<li>Simple design based on Medium</li>
+<li>SEO using structured data and another features</li>
+</ul>
+<h2 id="configurations">Configurations</h2>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+blog_logo=&quot;&#x2F;imgs&#x2F;common&#x2F;logo.png&quot; #will appear on top header
+blog_title=&quot;rust::br::Blog&quot; #will appear on top header after logo
+
+## i18n words
+label_tags = &quot;Tags&quot;
+label_tag = &quot;Tag&quot;
+label_categories = &quot;Categorias&quot;
+label_category = &quot;Categoria&quot;
+label_relative_posts = &quot;Postagens Relacionadas&quot;
+label_next = &quot;Próxima&quot;
+label_previous = &quot;Anterior&quot;
+label_page = &quot;Página&quot;
+label_of = &quot;de&quot;
+label_minutes = &quot;minutos&quot;
+
+og_image=&quot;&quot; # Image that will appear on social media
+og_alt_image=&quot;&quot; # Alt for og_image
+og_site_name=&quot;&quot; # Site Name for Open Graphic
+keywords=&quot;&quot; # Keywords for SEO
+
+educational_use=&quot;knowledge share&quot; # OPTIONAL
+copyright_year=&quot;2018&quot; # OPTIONAL
+
+fb_app_id=&quot;???&quot; # OPTIONAL, Facebook App Id to help in metrics
+twitter_username=&quot;@???&quot; # OPTIONAL, Twitter User to help with metrics
+
+## Sidebar automatic links
+sidebar = [
+    {name = &quot;Social&quot;, urls=[
+        {name=&quot;Telegram&quot;, url=&quot;https:&#x2F;&#x2F;t.me&#x2F;rustlangbr&quot;},
+        {name=&quot;Github&quot;, url=&quot;https:&#x2F;&#x2F;github.com&#x2F;rust-br&quot;},
+    ]},
+    {name = &quot;Divida Conhecimento!&quot;, urls=[
+        {name=&quot;Contribuir!&quot;, url=&quot;https:&#x2F;&#x2F;rust-br.github.io&#x2F;blog&#x2F;hello-world&quot;}
+    ]}
+]
+
+</code></pre>
+<p>This configuration was the same configuration that we use on <a class="external" href="https://rust-br.github.io/blog">RustBR Blog</a></p>
+<h3 id="favicons-and-other-stuff">Favicons and other stuff</h3>
+<p>By default Dinkleberg wait that you have all icons on root of your static, for it you can use the site <a class="external" href="https://www.favicon-generator.org/">https://www.favicon-generator.org/</a> to generate that bundle and put it inside you <code>/static</code> :D</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

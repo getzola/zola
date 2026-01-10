@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Float | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;float&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Float</h1>
+            <p>An elegant blog theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;editor.leonh.space&#x2F;">Leon</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.15.3 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;gitlab.com&#x2F;float-theme&#x2F;float&#x2F;">https:&#x2F;&#x2F;gitlab.com&#x2F;float-theme&#x2F;float&#x2F;</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;float-theme.netlify.app&#x2F;">https:&#x2F;&#x2F;float-theme.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-03-21T15:29:41Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><img src="https://www.getzola.org/themes/float/content/blog/2020/2020-06-15-Zola-Theme-Float/Float.png" alt="Float" /></p>
+<p><strong><a href="https://www.getzola.org/themes/float/README.en.md">English</a></strong></p>
+<p>Float 是一款為 <a class="external" href="https://www.getzola.org/">Zola</a> 設計的佈景主題。</p>
+<p>[[<em>TOC</em>]]</p>
+<h2 id="te-se">特色</h2>
+<ul>
+<li>依據不同的螢幕尺寸提供最佳化版面，從小尺寸到大尺寸都可獲得優秀的閱讀體驗。</li>
+<li>文章卡片提供兩種卡片尺寸，重點文章可採用更醒目的寬版卡片。</li>
+<li>文章卡片配圖可自行指定，未指定者使用 <a class="external" href="https://source.unsplash.com/">Unsplash Source</a> 的隨機圖片。</li>
+<li>使用 Zola 的 <code>resize_image()</code> 自動產生適用於 DPR 1.0 ~ 3.0 的圖片，卡片配圖會由瀏覽器依據設備之 DPR 自動選用最佳尺寸的圖片。</li>
+<li>圖片啟用延遲載入，縮短頁面載入時間。</li>
+<li>預設埋入 HTML SEO 標籤、<a class="external" href="https://ogp.me/">Open Graph</a> 與 <a class="external" href="https://developer.twitter.com/en/docs/tweets/optimize-with-cards/overview/abouts-cards">Twitter Cards</a> 標籤。</li>
+<li>整合 <a class="external" href="https://analytics.google.com/">Google Analytics</a>。</li>
+<li>整合 <a class="external" href="https://adsense.google.com/">Google AdSense</a>。</li>
+<li>版面為 <a class="external" href="https://support.google.com/adsense/answer/9261306">AdSense 自動廣告</a>最佳化，不會因自動廣告的寬度不一而破版。</li>
+<li>整合 <a class="external" href="https://like.co/">LikeCoin</a>。</li>
+<li>整合 <a class="external" href="https://utteranc.es/">utterances</a>，利用 <a class="external" href="https://github.com/">GitHub</a> issue 作為留言系統。</li>
+</ul>
+<h2 id="an-zhuang-yu-qi-yong">安裝與啟用</h2>
+<p>在您的 Zola 專案資料夾內：</p>
+<p>把 Float 以 Git 子模組的方式加入專案內：</p>
+<pre data-lang="sh" class="language-sh "><code class="language-sh" data-lang="sh">git submodule add https:&#x2F;&#x2F;gitlab.com&#x2F;float-theme&#x2F;float.git themes&#x2F;float
+</code></pre>
+<p>編輯您的 config.toml，指定 Float 作為佈景主題：</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;float&quot;
+</code></pre>
+<p>編輯您的 config.toml，加入 tags 作為分類系統：</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">taxonomies = [
+    {name = &quot;tags&quot;, paginate_by = 10},
+]
+</code></pre>
+<p>複製 float/static/ 的所有子資料夾與檔案到您的 static/：</p>
+<pre data-lang="sh" class="language-sh "><code class="language-sh" data-lang="sh">cp -r themes&#x2F;float&#x2F;static&#x2F;* static&#x2F;
+</code></pre>
+<p>複製 float/content/ 的所有子資料夾與檔案到您的 content/：</p>
+<pre data-lang="sh" class="language-sh "><code class="language-sh" data-lang="sh">cp -r themes&#x2F;float&#x2F;content&#x2F;* content&#x2F;
+</code></pre>
+<h2 id="shi-yong-float">使用 Float</h2>
+<h3 id="wen-zhang-yu-pei-tu">文章與配圖</h3>
+<p>文章皆以資料夾的方式存在，如下例：</p>
+<pre><code>content&#x2F;
+└── blog&#x2F;
+    └── 2020&#x2F;
+        └── 2020-06-15-Zola-Theme-Float&#x2F;
+            ├── index.md
+            ├── pic1.png
+            ├── pic2.png
+            └── qa_report.pdf
+</code></pre>
+<p>文章為 index.md，文內的配圖或其它檔案也是放在文章資料夾內。</p>
+<h3 id="front-matter">Front-matter</h3>
+<p>Front-matter 請參照下列註解說明：</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">title = &quot;Float theme for Zola&quot;
+description = &quot;Float features and usage guide&quot;
+draft = false
+[taxonomies]
+tags = [&quot;Float&quot;, &quot;Zola&quot;]
+[extra]
+feature_image = &quot;pic1.png&quot; # 卡片圖片。
+feature = true # 是否為重點文章，重點文章會以寬版卡片顯示。
+link = &quot;&quot; # 指定卡片連結，若有指定則卡片不會連結到文章頁。
+</code></pre>
+<h2 id="ke-zhi-hua">客製化</h2>
+<p>可客製化設定大多可以在 config.toml 的 <code>[extra]</code> 區段做設定：</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+main_section = &quot;blog&quot;
+
+copyright = &quot;&quot;
+
+web_fonts = &quot;&lt;link rel=&#x27;stylesheet&#x27; href=&#x27;https:&#x2F;&#x2F;fonts.googleapis.com&#x2F;css2?family=Noto+Serif+TC:wght@500;700&amp;display=swap&#x27;&gt;&quot;
+
+google_analytics = false
+# google_analytics_id = &quot;UA-XXXXXX-X&quot;
+
+google_adsense = false
+# google_adsense_id = &quot;ca-pub-XXXXXXXXXXXXXXXX&quot;
+
+twitter_account = &quot;@xxx&quot;
+
+likecoin = false
+# likecoin_name = &quot;xxx&quot;
+
+utterances = false
+# utterances_repo = &quot;xxx&#x2F;xxx&quot;
+</code></pre>
+<h3 id="zi-ti">字體</h3>
+<p>字體的 CSS 位於 float/sass/font.scss，欲更換字體，把 float/sass/font.scss 複製到自己的 sass/font.scss，並修改之。</p>
+<h2 id="yi-zhi-wen-ti">已知問題</h2>
+<ul>
+<li>分頁設定皆須設為 10 篇分頁。因為 Zola 的 <code>get_section()</code> 無法取得該 section 的分頁設定。</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

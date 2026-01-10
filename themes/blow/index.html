@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Blow | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;blow&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Blow</h1>
+            <p>A Zola theme made with Tailwindcss</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;tchartron.com">Thomas Chartron</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.9.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;tchartron&#x2F;blow">https:&#x2F;&#x2F;github.com&#x2F;tchartron&#x2F;blow</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;tchartron.com">https:&#x2F;&#x2F;tchartron.com</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-09-29T16:55:23+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="blow">Blow</h1>
+<p>A <a class="external" href="https://www.getzola.org/">Zola</a> theme built with <a class="external" href="https://tailwindcss.com/">tailwindcss</a></p>
+<p>(WIP) Example : <a class="external" href="https://tchartron.com">Here</a></p>
+<h2 id="preview">Preview</h2>
+<p><img src="https://www.getzola.org/themes/blow/screenshot.png" alt="preview" /></p>
+<h2 id="usage">Usage</h2>
+<p>You should follow the <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">official documentation</a> about installing a Zola theme.</p>
+<p>I recommend adding the theme as a git submodule :</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd my-zola-website
+git submodule add -b main git@github.com:tchartron&#x2F;blow.git themes&#x2F;blow
+</code></pre>
+<p>Edit the theme used in your <code>config.toml</code> file</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml"># The site theme to use.
+theme = &quot;blow&quot;
+</code></pre>
+<p>Then edit your <code>config.toml</code> file to override values from the theme :</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+enable_search = true
+enable_sidebar = true
+enable_adsense = true
+enable_multilingue = true
+adsense_link = &quot;https:&#x2F;&#x2F;pagead2.googlesyndication.com&#x2F;pagead&#x2F;js&#x2F;adsbygoogle.js?client=myclientid&quot;
+
+[extra.lang]
+items = [
+    { lang = &quot;en&quot;, links = [
+        { base_url = &quot;&#x2F;&quot;, name = &quot;English&quot; },
+        { base_url = &quot;&#x2F;fr&quot;, name = &quot;French&quot; },
+    ] },
+    { lang = &quot;fr&quot;, links = [
+        { base_url = &quot;&#x2F;&quot;, name = &quot;Anglais&quot; },
+        { base_url = &quot;&#x2F;fr&quot;, name = &quot;Français&quot; },
+    ] },
+]
+
+[extra.navbar]
+items = [
+    { lang = &quot;en&quot;, links = [
+        { url = &quot;&#x2F;&quot;, name = &quot;Home&quot; },
+        { url = &quot;&#x2F;categories&quot;, name = &quot;Categories&quot; },
+        { url = &quot;&#x2F;tags&quot;, name = &quot;Tags&quot; },
+    ] },
+    { lang = &quot;fr&quot;, links = [
+        { url = &quot;&#x2F;fr&quot;, name = &quot;Accueil&quot; },
+        { url = &quot;&#x2F;fr&#x2F;categories&quot;, name = &quot;Categories&quot; },
+        { url = &quot;&#x2F;fr&#x2F;tags&quot;, name = &quot;Tags&quot; },
+    ] },
+]
+title = &quot;title&quot;
+
+[extra.sidebar]
+items = [
+    { lang = &quot;en&quot;, links = [
+        { url = &quot;&#x2F;markdown&quot;, name = &quot;Markdown&quot; },
+        { url = &quot;&#x2F;blog&quot;, name = &quot;Blog&quot; },
+    ] },
+    { lang = &quot;fr&quot;, links = [
+        { url = &quot;&#x2F;fr&#x2F;markdown&quot;, name = &quot;Markdown&quot; },
+        { url = &quot;&#x2F;fr&#x2F;blog&quot;, name = &quot;Blog&quot; },
+    ] },
+]
+
+# Index page
+[extra.index]
+title = &quot;Main title&quot;
+image = &quot;https:&#x2F;&#x2F;via.placeholder.com&#x2F;200&quot;
+image_alt = &quot;Placeholder text describing the index&#x27;s image.&quot;
+
+[extra.default_author]
+name = &quot;John Doe&quot;
+avatar = &quot;https:&#x2F;&#x2F;via.placeholder.com&#x2F;200&quot;
+avatar_alt = &quot;Placeholder text describing the default author&#x27;s avatar.&quot;
+
+[extra.social]
+codeberg = &quot;https:&#x2F;&#x2F;codeberg.org&#x2F;johndoe&quot;
+github = &quot;https:&#x2F;&#x2F;github.com&#x2F;johndoe&quot;
+gitlab = &quot;https:&#x2F;&#x2F;gitlab.com&#x2F;johndoe&quot;
+twitter = &quot;https:&#x2F;&#x2F;twitter.com&#x2F;johndoe&quot;
+mastodon = &quot;https:&#x2F;&#x2F;social.somewhere.com&#x2F;users&#x2F;johndoe&quot;
+linkedin = &quot;https:&#x2F;&#x2F;www.linkedin.com&#x2F;in&#x2F;john-doe-b1234567&#x2F;&quot;
+stackoverflow = &quot;https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;01234567&#x2F;johndoe&quot; 
+telegram = &quot;https:&#x2F;&#x2F;t.me&#x2F;johndoe&quot;
+email = &quot;john.doe@gmail.com&quot;
+
+[extra.favicon]
+favicon = &quot;&#x2F;icons&#x2F;favicon.ico&quot;
+favicon_16x16 = &quot;&#x2F;icons&#x2F;favicon-16x16.png&quot;
+favicon_32x32 = &quot;&#x2F;icons&#x2F;favicon-32x32.png&quot;
+apple_touch_icon = &quot;&#x2F;icons&#x2F;apple-touch-icon.png&quot;
+android_chrome_512 = &quot;&#x2F;icons&#x2F;android-chrome-512x512.png&quot;
+android_chrome_192 = &quot;&#x2F;icons&#x2F;android-chrome-192x192.png&quot;
+manifest = &quot;&#x2F;icons&#x2F;site.webmanifest&quot;
+</code></pre>
+<p>You can now run <code>zola serve</code> and visit : <code>http://127.0.0.1:1111/</code> to see your site</p>
+<h2 id="syntax-highlighting">Syntax Highlighting</h2>
+<p>Blow makes use of Zola code highlighting feature.<br />
+It supports setting a different color scheme depending on the user selected theme (Dark / Light)<br />
+In order to use it you should select the color scheme you want to use for light and dark themes in the list provided <a class="external" href="https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting">here</a> and edit your <code>config.toml</code> file like this example :</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">highlight_theme = &quot;css&quot;
+
+highlight_themes_css = [
+  { theme = &quot;ayu-dark&quot;, filename = &quot;syntax-dark.css&quot; },
+  { theme = &quot;ayu-light&quot;, filename = &quot;syntax-light.css&quot; },
+]
+</code></pre>
+<h2 id="custom-footer-content">Custom Footer Content</h2>
+<p>To overwrite the default footer (copyright notice), extend the <code>layout.html</code> template of the theme as described in the <a class="external" href="https://www.getzola.org/documentation/themes/extending-a-theme/#overriding-a-block">Zola documentation</a> by creating a <code>layout.html</code> with the following content in your <code>templates</code> directory:</p>
+<pre data-lang="jinja" class="language-jinja "><code class="language-jinja" data-lang="jinja">{%&#x2F;* extends &quot;blow&#x2F;templates&#x2F;layout.html&quot; *&#x2F;%}
+
+{%&#x2F;* block content_footer *&#x2F;%}
+Here is my own footer with a &lt;a href=&quot;http:&#x2F;&#x2F;example.com&quot;&gt;link&lt;&#x2F;a&gt;.
+{%&#x2F;* endblock *&#x2F;%}
+</code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+Dark/Light modes (with syntax highlighting depending on selected theme)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Customizable navbar links</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Tags and Categories taxonomies</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Search functionality supporting Command + K shortcut</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Social links (github, gitlab, twitter, linkedin, email)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Postcss build process with cssnano (and tailwindcss tree shaking to reduce final bundle size)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Uglifyjs build process with minification</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Example script to deploy to Github Pages</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Pagination</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Sidemenu menu with sections links</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Table of content (2 levels and currently viewed part highlighted)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Multilingue</li>
+<li><input disabled="" type="checkbox" checked=""/>
+404</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Mobile responsive</li>
+<li><input disabled="" type="checkbox" checked=""/>
+Favicon</li>
+<li><input disabled="" type="checkbox"/>
+Adsense</li>
+</ul>
+<h2 id="deployment">Deployment</h2>
+<p>There is a section about deployment in Zola <a class="external" href="https://www.getzola.org/documentation/deployment/overview/">documentation</a> but you'll find an <a class="external" href="https://github.com/tchartron/blow/blob/main/deploy-github.sh">example</a> to deploy your site to github pages</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

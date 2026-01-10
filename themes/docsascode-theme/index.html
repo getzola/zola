@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Docsascode_theme | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;docsascode-theme&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Docsascode_theme</h1>
+            <p>A modern simple Zola&#x27;s theme related to docs as code methodology</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;codeandmedia.com">Roman Soldatenkov</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.10.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;codeandmedia&#x2F;zola_docsascode_theme">https:&#x2F;&#x2F;github.com&#x2F;codeandmedia&#x2F;zola_docsascode_theme</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;docsascode.codeandmedia.com">https:&#x2F;&#x2F;docsascode.codeandmedia.com</a></p>
+            
+            
+            <p><b>Last updated:</b> 2023-05-06T17:56:31+02:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <p><strong>Demo: <a class="external" href="http://docsascode.codeandmedia.com">docsascode.codeandmedia.com</a></strong></p>
+<p>I was inspired by <a class="external" href="https://www.linode.com/2020/01/17/docs-as-code-at-linode/">Linode's approach</a> to creating and managing docs. They call it <em>docs as code methodology.</em>  Thereby my aim was making simple and productive way to work with any sort of documents and articles through Markdown, Git and Docker/k8s optionally.</p>
+<p>The repo contains a theme for <a class="external" href="https://www.getzola.org/">Zola</a> (the best static site generator I've ever seen) and dockerfile for building Docker images with Nginx-alpine.  You can pull to your Docker an <a class="external" href="https://hub.docker.com/r/codeandmedia/docsascode-theme">image with demo-content</a></p>
+<pre><code>codeandmedia&#x2F;docsascode-theme:latest
+</code></pre>
+<p>If you would use Docker on MacBook M1 processors \ Raspberry Pi4 64bit \ Amazon Graviton or another ARM64 - just fork the ARM64 branch or push</p>
+<pre><code>codeandmedia&#x2F;docsascode-theme-arm64:latest
+</code></pre>
+<h2 id="perks">Perks</h2>
+<ul>
+<li>light / dark switcher</li>
+<li>tags and authors taxonomies by default</li>
+<li>search</li>
+<li>useful UI both on mobiles and desktops</li>
+</ul>
+<h2 id="6-steps-build-your-knowledge-base-docs-repo">6 steps build your knowledge base/docs repo</h2>
+<ol>
+<li>Fork the repo</li>
+<li>delete demo content and add your own (I explain how to structure it below)</li>
+<li>change website name and domain in config.toml, also, change the title in _index.md in a root</li>
+<li>connect your repo to dockerhub</li>
+<li>build your docker image or setup <a class="external" href="https://docs.docker.com/docker-hub/builds/">autobuilds</a></li>
+<li>host a builded docker image on your own way</li>
+</ol>
+<p>But, zola is amazing static site generator, so you feel free to</p>
+<ol>
+<li>download all repo files</li>
+<li>again delete demo content and add your own</li>
+<li>change name and domain in config.toml/index.md</li>
+<li>setup zola (win, linux, mac)</li>
+<li>execute zola build</li>
+<li>host builded html-output anywhere you want</li>
+</ol>
+<p>Zola supports Netlify and other similar services, or you can decide to create your own CI/CD process.</p>
+<h2 id="how-to-structure-your-content">How to structure your content</h2>
+<p>All your articles should be inside <em>content</em> folder. Any images, videos, other static files should be inside <em>static.</em></p>
+<h3 id="folders">Folders</h3>
+<p>Every folder should contains _index.md like</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">+++
+title = &quot;Docsascode title&quot;
+description = &quot;Description is optional&quot;
+sort_by = &quot;date&quot; # sort by weight or date
+insert_anchor_links = &quot;right&quot; # if you want § next to headers
++++
+</code></pre>
+<p>Each folder is the section of the website, it means if you create folder foo it will be seen as <em>yoursitedomain.com/foo</em></p>
+<p>The theme supports folders in folders and articles + folders in one folder (see an example inside <em>content</em>). So you can store inside folder another folders and describe in index some specific details.</p>
+<h3 id="pages">Pages</h3>
+<p>A page should be started by</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">+++
+title = &quot;File and folders in folder&quot;
+date = 2020-01-18 # or weight 
+description = &quot;Description&quot;
+insert_anchor_links = &quot;right&quot;
+
+[taxonomies] #all taxonomies is optional
+tags = [&quot;newtag&quot;]
+authors = [&quot;John Doe&quot;]
++++
+</code></pre>
+<p>Zola allows to create drafts:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">draft = true
+</code></pre>
+<p>Also, by default you have two taxonomies: <em>tags</em> and <em>authors</em>. It's optional, not necessary to use it on all pages. And you can add your own taxonomy:</p>
+<ol>
+<li>Copy tags or authors folder and rename it to your taxonomy</li>
+<li>Add your taxonomy to config.toml</li>
+<li>Add to page.html template code like</li>
+</ol>
+<pre data-lang="rust" class="language-rust "><code class="language-rust" data-lang="rust">    {%&#x2F;* if page.taxonomies.yourtaxonomynameplural *&#x2F;%}
+      &lt;ul&gt;
+      {%&#x2F;* for tag in page.taxonomies.yourtaxonomynameplural *&#x2F;%}
+        &lt;li&gt;&lt;a href=&quot;{{&#x2F;* get_taxonomy_url(kind=&quot;yourtaxonomynameplural&quot;, name=yourtaxonomyname) | safe *&#x2F;}}&quot; &gt;{{&#x2F;* yourtaxonomyname *&#x2F;}}&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+      {%&#x2F;* endfor *&#x2F;%}
+      &lt;&#x2F;ul&gt;
+    {%&#x2F;* endif *&#x2F;%}
+</code></pre>
+<p>Done. I told you Zola is amazing :)</p>
+<p>Anyway you can rewrite theme for your own wishes with Zola (<a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">link to documentation</a>)</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>juice | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;juice&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>juice</h1>
+            <p>An intuitive, elegant, and lightweight Zola theme for product sites.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;huhu.io">Huhu teams</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.11.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;huhu&#x2F;juice">https:&#x2F;&#x2F;github.com&#x2F;huhu&#x2F;juice</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;juice.huhu.io">https:&#x2F;&#x2F;juice.huhu.io</a></p>
+            
+            
+            <p><b>Last updated:</b> 2024-06-01T00:31:42-07:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="juice">Juice</h1>
+<img align="right" width="150" height="150" src="/content/juice.svg">
+<p><strong>Juice</strong> is an intuitive, elegant, and responsive Zola theme for product sites.</p>
+<ul>
+<li>Build for product sites</li>
+<li>Simple and intuitive structure</li>
+<li>Clean and elegant design</li>
+<li>Responsive and mobile device compatible</li>
+<li>Customize and extend friendly</li>
+</ul>
+<p>https://juice.huhu.io</p>
+<h1 id="installation">Installation</h1>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">$ cd themes
+$ git clone https:&#x2F;&#x2F;github.com&#x2F;huhu&#x2F;juice.git
+</code></pre>
+<p>or add as a submodule</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">$ git submodule add https:&#x2F;&#x2F;github.com&#x2F;huhu&#x2F;juice  themes&#x2F;juice
+</code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;juice&quot;
+</code></pre>
+<h1 id="structure">Structure</h1>
+<h3 id="hero">Hero</h3>
+<p><strong>Juice</strong> is designed for product websites, hence we let <strong>hero</strong> part fills whole of screen.
+You can customize your <strong>hero</strong> by using <code>hero</code> block in the <code>templates/index.html</code>.</p>
+<pre data-lang="html" class="language-html "><code class="language-html" data-lang="html">{%&#x2F;* extends &quot;juice&#x2F;templates&#x2F;index.html&quot; *&#x2F;%}
+{%&#x2F;* block hero *&#x2F;%}
+    &lt;div&gt;
+        Your cool hero html...
+    &lt;&#x2F;div&gt;
+{%&#x2F;* endblock hero *&#x2F;%}
+</code></pre>
+<h3 id="page">Page</h3>
+<p>Every markdown file located in <code>content</code> directory will become a <strong>Page</strong>. There also will display as
+a navigate link on the top-right corner.
+You can change the frontmatter's <code>weight</code> value to sort the order (ascending order).</p>
+<pre><code>+++
+title = &quot;Changelog&quot;
+description = &quot;Changelog&quot;
+weight = 2
++++
+
+</code></pre>
+<h3 id="css-variables">CSS variables</h3>
+<p>You can override theme variable by creating a file named <code>_variables.html</code> in your <code>templates</code> directory.</p>
+<p>See the default value <a href="https://www.getzola.org/themes/juice/./templates/_variables.html">here</a></p>
+<h3 id="favicon">Favicon</h3>
+<p>The same way as changing the <code>hero</code> block in the <code>templates/index.html</code>, you can change the <strong>favicon</strong>.</p>
+<pre data-lang="html" class="language-html "><code class="language-html" data-lang="html">{%&#x2F;* extends &quot;juice&#x2F;templates&#x2F;index.html&quot; *&#x2F;%}
+{%&#x2F;* block favicon *&#x2F;%}
+    &lt;link rel=&quot;icon&quot; type=&quot;image&#x2F;png&quot; href=&quot;&#x2F;favicon.ico&quot;&gt;
+{%&#x2F;* endblock favicon *&#x2F;%}
+</code></pre>
+<h3 id="fonts">Fonts</h3>
+<p>If you changed the <code>--xy-font-family</code>-variable in <code>_variables.html</code>, you have to load the mentioned fonts in the <code>templates/index.html</code>.</p>
+<pre data-lang="html" class="language-html "><code class="language-html" data-lang="html">{%&#x2F;* extends &quot;juice&#x2F;templates&#x2F;index.html&quot; *&#x2F;%}
+{%&#x2F;* block fonts *&#x2F;%}
+    &lt;link href=&quot;https:&#x2F;&#x2F;cdn.jsdelivr.net&#x2F;npm&#x2F;fork-awesome@1.2.0&#x2F;css&#x2F;fork-awesome.min.css&quot; rel=&quot;stylesheet&quot; crossorigin=&quot;anonymous&quot;&gt;
+    &lt;link href=&quot;https:&#x2F;&#x2F;fonts.googleapis.com&#x2F;css2?family=Babylonica&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+{%&#x2F;* endblock fonts *&#x2F;%}
+</code></pre>
+<h1 id="configuration">Configuration</h1>
+<p>You can customize some builtin property in <code>config.toml</code> file:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+juice_logo_name = &quot;Juice&quot;
+juice_logo_path = &quot;juice.svg&quot;
+juice_extra_menu = [
+    { title = &quot;Github&quot;, link = &quot;https:&#x2F;&#x2F;github.com&#x2F;huhu&#x2F;juice&quot;}
+]
+juice_exclude_menu = [
+    &quot;exclude_from_nav&quot;
+]
+repository_url = &quot;https:&#x2F;&#x2F;github.com&#x2F;huhu&#x2F;juice&quot;
+</code></pre>
+<h1 id="shortcodes">Shortcodes</h1>
+<p><strong>Juice</strong> have some builtin shortcodes available in <code>templates/shortcodes</code> directory.</p>
+<ul>
+<li><code>issue(id)</code> - A shortcode to render issue url, e.g. <code>issue(id=1)</code> would render to the link <code>https://github.com/huhu/juice/issue/1</code>.</li>
+</ul>
+<blockquote>
+<p>The <code>repository_url</code> is required.</p>
+</blockquote>
+<h1 id="showcases">Showcases</h1>
+<p>Please see the <a class="external" href="https://juice.huhu.io/showcases">showcases page</a>.</p>
+<h1 id="contributing">Contributing</h1>
+<p>Thank you very much for considering contributing to this project!</p>
+<p>We appreciate any form of contribution:</p>
+<ul>
+<li>New issues (feature requests, bug reports, questions, ideas, ...)</li>
+<li>Pull requests (documentation improvements, code improvements, new features, ...)</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

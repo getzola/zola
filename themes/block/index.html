@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Block | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;block&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Block</h1>
+            <p>Blog&#x2F;Black theme for Zola</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;ssiyad.com">Sabu Siyad</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.21.0 and above</p>
+            
+            <p><b>License:</b> GPLv3</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;ssiyad&#x2F;block">https:&#x2F;&#x2F;github.com&#x2F;ssiyad&#x2F;block</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;block-zola.netlify.app&#x2F;">https:&#x2F;&#x2F;block-zola.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2026-01-03T22:02:37+05:30</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="block">Block</h1>
+<p>Pure black, blog focused theme for <a class="external" href="https://www.getzola.org/">Zola</a>, powered by
+<a class="external" href="https://tailwindcss.com/">TailwindCSS</a>.</p>
+<p>Demo: https://block-zola.netlify.app/</p>
+<p><img src="https://www.getzola.org/themes/block/./screenshot.png" alt="sreenshot" /></p>
+<h2 id="setup">Setup</h2>
+<p>In your zola site directory</p>
+<ul>
+<li>
+<p>Get theme</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git submodule add https:&#x2F;&#x2F;github.com&#x2F;ssiyad&#x2F;block themes&#x2F;block
+</code></pre>
+</li>
+<li>
+<p>Build CSS</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd themes&#x2F;block
+npm ci
+npm run css:build
+</code></pre>
+</li>
+<li>
+<p>Build your site</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd ..&#x2F;..
+zola build
+</code></pre>
+</li>
+</ul>
+<h2 id="variables">Variables</h2>
+<p>You can use the following variables in your <code>config.toml</code>.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra.intro]
+heading = &quot;Blog&#x2F;Black theme for Zola&quot;
+subheading = &quot;Thoughts, stories and ideas.&quot;
+avatar_url = &quot;https:&#x2F;&#x2F;picsum.photos&#x2F;200&quot;
+
+[extra.footer]
+license_text = &quot;&quot;
+</code></pre>
+<p>Check <a href="https://www.getzola.org/themes/block/./theme.toml">theme.toml</a> for more info.</p>
+<h2 id="blocks">Blocks</h2>
+<p>You can override individual blocks by following
+<a class="external" href="https://www.getzola.org/documentation/themes/extending-a-theme/#overriding-a-block">this</a>.</p>
+<p>Example: <code>templates/base_layout.html</code></p>
+<pre data-lang="html" class="language-html "><code class="language-html" data-lang="html">{%&#x2F;* extends &quot;block&#x2F;templates&#x2F;base_layout.html&quot; *&#x2F;%}
+
+{%&#x2F;* block license_text *&#x2F;%}
+  &lt;div&gt;
+    The content for this site is
+    &lt;a
+      href=&quot;https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by-sa&#x2F;2.0&#x2F;&quot;
+      target=&quot;_blank&quot;
+      class=&quot;font-medium&quot;
+      &gt;CC-BY-SA&lt;&#x2F;a
+    &gt;. The
+    &lt;a
+      href=&quot;https:&#x2F;&#x2F;github.com&#x2F;ssiyad&#x2F;ssiyad.github.io&quot;
+      target=&quot;_blank&quot;
+      class=&quot;font-medium&quot;
+      &gt;code for this site&lt;&#x2F;a
+    &gt;
+    is
+    &lt;a
+      href=&quot;https:&#x2F;&#x2F;www.gnu.org&#x2F;licenses&#x2F;gpl-3.0.en.html&quot;
+      target=&quot;_blank&quot;
+      class=&quot;font-medium&quot;
+      &gt;GPLv3&lt;&#x2F;a
+    &gt;.
+  &lt;&#x2F;div&gt;
+{%&#x2F;* endblock *&#x2F;%}
+</code></pre>
+<h2 id="self-promotion">Self Promotion</h2>
+<p>Like this project? Give it a star! ⭐, and spread the word! 🚀. And if you are
+feeling especially charitable, follow <a class="external" href="https://ssiyad.com">Sabu Siyad</a> on
+<a class="external" href="https://github.com/ssiyad">GitHub</a>. Thanks!</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

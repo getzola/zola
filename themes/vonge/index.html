@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Vonge | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;vonge&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Vonge</h1>
+            <p>Vonge is a Personal portfolio&#x2F;blog site template</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;pascal-berrang.de">Pascal Berrang</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;paberr&#x2F;vonge-zola-theme&#x2F;">https:&#x2F;&#x2F;github.com&#x2F;paberr&#x2F;vonge-zola-theme&#x2F;</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;paberr.github.io&#x2F;vonge-zola-theme&#x2F;">https:&#x2F;&#x2F;paberr.github.io&#x2F;vonge-zola-theme&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-09-22T10:26:09+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="vonge-zola-theme">Vonge Zola Theme</h1>
+<p><img src="https://www.getzola.org/themes/vonge/screenshot.png" alt="" /></p>
+<p>This is a Zola port of the <a class="external" href="https://github.com/CloudCannon/vonge-hugo-bookshop-template">Vonge Hugo Bookshop template</a>, originally created by <a class="external" href="https://cloudcannon.com/">CloudCannon</a> and licensed under the MIT License.</p>
+<p>Vonge is a clean, modern theme for personal portfolios, blogs, or landing pages. This Zola version is designed to be <strong>fully configurable via <code>config.toml</code> and through structured front matter blocks</strong> and <strong>does not rely on Bookshop</strong>.</p>
+<blockquote>
+<p>✨ This theme is suitable for developers who want a minimal and flexible Zola theme with a professional design and content blocks driven by configuration.</p>
+</blockquote>
+<p>Demo @ https://paberr.github.io/vonge-zola-theme/</p>
+<h2 id="rocket-features">🚀 Features</h2>
+<ul>
+<li>Flexible homepage and inner pages using content blocks</li>
+<li>Customisable content via <code>extra.content_blocks</code> in front matter</li>
+<li>Clean typography and responsive layout</li>
+<li>Blog section with pagination</li>
+<li>Portfolio and testimonial support</li>
+<li>SEO-friendly structure</li>
+<li>MIT licensed</li>
+</ul>
+<h2 id="package-installation">📦 Installation</h2>
+<ol>
+<li>Download the Theme</li>
+</ol>
+<pre><code>git submodule add https:&#x2F;&#x2F;github.com&#x2F;paberr&#x2F;vonge-zola-theme themes&#x2F;vonge
+</code></pre>
+<ol start="2">
+<li>At minimum, add the following to your zola <code>config.toml</code></li>
+</ol>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;vonge&quot;
+taxonomies = [
+    { name = &quot;tags&quot;, feed = true},
+]
+</code></pre>
+<ol start="3">
+<li>Copy over the example content to get started</li>
+</ol>
+<pre><code>cp -r themes&#x2F;vonge&#x2F;content&#x2F;* content
+</code></pre>
+<h2 id="construction-worker-usage">👷 Usage</h2>
+<p>This theme uses <strong>structured front matter</strong> to build flexible page layouts. Each page can define its blocks using the <code>extra.content_blocks</code> array.</p>
+<h3 id="example-content-blog-index-md">Example: <code>content/blog/_index.md</code></h3>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">+++
+title = &quot;Blog&quot;
+sort_by = &quot;date&quot;
+paginate_by = 6
+
+[extra]
+content_blocks = [
+  { block = &quot;page-heading&quot;, title = &quot;Blog&quot;, description = &quot;Vonge blog features productivity, tips, inspiration and strategies for massive profits. Find out how to set up a successful blog or how to make yours even better!&quot; },
+  { block = &quot;posts-list&quot;, show_posts = true },
+  { block = &quot;newsletter&quot;, newsletter_title = &quot;Join my mailing list&quot;, newsletter_description = &quot;Get inspiration, updates and, cool stuff!&quot;, newsletter_identifier = &quot;&quot;, newsletter_button = &quot;Subscribe&quot; }
+]
++++
+</code></pre>
+<p>You can create your own custom blocks or extend existing ones by editing the theme's templates and SCSS.</p>
+<h2 id="pray-acknowledgements">🙏 Acknowledgements</h2>
+<p>This theme is based on the original <a class="external" href="https://github.com/CloudCannon/vonge-hugo-bookshop-template">Vonge Hugo Bookshop template</a> by <a class="external" href="https://cloudcannon.com/">CloudCannon</a>, adapted for use with Zola. All original design credits go to the authors.</p>
+<h2 id="page-facing-up-contributing">📄 Contributing</h2>
+<p>All contributions to this port are highly welcome!</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>neovim | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;neovim-theme&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>neovim</h1>
+            <p>A only keyboard theme with tabs and file browser</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;super-botman.github.io">0xb0tm4n</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.4 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;super-botman&#x2F;zola-theme">https:&#x2F;&#x2F;github.com&#x2F;super-botman&#x2F;zola-theme</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;super-botman.github.io">https:&#x2F;&#x2F;super-botman.github.io</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-11-28T20:31:08+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="neovim-like-theme">Neovim like theme</h1>
+<p>Neovim theme is a neovim like theme for zola.</p>
+<p><img src="https://github.com/user-attachments/assets/0317c951-4975-4150-ac43-7faf4c57aa8b" alt="image" /></p>
+<p>exemple: <a class="external" href="https://super-botman.github.io">https://super-botman.github.io</a></p>
+<h2 id="installation">Installation</h2>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd themes
+git clone https:&#x2F;&#x2F;github.com&#x2F;Super-Botman&#x2F;neovim-theme.git
+mv neovim-theme&#x2F;content&#x2F;readme.md ..&#x2F;content
+</code></pre>
+<p>then enable it in your config</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;neovim-theme&quot;
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+######################
+# Mandatory settings #
+######################
+
+# set the name of the blog
+blog_name = &quot;name&quot;
+
+#####################
+# Optional settings #
+#####################
+
+# set the background image u want
+background_image = &quot;&#x2F;assets&#x2F;background.jpg&quot;
+
+# this parameter allow you to configure specific init functions&#x2F;shortcuts and commands
+# the value has to be the path of you&#x27;re config.js file
+config_js = &quot;config.js&quot;
+
+# allow you to include custom css into u&#x27;re blog
+custom_css = &quot;style.css&quot;
+</code></pre>
+<pre data-lang="js" class="language-js "><code class="language-js" data-lang="js">const keys = {
+  &#x2F;&#x2F; &quot;normal&quot; keys are just keys typed on the page
+  &#x2F;&#x2F; for exemple &quot; &quot; is when space is typed
+  normal: {
+    &quot; &quot;: (event, element) =&gt; {
+      alert(&quot;u pressed space key&quot;);
+    },
+  },
+
+  &#x2F;&#x2F; this is for keys when shift is pressed
+  shortcut: {},
+};
+
+const commands = {
+  &#x2F;&#x2F; the key is used to specify the name of the command
+  test: (command) =&gt; {
+    alert(&quot;you entered &#x27;test&#x27; command&quot;);
+
+    &#x2F;&#x2F; and then the return value with type and message
+    return {
+      type: &quot;success&quot;, &#x2F;&#x2F; &quot;success&quot; = green text, &quot;error&quot; = red text
+      message: &quot;command executed&quot;, &#x2F;&#x2F; the text to show in the command line
+    };
+  },
+};
+
+function custom_init() {
+  &#x2F;&#x2F; here some code
+}
+</code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

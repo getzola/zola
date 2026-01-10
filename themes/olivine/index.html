@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Olivine | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;olivine&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Olivine</h1>
+            <p>A Zola theme for a personal knowledge base</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;web.stanford.edu&#x2F;~dkim04&#x2F;">Dongryul Kim</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.20.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;dongryul-kim&#x2F;olivine">https:&#x2F;&#x2F;github.com&#x2F;dongryul-kim&#x2F;olivine</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;dongryul-kim.github.io&#x2F;olivine&#x2F;">https:&#x2F;&#x2F;dongryul-kim.github.io&#x2F;olivine&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-12-22T10:21:49-08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="olivine">Olivine</h1>
+<p>A simple <a class="external" href="https://github.com/getzola/zola">Zola</a> theme for a personal knowledge
+base. Inspired by <a class="external" href="https://obsidian.md">Obsidian</a>.</p>
+<p><img src="https://www.getzola.org/themes/olivine/screenshot.png" alt="Screenshot of example page" /></p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Journaling</li>
+<li>Tags</li>
+<li>Knowledge graph</li>
+<li>Searching</li>
+<li>Light/dark mode</li>
+<li>Keyboard shortcuts</li>
+<li>Backlinks</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p>The easiest way to install Olivine is to use the <a class="external" href="https://github.com/dongryul-kim/olivine-quickstart">quickstart
+repository</a>.</p>
+<pre><code>git clone --depth 1 --recurse-submodules git@github.com:dongryul-kim&#x2F;olivine-quickstart.git &lt;your-folder-name&gt;
+</code></pre>
+<h3 id="manual-installation">Manual installation</h3>
+<p>You can also use the standard method for installing a Zola theme.
+Please follow the Zola documentation on <a class="external" href="https://www.getzola.org/documentation/themes/installing-and-using-themes/">installing and using
+themes</a>.</p>
+<p>There is also an additional step that is specific to Olivine. Create a file a
+named <code>content/olivine-internal-graph.md</code> with contents:</p>
+<pre><code>+++
+title = &quot;Graph&quot;
+template = &quot;internal&#x2F;graph.html&quot;
++++
+</code></pre>
+<p>a file named <code>content/olivine-internal-sitemap.md</code> with contents:</p>
+<pre><code>+++
+title = &quot;Sitemap&quot;
+template = &quot;internal&#x2F;sitemap.html&quot;
++++
+</code></pre>
+<p>and a file named <code>content/journal/_index.md</code> with contents:</p>
+<pre><code>+++
+title = &quot;Journal&quot;
+template = &quot;internal&#x2F;journal.html&quot;
+extra.siblings = true
++++
+</code></pre>
+<h2 id="acknowledgments">Acknowledgments</h2>
+<p>Special thanks to</p>
+<ul>
+<li><a class="external" href="https://github.com/year-calendar/js-year-calendar">year-calendar</a> for the
+calendar widget,</li>
+<li><a class="external" href="https://github.com/cytoscape/cytoscape.js">cytoscape</a> for the graph widget,</li>
+<li><a class="external" href="https://github.com/maker-jr/tikzjax">tikzjax</a> for rendering TikZ diagrams.</li>
+</ul>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

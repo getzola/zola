@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>tale-zola | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;tale-zola&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>tale-zola</h1>
+            <p>Tala-Zola is a minimal Zola theme helping you to build a nice and seo-ready blog.</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;github.com&#x2F;aaranxu">Aaran Xu</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.13.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;aaranxu&#x2F;tale-zola">https:&#x2F;&#x2F;github.com&#x2F;aaranxu&#x2F;tale-zola</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;tale-zola.netlify.app&#x2F;">https:&#x2F;&#x2F;tale-zola.netlify.app&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2021-12-05T00:18:16+08:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="tale-zola-theme">Tale-Zola Theme</h1>
+<p>Tala-Zola is a minimal <a class="external" href="https://www.getzola.org">Zola</a> theme helping you to
+build a light and seo-ready blog, and you can customise any information of the
+blog without having to modify the codes of the template. Tala-Zola is a port of
+the Jekyll theme <a class="external" href="https://github.com/chesterhow/tale">Tale</a>.</p>
+<h2 id="demo">Demo</h2>
+<p><a class="external" href="https://tale-zola.netlify.app/">Live Preview</a>.</p>
+<h2 id="requirements">Requirements</h2>
+<p>Before using the theme, you need to install the <a class="external" href="https://www.getzola.org/documentation/getting-started/installation/">Zola</a> ≥ 0.13.0.</p>
+<h2 id="quick-start">Quick Start</h2>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git clone git@github.com:aaranxu&#x2F;tale-zola.git
+cd tale-zola
+zola serve
+# open http:&#x2F;&#x2F;127.0.0.1:1111&#x2F; in the browser
+</code></pre>
+<h2 id="installation">Installation</h2>
+<p>Just earlier we showed you how to run the theme directly. Now we start to
+install the theme in an existing site step by step.</p>
+<h3 id="step-1-create-a-new-zola-site">Step 1: Create a new zola site</h3>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">zola init blog
+</code></pre>
+<h3 id="step-2-install-tale-zola">Step 2: Install Tale-Zola</h3>
+<p>Download this theme to your themes directory:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd blog&#x2F;themes
+git clone git@github.com:aaranxu&#x2F;tale-zola.git
+</code></pre>
+<p>Or install as a submodule:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd blog
+git init  # if your project is a git repository already, ignore this command
+git submodule add git@github.com:aaranxu&#x2F;tale-zola.git themes&#x2F;tale-zola
+</code></pre>
+<h3 id="step-3-configuration">Step 3: Configuration</h3>
+<p>Enable the theme in your <code>config.toml</code> in the site derectory:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;tale-zola&quot;
+</code></pre>
+<p>Or copy the <code>config.toml.example</code> from the theme directory to your project's
+root directory:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cp themes&#x2F;tale-zola&#x2F;config.toml.example config.toml
+</code></pre>
+<h3 id="step-4-add-new-content">Step 4: Add new content</h3>
+<p>Add an <code>_index.md</code> file to your <code>content</code> directory with some lines as bellows.</p>
+<pre data-lang="text" class="language-text "><code class="language-text" data-lang="text">+++
+sort_by = &quot;date&quot;
+paginate_by = 5
++++
+</code></pre>
+<p>Add a blog article file with a filename <code>first-post.md</code> (or other filenames) and
+input some content in it.</p>
+<pre data-lang="text" class="language-text "><code class="language-text" data-lang="text">+++
+title = &quot;First Post&quot;
+date = 2021-05-01T18:18:18+00:00
+
+[taxonomies]
+tags = [&quot;Post&quot;]
+
+[extra]
+author = &quot;Your Name&quot;
++++
+
+This is my first post.
+</code></pre>
+<p>Or you can just copy the content from the theme directory to your project:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cp -r themes&#x2F;tale-zola&#x2F;content .
+</code></pre>
+<h3 id="step-5-run-the-project">Step 5: Run the project</h3>
+<p>Just run <code>zola serve</code> in the root path of the project:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">zola serve
+</code></pre>
+<p>Tale-Zola will start the Zola development web server accessible by default at
+<code>http://127.0.0.1:1111</code>. Saved changes will live reload in the browser.</p>
+<h2 id="customisation">Customisation</h2>
+<p>You can customize your configurations, templates and content for yourself. Look
+at the <code>config.toml</code>, <code>theme.toml</code> and templates files in this repo for an idea.</p>
+<p>In most cases you only need to modify the content in the <code>config.toml</code> file to
+custom your blog, including different expressions in your speaking language.</p>
+<h3 id="necessary-configurations">Necessary Configurations</h3>
+<p>Add some information for your blog.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">title = &quot;You Blog Title&quot;
+description = &quot;The description of your blog.&quot;
+</code></pre>
+<p>Set the tags for the site.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">taxonomies = [
+  {name = &quot;tags&quot;},
+]
+</code></pre>
+<p>Add menus and footer information for your blog.</p>
+<pre><code># Menu items
+[[extra.menu]]
+name = &quot;Posts&quot;
+url = &quot;&#x2F;&quot;
+
+[[extra.menu]]
+name = &quot;Tags&quot;
+url = &quot;tags&quot;
+
+[[extra.menu]]
+name = &quot;About&quot;
+url = &quot;about&quot;
+
+[extra.footer]
+start_year = &quot;2020&quot;  # start year of the site
+end_year = &quot;2021&quot;    # end year of the site
+info = &quot;The information on the footer.&quot;
+</code></pre>
+<h4 id="option-configurations">Option Configurations</h4>
+<p>Add your name as the author name for the blog globally.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+author = &quot;Your Name&quot;
+</code></pre>
+<p>Use Google Analytics. Add your own Google Analytics ID.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+google_analytics = &quot;UA—XXXXXXXX-X&quot;
+</code></pre>
+<p>Whether to use Disqus globally and set to your disqus id name.
+And you can enable the disqus on per post page with <code>extra.disqus</code> option</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+disqus = false
+disqus_id = &quot;&quot;
+</code></pre>
+<p>Code syntax highlighting. See also <a class="external" href="https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting">syntax highlighting</a>.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[markdown]
+highlight_code = true
+highlight_theme = &quot;base16-ocean-light&quot;
+</code></pre>
+<p>Use KaTeX to support the math notation</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+katex = true
+</code></pre>
+<blockquote>
+<p>Note: You can also add the <code>katex</code> option on per mardown file of the page or section.</p>
+</blockquote>
+<p>Set date format in the site</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+timeformat = &quot;%B %e, %Y&quot; # e.g. June 14, 2021, and this is the default format
+</code></pre>
+<p>SEO settings, like Open Graph + Twitter Cards</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra.seo]
+# this image will be used as fallback if a page has no image of its own
+image = &quot;tale.png&quot;
+image_height = 50
+image_width = 50
+og_locale = &quot;en_US&quot;
+
+  [extra.seo.twitter]
+  site = &quot;twitter_accout&quot;
+  creator = &quot;twitter_accout&quot;
+
+  [extra.seo.facebook]
+  admins = &quot;facebook_accout&quot;
+  publisher = &quot;facebook_accout&quot;
+</code></pre>
+<p>Change the words in your speaking language.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra.expressions]
+home = &quot;Home&quot;              # The homepage&#x27;s name
+pinned = &quot;Pinned&quot;          # On the header of the post list
+written_by = &quot;Written by&quot;  # Like: Written by Aaran Xu
+on = &quot;on&quot;                  # Like: on May 3, 2021
+top = &quot;Top&quot;                # Go to the top of the page in the post
+tags = &quot;Tags&quot;              # In the page of Tags
+
+# disqus comments block
+disqus_discussion = &quot;Discussion and feedback&quot;
+
+# The contents of the 404 page
+p404 = &quot;404: Page not found&quot;
+p404_info = &quot;Oops! We can&#x27;t seem to find the page you are looking for.&quot;
+p404_back_home_start = &quot;Let&#x27;s&quot;
+p404_back_home_with_link = &quot;head back home&quot;
+p404_back_home_end = &quot;.&quot;
+</code></pre>
+<h3 id="custom-css-styles">Custom CSS styles</h3>
+<p>Just add your own styles to <code>sass/_custom.scss</code> file.</p>
+<h2 id="reporting-issues">Reporting Issues</h2>
+<p>We use GitHub Issues as the official bug tracker for the <strong>Tale-Zola</strong>. Please
+search <a class="external" href="https://github.com/aaranxu/tale-zola/issues">existing issues</a>. It’s
+possible someone has already reported the same problem.</p>
+<p>If your problem or idea is not addressed yet, <a class="external" href="https://github.com/aaranxu/tale-zola/issues/new">open a new issue</a>.</p>
+<h2 id="contributing">Contributing</h2>
+<p>We'd love your help! Please see <a href="https://www.getzola.org/themes/tale-zola/./CONTRIBUTING.md">CONTRIBUTING.md</a> to learn
+about the kinds of contributions we're looking for.</p>
+<h2 id="license">License</h2>
+<p>Tale-Zola is distributed under the terms of the
+<a href="https://www.getzola.org/themes/tale-zola/LICENSE">MIT license</a>.</p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

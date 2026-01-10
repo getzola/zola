@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>Zap | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;zap&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>Zap</h1>
+            <p>A fast, ultra-minimal Zola theme</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;www.jimmyff.co.uk">jimmyff</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.17.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;jimmyff&#x2F;zola-zap">https:&#x2F;&#x2F;github.com&#x2F;jimmyff&#x2F;zola-zap</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;www.jimmyff.co.uk&#x2F;zola-zap&#x2F;">https:&#x2F;&#x2F;www.jimmyff.co.uk&#x2F;zola-zap&#x2F;</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-12-08T18:11:59Z</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="zap">Zap</h1>
+<p>A fast, ultra-minimal Zola theme by <a class="external" href="https://www.jimmyff.co.uk">jimmyff</a>. Perfect PageSpeed scores (100 performance, 100 accessibility, 100 best practices, 100 SEO). See the <a class="external" href="https://www.jimmyff.co.uk/zola-zap/">demo</a> or read the <a class="external" href="https://www.jimmyff.co.uk/blog/zap-theme/">blog post</a>.</p>
+<p><a class="external" href="https://www.jimmyff.co.uk/zola-zap/"><img src="https://www.getzola.org/themes/zap/screenshot.png" alt="Screenshot" /></a></p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Inline CSS (~2KB) with OKLCH colors</li>
+<li>Inline SVG icons via spritesheet</li>
+<li>Responsive grid nav (auto-splits on mobile)</li>
+<li>Responsive image gallery grid</li>
+<li>Click-to-enlarge lightbox</li>
+<li>Responsive images with srcset</li>
+<li>Light/dark mode toggle</li>
+<li>OpenGraph &amp; Twitter Cards</li>
+<li>Atom &amp; RSS feeds</li>
+<li>Fuse.js search</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd themes
+git clone https:&#x2F;&#x2F;github.com&#x2F;jimmyff&#x2F;zola-zap zap
+</code></pre>
+<p>In your <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;zap&quot;
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<p>See <code>config.toml</code> for available options.</p>
+<h2 id="icons">Icons</h2>
+<p>Configure which icons to load in <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+inline_icons = true
+icon_path = &quot;static&#x2F;icons&#x2F;&quot;
+icons = [&quot;home&quot;, &quot;chat&quot;, &quot;search&quot;, &quot;light&quot;, &quot;asleep&quot;, &quot;rss&quot;]
+</code></pre>
+<p>Place SVG icons in your <code>static/icons/</code> folder. The theme includes icons from <a class="external" href="https://carbondesignsystem.com/elements/icons/library/">Carbon Design System</a>.</p>
+<h2 id="using-the-responsive-image-shortcode">Using the responsive image shortcode</h2>
+<pre data-lang="md" class="language-md "><code class="language-md" data-lang="md">{{ image(src=&quot;yourimage.jpg&quot;, alt=&quot;This is my image&quot;) }}
+</code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

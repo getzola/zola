@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>parchment | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;parchment&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>parchment</h1>
+            <p>Parchemnt theme, by jasonfry.co.uk</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;jasonfry.co.uk">Jason Fry</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;json&#x2F;parchment">https:&#x2F;&#x2F;github.com&#x2F;json&#x2F;parchment</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;whispers-on-parchment.jasonfry.co.uk">https:&#x2F;&#x2F;whispers-on-parchment.jasonfry.co.uk</a></p>
+            
+            
+            <p><b>Last updated:</b> 2025-09-25T21:57:54+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <h1 id="parchment-zola-theme">Parchment Zola Theme</h1>
+<p>A website theme for the static site generator <a class="external" href="https://getzola.org">Zola</a>.</p>
+<p>Written to produce clean, semantic, simple-to-read HTML and CSS. The aim is for a novice to press <code>F12</code> and be able to understand what is going on. No div-soup, No javascript, no third party frameworks.</p>
+<p>Used at <a class="external" href="https://jasonfry.co.uk">jasonfry.co.uk</a>.</p>
+<p>Demo available at <a class="external" href="https://whispers-on-parchment.jasonfry.co.uk">whispers-on-parchment.jasonfry.co.uk</a></p>
+<p><img src="https://www.getzola.org/themes/parchment/screenshot.png" alt="Parchment screenshot" /></p>
+<h2 id="installation">Installation</h2>
+<p>First download this theme to your <code>themes</code> directory:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd themes
+git clone https:&#x2F;&#x2F;github.com&#x2F;jsonfry&#x2F;parchment.git
+</code></pre>
+<p>and then enable it in your <code>config.toml</code>:</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">theme = &quot;parchment&quot;
+</code></pre>
+<h2 id="zola-features">Zola Features</h2>
+<p>No support for taxonomy.</p>
+<h2 id="customization">Customization</h2>
+<h3 id="base-template">Base Template</h3>
+<p>You can customize the following things:</p>
+<ul>
+<li>Adding in your own things to <code>&lt;head&gt;</code> (e.g. favicons), your own CSS.</li>
+<li>Adding some content to the footer</li>
+<li>Adding something to the end of the body, like analytics.</li>
+</ul>
+<p>Create a file like the following in <code>templates/index.html</code>.</p>
+<p>If you don't want to include the default CSS, then remove the line <code>{{ super() }}</code></p>
+<pre data-lang="html" class="language-html "><code class="language-html" data-lang="html">{%&#x2F;* extends &quot;parchment&#x2F;templates&#x2F;index.html&quot; *&#x2F;%}
+
+{%&#x2F;* block head *&#x2F;%}
+    {{ super() }}
+    &lt;link rel=&quot;apple-touch-icon&quot; sizes=&quot;180x180&quot; href=&quot;&#x2F;apple-touch-icon.png&quot; &#x2F;&gt;
+    &lt;link rel=&quot;icon&quot; type=&quot;image&#x2F;png&quot; sizes=&quot;32x32&quot; href=&quot;&#x2F;favicon-32x32.png&quot; &#x2F;&gt;
+    &lt;link rel=&quot;icon&quot; type=&quot;image&#x2F;png&quot; sizes=&quot;16x16&quot; href=&quot;&#x2F;favicon-16x16.png&quot; &#x2F;&gt;
+    &lt;link rel=&quot;manifest&quot; href=&quot;&#x2F;site.webmanifest&quot; &#x2F;&gt;
+
+    &lt;style&gt;
+        body {
+            font-family: &quot;Comic Sans MS&quot;, &quot;Comic Sans&quot;, cursive;
+        }
+    &lt;&#x2F;style&gt;
+{%&#x2F;* endblock head *&#x2F;%}
+
+{%&#x2F;* block footer *&#x2F;%}
+    &lt;p&gt;Created by a human&lt;&#x2F;p&gt;
+    {%&#x2F;* if config.generate_feeds *&#x2F;%}
+    &lt;p&gt;
+        &lt;a href=&quot;&#x2F;atom.xml&quot; title=&quot;subscribe - rss feed&quot;&gt;
+            rss
+        &lt;&#x2F;a&gt;
+    &lt;&#x2F;p&gt;
+    {%&#x2F;* endif *&#x2F;%}
+{%&#x2F;* endblock footer *&#x2F;%}
+
+{%&#x2F;* block body_end *&#x2F;%}
+    &lt;script
+      src=&quot;https:&#x2F;&#x2F;tinylytics.app&#x2F;embed&#x2F;your-code.js&quot;
+      defer
+    &gt;&lt;&#x2F;script&gt;
+{%&#x2F;* endblock body_end *&#x2F;%}
+</code></pre>
+<h3 id="colors">Colors</h3>
+<p>The color scheme is based on <a class="external" href="https://ethanschoonover.com/solarized/">Solarized</a> and has both a dark and light theme included, that will follow the browser / OS setting. The colors are set with CSS variables, which you can override by setting your own CSS in <code>head</code> block (or however you set your CSS).</p>
+<pre data-lang="css" class="language-css "><code class="language-css" data-lang="css">    :root {
+        --background: white;
+        --background-highlights: white;
+        --primary: black;
+        --secondary: blue;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --background: black;
+            --background-highlights: black;
+            --primary: white;
+            --secondary: cyan;
+        }
+    }
+</code></pre>
+<h3 id="toml-config-options">TOML config options</h3>
+<p>The following optional things are available to set in the <code>config.toml</code> file.</p>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">[extra]
+ head_title = &quot;My Custom &lt;head&gt; Title&quot;
+ [[extra.footer_menu]]
+    [[extra.footer_menu.links]]
+      text = &quot;Parchment theme, by Jason Fry&quot;
+      href = &quot;https:&#x2F;&#x2F;jasonfry.co.uk&quot;
+    [[extra.footer_menu.links]]
+      text = &quot;Made With Zola&quot;
+      href = &quot;https:&#x2F;&#x2F;getzola.org&quot;
+</code></pre>
+<h3 id="after-post-nav">After Post Nav</h3>
+<p>There is a block to add things after the nav that appears at the bottom of posts.</p>
+<p><code>templates/page.html</code></p>
+<pre data-lang="html" class="language-html "><code class="language-html" data-lang="html">{%&#x2F;* extends &quot;parchment&#x2F;templates&#x2F;page.html&quot; *&#x2F;%}
+
+{%&#x2F;* block after_post_nav *&#x2F;%}
+    &lt;p&gt;Reply via email - my first name @ my website address&lt;&#x2F;p&gt;
+{%&#x2F;* endblock after_post_nav *&#x2F;%}
+</code></pre>
+<h3 id="everything-looks-too-small-big">Everything looks too small/big</h3>
+<p>Everything is set with CSS REMs, so just change the HTML element's font size using CSS:</p>
+<pre data-lang="css" class="language-css "><code class="language-css" data-lang="css">html { font-size: 32px; }
+</code></pre>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>

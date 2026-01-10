@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Everything you need to make a static site engine in one binary.">
+        <meta name="author" content="Vincent Prouillet">
+        <title>tanuki | Zola </title>
+        <link rel="stylesheet" href="https://www.getzola.org/site.css">
+        <link rel="icon" href="https://www.getzola.org/favicon.ico">
+    </head>
+    <body>
+
+        <header>
+		<a class="header__logo white" href="https:&#x2F;&#x2F;www.getzola.org&#x2F;"><img
+			src="/logos/Zola-logo-white.svg"
+			title="Zola main logo in white"
+			alt="Zola"
+			/></a>
+            <nav>
+                <ul>
+                    <li><a class="white" href="https://www.getzola.org/documentation/" class="nav-link">Docs</a></li>
+                    <li><a class="white" href="https://www.getzola.org/themes/" class="nav-link">Themes</a></li>
+                    <li><a class="white external" href="https://zola.discourse.group/" class="nav-link">Forum</a></li>
+                    <li><a class="white external" href="https://github.com/getzola/zola" class="nav-link">GitHub</a></li>
+                </ul>
+                <div class="search-container">
+                    <input id="search" type="search" placeholder="🔎 Search the docs">
+
+                    <div class="search-results">
+                        <div class="search-results__items"></div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="content content--reversed">
+            
+    <div class="themes-container">
+        
+    <div class="theme-info">
+        <img src="https:&#x2F;&#x2F;www.getzola.org&#x2F;themes&#x2F;tanuki&#x2F;screenshot.png" class="thumb">
+        <div class="metadata">
+            <h1>tanuki</h1>
+            <p>A whimsical, Nintendo-inspired Zola theme with Catppuccin colors, Geist typography, and Lucide icons. Supports documentation (with versioning), e-books, blog&#x2F;landing pages, and product landing pages. Named after the playful Japanese raccoon dog (タヌキ).</p>
+            <p><b>Author:</b>
+            
+              <a href="https:&#x2F;&#x2F;raskell.io">Raffael Schneider</a>
+            
+            </p>
+            
+              <p>This theme requires Zola version 0.19.0 and above</p>
+            
+            <p><b>License:</b> MIT</p>
+            <p><b>Homepage:</b> <a href="https:&#x2F;&#x2F;github.com&#x2F;raskell-io&#x2F;tanuki">https:&#x2F;&#x2F;github.com&#x2F;raskell-io&#x2F;tanuki</a></p>
+            
+              <p><b>Live Demo:</b> <a href="https:&#x2F;&#x2F;tanuki.raskell.io">https:&#x2F;&#x2F;tanuki.raskell.io</a></p>
+            
+            
+            <p><b>Last updated:</b> 2026-01-02T12:27:24+01:00</p>
+        </div>
+    </div>
+
+    <hr>
+    <div align="center">
+<h1 align="center">
+  <img src="static/img/tanuki-icon.png" alt="tanuki mascot" width="96" />
+  <br>
+  Tanuki
+</h1>
+<p align="center">
+  <em>An opinionated Zola theme for documentation, books, and blogs.</em><br>
+  <em>Beautiful, accessible, and thoughtfully designed.</em>
+</p>
+<p align="center">
+  <a href="https://www.getzola.org/">
+    <img alt="Zola" src="https://img.shields.io/badge/Zola-0.19+-000000?logo=zola&logoColor=white&style=for-the-badge">
+  </a>
+  <a href="https://catppuccin.com/">
+    <img alt="Catppuccin" src="https://img.shields.io/badge/Catppuccin-cba6f7?style=for-the-badge">
+  </a>
+  <a href="LICENSE">
+    <img alt="License" src="https://img.shields.io/badge/License-MIT-a6e3a1?style=for-the-badge">
+  </a>
+</p>
+<p align="center">
+  <a href="https://tanuki.raskell.io">Live Demo</a> •
+  <a href="https://tanuki.raskell.io/docs/">Documentation</a> •
+  <a href="https://tanuki.raskell.io/book/">Book Example</a> •
+  <a href="https://tanuki.raskell.io/blog/">Blog Example</a>
+</p>
+<hr />
+</div>
+<p><img src="https://www.getzola.org/themes/tanuki/screenshot.png" alt="Tanuki Theme" /></p>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Three Modes</strong> — Documentation (with versioning), Book, and Blog layouts</li>
+<li><strong>Catppuccin Colors</strong> — Soothing Mocha (dark) and Latte (light) palettes</li>
+<li><strong>Geist Typography</strong> — Clean, readable variable fonts</li>
+<li><strong>Lucide Icons</strong> — Crisp, consistent iconography</li>
+<li><strong>Resizable Sidebar</strong> — Drag to resize, persists across sessions</li>
+<li><strong>Full-text Search</strong> — Elasticlunr-powered instant search</li>
+<li><strong>Dark/Light Toggle</strong> — Three-way toggle with system preference detection</li>
+<li><strong>Print Support</strong> — Print all pages as a single document (docs/book modes)</li>
+<li><strong>Keyboard Navigation</strong> — Arrow keys for prev/next, <code>/</code> for search</li>
+<li><strong>SEO &amp; Accessibility</strong> — JSON-LD structured data, ARIA landmarks, semantic HTML</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">cd your-zola-site
+git clone https:&#x2F;&#x2F;github.com&#x2F;raskell-io&#x2F;tanuki themes&#x2F;tanuki
+</code></pre>
+<p>Or as a git submodule:</p>
+<pre data-lang="bash" class="language-bash "><code class="language-bash" data-lang="bash">git submodule add https:&#x2F;&#x2F;github.com&#x2F;raskell-io&#x2F;tanuki themes&#x2F;tanuki
+</code></pre>
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="documentation-mode">Documentation Mode</h3>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">base_url = &quot;https:&#x2F;&#x2F;docs.example.com&quot;
+title = &quot;My Project Docs&quot;
+theme = &quot;tanuki&quot;
+build_search_index = true
+
+[markdown]
+highlight_code = true
+highlight_theme = &quot;css&quot;
+
+[extra]
+mode = &quot;docs&quot;
+github = &quot;https:&#x2F;&#x2F;github.com&#x2F;you&#x2F;project&quot;
+
+# Optional: version picker
+[extra.versions]
+current = &quot;2.0.0&quot;
+list = [
+    { version = &quot;2.0.0&quot;, url = &quot;&#x2F;&quot;, label = &quot;latest&quot; },
+    { version = &quot;1.0.0&quot;, url = &quot;&#x2F;v1&#x2F;&quot; },
+]
+</code></pre>
+<h3 id="book-mode">Book Mode</h3>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">base_url = &quot;https:&#x2F;&#x2F;book.example.com&quot;
+title = &quot;The Complete Guide&quot;
+theme = &quot;tanuki&quot;
+build_search_index = true
+
+[markdown]
+highlight_code = true
+highlight_theme = &quot;css&quot;
+
+[extra]
+mode = &quot;book&quot;
+github = &quot;https:&#x2F;&#x2F;github.com&#x2F;you&#x2F;book&quot;
+</code></pre>
+<h3 id="blog-mode">Blog Mode</h3>
+<pre data-lang="toml" class="language-toml "><code class="language-toml" data-lang="toml">base_url = &quot;https:&#x2F;&#x2F;blog.example.com&quot;
+title = &quot;My Blog&quot;
+theme = &quot;tanuki&quot;
+generate_feeds = true
+
+taxonomies = [
+    { name = &quot;tags&quot;, feed = true },
+]
+
+[markdown]
+highlight_code = true
+highlight_theme = &quot;css&quot;
+
+[extra]
+mode = &quot;blog&quot;
+
+[extra.hero]
+title = &quot;Welcome to my blog&quot;
+subtitle = &quot;Thoughts on code and craft&quot;
+
+[[extra.nav]]
+name = &quot;Blog&quot;
+url = &quot;&#x2F;blog&#x2F;&quot;
+
+[[extra.nav]]
+name = &quot;About&quot;
+url = &quot;&#x2F;about&#x2F;&quot;
+</code></pre>
+<h2 id="keyboard-shortcuts">Keyboard Shortcuts</h2>
+<table><thead><tr><th>Key</th><th>Action</th></tr></thead><tbody>
+<tr><td><code>←</code> / <code>→</code></td><td>Previous / Next page</td></tr>
+<tr><td><code>/</code></td><td>Open search</td></tr>
+<tr><td><code>Esc</code></td><td>Close overlays</td></tr>
+</tbody></table>
+<h2 id="browser-support">Browser Support</h2>
+<p>Modern browsers (Chrome 88+, Firefox 78+, Safari 14+, Edge 88+)</p>
+<h2 id="credits">Credits</h2>
+<ul>
+<li><a class="external" href="https://catppuccin.com">Catppuccin</a> — Color palette</li>
+<li><a class="external" href="https://vercel.com/font">Geist</a> — Typography</li>
+<li><a class="external" href="https://lucide.dev">Lucide</a> — Icons</li>
+<li><a class="external" href="https://www.getzola.org">Zola</a> — Static site generator</li>
+</ul>
+<h2 id="license">License</h2>
+<p><a href="https://www.getzola.org/themes/tanuki/LICENSE">MIT</a></p>
+<hr />
+<p align="center">Made with care by <a href="https://raskell.io">raskell.io</a></p>
+
+
+    </div>
+
+        </div>
+        <footer>
+            ©2017-2026 — <a class="white" href="https://www.vincentprouillet.com">Vincent Prouillet</a> and <a class="white" href="https://github.com/getzola/zola/graphs/contributors">contributors</a>
+        </footer>
+
+        <script type="text/javascript" src="https://www.getzola.org/elasticlunr.min.js"></script>
+        <script type="text/javascript" src="https://www.getzola.org/search.js"></script>
+    </body>
+</html>
