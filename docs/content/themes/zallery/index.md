@@ -199,7 +199,7 @@ goatcounter = ""
 
 ### `img`
 
-```jinja
+```jinja2
 {{/* img(src="image.jpg", mobile_src="image-mobile.jpg", alt="alt text", text="text", fit="") */}}
 ```
 
@@ -211,7 +211,7 @@ goatcounter = ""
 
 ### `video`
 
-```jinja
+```jinja2
 {{/* video(src="image.jpg", autoplay=false) */}}
 ```
 
@@ -221,7 +221,7 @@ goatcounter = ""
 
 ### `youtube` / `vimeo`
 
-```jinja
+```jinja2
 {{/* youtube(id="", autoplay=false) */}}
 {{/* vimeo(id="", autoplay=false) */}}
 ```
@@ -233,7 +233,7 @@ goatcounter = ""
 
 Note: Requires `modelviewer` to be enabled in `config.toml`
 
-```jinja
+```jinja2
 {{/* model(src="image.jpg", skybox="", poster="") */}}
 ```
 
@@ -244,7 +244,7 @@ Note: Requires `modelviewer` to be enabled in `config.toml`
 
 ### `sketchfab`
 
-```jinja
+```jinja2
 {{/* sketchfab(id="") */}}
 ```
 

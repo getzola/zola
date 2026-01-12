@@ -3,14 +3,14 @@
 title = "nivis"
 description = "A clean zola theme for bloggers"
 template = "theme.html"
-date = 2026-01-06T00:53:27+08:00
+date = 2026-01-09T23:47:34+08:00
 
 [taxonomies]
 theme-tags = ['clean']
 
 [extra]
-created = 2026-01-06T00:53:27+08:00
-updated = 2026-01-06T00:53:27+08:00
+created = 2026-01-09T23:47:34+08:00
+updated = 2026-01-09T23:47:34+08:00
 repository = "https://github.com/Resorie/zola-theme-nivis.git"
 homepage = "https://github.com/Resorie/zola-theme-nivis"
 minimum_version = "0.21.0"
@@ -57,7 +57,9 @@ cp -r themes/nivis/content content
 
 Move on to the [example site](https://resorie.github.io/zola-theme-nivis/) for more info. Enjoy it! :kissing_heart:
 
-## Known Bugs :poop:
+## Todo :clipboard:
 
-- [ ] When switching light/dark mode, some elements blink
+- [ ] Add transition when switching light/dark mode
+- [ ] Better special page customization
+- [ ] Minimize web resources
         

@@ -1,16 +1,16 @@
 
 +++
 title = "photography theme"
-description = "a theme for a photography portfolio"
+description = "a photography portfolio theme with many features, including an AI blocker"
 template = "theme.html"
-date = 2025-11-29T16:45:05+01:00
+date = 2026-01-10T19:55:04+01:00
 
 [taxonomies]
 theme-tags = ['Blog', 'portfolio', 'photography', 'SEO']
 
 [extra]
-created = 2025-11-29T16:45:05+01:00
-updated = 2025-11-29T16:45:05+01:00
+created = 2026-01-10T19:55:04+01:00
+updated = 2026-01-10T19:55:04+01:00
 repository = "https://codeberg.org/arbs09/photography-theme.git"
 homepage = "https://arbs09.dev/projects/photography-theme/"
 minimum_version = "0.19.2"
