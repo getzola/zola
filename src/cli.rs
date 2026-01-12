@@ -11,9 +11,9 @@ pub struct Cli {
     #[clap(short = 'r', long, default_value = ".")]
     pub root: PathBuf,
 
-    /// Path to a config file other than config.toml in the root of project
-    #[clap(short = 'c', long, default_value = "config.toml")]
-    pub config: PathBuf,
+    /// Path to a config file other than zola.toml or config.toml in the root of project
+    #[clap(short = 'c', long)]
+    pub config: Option<PathBuf>,
 
     #[clap(subcommand)]
     pub command: Command,
@@ -34,7 +34,7 @@ pub enum Command {
 
     /// Deletes the output directory if there is one and builds the site
     Build {
-        /// Force the base URL to be that value (defaults to the one in config.toml)
+        /// Force the base URL to be that value (defaults to the one in the config file)
         #[clap(short = 'u', long)]
         base_url: Option<String>,
 
