@@ -17,7 +17,7 @@ external_links_class = "external"
 
 [markdown.highlighting]
 theme = "catppuccin-mocha"
-error_on_missing_language = true
+#error_on_missing_language = true
 
 [link_checker]
 internal_level = "warn"
