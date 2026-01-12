@@ -3,17 +3,17 @@
 title = "Zolarwind"
 description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
 template = "theme.html"
-date = 2025-11-12T12:57:18+01:00
+date = 2026-01-11T18:07:42+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-11-12T12:57:18+01:00
-updated = 2025-11-12T12:57:18+01:00
+created = 2026-01-11T18:07:42+01:00
+updated = 2026-01-11T18:07:42+01:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
-minimum_version = "0.20.0"
+minimum_version = "0.22.0"
 license = "MIT"
 demo = "https://pureandroid.com"
 
@@ -46,6 +46,16 @@ you can choose your preferred language setting for a consistent blog experience.
 
 - **Localization Support**: All theme-specific strings are available in multiple languages; choose the one that's right for you.
   If your language isn't supported yet, just create the resource file with your translations.
+
+- **Dark/Light Mode**: The theme includes a dark/light mode toggle and persists the user preference.
+
+---
+
+## IMPORTANT NOTE
+
+As of Zola v0.22.0 from 2026-01-09, color syntax highlighting has changed and requires a different configuration.
+I have updated the theme to reflect this change.
+This also means that the theme is no longer compatible with Zola v0.21.0 and earlier.
 
 ---
 
@@ -131,13 +141,18 @@ Here's a breakdown of the configuration settings tailored for this theme:
 - **taxonomies**: An array of taxonomies (classification systems) used for the site.
   Here, a taxonomy for `tags` is defined, with a pagination limit of 6 and an enabled feed.
 
-### Markdown Configuration:
+- **ignored_static**: An array of GLOB patterns (files and directories) that Zola should ignore.
+  Here, a pattern is defined to ignore the `static/giallo*.css` file, which is included by Tailwind CSS and should not directly be used by the web site.
 
-- **highlight_code**: Indicates whether code snippets in Markdown files should be highlighted. Here, it's set to `true`.
+### Markdown Highlighting Configuration:
 
-- **highlight_theme**: Specifies the theme to be used for code highlighting. The chosen theme in this configuration is `1337`.
+- **theme**: The name of the theme to be used for code highlighting. The chosen theme in this configuration is `ayu-dark`.
 
-- **extra_syntaxes_and_themes**: directory for additional syntax highlighting configuration files for languages not directly supported by Zola.
+- **error_on_missing_language**: If the language to be highlighted is not found, how should Zola handle this? Set to `true` so missing languages cause a build error.
+
+- **style**: How to highlight code. Options are either `class` or `inline`. Here, we use the setting `class`.
+
+- **extra_grammars**: array of additional syntax highlighting configuration files in JSON format for languages not directly supported by Zola/Giallo.
 
 ### Extra Configuration:
 
@@ -154,7 +169,7 @@ The `[extra]` section is where you can place any custom variables you want to be
 
 - **generator**: Optional.
   Specify the generator used for creating the static website.
-  This site is generated using `Zola v0.19.0`.
+  This site is generated using `Zola v0.22.0`.
 
 - **favicon_svg**: Optional.
   Provides a path to the site's favicon in SVG format.
@@ -182,6 +197,9 @@ The `[extra]` section is where you can place any custom variables you want to be
 - **social_links**: Optional.
   An array of social media links.
   Each link has a name, a boolean indicating if it's enabled, a URL, and an SVG icon.
+
+- **displaymode.sun** and **displaymode.moon**: Optional.
+  Inline SVG icons used by the dark/light mode toggle.
 
 ---
 
@@ -219,6 +237,20 @@ If you do not provide an image under `extra.image`, a default image is used inst
 - **extra.image**: an optional image for the post.
   If omitted, a default image is used instead.
   The image is displayed on the blog's main page and on the post's detail page.
+
+---
+
+## Light/Dark Images
+
+If you want images that switch with the theme, wrap two images in a container using class `light-dark-image`.
+The first image is shown in light mode, the second in dark mode:
+
+```html
+<div class="light-dark-image">
+  <img src="example-light.webp" alt="Example image" />
+  <img src="example-dark.webp" alt="Example image" />
+</div>
+```
 
 ---
 
@@ -341,6 +373,9 @@ If you want to adjust the CSS of the theme to your needs, you will need to edit 
 directories. While you do this, you should make sure that the CSS file `static/css/generated.css` is up to date. This
 file is generated from the file `css/main.css`, and all the files that Tailwind automatically identifies via automatic
 content detection.
+
+The theme uses a custom color palette (`neutral`, `primary`, `ok`, `warn`, `fail`) instead of the default Tailwind colors.
+When you add new classes in templates or content, rebuild the CSS so the generated palette classes are included.
 
 If you ever need to explicitly add a source file excluded by default, you can always add it with the `@source`
 directive, right in your `css/main.css` file:

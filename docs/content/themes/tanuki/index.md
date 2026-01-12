@@ -3,14 +3,14 @@
 title = "tanuki"
 description = "A whimsical, Nintendo-inspired Zola theme with Catppuccin colors, Geist typography, and Lucide icons. Supports documentation (with versioning), e-books, blog/landing pages, and product landing pages. Named after the playful Japanese raccoon dog (タヌキ)."
 template = "theme.html"
-date = 2026-01-02T12:27:24+01:00
+date = 2026-01-11T09:48:08+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-02T12:27:24+01:00
-updated = 2026-01-02T12:27:24+01:00
+created = 2026-01-11T09:48:08+01:00
+updated = 2026-01-11T09:48:08+01:00
 repository = "https://github.com/raskell-io/tanuki"
 homepage = "https://github.com/raskell-io/tanuki"
 minimum_version = "0.19.0"

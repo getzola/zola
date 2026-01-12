@@ -3,14 +3,14 @@
 title = "book"
 description = "A book theme inspired from GitBook/mdBook"
 template = "theme.html"
-date = 2025-12-27T09:30:31-05:00
+date = 2026-01-11T13:16:36+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-12-27T09:30:31-05:00
-updated = 2025-12-27T09:30:31-05:00
+created = 2026-01-11T13:16:36+01:00
+updated = 2026-01-11T13:16:36+01:00
 repository = "https://github.com/getzola/book.git"
 homepage = "https://github.com/getzola/book"
 minimum_version = "0.17.0"
@@ -29,6 +29,7 @@ or books.
 
 ![book screenshot](https://github.com/Keats/book/blob/master/screenshot.png?raw=true)
 
+Demo: https://getzola.github.io/book/
 
 ## Contents
 
