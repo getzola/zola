@@ -949,11 +949,10 @@ mod tests {
         expected_base_url: String,
     ) {
         let cli_dir = Path::new("./test_site").canonicalize().unwrap();
-        let cli_config = Path::new("./test_site/config.toml").canonicalize().unwrap();
 
-        let (root_dir, config_file) = get_config_file_path(&cli_dir, &cli_config);
+        let (root_dir, config_file) = get_config_file_path(&cli_dir, None);
         assert_eq!(cli_dir, root_dir);
-        assert_eq!(cli_config, root_dir.join("config.toml"));
+        assert_eq!(config_file, root_dir.join("config.toml"));
 
         let force = false;
         let include_drafts = false;
