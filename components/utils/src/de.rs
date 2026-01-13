@@ -1,4 +1,5 @@
-use core::convert::TryFrom;
+use std::sync::LazyLock;
+
 use errors::{Result, anyhow};
 use regex::Regex;
 use serde::{Deserialize, Deserializer};
@@ -7,10 +8,13 @@ use time;
 use time::format_description::well_known::Rfc3339;
 use toml;
 
+// See https://github.com/getzola/zola/issues/2071#issuecomment-1530610650
+static YAML_DATETIME_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"^"?(?P<year>[0-9]{4})-(?P<month>[0-9][0-9]?)-(?P<day>[0-9][0-9]?)(?:(?:[Tt]|[ \t]+)(?P<hour>[0-9][0-9]?):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})(?P<fraction>\.[0-9]{0,9})?[ \t]*(?:(?P<utc>Z)|(?P<offset>(?P<offset_hour>[-+][0-9][0-9]?)(?::(?P<offset_minute>[0-9][0-9]))?))?)?"?$"#).unwrap()
+});
+
 pub fn parse_yaml_datetime(date_string: &str) -> Result<time::OffsetDateTime> {
-    // See https://github.com/getzola/zola/issues/2071#issuecomment-1530610650
-    let re = Regex::new(r#"^"?(?P<year>[0-9]{4})-(?P<month>[0-9][0-9]?)-(?P<day>[0-9][0-9]?)(?:(?:[Tt]|[ \t]+)(?P<hour>[0-9][0-9]?):(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})(?P<fraction>\.[0-9]{0,9})?[ \t]*(?:(?P<utc>Z)|(?P<offset>(?P<offset_hour>[-+][0-9][0-9]?)(?::(?P<offset_minute>[0-9][0-9]))?))?)?"?$"#).unwrap();
-    let captures = if let Some(captures_) = re.captures(date_string) {
+    let captures = if let Some(captures_) = YAML_DATETIME_RE.captures(date_string) {
         Ok(captures_)
     } else {
         Err(anyhow!("Error parsing YAML datetime"))
@@ -91,54 +95,46 @@ where
 
 /// Returns key/value for a converted date from TOML.
 /// If the table itself is the TOML struct, only return its value without the key
-fn convert_toml_date(table: Map<String, Value>) -> Value {
+fn convert_toml_date(table: Map) -> Value {
     let mut new = Map::new();
 
     for (k, v) in table {
-        if k == "$__toml_private_datetime" {
+        if k.as_str() == Some("$__toml_private_datetime") {
             return v;
         }
 
-        match v {
-            Value::Object(o) => {
-                new.insert(k, convert_toml_date(o));
-            }
-            _ => {
-                new.insert(k, v);
-            }
+        if v.is_map() {
+            new.insert(k, convert_toml_date(v.into_map().unwrap()));
+        } else {
+            new.insert(k, v);
         }
     }
 
-    Value::Object(new)
+    Value::from(new)
 }
 
 /// TOML datetimes will be serialized as a struct but we want the
 /// stringified version for json, otherwise they are going to be weird
-pub fn fix_toml_dates(table: Map<String, Value>) -> Value {
+pub fn fix_toml_dates(table: Map) -> Value {
     let mut new = Map::new();
 
     for (key, value) in table {
-        match value {
-            Value::Object(o) => {
-                new.insert(key, convert_toml_date(o));
-            }
-            Value::Array(arr) => {
-                let mut new_arr = Vec::with_capacity(arr.len());
-                for v in arr {
-                    match v {
-                        Value::Object(o) => new_arr.push(fix_toml_dates(o)),
-                        _ => new_arr.push(v),
-                    };
-                }
-                new.insert(key, Value::Array(new_arr));
-            }
-            _ => {
-                new.insert(key, value);
-            }
+        if value.is_map() {
+            new.insert(key, convert_toml_date(value.into_map().unwrap()));
+        } else if let Some(arr) = value.as_vec() {
+            let new_arr: Vec<Value> =
+                arr.iter()
+                    .map(|v| {
+                        if let Some(o) = v.as_map() { fix_toml_dates(o.clone()) } else { v.clone() }
+                    })
+                    .collect();
+            new.insert(key, Value::from(new_arr));
+        } else {
+            new.insert(key, value);
         }
     }
 
-    Value::Object(new)
+    Value::from(new)
 }
 
 #[cfg(test)]

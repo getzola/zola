@@ -32,7 +32,7 @@ pub struct Library {
     pub backlinks: AHashMap<String, AHashSet<PathBuf>>,
     // A mapping of {lang -> <slug, {term -> vec<paths>}>>}
     taxonomies_def: AHashMap<String, AHashMap<String, AHashMap<String, Vec<PathBuf>>>>,
-    // All the taxonomies from config.toml in their slugifiedv ersion
+    // All the taxonomies from config.toml in their slugified version
     // So we don't need to pass the Config when adding a page to know how to slugify and we only
     // slugify once
     taxo_name_to_slug: AHashMap<String, String>,
