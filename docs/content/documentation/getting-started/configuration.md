@@ -182,10 +182,12 @@ error_on_missing_language = false
 # Whether to use inline hex colours (`inline`) or CSS classes (`class`) 
 style = "inline"
 
-# If you use a single theme, put its name here. See the syntax highlighting  page for the possible choices.
+# Selecting a theme is always required: you have a choice between single (1) or dual themes (2).
+# Only outputting CSS classes like before 0.22 is not possible anymore.
+# 1. If you use a single theme, put its name here. See the syntax highlighting page for the possible choices.
 theme = ""
 
-# If you want light/dark themes, use the 2 fields below instead. See the syntax highlighting  page for the possible choices.
+# 2. If you want light/dark themes, use the 2 fields below instead. See the syntax highlighting page for the possible choices.
 light_theme = ""
 dark_theme = ""
 
