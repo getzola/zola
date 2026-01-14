@@ -9,7 +9,7 @@ use markdown::{RenderContext, render_content};
 use utils::fs::read_file;
 use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
-use utils::templates::{ShortcodeDefinition, render_template};
+use utils::templates::render_template;
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{SectionFrontMatter, split_section_content};
@@ -149,7 +149,6 @@ impl Section {
         permalinks: &HashMap<String, String>,
         tera: &Tera,
         config: &Config,
-        shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
     ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
@@ -159,7 +158,6 @@ impl Section {
             permalinks,
             self.meta.insert_anchor_links.unwrap_or(config.markdown.insert_anchor_links),
         );
-        context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
         context
             .tera_context

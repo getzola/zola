@@ -27,7 +27,7 @@ use utils::fs::{
     clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
 };
 use utils::net::{get_available_port, is_external_link};
-use utils::templates::{ShortcodeDefinition, render_template};
+use utils::templates::render_template;
 use utils::types::InsertAnchor;
 
 pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
@@ -68,7 +68,6 @@ pub struct Site {
     /// Whether to load draft pages
     include_drafts: bool,
     build_mode: BuildMode,
-    shortcode_definitions: HashMap<String, ShortcodeDefinition>,
     /// Whether to check external links
     check_external_links: bool,
 }
@@ -87,7 +86,6 @@ impl Site {
         }
 
         let tera = load_tera(path, &config)?;
-        let shortcode_definitions = utils::templates::get_shortcodes(&tera);
 
         let content_path = path.join("content");
         let sass_path = path.join("sass");
@@ -113,7 +111,6 @@ impl Site {
             // We will allocate it properly later on
             library: Arc::new(Library::default()),
             build_mode: BuildMode::Disk,
-            shortcode_definitions,
             check_external_links: true,
         };
 
@@ -436,7 +433,7 @@ impl Site {
     }
 
     /// Render the markdown of all pages/sections
-    /// Used in a build and in `serve` if a shortcode has changed
+    /// Used in a build and in `serve` if a template has changed
     pub fn render_markdown(&mut self) -> Result<()> {
         // Another silly thing needed to not borrow &self in parallel and
         // make the borrow checker happy
@@ -461,13 +458,7 @@ impl Site {
             .par_iter_mut()
             .map(|page| {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
-                page.render_markdown(
-                    permalinks,
-                    tera,
-                    config,
-                    insert_anchor,
-                    &self.shortcode_definitions,
-                )
+                page.render_markdown(permalinks, tera, config, insert_anchor)
             })
             .collect::<Result<()>>()?;
 
@@ -476,9 +467,7 @@ impl Site {
             .values_mut()
             .collect::<Vec<_>>()
             .par_iter_mut()
-            .map(|section| {
-                section.render_markdown(permalinks, tera, config, &self.shortcode_definitions)
-            })
+            .map(|section| section.render_markdown(permalinks, tera, config))
             .collect::<Result<()>>()?;
 
         Ok(())
@@ -501,13 +490,7 @@ impl Site {
         if render_md {
             let insert_anchor =
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
-            page.render_markdown(
-                &self.permalinks,
-                &self.tera,
-                &self.config,
-                insert_anchor,
-                &self.shortcode_definitions,
-            )?;
+            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
         }
 
         let library = Arc::make_mut(&mut self.library);
@@ -533,12 +516,7 @@ impl Site {
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
         if render_md {
-            section.render_markdown(
-                &self.permalinks,
-                &self.tera,
-                &self.config,
-                &self.shortcode_definitions,
-            )?;
+            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
         }
         let library = Arc::make_mut(&mut self.library);
         library.sections.remove(&section.file.path);

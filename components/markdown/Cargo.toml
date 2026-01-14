@@ -5,8 +5,6 @@ edition = "2024"
 include = ["src/**/*"]
 
 [dependencies]
-pest = "2"
-pest_derive = "2"
 gh-emoji = { workspace = true }
 once_cell = { workspace = true }
 pulldown-cmark = { workspace = true }
@@ -19,7 +17,6 @@ log = { workspace = true }
 errors = { workspace = true }
 utils = { workspace = true }
 config = { workspace = true }
-console = { workspace = true }
 
 [dev-dependencies]
 templates = { workspace = true }

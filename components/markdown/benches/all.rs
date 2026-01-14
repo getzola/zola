@@ -61,10 +61,6 @@ pub struct Site {
 ```
 
 ## More stuff
-And a shortcode:
-
-{{ youtube(id="my_youtube_id") }}
-
 ### Another subsection
 Gotta make the toc do a little bit of work
 
@@ -83,7 +79,6 @@ if __name__ == "__main__":
 #[bench]
 fn bench_render_content_with_highlighting(b: &mut test::Bencher) {
     let mut tera = Tera::default();
-    tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default_for_test();
     config.markdown.highlight_code = true;
@@ -96,15 +91,12 @@ fn bench_render_content_with_highlighting(b: &mut test::Bencher) {
         &permalinks_ctx,
         InsertAnchor::None,
     );
-    let shortcode_def = utils::templates::get_shortcodes(&tera);
-    context.set_shortcode_definitions(&shortcode_def);
     b.iter(|| render_content(CONTENT, &context).unwrap());
 }
 
 #[bench]
 fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
     let mut tera = Tera::default();
-    tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
     let permalinks_ctx = HashMap::new();
     let mut config = Config::default_for_test();
     config.markdown.highlight_code = false;
@@ -117,15 +109,12 @@ fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
         &permalinks_ctx,
         InsertAnchor::None,
     );
-    let shortcode_def = utils::templates::get_shortcodes(&tera);
-    context.set_shortcode_definitions(&shortcode_def);
     b.iter(|| render_content(CONTENT, &context).unwrap());
 }
 
 #[bench]
-fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
+fn bench_render_content_plain(b: &mut test::Bencher) {
     let tera = Tera::default();
-    let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
     let mut config = Config::default_for_test();
     config.markdown.highlight_code = false;
     let permalinks_ctx = HashMap::new();
@@ -139,7 +128,7 @@ fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
         InsertAnchor::None,
     );
 
-    b.iter(|| render_content(&content2, &context).unwrap());
+    b.iter(|| render_content(CONTENT, &context).unwrap());
 }
 
 #[bench]

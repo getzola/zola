@@ -11,7 +11,7 @@ use errors::{Context, Result};
 use markdown::{RenderContext, render_content};
 use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
-use utils::templates::{ShortcodeDefinition, render_template};
+use utils::templates::render_template;
 use utils::types::InsertAnchor;
 
 use crate::file_info::FileInfo;
@@ -210,7 +210,6 @@ impl Page {
         tera: &Tera,
         config: &Config,
         anchor_insert: InsertAnchor,
-        shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
     ) -> Result<()> {
         let mut context = RenderContext::new(
             tera,
@@ -220,7 +219,6 @@ impl Page {
             permalinks,
             anchor_insert,
         );
-        context.set_shortcode_definitions(shortcode_definitions);
         context.set_current_page_path(&self.file.relative);
         context.tera_context.insert("page", &SerializingPage::new(self, None, false));
 
@@ -323,14 +321,7 @@ Hello world"#;
         let res = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
+        page.render_markdown(&HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None).unwrap();
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
@@ -351,14 +342,7 @@ Hello world"#;
         let res = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
+        page.render_markdown(&HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None).unwrap();
 
         assert_eq!(1, page.meta.authors.len());
         assert_eq!("person@example.com (A. Person)", page.meta.authors.get(0).unwrap());
@@ -521,14 +505,7 @@ Hello world
         let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
+        page.render_markdown(&HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None).unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>".to_string()));
     }
 
@@ -555,14 +532,7 @@ And here's another. [^3]
         let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
+        page.render_markdown(&HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None).unwrap();
         assert_eq!(
             page.summary,
             Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n<p>Here's another. </p>".to_string())
@@ -589,14 +559,7 @@ And here's another. [^3]
         assert!(res.is_ok());
         config.markdown.bottom_footnotes = true;
         page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
+        page.render_markdown(&HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None).unwrap();
         assert_eq!(
             page.summary,
             Some("<p>This page use <sup>1.5</sup> and has footnotes, here's one. </p>\n<p>Here's another. </p>".to_string())

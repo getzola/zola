@@ -15,78 +15,6 @@ macro_rules! render_default_tpl {
     }};
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ShortcodeFileType {
-    Markdown,
-    Html,
-}
-
-#[derive(Debug, Clone)]
-pub struct ShortcodeDefinition {
-    pub file_type: ShortcodeFileType,
-    pub tera_name: String,
-}
-impl ShortcodeDefinition {
-    pub fn new(file_type: ShortcodeFileType, tera_name: &str) -> ShortcodeDefinition {
-        let tera_name = tera_name.to_string();
-
-        ShortcodeDefinition { file_type, tera_name }
-    }
-}
-
-#[derive(Debug, Default, Clone)]
-pub struct ShortcodeInvocationCounter {
-    amounts: HashMap<String, usize>,
-}
-impl ShortcodeInvocationCounter {
-    pub fn new() -> Self {
-        Self::default()
-    }
-    pub fn get(&mut self, str: &str) -> usize {
-        let nth = self.amounts.entry(str.into()).or_insert(0);
-        *nth += 1;
-        *nth
-    }
-    pub fn reset(&mut self) {
-        self.amounts.clear();
-    }
-}
-
-/// Fetches all the shortcodes from the Tera instances
-pub fn get_shortcodes(tera: &Tera) -> HashMap<String, ShortcodeDefinition> {
-    let mut shortcode_definitions = HashMap::new();
-
-    for (identifier, template) in tera.templates.iter() {
-        let (file_type, ext_len) = if template.name.ends_with(".md") {
-            (ShortcodeFileType::Markdown, "md".len())
-        } else {
-            (ShortcodeFileType::Html, "html".len())
-        };
-
-        if template.name.starts_with("shortcodes/") {
-            let head_len = "shortcodes/".len();
-            shortcode_definitions.insert(
-                identifier[head_len..(identifier.len() - ext_len - 1)].to_string(),
-                ShortcodeDefinition::new(file_type, &template.name),
-            );
-            continue;
-        }
-
-        if template.name.starts_with("__zola_builtins/shortcodes/") {
-            let head_len = "__zola_builtins/shortcodes/".len();
-            let name = &identifier[head_len..(identifier.len() - ext_len - 1)];
-            // We don't keep the built-ins one if the user provided one
-            if shortcode_definitions.contains_key(name) {
-                continue;
-            }
-            shortcode_definitions
-                .insert(name.to_string(), ShortcodeDefinition::new(file_type, &template.name));
-        }
-    }
-
-    shortcode_definitions
-}
-
 /// Renders the given template with the given context, but also ensures that, if the default file
 /// is not found, it will look up for the equivalent template for the current theme if there is one.
 /// Lastly, if it's a default template (index, section or page), it will just return an empty string
@@ -167,7 +95,7 @@ pub fn check_template_fallbacks<'a>(
 
 #[cfg(test)]
 mod tests {
-    use crate::templates::{check_template_fallbacks, get_shortcodes};
+    use crate::templates::check_template_fallbacks;
 
     use super::rewrite_theme_paths;
     use tera::Tera;
@@ -212,14 +140,5 @@ mod tests {
             check_template_fallbacks("theme-only.html", &tera, &Some("hyde".to_string())),
             Some("hyde/templates/theme-only.html")
         );
-    }
-
-    #[test]
-    fn can_overwrite_builtin_shortcodes() {
-        let mut tera = Tera::parse("test-templates/*.html").unwrap();
-        tera.add_raw_template("__zola_builtins/shortcodes/youtube.html", "Builtin").unwrap();
-        tera.add_raw_template("shortcodes/youtube.html", "Hello").unwrap();
-        let definitions = get_shortcodes(&tera);
-        assert_eq!(definitions["youtube"].tera_name, "shortcodes/youtube.html");
     }
 }

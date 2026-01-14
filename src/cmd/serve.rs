@@ -819,8 +819,6 @@ pub fn serve(
                             }
                         }
                         ChangeKind::Templates => {
-                            let partial_paths: Vec<&PathBuf> =
-                                change_group.iter().map(|(p, _, _)| p).collect();
                             let full_paths: Vec<&PathBuf> =
                                 change_group.iter().map(|(_, p, _)| p).collect();
                             let combined_paths = full_paths
@@ -830,18 +828,8 @@ pub fn serve(
                                 .join(", ");
                             log::info!("-> Template file(s) changed {combined_paths}");
 
-                            let shortcodes_updated = partial_paths
-                                .iter()
-                                .any(|p| p.starts_with("/templates/shortcodes"));
-                            // Rebuild site if shortcodes change; otherwise, just update template.
-                            if shortcodes_updated {
-                                if let Some(s) = recreate_site() {
-                                    site = s;
-                                }
-                            } else {
-                                log::info!("Reloading only template");
-                                reload_templates(&mut site)
-                            }
+                            log::info!("Reloading only template");
+                            reload_templates(&mut site)
                         }
                         ChangeKind::StaticFiles => {
                             for (partial_path, full_path, _) in change_group.iter() {

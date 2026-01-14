@@ -3,7 +3,6 @@ use std::collections::HashMap;
 
 use config::Config;
 use tera::{Context, Tera};
-use utils::templates::ShortcodeDefinition;
 use utils::types::InsertAnchor;
 
 /// All the information from the zola site that is needed to render HTML from markdown
@@ -17,7 +16,6 @@ pub struct RenderContext<'a> {
     pub permalinks: Cow<'a, HashMap<String, String>>,
     pub insert_anchor: InsertAnchor,
     pub lang: &'a str,
-    pub shortcode_definitions: Cow<'a, HashMap<String, ShortcodeDefinition>>,
 }
 
 impl<'a> RenderContext<'a> {
@@ -42,14 +40,7 @@ impl<'a> RenderContext<'a> {
             insert_anchor,
             config,
             lang,
-            shortcode_definitions: Cow::Owned(HashMap::new()),
         }
-    }
-
-    /// Set in another step so we don't add one more arg to new.
-    /// And it's only used when rendering pages/section anyway
-    pub fn set_shortcode_definitions(&mut self, def: &'a HashMap<String, ShortcodeDefinition>) {
-        self.shortcode_definitions = Cow::Borrowed(def);
     }
 
     /// Same as above
@@ -70,7 +61,6 @@ impl<'a> RenderContext<'a> {
             insert_anchor: InsertAnchor::None,
             config,
             lang: &config.default_language,
-            shortcode_definitions: Cow::Owned(HashMap::new()),
         }
     }
 }

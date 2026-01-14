@@ -212,14 +212,14 @@ impl Translations {
                 // Are we looking for a section? (no file extension here)
                 if unified_path.ends_with("_index") {
                     //library.get_section_by_key(*key).file.relative.to_string()
-                    let section = &library.sections[key];
+                    let section = &site.library.sections[key];
                     Translation {
                         lang: section.lang.clone(),
                         permalink: section.permalink.clone(),
                         path: section.file.path.to_str().unwrap().to_string(),
                     }
                 } else {
-                    let page = &library.pages[key];
+                    let page = &site.library.pages[key];
                     Translation {
                         lang: page.lang.clone(),
                         permalink: page.permalink.clone(),

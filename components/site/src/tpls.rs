@@ -3,7 +3,7 @@ use std::sync::Arc;
 use templates::{filters, global_fns};
 use tera::Result as TeraResult;
 
-/// Adds global fns that are to be available to shortcodes while rendering markdown
+/// Adds global fns that are to be available during markdown rendering
 pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     site.tera.register_filter(
         "num_format",
@@ -78,7 +78,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     Ok(())
 }
 
-/// Functions filled once we have parsed all the pages/sections only, so not available in shortcodes
+/// Functions filled once we have parsed all the pages/sections only
 pub fn register_tera_global_fns(site: &mut Site) {
     let language_list: Arc<Vec<String>> =
         Arc::new(site.config.languages.keys().map(|s| s.to_string()).collect());

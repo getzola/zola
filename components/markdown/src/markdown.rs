@@ -21,7 +21,6 @@ use utils::table_of_contents::{Heading, make_table_of_contents};
 use utils::types::InsertAnchor;
 
 use self::cmark::{Event, LinkType, Options, Parser, Tag, TagEnd};
-use crate::shortcode::{SHORTCODE_PLACEHOLDER, Shortcode};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const SUMMARY_CUTOFF_TEMPLATE: &str = "summary-cutoff.html";
@@ -400,11 +399,7 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     old_events.push(Event::Html("</ol>\n</section>\n".into()));
 }
 
-pub fn markdown_to_html(
-    content: &str,
-    context: &RenderContext,
-    html_shortcodes: Vec<Shortcode>,
-) -> Result<Rendered> {
+pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
     let path = context
         .tera_context
         .get("page")
@@ -428,8 +423,6 @@ pub fn markdown_to_html(
     let mut internal_links = Vec::new();
     let mut external_links = Vec::new();
 
-    let mut stop_next_end_p = false;
-
     let lazy_async_image = context.config.markdown.lazy_async_image;
 
     let mut opts = Options::empty();
@@ -450,99 +443,13 @@ pub fn markdown_to_html(
         opts.insert(Options::ENABLE_GFM);
     }
 
-    // we reverse their order so we can pop them easily in order
-    let mut html_shortcodes: Vec<_> = html_shortcodes.into_iter().rev().collect();
-    let mut next_shortcode = html_shortcodes.pop();
-    let contains_shortcode = |txt: &str| -> bool { txt.contains(SHORTCODE_PLACEHOLDER) };
-
     {
         let mut events = Vec::new();
-        macro_rules! render_shortcodes {
-            ($is_text:expr, $text:expr, $range:expr) => {
-                let orig_range_start = $range.start;
-                loop {
-                    if let Some(ref shortcode) = next_shortcode {
-                        if !$range.contains(&shortcode.span.start) {
-                            break;
-                        }
-                        let sc_span = shortcode.span.clone();
-
-                        // we have some text before the shortcode, push that first
-                        if $range.start != sc_span.start {
-                            let content: cmark::CowStr<'_> =
-                                $text[($range.start - orig_range_start)
-                                    ..(sc_span.start - orig_range_start)]
-                                    .to_string()
-                                    .into();
-                            events.push(if $is_text {
-                                if inside_attribute {
-                                    let mut buffer = "".to_string();
-                                    escape_html(&mut buffer, content.as_ref()).unwrap();
-                                    Event::Html(buffer.into())
-                                } else {
-                                    Event::Text(content)
-                                }
-                            } else {
-                                Event::Html(content)
-                            });
-                            $range.start = sc_span.start;
-                        }
-
-                        // Now we should be at the same idx as the shortcode
-                        let shortcode = next_shortcode.take().unwrap();
-                        match shortcode.render(&context.tera, &context.tera_context) {
-                            Ok(s) => {
-                                events.push(Event::Html(s.into()));
-                                $range.start += SHORTCODE_PLACEHOLDER.len();
-                            }
-                            Err(e) => {
-                                error = Some(e);
-                                break;
-                            }
-                        }
-                        next_shortcode = html_shortcodes.pop();
-                        continue;
-                    }
-
-                    break;
-                }
-
-                if !$range.is_empty() {
-                    // The $range value is for the whole document, not for this slice of text
-                    let content = $text[($range.start - orig_range_start)..].to_string().into();
-                    events.push(if $is_text { Event::Text(content) } else { Event::Html(content) });
-                }
-            };
-        }
-
-        for (event, mut range) in Parser::new_ext(content, opts).into_offset_iter() {
+        for event in Parser::new_ext(content, opts).into_iter() {
             match event {
                 Event::Text(text) => {
                     if code_block.is_some() {
-                        if contains_shortcode(text.as_ref()) {
-                            // mark the start of the code block events
-                            let stack_start = events.len();
-                            render_shortcodes!(true, text, range);
-                            // after rendering the shortcodes we will collect all the text events
-                            // and re-render them as code blocks
-                            for event in events[stack_start..].iter() {
-                                match event {
-                                    Event::Html(t) | Event::Text(t) => code_block_content += t,
-                                    _ => {
-                                        error = Some(Error::msg(format!(
-                                            "Unexpected event while expanding the code block: {:?}",
-                                            event
-                                        )));
-                                        break;
-                                    }
-                                }
-                            }
-
-                            // remove all the original events from shortcode rendering
-                            events.truncate(stack_start);
-                        } else {
-                            code_block_content += &text;
-                        }
+                        code_block_content += &text;
                     } else {
                         let text = if context.config.markdown.render_emoji {
                             EMOJI_REPLACER.replace_all(&text).to_string().into()
@@ -550,18 +457,13 @@ pub fn markdown_to_html(
                             text
                         };
 
-                        if !contains_shortcode(text.as_ref()) {
-                            if inside_attribute {
-                                let mut buffer = "".to_string();
-                                escape_html(&mut buffer, text.as_ref()).unwrap();
-                                events.push(Event::Html(buffer.into()));
-                            } else {
-                                events.push(Event::Text(text));
-                            }
-                            continue;
+                        if inside_attribute {
+                            let mut buffer = "".to_string();
+                            escape_html(&mut buffer, text.as_ref()).unwrap();
+                            events.push(Event::Html(buffer.into()));
+                        } else {
+                            events.push(Event::Text(text));
                         }
-
-                        render_shortcodes!(true, text, range);
                     }
                 }
                 Event::Start(Tag::CodeBlock(ref kind)) => {
@@ -708,41 +610,13 @@ pub fn markdown_to_html(
                         },
                     )
                 }
-                Event::Start(Tag::Paragraph) => {
-                    // We have to compare the start and the trimmed length because the content
-                    // will sometimes contain '\n' at the end which we want to avoid.
-                    //
-                    // NOTE: It could be more efficient to remove this search and just keep
-                    // track of the shortcodes to come and compare it to that.
-                    if let Some(ref next_shortcode) = next_shortcode
-                        && next_shortcode.span.start == range.start
-                        && next_shortcode.span.len() == content[range].trim().len()
-                    {
-                        stop_next_end_p = true;
-                        events.push(Event::Html("".into()));
-                        continue;
-                    }
-
-                    events.push(event);
-                }
-                Event::End(TagEnd::Paragraph) => {
-                    events.push(if stop_next_end_p {
-                        stop_next_end_p = false;
-                        Event::Html("".into())
-                    } else {
-                        event
-                    });
-                }
+                Event::Start(Tag::Paragraph) => events.push(event),
+                Event::End(TagEnd::Paragraph) => events.push(event),
                 Event::Html(text) | Event::InlineHtml(text)
                     if !has_summary && MORE_DIVIDER_RE.is_match(text.as_ref()) =>
                 {
                     has_summary = true;
                     events.push(Event::Html(CONTINUE_READING.into()));
-                }
-                Event::Html(text) | Event::InlineHtml(text)
-                    if contains_shortcode(text.as_ref()) =>
-                {
-                    render_shortcodes!(false, text, range);
                 }
                 _ => events.push(event),
             }
@@ -970,7 +844,7 @@ mod tests {
         context.tera.to_mut().extend(&ZOLA_TERA).unwrap();
         for more in mores {
             let content = format!("{top}\n\n{more}\n\n{bottom}");
-            let rendered = markdown_to_html(&content, &context, vec![]).unwrap();
+            let rendered = markdown_to_html(&content, &context).unwrap();
             assert!(rendered.summary.is_some(), "no summary when splitting on {more}");
             let summary = rendered.summary.unwrap();
             let summary = summary.trim();
