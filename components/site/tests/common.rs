@@ -183,21 +183,20 @@ pub struct Translations {
 
 impl Translations {
     pub fn for_path(site: &Site, path: &str) -> Translations {
-        let library = site.library.clone();
-        let library = library.read().unwrap();
         // WORKAROUND because site.content_path is private
-        let unified_path =
-            if let Some(page) = library.pages.get(&site.base_path.join("content").join(path)) {
-                page.file.canonical.clone()
-            } else if let Some(section) =
-                library.sections.get(&site.base_path.join("content").join(path))
-            {
-                section.file.canonical.clone()
-            } else {
-                panic!("No such page or section: {}", path);
-            };
+        let unified_path = if let Some(page) =
+            site.library.pages.get(&site.base_path.join("content").join(path))
+        {
+            page.file.canonical.clone()
+        } else if let Some(section) =
+            site.library.sections.get(&site.base_path.join("content").join(path))
+        {
+            section.file.canonical.clone()
+        } else {
+            panic!("No such page or section: {}", path);
+        };
 
-        let translations = library.translations.get(&unified_path);
+        let translations = site.library.translations.get(&unified_path);
         if translations.is_none() {
             println!(
                 "Page canonical path {} is not in library translations",

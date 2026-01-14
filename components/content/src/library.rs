@@ -22,7 +22,7 @@ macro_rules! set {
     };
 }
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Library {
     pub pages: AHashMap<PathBuf, Page>,
     pub sections: AHashMap<PathBuf, Section>,

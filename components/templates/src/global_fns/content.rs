@@ -2,7 +2,7 @@ use content::{Library, Taxonomy, TaxonomyTerm};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use tera::{Function as TeraFn, Result, Value, from_value, to_value};
 use utils::slugs::{SlugifyStrategy, slugify_paths};
 
@@ -111,14 +111,14 @@ pub struct GetPage {
     base_path: PathBuf,
     default_lang: String,
     supported_languages: Arc<Vec<String>>,
-    library: Arc<RwLock<Library>>,
+    library: Arc<Library>,
 }
 impl GetPage {
     pub fn new(
         base_path: PathBuf,
         default_lang: &str,
         supported_languages: Arc<Vec<String>>,
-        library: Arc<RwLock<Library>>,
+        library: Arc<Library>,
     ) -> Self {
         Self {
             base_path: base_path.join("content"),
@@ -142,10 +142,9 @@ impl TeraFn for GetPage {
         get_path_with_lang(&path, lang.as_deref(), &self.default_lang, &self.supported_languages)
             .and_then(|path_with_lang| {
                 let full_path = self.base_path.join(path_with_lang.as_ref());
-                let library = self.library.read().unwrap();
 
-                match library.pages.get(&full_path) {
-                    Some(p) => Ok(to_value(p.serialize(&library)).unwrap()),
+                match self.library.pages.get(&full_path) {
+                    Some(p) => Ok(to_value(p.serialize(&self.library)).unwrap()),
                     None => match lang {
                         Some(lang_code) => {
                             Err(format!("Page `{}` not found for language `{}`.", path, lang_code)
@@ -163,14 +162,14 @@ pub struct GetSection {
     base_path: PathBuf,
     default_lang: String,
     supported_languages: Arc<Vec<String>>,
-    library: Arc<RwLock<Library>>,
+    library: Arc<Library>,
 }
 impl GetSection {
     pub fn new(
         base_path: PathBuf,
         default_lang: &str,
         supported_languages: Arc<Vec<String>>,
-        library: Arc<RwLock<Library>>,
+        library: Arc<Library>,
     ) -> Self {
         Self {
             base_path: base_path.join("content"),
@@ -203,14 +202,13 @@ impl TeraFn for GetSection {
         )
         .and_then(|path_with_lang| {
             let full_path = self.base_path.join(path_with_lang.as_ref());
-            let library = self.library.read().unwrap();
 
-            match library.sections.get(&full_path) {
+            match self.library.sections.get(&full_path) {
                 Some(s) => {
                     if metadata_only {
-                        Ok(to_value(s.serialize_basic(&library)).unwrap())
+                        Ok(to_value(s.serialize_basic(&self.library)).unwrap())
                     } else {
-                        Ok(to_value(s.serialize(&library)).unwrap())
+                        Ok(to_value(s.serialize(&self.library)).unwrap())
                     }
                 }
                 None => match lang {
@@ -227,16 +225,12 @@ impl TeraFn for GetSection {
 
 #[derive(Debug)]
 pub struct GetTaxonomy {
-    library: Arc<RwLock<Library>>,
+    library: Arc<Library>,
     taxonomies: HashMap<String, Taxonomy>,
     default_lang: String,
 }
 impl GetTaxonomy {
-    pub fn new(
-        default_lang: &str,
-        all_taxonomies: Vec<Taxonomy>,
-        library: Arc<RwLock<Library>>,
-    ) -> Self {
+    pub fn new(default_lang: &str, all_taxonomies: Vec<Taxonomy>, library: Arc<Library>) -> Self {
         let mut taxonomies = HashMap::new();
         for taxo in all_taxonomies {
             taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.lang), taxo);
@@ -263,7 +257,7 @@ impl TeraFn for GetTaxonomy {
                 .unwrap_or_else(|| self.default_lang.clone());
 
         match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
-            (Some(t), _) => Ok(to_value(t.to_serialized(&self.library.read().unwrap())).unwrap()),
+            (Some(t), _) => Ok(to_value(t.to_serialized(&self.library)).unwrap()),
             (None, false) => Ok(Value::Null),
             (None, true) => {
                 Err(format!("`get_taxonomy` received an unknown taxonomy as kind: {}", kind).into())
@@ -274,16 +268,12 @@ impl TeraFn for GetTaxonomy {
 
 #[derive(Debug)]
 pub struct GetTaxonomyTerm {
-    library: Arc<RwLock<Library>>,
+    library: Arc<Library>,
     taxonomies: HashMap<String, Taxonomy>,
     default_lang: String,
 }
 impl GetTaxonomyTerm {
-    pub fn new(
-        default_lang: &str,
-        all_taxonomies: Vec<Taxonomy>,
-        library: Arc<RwLock<Library>>,
-    ) -> Self {
+    pub fn new(default_lang: &str, all_taxonomies: Vec<Taxonomy>, library: Arc<Library>) -> Self {
         let mut taxonomies = HashMap::new();
         for taxo in all_taxonomies {
             taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.lang), taxo);
@@ -347,9 +337,9 @@ impl TeraFn for GetTaxonomyTerm {
         };
 
         if include_pages {
-            Ok(to_value(term.serialize(&self.library.read().unwrap())).unwrap())
+            Ok(to_value(term.serialize(&self.library)).unwrap())
         } else {
-            Ok(to_value(term.serialize_without_pages(&self.library.read().unwrap())).unwrap())
+            Ok(to_value(term.serialize_without_pages(&self.library)).unwrap())
         }
     }
 }
@@ -360,7 +350,7 @@ mod tests {
     use config::{Config, TaxonomyConfig};
     use content::{FileInfo, Library, Page, Section, SortBy, TaxonomyTerm};
     use std::path::Path;
-    use std::sync::{Arc, RwLock};
+    use std::sync::Arc;
 
     fn create_page(title: &str, file_path: &str, lang: &str) -> Page {
         let mut page = Page { lang: lang.to_owned(), ..Page::default() };
@@ -396,8 +386,7 @@ mod tests {
         let base_path = "/test/base/path".into();
         let lang_list = vec!["en".to_string(), "fr".to_string()];
 
-        let static_fn =
-            GetPage::new(base_path, "en", Arc::new(lang_list), Arc::new(RwLock::new(library)));
+        let static_fn = GetPage::new(base_path, "en", Arc::new(lang_list), Arc::new(library));
 
         // Find with lang argument
         let mut args = HashMap::new();
@@ -467,8 +456,7 @@ mod tests {
         let base_path = "/test/base/path".into();
         let lang_list = vec!["en".to_string(), "fr".to_string()];
 
-        let static_fn =
-            GetSection::new(base_path, "en", Arc::new(lang_list), Arc::new(RwLock::new(library)));
+        let static_fn = GetSection::new(base_path, "en", Arc::new(lang_list), Arc::new(library));
 
         // Find with lang argument
         let mut args = HashMap::new();
@@ -509,7 +497,7 @@ mod tests {
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         config.slugify_taxonomies();
-        let library = Arc::new(RwLock::new(Library::new(&config)));
+        let library = Arc::new(Library::new(&config));
         let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
         let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
@@ -646,7 +634,7 @@ mod tests {
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         config.slugify_taxonomies();
-        let library = Arc::new(RwLock::new(Library::new(&config)));
+        let library = Arc::new(Library::new(&config));
         let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
         let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {

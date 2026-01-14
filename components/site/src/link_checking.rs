@@ -21,14 +21,15 @@ use utils::anchors::is_special_anchor;
 /// treated as warnings or errors.
 pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
     log::info!("Checking all internal links with anchors.");
-    let library = site.library.write().expect("Get lock for check_internal_links_with_anchors");
 
     // Chain all internal links, from both sections and pages.
-    let page_links = library
+    let page_links = site
+        .library
         .pages
         .values()
         .flat_map(|p| p.internal_links.iter().map(move |l| (p.file.path.clone(), l)));
-    let section_links = library
+    let section_links = site
+        .library
         .sections
         .values()
         .flat_map(|p| p.internal_links.iter().map(move |l| (p.file.path.clone(), l)));
@@ -59,7 +60,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
         // as well as any other string containing "_index." which is now referenced as
         // unsupported page path in the docs.
         if md_path.contains("_index.") {
-            let section = library.sections.get(&full_path).unwrap_or_else(|| {
+            let section = site.library.sections.get(&full_path).unwrap_or_else(|| {
                 panic!(
                     "Couldn't find section {} in check_internal_links_with_anchors from page {:?}",
                     md_path,
@@ -68,7 +69,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
             });
             !section.has_anchor(anchor)
         } else {
-            let page = library.pages.get(&full_path).unwrap_or_else(|| {
+            let page = site.library.pages.get(&full_path).unwrap_or_else(|| {
                 panic!(
                     "Couldn't find page {} in check_internal_links_with_anchors from page {:?}",
                     md_path,
@@ -126,8 +127,6 @@ fn get_link_domain(link: &str) -> Result<String> {
 /// Checks all external links and returns all the errors that were encountered.
 /// Empty vec == all good
 pub fn check_external_links(site: &Site) -> Vec<String> {
-    let library = site.library.write().expect("Get lock for check_external_links");
-
     struct LinkDef {
         file_path: PathBuf,
         external_link: String,
@@ -146,10 +145,10 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
 
     let mut messages: Vec<String> = vec![];
     let mut external_links = Vec::new();
-    for p in library.pages.values() {
+    for p in site.library.pages.values() {
         external_links.push((&p.file.path, &p.external_links));
     }
-    for s in library.sections.values() {
+    for s in site.library.sections.values() {
         external_links.push((&s.file.path, &s.external_links));
     }
 

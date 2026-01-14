@@ -13,39 +13,38 @@ fn can_parse_multilingual_site() {
     let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
 
-    let library = site.library.read().unwrap();
-    assert_eq!(library.pages.len(), 11);
-    assert_eq!(library.sections.len(), 6);
+    assert_eq!(site.library.pages.len(), 11);
+    assert_eq!(site.library.sections.len(), 6);
 
     // default index sections
     let default_index_section =
-        library.sections.get(&path.join("content").join("_index.md")).unwrap();
+        site.library.sections.get(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(default_index_section.pages.len(), 1);
     assert!(default_index_section.ancestors.is_empty());
 
     let fr_index_section =
-        library.sections.get(&path.join("content").join("_index.fr.md")).unwrap();
+        site.library.sections.get(&path.join("content").join("_index.fr.md")).unwrap();
     assert_eq!(fr_index_section.pages.len(), 1);
     assert!(fr_index_section.ancestors.is_empty());
 
     // blog sections get only their own language pages
     let blog_path = path.join("content").join("blog");
 
-    let default_blog = library.sections.get(&blog_path.join("_index.md")).unwrap();
+    let default_blog = site.library.sections.get(&blog_path.join("_index.md")).unwrap();
     assert_eq!(default_blog.subsections.len(), 0);
     assert_eq!(default_blog.pages.len(), 4);
     assert_eq!(default_blog.ancestors, vec![default_index_section.file.relative.clone()]);
     for key in &default_blog.pages {
-        let page = &library.pages[key];
+        let page = &site.library.pages[key];
         assert_eq!(page.lang, "en");
     }
 
-    let fr_blog = library.sections.get(&blog_path.join("_index.fr.md")).unwrap();
+    let fr_blog = site.library.sections.get(&blog_path.join("_index.fr.md")).unwrap();
     assert_eq!(fr_blog.subsections.len(), 0);
     assert_eq!(fr_blog.pages.len(), 4);
     assert_eq!(fr_blog.ancestors, vec![fr_index_section.file.relative.clone()]);
     for key in &fr_blog.pages {
-        let page = &library.pages[key];
+        let page = &site.library.pages[key];
         assert_eq!(page.lang, "fr");
     }
 }

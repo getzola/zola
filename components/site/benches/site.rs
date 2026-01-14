@@ -43,7 +43,7 @@ fn bench_render_feed(b: &mut test::Bencher) {
     site.set_output_path(&public);
     b.iter(|| {
         site.render_feeds(
-            site.library.read().unwrap().pages.values().collect(),
+            site.library.pages.values().collect(),
             None,
             &site.config.default_language,
             |c| c,
@@ -67,9 +67,8 @@ fn bench_render_paginated(b: &mut test::Bencher) {
     let tmp_dir = tempdir().expect("create temp dir");
     let public = &tmp_dir.path().join("public");
     site.set_output_path(&public);
-    let library = site.library.read().unwrap();
-    let section = library.sections.values().collect::<Vec<_>>()[0];
-    let paginator = Paginator::from_section(section, &library);
+    let section = site.library.sections.values().collect::<Vec<_>>()[0];
+    let paginator = Paginator::from_section(section, &site.library);
 
     b.iter(|| site.render_paginated(Vec::new(), &paginator));
 }

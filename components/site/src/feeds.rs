@@ -50,13 +50,12 @@ pub fn render_feeds(
     {
         context.insert("last_updated", &last_updated);
     }
-    let library = site.library.read().unwrap();
     // limit to the last n elements if the limit is set; otherwise use all.
     let num_entries = site.config.feed_limit.unwrap_or(pages.len());
     let p = pages
         .iter()
         .take(num_entries)
-        .map(|x| x.serialize_without_siblings(&library))
+        .map(|x| x.serialize_without_siblings(&site.library))
         .collect::<Vec<_>>();
 
     context.insert("pages", &p);

@@ -8,24 +8,22 @@ use site::Site;
 
 /// Display in the console the number of pages/sections in the site
 pub fn notify_site_size(site: &Site) {
-    let library = site.library.read().unwrap();
     log::info!(
         "-> Creating {} pages ({} orphan) and {} sections",
-        library.pages.len(),
-        library.get_all_orphan_pages().len(),
-        library.sections.len() - 1, // -1 since we do not count the index as a section there
+        site.library.pages.len(),
+        site.library.get_all_orphan_pages().len(),
+        site.library.sections.len() - 1, // -1 since we do not count the index as a section there
     );
 }
 
 /// Display in the console only the number of pages/sections in the site
 pub fn check_site_summary(site: &Site) {
-    let library = site.library.read().unwrap();
-    let orphans = library.get_all_orphan_pages();
+    let orphans = site.library.get_all_orphan_pages();
     log::info!(
         "-> Site content: {} pages ({} orphan), {} sections",
-        library.pages.len(),
+        site.library.pages.len(),
         orphans.len(),
-        library.sections.len() - 1, // -1 since we do not count the index as a section there
+        site.library.sections.len() - 1, // -1 since we do not count the index as a section there
     );
 
     for orphan in orphans {
@@ -35,11 +33,11 @@ pub fn check_site_summary(site: &Site) {
 
 /// Display a warning in the console if there are ignored pages in the site
 pub fn warn_about_ignored_pages(site: &Site) {
-    let library = site.library.read().unwrap();
-    let ignored_pages: Vec<_> = library
+    let ignored_pages: Vec<_> = site
+        .library
         .sections
         .values()
-        .flat_map(|s| s.ignored_pages.iter().map(|k| library.pages[k].file.path.clone()))
+        .flat_map(|s| s.ignored_pages.iter().map(|k| site.library.pages[k].file.path.clone()))
         .collect();
 
     if !ignored_pages.is_empty() {
