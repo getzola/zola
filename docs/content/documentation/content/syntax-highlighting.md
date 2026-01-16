@@ -64,8 +64,8 @@ The default rendering style is `inline`, meaning the colours are set directly on
 for dual themes. The [light-dark()](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/color_value/light-dark) CSS functions
 will automatically use the preferred color scheme of the user, with no way of overriding it from JS.
 
-If you want a light/dark theme switch button or have rules against inline styles, you can use the `class` rendering style which
-will use CSS classes instead and generate one CSS file for each theme in static folder following:
+If you want a light/dark theme switch button or have rules against inline styles, you can set `markdown.highlighting.style` to `class` in order
+to have the renderer use CSS classes instead and generate one CSS file for each theme in static folder following:
 
 - single theme -> `giallo.css`
 - dual themes: light -> `giallo-light.css`, dark -> `giallo-dark.css`
