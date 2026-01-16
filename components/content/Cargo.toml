@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 serde = { workspace = true }
-time = { workspace = true }
+time = { workspace = true, features = ["parsing", "formatting", "macros"] }
 ahash = { workspace = true }
 lexical-sort = { workspace = true }
 once_cell = { workspace = true }

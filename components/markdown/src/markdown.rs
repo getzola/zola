@@ -14,6 +14,7 @@ use crate::context::RenderContext;
 use errors::{Context, Error, Result};
 use pulldown_cmark_escape::escape_html;
 use regex::{Regex, RegexBuilder};
+use tera::value::Key;
 use utils::net::is_external_link;
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
@@ -400,11 +401,10 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
 }
 
 pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
-    let path = context
-        .tera_context
-        .get("page")
-        .or_else(|| context.tera_context.get("section"))
-        .map(|x| x.as_object().unwrap().get("relative_path").unwrap().as_str().unwrap());
+    let path =
+        context.tera_context.get("page").or_else(|| context.tera_context.get("section")).map(|x| {
+            x.as_map().unwrap().get(&Key::Str("relative_path")).unwrap().as_str().unwrap()
+        });
     // the rendered html
     let mut html = String::with_capacity(content.len());
     let mut summary = None;

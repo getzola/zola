@@ -5,7 +5,7 @@ use serde::Serialize;
 
 use crate::library::Library;
 use crate::{Page, Section};
-use tera::{Map, Value};
+use tera::Value;
 use utils::table_of_contents::Heading;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -56,7 +56,7 @@ pub struct SerializingPage<'a> {
     day: Option<u8>,
     taxonomies: &'a HashMap<String, Vec<String>>,
     authors: &'a [String],
-    extra: &'a Map<String, Value>,
+    extra: &'a Value,
     path: &'a str,
     components: &'a [String],
     summary: &'a Option<String>,
@@ -148,7 +148,7 @@ pub struct SerializingSection<'a> {
     ancestors: &'a [String],
     title: &'a Option<String>,
     description: &'a Option<String>,
-    extra: &'a Map<String, Value>,
+    extra: &'a Value,
     path: &'a str,
     components: &'a [String],
     toc: &'a [Heading],

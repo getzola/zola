@@ -32,7 +32,11 @@ impl Function<TeraResult<Value>> for GetTaxonomyUrl {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
         let kind: String = kwargs.must_get("kind")?;
         let name: String = kwargs.must_get("name")?;
-        let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
+        let lang: String = state
+            .get("lang")
+            .as_str()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| self.default_lang.clone());
         let required: bool = kwargs.get("required")?.unwrap_or(true);
 
         let container = match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
@@ -125,7 +129,7 @@ impl GetPage {
 impl Function<TeraResult<Value>> for GetPage {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
         let path: String = kwargs.must_get("path")?;
-        let lang: Option<String> = state.get("lang")?;
+        let lang: Option<String> = state.get("lang").as_str().map(|s| s.to_string());
 
         get_path_with_lang(&path, lang.as_deref(), &self.default_lang, &self.supported_languages)
             .and_then(|path_with_lang| {
@@ -174,7 +178,7 @@ impl Function<TeraResult<Value>> for GetSection {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
         let path: String = kwargs.must_get("path")?;
         let metadata_only: bool = kwargs.get("metadata_only")?.unwrap_or(false);
-        let lang: Option<String> = state.get("lang")?;
+        let lang: Option<String> = state.get("lang").as_str().map(|s| s.to_string());
 
         get_path_with_lang(&path, lang.as_deref(), &self.default_lang, &self.supported_languages)
             .and_then(|path_with_lang| {
@@ -226,7 +230,11 @@ impl Function<TeraResult<Value>> for GetTaxonomy {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
         let kind: String = kwargs.must_get("kind")?;
         let required: bool = kwargs.get("required")?.unwrap_or(true);
-        let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
+        let lang: String = state
+            .get("lang")
+            .as_str()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| self.default_lang.clone());
 
         match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
             (Some(t), _) => {
@@ -268,7 +276,11 @@ impl Function<TeraResult<Value>> for GetTaxonomyTerm {
         let term: String = kwargs.must_get("term")?;
         let include_pages: bool = kwargs.get("include_pages")?.unwrap_or(true);
         let required: bool = kwargs.get("required")?.unwrap_or(true);
-        let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
+        let lang: String = state
+            .get("lang")
+            .as_str()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| self.default_lang.clone());
 
         let tax: &Taxonomy = match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
             (Some(t), _) => t,
@@ -281,16 +293,17 @@ impl Function<TeraResult<Value>> for GetTaxonomyTerm {
             }
         };
 
-        let taxonomy_term: &TaxonomyTerm = match (tax.items.iter().find(|i| i.name == term), required) {
-            (Some(t), _) => t,
-            (None, false) => return Ok(Value::null()),
-            (None, true) => {
-                return Err(Error::message(format!(
-                    "`get_taxonomy_term` received an unknown term: {}",
-                    term
-                )));
-            }
-        };
+        let taxonomy_term: &TaxonomyTerm =
+            match (tax.items.iter().find(|i| i.name == term), required) {
+                (Some(t), _) => t,
+                (None, false) => return Ok(Value::null()),
+                (None, true) => {
+                    return Err(Error::message(format!(
+                        "`get_taxonomy_term` received an unknown term: {}",
+                        term
+                    )));
+                }
+            };
 
         if include_pages {
             Ok(Value::from_serializable(&taxonomy_term.serialize(&self.library.read().unwrap())))
@@ -549,10 +562,8 @@ mod tests {
             GetTaxonomyUrl::new(&config.default_language, &taxonomies, config.slugify.taxonomies);
 
         // can find it correctly (default lang)
-        let kwargs = make_kwargs(vec![
-            ("kind", Value::from("tags")),
-            ("name", Value::from("Programming")),
-        ]);
+        let kwargs =
+            make_kwargs(vec![("kind", Value::from("tags")), ("name", Value::from("Programming"))]);
         let ctx = Context::new();
         assert_eq!(
             get_taxonomy_url.call(kwargs, &State::new(&ctx)).unwrap().as_str().unwrap(),
@@ -560,10 +571,8 @@ mod tests {
         );
 
         // can find it correctly with inconsistent capitalisation
-        let kwargs = make_kwargs(vec![
-            ("kind", Value::from("tags")),
-            ("name", Value::from("programming")),
-        ]);
+        let kwargs =
+            make_kwargs(vec![("kind", Value::from("tags")), ("name", Value::from("programming"))]);
         let ctx = Context::new();
         assert_eq!(
             get_taxonomy_url.call(kwargs, &State::new(&ctx)).unwrap().as_str().unwrap(),
@@ -582,10 +591,8 @@ mod tests {
         );
 
         // and errors if it can't find it
-        let kwargs = make_kwargs(vec![
-            ("kind", Value::from("tags")),
-            ("name", Value::from("random")),
-        ]);
+        let kwargs =
+            make_kwargs(vec![("kind", Value::from("tags")), ("name", Value::from("random"))]);
         let ctx = Context::new();
         assert!(get_taxonomy_url.call(kwargs, &State::new(&ctx)).is_err());
     }
@@ -622,10 +629,8 @@ mod tests {
         let get_taxonomy_term = GetTaxonomyTerm::new(&config.default_language, taxonomies, library);
 
         // can find it correctly (default lang)
-        let kwargs = make_kwargs(vec![
-            ("kind", Value::from("tags")),
-            ("term", Value::from("Programming")),
-        ]);
+        let kwargs =
+            make_kwargs(vec![("kind", Value::from("tags")), ("term", Value::from("Programming"))]);
         let ctx = Context::new();
         let res = get_taxonomy_term.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
