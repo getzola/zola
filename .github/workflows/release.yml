@@ -75,14 +75,14 @@ jobs:
           cp -av target/${{ matrix.target }}/release/zola .
           OUTPUT_DIR="$(find target -path '*/zola-*/out' -type d)"
           cp -av "$OUTPUT_DIR"/* artifacts
-          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz zola artifacts
+          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz zola artifacts LICENSE
         if: ${{ ! startsWith(matrix.os, 'windows') }}
 
       - name: Archive (Windows)
         run: |
           mkdir -p artifacts
           cp target/${{ matrix.target }}/release/zola.exe .
-          Compress-Archive zola.exe ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.zip
+          Compress-Archive zola.exe,LICENSE ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.zip
         if: ${{ startsWith(matrix.os, 'windows') }}
 
       - name: Attest Build Provenance
