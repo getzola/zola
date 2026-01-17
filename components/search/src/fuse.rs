@@ -2,12 +2,12 @@ use config::Search;
 use content::Library;
 use errors::Result;
 
-use crate::clean_and_truncate_body;
+use crate::{clean_and_truncate_body, collect_index_items};
 
 /// build index in Fuse.js format.
 pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<String> {
     #[derive(serde::Serialize)]
-    struct Item<'a> {
+    struct FuseIndexItem<'a> {
         url: &'a str,
         #[serde(skip_serializing_if = "Option::is_none")]
         title: Option<&'a str>,
@@ -18,62 +18,28 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
         #[serde(skip_serializing_if = "Option::is_none")]
         path: Option<&'a str>,
     }
-    let mut items: Vec<Item> = Vec::new();
-    for (_, section) in &library.sections {
-        if section.lang == lang
-            && section.meta.redirect_to.is_none()
-            && section.meta.in_search_index
-        {
-            items.push(Item {
-                url: &section.permalink,
-                title: match config.include_title {
-                    true => Some(section.meta.title.as_deref().unwrap_or_default()),
-                    false => None,
-                },
-                description: match config.include_description {
-                    true => Some(section.meta.description.as_deref().unwrap_or_default()),
-                    false => None,
-                },
-                body: match config.include_content {
-                    true => Some(clean_and_truncate_body(
-                        config.truncate_content_length,
-                        &section.content,
-                    )),
-                    false => None,
-                },
-                path: match config.include_path {
-                    true => Some(&section.path),
-                    false => None,
-                },
-            });
-            for page in &section.pages {
-                let page = &library.pages[page];
-                if page.meta.in_search_index {
-                    items.push(Item {
-                        url: &page.permalink,
-                        title: match config.include_title {
-                            true => Some(page.meta.title.as_deref().unwrap_or_default()),
-                            false => None,
-                        },
-                        description: match config.include_description {
-                            true => Some(page.meta.description.as_deref().unwrap_or_default()),
-                            false => None,
-                        },
-                        body: match config.include_content {
-                            true => Some(super::clean_and_truncate_body(
-                                config.truncate_content_length,
-                                &page.content,
-                            )),
-                            false => None,
-                        },
-                        path: match config.include_path {
-                            true => Some(&page.path),
-                            false => None,
-                        },
-                    })
-                }
-            }
-        }
+    let mut index: Vec<FuseIndexItem> = Vec::new();
+    let items = collect_index_items(lang, library);
+    for item in &items {
+        index.push(FuseIndexItem {
+            url: item.url,
+            title: match config.include_title {
+                true => Some(item.title.as_deref().unwrap_or_default()),
+                false => None,
+            },
+            description: match config.include_description {
+                true => Some(item.description.as_deref().unwrap_or_default()),
+                false => None,
+            },
+            body: match config.include_content {
+                true => Some(clean_and_truncate_body(config.truncate_content_length, item.content)),
+                false => None,
+            },
+            path: match config.include_path {
+                true => Some(item.path),
+                false => None,
+            },
+        });
     }
-    Ok(serde_json::to_string(&items)?)
+    Ok(serde_json::to_string(&index)?)
 }

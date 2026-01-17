@@ -1,9 +1,10 @@
 mod elasticlunr;
 mod fuse;
 
-use ammonia;
+use content::Library;
 use once_cell::sync::Lazy;
 use std::collections::{HashMap, HashSet};
+use time::OffsetDateTime;
 
 pub use elasticlunr::{ELASTICLUNR_JS, build_index as build_elasticlunr};
 pub use fuse::build_index as build_fuse;
@@ -39,6 +40,57 @@ pub fn clean_and_truncate_body(truncate_content_length: Option<usize>, body: &st
         clean.truncate(clean.char_indices().nth(new_len).map(|(i, _)| i).unwrap_or(clean.len()))
     }
     clean
+}
+
+/// A single page or section that should be included in the search index
+/// for a specific language.
+struct IndexItem<'a> {
+    url: &'a str,
+    title: &'a Option<String>,
+    description: &'a Option<String>,
+    content: &'a String,
+    datetime: &'a Option<OffsetDateTime>,
+    path: &'a String,
+}
+
+/// Collect all pages and sections which should be included in the search index
+/// of a given language.
+fn collect_index_items<'a>(lang: &str, library: &'a Library) -> Vec<IndexItem<'a>> {
+    let mut items: Vec<IndexItem> = Vec::new();
+    for (_, section) in &library.sections {
+        if section.lang != lang {
+            continue;
+        }
+        if !section.meta.in_search_index {
+            continue;
+        }
+
+        if section.meta.redirect_to.is_none() {
+            items.push(IndexItem {
+                url: &section.permalink,
+                title: &section.meta.title,
+                datetime: &None,
+                description: &section.meta.description,
+                content: &section.content,
+                path: &section.path,
+            });
+        }
+
+        for page in &section.pages {
+            let page = &library.pages[page];
+            if page.meta.in_search_index {
+                items.push(IndexItem {
+                    url: &page.permalink,
+                    title: &page.meta.title,
+                    datetime: &page.meta.datetime,
+                    description: &page.meta.description,
+                    content: &page.content,
+                    path: &page.path,
+                })
+            }
+        }
+    }
+    items
 }
 
 #[cfg(test)]
