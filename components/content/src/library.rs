@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use ahash::{AHashMap, AHashSet};
 use config::Config;
+use tera::Value;
 
 use crate::ser::TranslatedContent;
 use crate::sorting::sort_pages;
@@ -36,6 +37,10 @@ pub struct Library {
     // So we don't need to pass the Config when adding a page to know how to slugify and we only
     // slugify once
     taxo_name_to_slug: AHashMap<String, String>,
+
+    pub serialized_pages: AHashMap<PathBuf, Value>,
+    pub serialized_sections: AHashMap<PathBuf, Value>,
+    // TODO: add config later
 }
 
 impl Library {
@@ -372,6 +377,18 @@ impl Library {
 
     pub fn find_sections_by_path(&self, paths: &[PathBuf]) -> Vec<&Section> {
         paths.iter().map(|p| &self.sections[p]).collect()
+    }
+
+    pub fn pre_render(&mut self) {
+        for (p, page) in self.pages.iter() {
+            self.serialized_pages
+                .insert(p.clone(), Value::from_serializable(&page.serialize(&self)));
+        }
+
+        for (p, section) in self.sections.iter() {
+            self.serialized_sections
+                .insert(p.clone(), Value::from_serializable(&section.serialize(&self)));
+        }
     }
 }
 

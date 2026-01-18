@@ -1,10 +1,9 @@
 use crate::Site;
 use std::sync::Arc;
-use templates::{filters, global_fns};
-use tera::Result as TeraResult;
+use templates::{filters, functions};
 
 /// Adds global fns that are to be available during markdown rendering
-pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
+pub fn register_early_global_fns(site: &mut Site) {
     site.tera.register_filter(
         "num_format",
         filters::NumFormatFilter::new(&site.config.default_language),
@@ -12,7 +11,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
 
     site.tera.register_function(
         "get_url",
-        global_fns::GetUrl::new(
+        functions::GetUrl::new(
             site.base_path.clone(),
             site.config.clone(),
             site.permalinks.clone(),
@@ -21,7 +20,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     );
     site.tera.register_function(
         "resize_image",
-        global_fns::ResizeImage::new(
+        functions::ResizeImage::new(
             site.base_path.clone(),
             site.imageproc.clone(),
             site.config.theme.clone(),
@@ -30,7 +29,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     );
     site.tera.register_function(
         "get_image_metadata",
-        global_fns::GetImageMetadata::new(
+        functions::GetImageMetadata::new(
             site.base_path.clone(),
             site.config.theme.clone(),
             site.output_path.clone(),
@@ -38,16 +37,16 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     );
     site.tera.register_function(
         "load_data",
-        global_fns::LoadData::new(
+        functions::LoadData::new(
             site.base_path.clone(),
             site.config.theme.clone(),
             site.output_path.clone(),
         ),
     );
-    site.tera.register_function("trans", global_fns::Trans::new(site.config.clone()));
+    site.tera.register_function("trans", functions::Trans::new(site.config.clone()));
     site.tera.register_function(
         "get_taxonomy_url",
-        global_fns::GetTaxonomyUrl::new(
+        functions::GetTaxonomyUrl::new(
             &site.config.default_language,
             &site.taxonomies,
             site.config.slugify.taxonomies,
@@ -55,17 +54,12 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
     );
     site.tera.register_function(
         "get_hash",
-        global_fns::GetHash::new(
+        functions::GetHash::new(
             site.base_path.clone(),
             site.config.theme.clone(),
             site.output_path.clone(),
         ),
     );
-    {
-        let local = chrono::Local::now();
-        let utc = local.to_utc();
-        site.tera.register_function("now", global_fns::Now::new(local, utc));
-    }
     site.tera.register_filter(
         "markdown",
         filters::MarkdownFilter::new(
@@ -75,7 +69,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
         ),
     );
 
-    Ok(())
+    register_tera_global_fns(site);
 }
 
 /// Functions filled once we have parsed all the pages/sections only
@@ -84,7 +78,7 @@ pub fn register_tera_global_fns(site: &mut Site) {
         Arc::new(site.config.languages.keys().map(|s| s.to_string()).collect());
     site.tera.register_function(
         "get_page",
-        global_fns::GetPage::new(
+        functions::GetPage::new(
             site.base_path.clone(),
             &site.config.default_language,
             Arc::clone(&language_list),
@@ -93,7 +87,7 @@ pub fn register_tera_global_fns(site: &mut Site) {
     );
     site.tera.register_function(
         "get_section",
-        global_fns::GetSection::new(
+        functions::GetSection::new(
             site.base_path.clone(),
             &site.config.default_language,
             Arc::clone(&language_list),
@@ -102,7 +96,7 @@ pub fn register_tera_global_fns(site: &mut Site) {
     );
     site.tera.register_function(
         "get_taxonomy",
-        global_fns::GetTaxonomy::new(
+        functions::GetTaxonomy::new(
             &site.config.default_language,
             site.taxonomies.clone(),
             site.library.clone(),
@@ -110,7 +104,7 @@ pub fn register_tera_global_fns(site: &mut Site) {
     );
     site.tera.register_function(
         "get_taxonomy_term",
-        global_fns::GetTaxonomyTerm::new(
+        functions::GetTaxonomyTerm::new(
             &site.config.default_language,
             site.taxonomies.clone(),
             site.library.clone(),

@@ -91,12 +91,12 @@ gh-emoji = "1"
 globset = "0.4"
 grass = { version = "0.13", default-features = false, features = ["random"] }
 image = { version = "0.25", default-features = true, features = ["avif"] }
+fs-err = "3.2.2"
 lexical-sort = "0.3"
 log = "0.4"
 minify-html = "0.18"
 nom-bibtex = "0.6"
 num-format = "0.4"
-once_cell = "1"
 percent-encoding = "2"
 pulldown-cmark = { version = "0.13", default-features = false, features = ["html", "simd"] }
 pulldown-cmark-escape = { version = "0.11", default-features = false }

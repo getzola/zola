@@ -8,7 +8,7 @@ use config::{Config, TaxonomyConfig};
 use errors::{Context as ErrorContext, Result};
 use tera::{Context, Tera};
 use utils::slugs::slugify_paths;
-use utils::templates::{check_template_fallbacks, render_template};
+use utils::templates::render_template;
 
 use crate::library::Library;
 use crate::ser::SerializingPage;
@@ -209,10 +209,13 @@ impl Taxonomy {
 
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/single.html", self.kind.name);
-        let template = check_template_fallbacks(&specific_template, tera, &config.theme)
-            .unwrap_or("taxonomy_single.html");
+        let template = if tera.get_template(&specific_template).is_some() {
+            specific_template.as_str()
+        } else {
+            "taxonomy_single.html"
+        };
 
-        render_template(template, tera, context, &config.theme)
+        render_template(template, tera, context)
             .with_context(|| format!("Failed to render single term {} page.", self.kind.name))
     }
 
@@ -253,10 +256,13 @@ impl Taxonomy {
 
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/list.html", self.kind.name);
-        let template = check_template_fallbacks(&specific_template, tera, &config.theme)
-            .unwrap_or("taxonomy_list.html");
+        let template = if tera.get_template(&specific_template).is_some() {
+            specific_template.as_str()
+        } else {
+            "taxonomy_list.html"
+        };
 
-        render_template(template, tera, context, &config.theme)
+        render_template(template, tera, context)
             .with_context(|| format!("Failed to render a list of {} page.", self.kind.name))
     }
 

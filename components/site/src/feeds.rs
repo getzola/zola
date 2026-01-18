@@ -75,7 +75,7 @@ pub fn render_feeds(
 
         context.insert("feed_url", &feed_url);
         context = additional_context_fn(context);
-        feeds.push(render_template(feed_filename, &site.tera, context, &site.config.theme)?);
+        feeds.push(render_template(feed_filename, &site.tera, context)?);
     }
 
     Ok(Some(feeds))

@@ -12,8 +12,8 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
 use log;
-use once_cell::sync::Lazy;
 use rayon::prelude::*;
+use std::sync::LazyLock;
 use tera::{Context, Tera};
 use walkdir::{DirEntry, WalkDir};
 
@@ -30,8 +30,8 @@ use utils::net::{get_available_port, is_external_link};
 use utils::templates::render_template;
 use utils::types::InsertAnchor;
 
-pub static SITE_CONTENT: Lazy<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
-    Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
+pub static SITE_CONTENT: LazyLock<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
+    LazyLock::new(|| Arc::new(RwLock::new(HashMap::new())));
 
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -322,10 +322,11 @@ impl Site {
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
-        tpls::register_early_global_fns(self)?;
+        tpls::register_early_global_fns(self);
         self.populate_sections();
         self.render_markdown()?;
         Arc::make_mut(&mut self.library).fill_backlinks();
+        Arc::make_mut(&mut self.library).pre_render();
         tpls::register_tera_global_fns(self);
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
@@ -899,7 +900,7 @@ impl Site {
         let mut context = Context::new();
         context.insert("config", &self.config.serialize(&self.config.default_language));
         context.insert("lang", &self.config.default_language);
-        let output = render_template("404.html", &self.tera, context, &self.config.theme)?;
+        let output = render_template("404.html", &self.tera, context)?;
         let content = self.inject_livereload(output);
         self.write_content(&[], "404.html", content)?;
         Ok(())
@@ -909,7 +910,7 @@ impl Site {
     pub fn render_robots(&self) -> Result<()> {
         let mut context = Context::new();
         context.insert("config", &self.config.serialize(&self.config.default_language));
-        let content = render_template("robots.txt", &self.tera, context, &self.config.theme)?;
+        let content = render_template("robots.txt", &self.tera, context)?;
         self.write_content(&[], "robots.txt", content)?;
         Ok(())
     }
@@ -956,13 +957,7 @@ impl Site {
                 if taxonomy.kind.is_paginated() {
                     self.render_paginated(
                         comp.clone(),
-                        &Paginator::from_taxonomy(
-                            taxonomy,
-                            item,
-                            &self.library,
-                            &self.tera,
-                            &self.config.theme,
-                        ),
+                        &Paginator::from_taxonomy(taxonomy, item, &self.library, &self.tera),
                     )?;
                 } else {
                     let single_output =
@@ -1024,7 +1019,7 @@ impl Site {
             // Create single sitemap
             let mut context = Context::new();
             context.insert("entries", &all_sitemap_entries);
-            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap = render_template("sitemap.xml", &self.tera, context)?;
             self.write_content(&[], "sitemap.xml", sitemap)?;
             return Ok(());
         }
@@ -1036,7 +1031,7 @@ impl Site {
         {
             let mut context = Context::new();
             context.insert("entries", &chunk);
-            let sitemap = render_template("sitemap.xml", &self.tera, context, &self.config.theme)?;
+            let sitemap = render_template("sitemap.xml", &self.tera, context)?;
             let file_name = format!("sitemap{}.xml", i + 1);
             self.write_content(&[], &file_name, sitemap)?;
             let mut sitemap_url = self.config.make_permalink(&file_name);
@@ -1047,12 +1042,7 @@ impl Site {
         // Create main sitemap that reference numbered sitemaps
         let mut main_context = Context::new();
         main_context.insert("sitemaps", &sitemap_index);
-        let sitemap = render_template(
-            "split_sitemap_index.xml",
-            &self.tera,
-            main_context,
-            &self.config.theme,
-        )?;
+        let sitemap = render_template("split_sitemap_index.xml", &self.tera, main_context)?;
         self.write_content(&[], "sitemap.xml", sitemap)?;
 
         Ok(())

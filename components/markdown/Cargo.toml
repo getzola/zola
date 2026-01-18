@@ -6,7 +6,6 @@ include = ["src/**/*"]
 
 [dependencies]
 gh-emoji = { workspace = true }
-once_cell = { workspace = true }
 pulldown-cmark = { workspace = true }
 pulldown-cmark-escape = { workspace = true }
 regex = { workspace = true }

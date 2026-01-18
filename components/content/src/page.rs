@@ -2,8 +2,8 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 use tera::{Context as TeraContext, Tera};
 
 use config::Config;
@@ -25,7 +25,7 @@ use utils::fs::read_file;
 
 // Based on https://regex101.com/r/H2n38Z/1/tests
 // A regex parsing RFC3339 date followed by {_,-} and some characters
-static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
+static RFC3339_DATE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
         r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)(\s?(_|-)(?P<slug>.+$))?"
     ).unwrap()
@@ -249,7 +249,7 @@ impl Page {
         context.insert("page", &self.serialize(library));
         context.insert("lang", &self.lang);
 
-        render_template(tpl_name, tera, context, &config.theme)
+        render_template(tpl_name, tera, context)
             .with_context(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
 

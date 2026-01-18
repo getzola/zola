@@ -8,7 +8,6 @@ serde = { workspace = true }
 time = { workspace = true, features = ["parsing", "formatting", "macros"] }
 ahash = { workspace = true }
 lexical-sort = { workspace = true }
-once_cell = { workspace = true }
 rayon = { workspace = true }
 regex = { workspace = true }
 serde_yaml = { workspace = true }

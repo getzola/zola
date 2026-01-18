@@ -4,14 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+tera-contrib = {path = "../../../tera2/tera-contrib", features = ["base64", "date", "urlencode", "json", "filesize_format", "format", "slug", "rand", "regex"] }
 base64 = { workspace = true }
 csv = { workspace = true }
 jiff = { workspace = true }
 nom-bibtex = { workspace = true }
 num-format = { workspace = true }
-once_cell = { workspace = true }
 roxmltree_to_serde = { workspace = true }
-regex = { workspace = true }
 reqwest = { workspace = true }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }
@@ -19,13 +18,14 @@ sha2 = { workspace = true }
 tera = { workspace = true }
 toml = { workspace = true }
 url = { workspace = true }
+fs-err = { workspace = true }
+markdown = { workspace = true }
 
 errors = { workspace = true }
 utils = { workspace = true }
 content = { workspace = true }
 config = { workspace = true }
 imageproc = { workspace = true }
-markdown = { workspace = true }
 
 [dev-dependencies]
 mockito = "1.6"

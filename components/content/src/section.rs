@@ -191,7 +191,7 @@ impl Section {
         context.insert("section", &SerializingSection::new(self, SectionSerMode::Full(library)));
         context.insert("lang", &self.lang);
 
-        render_template(tpl_name, tera, context, &config.theme)
+        render_template(tpl_name, tera, context)
             .with_context(|| format!("Failed to render section '{}'", self.file.path.display()))
     }
 

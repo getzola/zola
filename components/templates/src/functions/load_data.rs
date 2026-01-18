@@ -8,15 +8,12 @@ use std::sync::{Arc, Mutex};
 use csv::Reader;
 use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderName, HeaderValue};
 use reqwest::{blocking::Client, header};
-use tera::{
-    Error, Error as TeraError, Function as TeraFn, Map, Result, Value, from_value, to_value,
-};
+use tera::{Error, Function, Kwargs, Map, State, TeraResult, Value};
 use url::Url;
 use utils::de::fix_toml_dates;
 use utils::fs::{get_file_time, read_file};
-use {nom_bibtex, serde_json, serde_yaml, toml};
 
-use crate::global_fns::helpers::search_for_file;
+use crate::helpers::search_for_file;
 
 const GET_DATA_ARGUMENT_ERROR_MESSAGE: &str =
     "`load_data`: requires EITHER a `path`, `url`, or `literal` argument";
@@ -30,11 +27,11 @@ enum Method {
 impl FromStr for Method {
     type Err = Error;
 
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_ref() {
             "post" => Ok(Method::Post),
             "get" => Ok(Method::Get),
-            _ => Err("`load_data` method must either be POST or GET.".into()),
+            _ => Err(Error::message("`load_data` method must either be POST or GET.")),
         }
     }
 }
@@ -53,7 +50,7 @@ enum OutputFormat {
 impl FromStr for OutputFormat {
     type Err = Error;
 
-    fn from_str(output_format: &str) -> Result<Self> {
+    fn from_str(output_format: &str) -> Result<Self, Self::Err> {
         match output_format.to_lowercase().as_ref() {
             "toml" => Ok(OutputFormat::Toml),
             "csv" => Ok(OutputFormat::Csv),
@@ -62,7 +59,7 @@ impl FromStr for OutputFormat {
             "xml" => Ok(OutputFormat::Xml),
             "plain" => Ok(OutputFormat::Plain),
             "yaml" | "yml" => Ok(OutputFormat::Yaml),
-            format => Err(format!("Unknown output format {}", format).into()),
+            format => Err(Error::message(format!("Unknown output format {}", format))),
         }
     }
 }
@@ -101,18 +98,18 @@ impl DataSource {
         base_path: &Path,
         theme: &Option<String>,
         output_path: &Path,
-    ) -> Result<Option<Self>> {
+    ) -> TeraResult<Option<Self>> {
         // only one of `path`, `url`, or `literal` can be specified
         if (path_arg.is_some() && url_arg.is_some())
             || (path_arg.is_some() && literal_arg.is_some())
             || (url_arg.is_some() && literal_arg.is_some())
         {
-            return Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into());
+            return Err(Error::message(GET_DATA_ARGUMENT_ERROR_MESSAGE));
         }
 
         if let Some(path) = path_arg {
             return match search_for_file(base_path, &path, theme, output_path)
-                .map_err(|e| format!("`load_data`: {}", e))?
+                .map_err(|e| Error::message(format!("`load_data`: {}", e)))?
             {
                 Some((f, _)) => Ok(Some(DataSource::Path(f))),
                 None => Ok(None),
@@ -120,17 +117,16 @@ impl DataSource {
         }
 
         if let Some(url) = url_arg {
-            return Url::parse(&url)
-                .map(DataSource::Url)
-                .map(Some)
-                .map_err(|e| format!("`load_data`: Failed to parse {} as url: {}", url, e).into());
+            return Url::parse(&url).map(DataSource::Url).map(Some).map_err(|e| {
+                Error::message(format!("`load_data`: Failed to parse {} as url: {}", url, e))
+            });
         }
 
         if let Some(string_literal) = literal_arg {
             return Ok(Some(DataSource::Literal(string_literal)));
         }
 
-        Err(GET_DATA_ARGUMENT_ERROR_MESSAGE.into())
+        Err(Error::message(GET_DATA_ARGUMENT_ERROR_MESSAGE))
     }
 
     fn get_cache_key(
@@ -169,7 +165,7 @@ impl Hash for DataSource {
 fn get_output_format_from_args(
     format_arg: Option<String>,
     data_source: &DataSource,
-) -> Result<OutputFormat> {
+) -> TeraResult<OutputFormat> {
     if let Some(format) = format_arg {
         return OutputFormat::from_str(&format);
     }
@@ -185,7 +181,7 @@ fn get_output_format_from_args(
     }
 }
 
-fn add_headers_from_args(header_args: Option<Vec<String>>) -> Result<HeaderMap> {
+fn add_headers_from_args(header_args: Option<Vec<String>>) -> TeraResult<HeaderMap> {
     let mut headers = HeaderMap::new();
     if let Some(header_args) = header_args {
         for arg in header_args {
@@ -193,16 +189,24 @@ fn add_headers_from_args(header_args: Option<Vec<String>>) -> Result<HeaderMap> 
             let key = splitter
                 .next()
                 .ok_or_else(|| {
-                    format!("Invalid header argument. Expecting header key, got '{}'", arg)
+                    Error::message(format!(
+                        "Invalid header argument. Expecting header key, got '{}'",
+                        arg
+                    ))
                 })?
                 .to_string();
             let value = splitter.next().ok_or_else(|| {
-                format!("Invalid header argument. Expecting header value, got '{}'", arg)
+                Error::message(format!(
+                    "Invalid header argument. Expecting header value, got '{}'",
+                    arg
+                ))
             })?;
             headers.append(
                 HeaderName::from_str(&key)
-                    .map_err(|e| format!("Invalid header name '{}': {}", key, e))?,
-                value.parse().map_err(|e| format!("Invalid header value '{}': {}", value, e))?,
+                    .map_err(|e| Error::message(format!("Invalid header name '{}': {}", key, e)))?,
+                value.parse().map_err(|e| {
+                    Error::message(format!("Invalid header value '{}': {}", value, e))
+                })?,
             );
         }
     }
@@ -233,48 +237,43 @@ impl LoadData {
     }
 }
 
-impl TeraFn for LoadData {
-    fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
+impl Default for LoadData {
+    fn default() -> Self {
+        let client = Arc::new(Mutex::new(
+            Client::builder()
+                .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
+                .build()
+                .expect("reqwest client build"),
+        ));
+        Self {
+            base_path: PathBuf::new(),
+            theme: None,
+            client,
+            result_cache: Arc::new(Mutex::new(HashMap::new())),
+            output_path: PathBuf::new(),
+        }
+    }
+}
+
+impl Function<TeraResult<Value>> for LoadData {
+    fn call(&self, kwargs: Kwargs, _state: &State) -> TeraResult<Value> {
         // Either a local path or a URL
-        let path_arg = optional_arg!(String, args.get("path"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
-        let url_arg = optional_arg!(String, args.get("url"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
-        let literal_arg =
-            optional_arg!(String, args.get("literal"), GET_DATA_ARGUMENT_ERROR_MESSAGE);
+        let path_arg: Option<String> = kwargs.get("path")?;
+        let url_arg: Option<String> = kwargs.get("url")?;
+        let literal_arg: Option<String> = kwargs.get("literal")?;
         // Optional general params
-        let format_arg = optional_arg!(
-            String,
-            args.get("format"),
-            "`load_data`: `format` needs to be an argument with a string value, being one of the supported `load_data` file types (csv, json, toml, bibtex, plain)"
-        );
-        let required = optional_arg!(
-            bool,
-            args.get("required"),
-            "`load_data`: `required` must be a boolean (true or false)"
-        )
-        .unwrap_or(true);
+        let format_arg: Option<String> = kwargs.get("format")?;
+        let required: bool = kwargs.get("required")?.unwrap_or(true);
         // Remote URL parameters only
-        let post_body_arg =
-            optional_arg!(String, args.get("body"), "`load_data` body must be a string, if set.");
-        let post_content_type = optional_arg!(
-            String,
-            args.get("content_type"),
-            "`load_data` content_type must be a string, if set."
-        );
-        let method_arg = optional_arg!(
-            String,
-            args.get("method"),
-            "`load_data` method must either be POST or GET."
-        );
+        let post_body_arg: Option<String> = kwargs.get("body")?;
+        let post_content_type: Option<String> = kwargs.get("content_type")?;
+        let method_arg: Option<String> = kwargs.get("method")?;
 
         let method = match method_arg {
             Some(ref method_str) => Method::from_str(method_str)?,
             _ => Method::Get,
         };
-        let headers = optional_arg!(
-            Vec<String>,
-            args.get("headers"),
-            "`load_data`: `headers` needs to be an argument with a list of strings of format <name>=<value>."
-        );
+        let headers: Option<Vec<String>> = kwargs.get("headers")?;
 
         // If the file doesn't exist, source is None
         let data_source = match (
@@ -290,7 +289,7 @@ impl TeraFn for LoadData {
         ) {
             // If the file was not required, return a Null value to the template
             (Ok(None), false) | (Err(_), false) => {
-                return Ok(Value::Null);
+                return Ok(Value::null());
             }
             (Err(e), true) => {
                 return Err(e);
@@ -298,11 +297,10 @@ impl TeraFn for LoadData {
             // If the file was required, error
             (Ok(None), true) => {
                 // source is None only with path_arg (not URL), so path_arg is safely unwrap
-                return Err(format!(
+                return Err(Error::message(format!(
                     "`load_data`: {} doesn't exist",
                     &self.base_path.join(path_arg.unwrap()).display()
-                )
-                .into());
+                )));
             }
             (Ok(Some(data_source)), _) => data_source,
         };
@@ -322,8 +320,9 @@ impl TeraFn for LoadData {
         }
 
         let data = match data_source {
-            DataSource::Path(path) => read_file(&path)
-                .map_err(|e| format!("`load_data`: error reading file {:?}: {}", path, e)),
+            DataSource::Path(path) => read_file(&path).map_err(|e| {
+                Error::message(format!("`load_data`: error reading file {:?}: {}", path, e))
+            }),
             DataSource::Url(url) => {
                 let response_client = self.client.lock().expect("response client lock");
                 let req = match method {
@@ -342,11 +341,10 @@ impl TeraFn for LoadData {
                                     resp = resp.header(CONTENT_TYPE, c);
                                 }
                                 Err(_) => {
-                                    return Err(format!(
+                                    return Err(Error::message(format!(
                                         "`load_data`: {} is an illegal content type",
                                         &content_type
-                                    )
-                                    .into());
+                                    )));
                                 }
                             }
                         }
@@ -359,22 +357,26 @@ impl TeraFn for LoadData {
 
                 match req.send().and_then(|res| res.error_for_status()) {
                     Ok(r) => r.text().map_err(|e| {
-                        format!("`load_data`: Failed to parse response from {}: {:?}", url, e)
+                        Error::message(format!(
+                            "`load_data`: Failed to parse response from {}: {:?}",
+                            url, e
+                        ))
                     }),
                     Err(e) => {
                         if !required {
                             // HTTP error is discarded (because required=false) and
                             // Null value is returned to the template
-                            return Ok(Value::Null);
+                            return Ok(Value::null());
                         }
                         Err(match e.status() {
-                            Some(status) => {
-                                format!("`load_data`: Failed to request {}: {}", url, status)
-                            }
-                            None => format!(
+                            Some(status) => Error::message(format!(
+                                "`load_data`: Failed to request {}: {}",
+                                url, status
+                            )),
+                            None => Error::message(format!(
                                 "`load_data`: Could not get response status for url: {}",
                                 url
-                            ),
+                            )),
                         })
                     }
                 }
@@ -382,14 +384,14 @@ impl TeraFn for LoadData {
             DataSource::Literal(string_literal) => Ok(string_literal),
         }?;
 
-        let result_value: Result<Value> = match file_format {
+        let result_value: TeraResult<Value> = match file_format {
             OutputFormat::Toml => load_toml(data),
             OutputFormat::Csv => load_csv(data),
             OutputFormat::Json => load_json(data),
             OutputFormat::Bibtex => load_bibtex(data),
             OutputFormat::Xml => load_xml(data),
             OutputFormat::Yaml => load_yaml(data),
-            OutputFormat::Plain => to_value(data).map_err(|e| e.into()),
+            OutputFormat::Plain => Ok(Value::from(data)),
         };
 
         if let Ok(data_result) = &result_value {
@@ -401,69 +403,72 @@ impl TeraFn for LoadData {
 }
 
 /// Parse a JSON string and convert it to a Tera Value
-fn load_json(json_data: String) -> Result<Value> {
-    let json_content: Value =
-        serde_json::from_str(json_data.as_str()).map_err(|e| format!("{:?}", e))?;
-    Ok(json_content)
+fn load_json(json_data: String) -> TeraResult<Value> {
+    let json_content: serde_json::Value =
+        serde_json::from_str(json_data.as_str()).map_err(|e| Error::message(format!("{:?}", e)))?;
+    Ok(Value::from_serializable(&json_content))
 }
 
 /// Parse a YAML string and convert it to a Tera Value
-fn load_yaml(yaml_data: String) -> Result<Value> {
-    let yaml_content: Value =
-        serde_yaml::from_str(yaml_data.as_str()).map_err(|e| format!("{:?}", e))?;
-    Ok(yaml_content)
+fn load_yaml(yaml_data: String) -> TeraResult<Value> {
+    let yaml_content: serde_yaml::Value =
+        serde_yaml::from_str(yaml_data.as_str()).map_err(|e| Error::message(format!("{:?}", e)))?;
+    Ok(Value::from_serializable(&yaml_content))
 }
 
 /// Parse a TOML string and convert it to a Tera Value
-fn load_toml(toml_data: String) -> Result<Value> {
-    let toml_content: toml::Value = toml::from_str(&toml_data).map_err(|e| format!("{:?}", e))?;
-    let toml_value = to_value(toml_content).expect("Got invalid JSON that was valid TOML somehow");
+fn load_toml(toml_data: String) -> TeraResult<Value> {
+    let toml_content: toml::Value =
+        toml::from_str(&toml_data).map_err(|e| Error::message(format!("{:?}", e)))?;
+    let toml_value = Value::from_serializable(&toml_content);
 
-    match toml_value {
-        Value::Object(m) => Ok(fix_toml_dates(m)),
-        _ => Err("Loaded something other than a TOML object".into()),
+    if toml_value.is_map() {
+        Ok(fix_toml_dates(toml_value.into_map().unwrap()))
+    } else {
+        Err(Error::message("Loaded something other than a TOML object"))
     }
 }
 
 /// Parse a BIBTEX string and convert it to a Tera Value
-fn load_bibtex(bibtex_data: String) -> Result<Value> {
-    let bibtex_model = nom_bibtex::Bibtex::parse(&bibtex_data).map_err(|e| format!("{:?}", e))?;
+fn load_bibtex(bibtex_data: String) -> TeraResult<Value> {
+    let bibtex_model =
+        nom_bibtex::Bibtex::parse(&bibtex_data).map_err(|e| Error::message(format!("{:?}", e)))?;
     let mut bibtex_map = Map::new();
 
-    let preambles_array =
-        bibtex_model.preambles().iter().map(|v| Value::String(v.to_string())).collect();
-    bibtex_map.insert(String::from("preambles"), Value::Array(preambles_array));
+    let preambles_array: Vec<Value> =
+        bibtex_model.preambles().iter().map(|v| Value::from(v.to_string())).collect();
+    bibtex_map.insert("preambles".into(), Value::from(preambles_array));
 
-    let comments_array =
-        bibtex_model.comments().iter().map(|v| Value::String(v.to_string())).collect();
-    bibtex_map.insert(String::from("comments"), Value::Array(comments_array));
+    let comments_array: Vec<Value> =
+        bibtex_model.comments().iter().map(|v| Value::from(v.to_string())).collect();
+    bibtex_map.insert("comments".into(), Value::from(comments_array));
 
     let mut variables_map = Map::new();
     for (key, val) in bibtex_model.variables() {
-        variables_map.insert(key.to_string(), Value::String(val.to_string()));
+        variables_map.insert(key.to_string().into(), Value::from(val.to_string()));
     }
-    bibtex_map.insert(String::from("variables"), Value::Object(variables_map));
+    bibtex_map.insert("variables".into(), Value::from(variables_map));
 
-    let bibliographies_array = bibtex_model
+    let bibliographies_array: Vec<Value> = bibtex_model
         .bibliographies()
         .iter()
         .map(|b| {
             let mut m = Map::new();
-            m.insert(String::from("entry_type"), Value::String(b.entry_type().to_string()));
-            m.insert(String::from("citation_key"), Value::String(b.citation_key().to_string()));
+            m.insert("entry_type".into(), Value::from(b.entry_type().to_string()));
+            m.insert("citation_key".into(), Value::from(b.citation_key().to_string()));
 
             let mut tags = Map::new();
             for (key, val) in b.tags() {
-                tags.insert(key.to_lowercase().to_string(), Value::String(val.to_string()));
+                tags.insert(key.to_lowercase().into(), Value::from(val.to_string()));
             }
-            m.insert(String::from("tags"), Value::Object(tags));
-            Value::Object(m)
+            m.insert("tags".into(), Value::from(tags));
+            Value::from(m)
         })
         .collect();
-    bibtex_map.insert(String::from("bibliographies"), Value::Array(bibliographies_array));
+    bibtex_map.insert("bibliographies".into(), Value::from(bibliographies_array));
 
-    let bibtex_value: Value = Value::Object(bibtex_map);
-    to_value(bibtex_value).map_err(|err| err.into())
+    let bibtex_value: Value = Value::from(bibtex_map);
+    Ok(bibtex_value)
 }
 
 /// Parse a CSV string and convert it to a Tera Value
@@ -484,18 +489,22 @@ fn load_bibtex(bibtex_data: String) -> Result<Value> {
 ///                ],
 /// }
 /// ```
-fn load_csv(csv_data: String) -> Result<Value> {
+fn load_csv(csv_data: String) -> TeraResult<Value> {
     let mut reader = Reader::from_reader(csv_data.as_bytes());
     let mut csv_map = Map::new();
 
     {
         let headers = reader.headers().map_err(|e| {
-            format!("'load_data': {} - unable to read CSV header line (line 1) for CSV file", e)
+            Error::message(format!(
+                "'load_data': {} - unable to read CSV header line (line 1) for CSV file",
+                e
+            ))
         })?;
 
-        let headers_array = headers.iter().map(|v| Value::String(v.to_string())).collect();
+        let headers_array: Vec<Value> =
+            headers.iter().map(|v| Value::from(v.to_string())).collect();
 
-        csv_map.insert(String::from("headers"), Value::Array(headers_array));
+        csv_map.insert("headers".into(), Value::from(headers_array));
     }
 
     {
@@ -507,27 +516,24 @@ fn load_csv(csv_data: String) -> Result<Value> {
             let record = match result {
                 Ok(r) => r,
                 Err(e) => {
-                    return Err(TeraError::chain(
-                        String::from("Error encountered when parsing csv records"),
-                        e,
-                    ));
+                    return Err(Error::chain("Error encountered when parsing csv records", e));
                 }
             };
 
             let mut elements_array: Vec<Value> = Vec::new();
 
             for e in record.into_iter() {
-                elements_array.push(Value::String(String::from(e)));
+                elements_array.push(Value::from(String::from(e)));
             }
 
-            records_array.push(Value::Array(elements_array));
+            records_array.push(Value::from(elements_array));
         }
 
-        csv_map.insert(String::from("records"), Value::Array(records_array));
+        csv_map.insert("records".into(), Value::from(records_array));
     }
 
-    let csv_value: Value = Value::Object(csv_map);
-    to_value(csv_value).map_err(|err| err.into())
+    let csv_value: Value = Value::from(csv_map);
+    Ok(csv_value)
 }
 
 /// Parse an XML string and convert it to a Tera Value
@@ -549,7 +555,7 @@ fn load_csv(csv_data: String) -> Result<Value> {
 /// ```
 /// The json value output would be:
 /// ```json
-/// {   
+/// {
 ///     "root": {
 ///         "headers": ["Number", "Title"],
 ///         "records": [
@@ -559,24 +565,24 @@ fn load_csv(csv_data: String) -> Result<Value> {
 ///     }
 /// }
 /// ```
-fn load_xml(xml_data: String) -> Result<Value> {
-    let xml_content: Value = roxmltree_to_serde::xml_string_to_json(xml_data, &Default::default())
-        .map_err(|e| format!("{:?}", e))?;
-    Ok(xml_content)
+fn load_xml(xml_data: String) -> TeraResult<Value> {
+    let xml_content: serde_json::Value =
+        roxmltree_to_serde::xml_string_to_json(xml_data, &Default::default())
+            .map_err(|e| Error::message(format!("{:?}", e)))?;
+    Ok(Value::from_serializable(&xml_content))
 }
 
 #[cfg(test)]
 mod tests {
     use super::{DataSource, LoadData, OutputFormat};
 
-    use std::collections::HashMap;
     use std::path::PathBuf;
 
-    use crate::global_fns::load_data::Method;
+    use super::Method;
     use serde_json::json;
     use std::fs::{copy, create_dir_all};
     use tempfile::tempdir;
-    use tera::{self, Function, to_value};
+    use tera::{Context, Function, Kwargs, State, Value};
 
     // NOTE: HTTP mock paths below are randomly generated to avoid name
     // collisions. Mocks with the same path can sometimes bleed between tests
@@ -591,11 +597,13 @@ mod tests {
     #[test]
     fn fails_illegal_method_parameter() {
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value("https://example.com").unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("method".to_string(), to_value("illegalmethod").unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from("https://example.com")),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("illegalmethod")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_err());
         assert!(
             result
@@ -623,13 +631,15 @@ mod tests {
         let url = format!("{}{}", server.url(), "/kr1zdgbm4y");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(url).unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("method".to_string(), to_value("post").unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("post")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "POST response");
+        assert_eq!(result.unwrap(), Value::from("POST response"));
         _mg.assert();
         _mp.assert();
     }
@@ -654,14 +664,16 @@ mod tests {
         let url = format!("{}{}", server.url(), "/kr1zdgbm4yw");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(url).unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("method".to_string(), to_value("post").unwrap());
-        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("post")),
+            ("content_type", tera::Value::from("text/plain")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "POST response text");
+        assert_eq!(result.unwrap(), Value::from("POST response text"));
         _mjson.assert();
         _mtext.assert();
     }
@@ -686,15 +698,17 @@ mod tests {
         let url = format!("{}{}", server.url(), "/kr1zdgbm4y");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(url).unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("method".to_string(), to_value("post").unwrap());
-        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
-        args.insert("body".to_string(), to_value("this is a match").unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("post")),
+            ("content_type", tera::Value::from("text/plain")),
+            ("body", tera::Value::from("this is a match")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "POST response text");
+        assert_eq!(result.unwrap(), Value::from("POST response text"));
         _mjson.assert();
         _mtext.assert();
     }
@@ -702,9 +716,9 @@ mod tests {
     #[test]
     fn fails_when_missing_file() {
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([("path", tera::Value::from("../../../READMEE.md"))]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("READMEE.md doesn't exist"));
     }
@@ -712,12 +726,14 @@ mod tests {
     #[test]
     fn doesnt_fail_when_missing_file_is_not_required() {
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("../../../READMEE.md").unwrap());
-        args.insert("required".to_string(), to_value(false).unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("../../../READMEE.md")),
+            ("required", tera::Value::from(false)),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), tera::Value::Null);
+        assert_eq!(result.unwrap(), tera::Value::null());
     }
 
     #[test]
@@ -731,37 +747,42 @@ mod tests {
         copy(get_test_file("test.css"), dir.path().join("static").join("test.css")).unwrap();
 
         let static_fn = LoadData::new(dir.path().to_path_buf(), None, PathBuf::new());
-        let mut args = HashMap::new();
         let val = if cfg!(windows) { ".hello {}\r\n" } else { ".hello {}\n" };
 
         // 1. relative path in `static`
-        args.insert("path".to_string(), to_value("static/test.css").unwrap());
-        let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
+        let kwargs = Kwargs::from([("path", tera::Value::from("static/test.css"))]);
+        let ctx = Context::new();
+        let data = static_fn.call(kwargs, &State::new(&ctx)).unwrap().as_str().unwrap().to_string();
         assert_eq!(data, val);
 
         // 2. relative path in `content`
-        args.insert("path".to_string(), to_value("content/test.css").unwrap());
-        let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
+        let kwargs = Kwargs::from([("path", tera::Value::from("content/test.css"))]);
+        let ctx = Context::new();
+        let data = static_fn.call(kwargs, &State::new(&ctx)).unwrap().as_str().unwrap().to_string();
         assert_eq!(data, val);
 
         // 3. absolute path is the same
-        args.insert("path".to_string(), to_value("/content/test.css").unwrap());
-        let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
+        let kwargs = Kwargs::from([("path", tera::Value::from("/content/test.css"))]);
+        let ctx = Context::new();
+        let data = static_fn.call(kwargs, &State::new(&ctx)).unwrap().as_str().unwrap().to_string();
         assert_eq!(data, val);
 
         // 4. path starting with @/
-        args.insert("path".to_string(), to_value("@/test.css").unwrap());
-        let data = static_fn.call(&args).unwrap().as_str().unwrap().to_string();
+        let kwargs = Kwargs::from([("path", tera::Value::from("@/test.css"))]);
+        let ctx = Context::new();
+        let data = static_fn.call(kwargs, &State::new(&ctx)).unwrap().as_str().unwrap().to_string();
         assert_eq!(data, val);
     }
 
     #[test]
     fn cannot_load_outside_base_dir() {
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("../../README.md").unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("../../README.md")),
+            ("format", tera::Value::from("plain")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_err());
         println!("{:?} {:?}", std::env::current_dir(), result);
         assert!(result.unwrap_err().to_string().contains("is not inside the base site directory"));
@@ -862,11 +883,17 @@ mod tests {
 
         let url = format!("{}{}", server.url(), "/zpydpkjj67");
         let static_fn = LoadData::new(PathBuf::new(), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("json").unwrap());
-        let result = static_fn.call(&args).unwrap();
-        assert_eq!(result.get("test").unwrap().get("foo").unwrap(), &to_value("bar").unwrap());
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("json")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
+        let map = result.as_map().unwrap();
+        let test = map.get(&"test".into()).unwrap();
+        let test_map = test.as_map().unwrap();
+        let foo = test_map.get(&"foo".into()).unwrap();
+        assert_eq!(foo, &Value::from("bar"));
     }
 
     #[test]
@@ -881,10 +908,12 @@ mod tests {
 
         let url = format!("{}{}", server.url(), "/aazeow0kog");
         let static_fn = LoadData::new(PathBuf::new(), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("json").unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("json")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err().to_string(),
@@ -904,13 +933,15 @@ mod tests {
 
         let url = format!("{}{}", server.url(), "/aazeow0kog");
         let static_fn = LoadData::new(PathBuf::new(), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("json").unwrap());
-        args.insert("required".to_string(), to_value(false).unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("json")),
+            ("required", tera::Value::from(false)),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), tera::Value::Null);
+        assert_eq!(result.unwrap(), tera::Value::null());
     }
 
     #[test]
@@ -933,55 +964,63 @@ mod tests {
 
         let url = format!("{}{}", server.url(), "/chu8aizahBiy");
         let static_fn = LoadData::new(PathBuf::new(), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("json").unwrap());
-        let result = static_fn.call(&args).unwrap();
-        assert_eq!(result.get("test").unwrap().get("foo").unwrap(), &to_value("bar").unwrap());
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("json")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
+        let map = result.as_map().unwrap();
+        let test = map.get(&"test".into()).unwrap();
+        let test_map = test.as_map().unwrap();
+        let foo = test_map.get(&"foo".into()).unwrap();
+        assert_eq!(foo, &Value::from("bar"));
     }
 
     #[test]
     fn can_load_toml() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("test.toml").unwrap());
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([("path", tera::Value::from("test.toml"))]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         // TOML does not load in order
         assert_eq!(
             result,
-            json!({
+            Value::from_serializable(&json!({
                 "category": {
                     "date": "1979-05-27T07:32:00Z",
                     "lt1": "07:32:00",
                     "key": "value"
                 },
-            })
+            }))
         );
     }
 
     #[test]
     fn unknown_extension_defaults_to_plain() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("test.css").unwrap());
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([("path", tera::Value::from("test.css"))]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
         println!("{:?}", result);
 
         if cfg!(windows) {
             assert_eq!(result.as_str().unwrap().replace("\r\n", "\n"), ".hello {}\n",);
         } else {
-            assert_eq!(result, ".hello {}\n",);
+            assert_eq!(result, Value::from(".hello {}\n"),);
         };
     }
 
     #[test]
     fn can_override_known_extension_with_format() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("test.csv").unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("test.csv")),
+            ("format", tera::Value::from("plain")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         if cfg!(windows) {
             assert_eq!(
@@ -989,41 +1028,43 @@ mod tests {
                 "Number,Title\n1,Gutenberg\n2,Printing",
             );
         } else {
-            assert_eq!(result, "Number,Title\n1,Gutenberg\n2,Printing",);
+            assert_eq!(result, Value::from("Number,Title\n1,Gutenberg\n2,Printing"),);
         };
     }
 
     #[test]
     fn will_use_format_on_unknown_extension() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("test.css").unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("test.css")),
+            ("format", tera::Value::from("plain")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         if cfg!(windows) {
             assert_eq!(result.as_str().unwrap().replace("\r\n", "\n"), ".hello {}\n",);
         } else {
-            assert_eq!(result, ".hello {}\n",);
+            assert_eq!(result, Value::from(".hello {}\n"),);
         };
     }
 
     #[test]
     fn can_load_csv() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("test.csv").unwrap());
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([("path", tera::Value::from("test.csv"))]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         assert_eq!(
             result,
-            json!({
+            Value::from_serializable(&json!({
                 "headers": ["Number", "Title"],
                 "records": [
                                 ["1", "Gutenberg"],
                                 ["2", "Printing"]
                             ],
-            })
+            }))
         )
     }
 
@@ -1031,73 +1072,61 @@ mod tests {
     #[test]
     fn bad_csv_should_result_in_error() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
-        let result = static_fn.call(&args.clone());
+        let kwargs = Kwargs::from([("path", tera::Value::from("uneven_rows.csv"))]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
 
         assert!(result.is_err());
 
-        let error_kind = result.err().unwrap().kind;
-        match error_kind {
-            tera::ErrorKind::Msg(msg) => {
-                if msg != *"Error encountered when parsing csv records" {
-                    panic!("Error message is wrong. Perhaps wrong error is being returned?");
-                }
-            }
-            _ => panic!("Error encountered was not expected CSV error"),
-        }
+        let error_msg = result.unwrap_err().to_string();
+        assert!(error_msg.contains("Error encountered when parsing csv records"));
     }
 
     #[test]
     fn bad_csv_should_result_in_error_even_when_not_required() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("uneven_rows.csv").unwrap());
-        args.insert("required".to_string(), to_value(false).unwrap());
-        let result = static_fn.call(&args.clone());
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("uneven_rows.csv")),
+            ("required", tera::Value::from(false)),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
 
         assert!(result.is_err());
 
-        let error_kind = result.err().unwrap().kind;
-        match error_kind {
-            tera::ErrorKind::Msg(msg) => {
-                if msg != *"Error encountered when parsing csv records" {
-                    panic!("Error message is wrong. Perhaps wrong error is being returned?");
-                }
-            }
-            _ => panic!("Error encountered was not expected CSV error"),
-        }
+        let error_msg = result.unwrap_err().to_string();
+        assert!(error_msg.contains("Error encountered when parsing csv records"));
     }
 
     #[test]
     fn can_load_json() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("test.json").unwrap());
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([("path", tera::Value::from("test.json"))]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         assert_eq!(
             result,
-            json!({
+            Value::from_serializable(&json!({
                 "key": "value",
                 "array": [1, 2, 3],
                 "subpackage": {
                     "subkey": 5
                 }
-            })
+            }))
         )
     }
 
     #[test]
     fn can_load_xml() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("test.xml").unwrap());
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([("path", tera::Value::from("test.xml"))]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         assert_eq!(
             result,
-            json!({
+            Value::from_serializable(&json!({
                 "root": {
                     "key": "value",
                     "array": [1, 2, 3],
@@ -1105,26 +1134,26 @@ mod tests {
                         "subkey": 5
                     }
                 }
-            })
+            }))
         )
     }
 
     #[test]
     fn can_load_yaml() {
         let static_fn = LoadData::new(PathBuf::from("../utils/test-files"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("path".to_string(), to_value("test.yaml").unwrap());
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([("path", tera::Value::from("test.yaml"))]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         assert_eq!(
             result,
-            json!({
+            Value::from_serializable(&json!({
                 "key": "value",
                 "array": [1, 2, 3],
                 "subpackage": {
                     "subkey": 5
                 }
-            })
+            }))
         )
     }
 
@@ -1140,22 +1169,26 @@ mod tests {
         let url = format!("{}{}", server.url(), "/kr1zdgbm4y3");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("method".to_string(), to_value("post").unwrap());
-        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
-        args.insert("body".to_string(), to_value("this is a match").unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("post")),
+            ("content_type", tera::Value::from("text/plain")),
+            ("body", tera::Value::from("this is a match")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
 
-        let mut args2 = HashMap::new();
-        args2.insert("url".to_string(), to_value(&url).unwrap());
-        args2.insert("format".to_string(), to_value("plain").unwrap());
-        args2.insert("method".to_string(), to_value("post").unwrap());
-        args2.insert("content_type".to_string(), to_value("text/plain").unwrap());
-        args2.insert("body".to_string(), to_value("this is a match2").unwrap());
-        let result2 = static_fn.call(&args2);
+        let kwargs2 = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("post")),
+            ("content_type", tera::Value::from("text/plain")),
+            ("body", tera::Value::from("this is a match2")),
+        ]);
+        let ctx = Context::new();
+        let result2 = static_fn.call(kwargs2, &State::new(&ctx));
         assert!(result2.is_ok());
 
         _mjson.assert();
@@ -1174,22 +1207,26 @@ mod tests {
         let url = format!("{}{}", server.url(), "/kr1zdgbm4y2");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("method".to_string(), to_value("post").unwrap());
-        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
-        args.insert("body".to_string(), to_value("this is a match").unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("post")),
+            ("content_type", tera::Value::from("text/plain")),
+            ("body", tera::Value::from("this is a match")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
 
-        let mut args2 = HashMap::new();
-        args2.insert("url".to_string(), to_value(&url).unwrap());
-        args2.insert("format".to_string(), to_value("plain").unwrap());
-        args2.insert("method".to_string(), to_value("post").unwrap());
-        args2.insert("content_type".to_string(), to_value("text/plain").unwrap());
-        args2.insert("body".to_string(), to_value("this is a match").unwrap());
-        let result2 = static_fn.call(&args2);
+        let kwargs2 = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("post")),
+            ("content_type", tera::Value::from("text/plain")),
+            ("body", tera::Value::from("this is a match")),
+        ]);
+        let ctx = Context::new();
+        let result2 = static_fn.call(kwargs2, &State::new(&ctx));
         assert!(result2.is_ok());
 
         _mjson.assert();
@@ -1209,14 +1246,16 @@ mod tests {
         let url = format!("{}{}", server.url(), "/kr1zdgbm4y4");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("method".to_string(), to_value("post").unwrap());
-        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
-        args.insert("body".to_string(), to_value("this is a match").unwrap());
-        args.insert("headers".to_string(), to_value(["x-custom-header=some-values"]).unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("post")),
+            ("content_type", tera::Value::from("text/plain")),
+            ("body", tera::Value::from("this is a match")),
+            ("headers", tera::Value::from(vec!["x-custom-header=some-values"])),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
 
         _mjson.assert();
@@ -1240,23 +1279,24 @@ mod tests {
         let url = format!("{}{}", server.url(), "/kr1zdgbm4y5");
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("method".to_string(), to_value("post").unwrap());
-        args.insert("content_type".to_string(), to_value("text/plain").unwrap());
-        args.insert("body".to_string(), to_value("this is a match").unwrap());
-        args.insert(
-            "headers".to_string(),
-            to_value([
-                "x-custom-header=some-values",
-                "x-other-header=some-other-values",
-                "accept=application/json",
-                "authorization=Bearer 123",
-            ])
-            .unwrap(),
-        );
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("method", tera::Value::from("post")),
+            ("content_type", tera::Value::from("text/plain")),
+            ("body", tera::Value::from("this is a match")),
+            (
+                "headers",
+                tera::Value::from(vec![
+                    "x-custom-header=some-values",
+                    "x-other-header=some-other-values",
+                    "accept=application/json",
+                    "authorization=Bearer 123",
+                ]),
+            ),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
 
         _mjson.assert();
@@ -1268,19 +1308,23 @@ mod tests {
         let _mjson = server.mock("GET", "/kr1zdgbm4y6").with_status(204).expect(0).create();
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
         let url = format!("{}{}", server.url(), "/kr1zdgbm4y6");
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("headers".to_string(), to_value(["bad-entry::bad-header"]).unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("headers", tera::Value::from(vec!["bad-entry::bad-header"])),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_err());
 
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
-        args.insert("url".to_string(), to_value(&url).unwrap());
-        args.insert("format".to_string(), to_value("plain").unwrap());
-        args.insert("headers".to_string(), to_value(["\n=\r"]).unwrap());
-        let result = static_fn.call(&args);
+        let kwargs = Kwargs::from([
+            ("url", tera::Value::from(url.as_str())),
+            ("format", tera::Value::from("plain")),
+            ("headers", tera::Value::from(vec!["\n=\r"])),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_err());
 
         _mjson.assert();
@@ -1289,19 +1333,17 @@ mod tests {
     #[test]
     fn can_load_plain_literal() {
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
         let plain_str = "abc 123";
-        args.insert("literal".to_string(), to_value(plain_str).unwrap());
+        let kwargs = Kwargs::from([("literal", tera::Value::from(plain_str))]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
-        let result = static_fn.call(&args.clone()).unwrap();
-
-        assert_eq!(result, plain_str);
+        assert_eq!(result, Value::from(plain_str));
     }
 
     #[test]
     fn can_load_json_literal() {
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
         let json_str = r#"{
                 "key": "value",
                 "array": [1, 2, 3],
@@ -1309,72 +1351,76 @@ mod tests {
                     "subkey": 5
                 }
             }"#;
-        args.insert("literal".to_string(), to_value(json_str).unwrap());
-        args.insert("format".to_string(), to_value("json").unwrap());
-
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([
+            ("literal", tera::Value::from(json_str)),
+            ("format", tera::Value::from("json")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         assert_eq!(
             result,
-            json!({
+            Value::from_serializable(&json!({
                 "key": "value",
                 "array": [1, 2, 3],
                 "subpackage": {
                     "subkey": 5
                 }
-            })
+            }))
         );
     }
 
     #[test]
     fn can_load_toml_literal() {
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
         let toml_str = r#"
         [category]
         key = "value"
         date = 1979-05-27T07:32:00Z
         lt1 = 07:32:00
         "#;
-        args.insert("literal".to_string(), to_value(toml_str).unwrap());
-        args.insert("format".to_string(), to_value("toml").unwrap());
-
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([
+            ("literal", tera::Value::from(toml_str)),
+            ("format", tera::Value::from("toml")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         // TOML does not load in order
         assert_eq!(
             result,
-            json!({
+            Value::from_serializable(&json!({
                 "category": {
                     "date": "1979-05-27T07:32:00Z",
                     "lt1": "07:32:00",
                     "key": "value"
                 },
-            })
+            }))
         );
     }
 
     #[test]
     fn can_load_csv_literal() {
         let static_fn = LoadData::new(PathBuf::from("../utils"), None, PathBuf::new());
-        let mut args = HashMap::new();
         let csv_str = r#"Number,Title
 1,Gutenberg
 2,Printing"#;
-        args.insert("literal".to_string(), to_value(csv_str).unwrap());
-        args.insert("format".to_string(), to_value("csv").unwrap());
-
-        let result = static_fn.call(&args.clone()).unwrap();
+        let kwargs = Kwargs::from([
+            ("literal", tera::Value::from(csv_str)),
+            ("format", tera::Value::from("csv")),
+        ]);
+        let ctx = Context::new();
+        let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
 
         assert_eq!(
             result,
-            json!({
+            Value::from_serializable(&json!({
                 "headers": ["Number", "Title"],
                 "records": [
                     ["1", "Gutenberg"],
                     ["2", "Printing"]
                 ],
-            })
+            }))
         )
     }
 }

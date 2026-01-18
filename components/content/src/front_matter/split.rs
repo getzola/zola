@@ -1,20 +1,20 @@
 use std::path::Path;
 
 use errors::{Context, Result, bail};
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 
 use crate::front_matter::page::PageFrontMatter;
 use crate::front_matter::section::SectionFrontMatter;
 
-static TOML_RE: Lazy<Regex> = Lazy::new(|| {
+static TOML_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
         r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))",
     )
     .unwrap()
 });
 
-static YAML_RE: Lazy<Regex> = Lazy::new(|| {
+static YAML_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))")
         .unwrap()
 });

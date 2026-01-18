@@ -6,9 +6,9 @@ use errors::bail;
 use gh_emoji::Replacer as EmojiReplacer;
 use giallo::{HtmlRenderer, ParsedFence, parse_markdown_fence};
 use log;
-use once_cell::sync::Lazy;
 use pulldown_cmark as cmark;
 use pulldown_cmark_escape as cmark_escape;
+use std::sync::LazyLock;
 
 use crate::context::RenderContext;
 use errors::{Context, Error, Result};
@@ -26,10 +26,10 @@ use self::cmark::{Event, LinkType, Options, Parser, Tag, TagEnd};
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 const SUMMARY_CUTOFF_TEMPLATE: &str = "summary-cutoff.html";
 const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
-static EMOJI_REPLACER: Lazy<EmojiReplacer> = Lazy::new(EmojiReplacer::new);
+static EMOJI_REPLACER: LazyLock<EmojiReplacer> = LazyLock::new(EmojiReplacer::new);
 
 /// Set as a regex to help match some extra cases. This way, spaces and case don't matter.
-static MORE_DIVIDER_RE: Lazy<Regex> = Lazy::new(|| {
+static MORE_DIVIDER_RE: LazyLock<Regex> = LazyLock::new(|| {
     RegexBuilder::new(r#"<!--\s*more\s*-->"#)
         .case_insensitive(true)
         .dot_matches_new_line(true)
@@ -37,7 +37,7 @@ static MORE_DIVIDER_RE: Lazy<Regex> = Lazy::new(|| {
         .unwrap()
 });
 
-static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
+static FOOTNOTES_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"<sup class="footnote-reference"( id=\s*.*?)?><a href=\s*.*?>\s*.*?</a></sup>"#)
         .unwrap()
 });
@@ -47,11 +47,13 @@ static FOOTNOTES_RE: Lazy<Regex> = Lazy::new(|| {
 /// like a scheme, i.e., a case-insensitive identifier followed by a colon.
 ///
 /// [uri-schemes]: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
-static STARTS_WITH_SCHEMA_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[0-9A-Za-z\-]+:").unwrap());
+static STARTS_WITH_SCHEMA_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^[0-9A-Za-z\-]+:").unwrap());
 
 /// Matches a <a>..</a> tag, getting the opening tag in a capture group.
 /// Used only with AnchorInsert::Heading to grab it from the template
-static A_HTML_TAG: Lazy<Regex> = Lazy::new(|| Regex::new(r"(<\s*a[^>]*>).*?<\s*/\s*a>").unwrap());
+static A_HTML_TAG: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(<\s*a[^>]*>).*?<\s*/\s*a>").unwrap());
 
 /// Efficiently insert multiple element in their specified index.
 /// The elements should sorted in ascending order by their index.
@@ -671,13 +673,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 c.insert("level", &heading_ref.level);
                 c.insert("lang", &context.lang);
 
-                let anchor_link = utils::templates::render_template(
-                    ANCHOR_LINK_TEMPLATE,
-                    &context.tera,
-                    c,
-                    &None,
-                )
-                .context("Failed to render anchor link template")?;
+                let anchor_link =
+                    utils::templates::render_template(ANCHOR_LINK_TEMPLATE, &context.tera, c)
+                        .context("Failed to render anchor link template")?;
                 if context.insert_anchor != InsertAnchor::Heading {
                     anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
                 } else if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
@@ -746,13 +744,9 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 let mut c = tera::Context::new();
                 c.insert("summary", &summary_html);
                 c.insert("lang", &context.lang);
-                let summary_cutoff = utils::templates::render_template(
-                    SUMMARY_CUTOFF_TEMPLATE,
-                    &context.tera,
-                    c,
-                    &None,
-                )
-                .context("Failed to render summary cutoff template")?;
+                let summary_cutoff =
+                    utils::templates::render_template(SUMMARY_CUTOFF_TEMPLATE, &context.tera, c)
+                        .context("Failed to render summary cutoff template")?;
                 summary_html.push_str(&summary_cutoff);
             }
 
@@ -784,6 +778,7 @@ mod tests {
     use super::*;
     use config::Config;
     use insta::assert_snapshot;
+    use std::borrow::Cow;
     use templates::ZOLA_TERA;
 
     #[test]
@@ -841,7 +836,7 @@ mod tests {
             ["<!-- more -->", "<!--more-->", "<!-- MORE -->", "<!--MORE-->", "<!--\t MoRe \t-->"];
         let config = Config::default();
         let mut context = RenderContext::from_config(&config);
-        context.tera.to_mut().extend(&ZOLA_TERA).unwrap();
+        context.tera = Cow::Owned(ZOLA_TERA.clone());
         for more in mores {
             let content = format!("{top}\n\n{more}\n\n{bottom}");
             let rendered = markdown_to_html(&content, &context).unwrap();

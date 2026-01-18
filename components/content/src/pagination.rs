@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 use errors::{Context as ErrorContext, Result};
 use tera::{Context, Tera, Value};
-use utils::templates::{check_template_fallbacks, render_template};
+use utils::templates::render_template;
 
 use crate::Section;
 use crate::library::Library;
@@ -93,13 +93,15 @@ impl<'a> Paginator<'a> {
         item: &'a TaxonomyTerm,
         library: &'a Library,
         tera: &Tera,
-        theme: &Option<String>,
     ) -> Paginator<'a> {
         let paginate_by = taxonomy.kind.paginate_by.unwrap();
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/single.html", taxonomy.kind.name);
-        let template = check_template_fallbacks(&specific_template, tera, theme)
-            .unwrap_or("taxonomy_single.html");
+        let template = if tera.get_template(&specific_template).is_some() {
+            specific_template
+        } else {
+            "taxonomy_single.html".to_string()
+        };
         let mut paginator = Paginator {
             all_pages: Cow::Borrowed(&item.pages),
             pagers: Vec::with_capacity(item.pages.len() / paginate_by),
@@ -246,7 +248,7 @@ impl<'a> Paginator<'a> {
         context.insert("current_path", &pager.path);
         context.insert("paginator", &self.build_paginator_context(pager));
 
-        render_template(&self.template, tera, context, &config.theme)
+        render_template(&self.template, tera, context)
             .with_context(|| format!("Failed to render pager {}", pager.index))
     }
 }
@@ -407,7 +409,7 @@ mod tests {
             permalink: "https://vincent.is/some-tags/".to_string(),
             items: vec![taxonomy_item.clone()],
         };
-        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library, &tera, &None);
+        let paginator = Paginator::from_taxonomy(&taxonomy, &taxonomy_item, &library, &tera);
         assert_eq!(paginator.pagers.len(), 2);
 
         assert_eq!(paginator.pagers[0].index, 1);

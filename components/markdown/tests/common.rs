@@ -2,8 +2,6 @@
 
 use std::collections::HashMap;
 
-use tera::Tera;
-
 use config::Config;
 use errors::Result;
 use markdown::{RenderContext, Rendered, render_content};
@@ -15,8 +13,8 @@ fn configurable_render(
     config: Config,
     insert_anchor: InsertAnchor,
 ) -> Result<Rendered> {
-    let mut tera = Tera::default();
-    tera.extend(&ZOLA_TERA).unwrap();
+    let mut tera = ZOLA_TERA.clone();
+    tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
 
     let mut permalinks = HashMap::new();
     permalinks.insert("pages/about.md".to_owned(), "https://getzola.org/about/".to_owned());

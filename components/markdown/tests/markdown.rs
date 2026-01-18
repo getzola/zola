@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use tera::Tera;
-
 use config::Config;
 use markdown::{RenderContext, render_content};
 use templates::ZOLA_TERA;
@@ -108,8 +106,7 @@ fn can_insert_anchors() {
 
 #[test]
 fn can_customise_anchor_template() {
-    let mut tera = Tera::default();
-    tera.extend(&ZOLA_TERA).unwrap();
+    let mut tera = ZOLA_TERA.clone();
     tera.add_raw_template("anchor-link.html", " (in {{ lang }})").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
@@ -127,8 +124,7 @@ fn can_customise_anchor_template() {
 
 #[test]
 fn can_customise_summary_template() {
-    let mut tera = Tera::default();
-    tera.extend(&ZOLA_TERA).unwrap();
+    let mut tera = ZOLA_TERA.clone();
     tera.add_raw_template("summary-cutoff.html", " (in {{ lang }})").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();

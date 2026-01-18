@@ -6,6 +6,5 @@ edition = "2024"
 [dependencies]
 anstream = { workspace = true }
 anstyle = { workspace = true }
-once_cell = { workspace = true }
 
 errors = { workspace = true }

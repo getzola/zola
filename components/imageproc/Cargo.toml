@@ -20,4 +20,3 @@ utils = { workspace = true }
 config = { workspace = true }
 
 [dev-dependencies]
-once_cell = { workspace = true }

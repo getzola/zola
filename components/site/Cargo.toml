@@ -12,7 +12,6 @@ globset = { workspace = true }
 grass = { workspace = true }
 log = { workspace = true }
 minify-html = { workspace = true }
-once_cell = { workspace = true }
 rayon = { workspace = true }
 relative-path = { workspace = true }
 tera = { workspace = true }

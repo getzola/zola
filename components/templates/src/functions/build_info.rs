@@ -8,27 +8,23 @@ pub struct Now {
 }
 
 impl Now {
-    pub fn new(zoned: Zoned) -> Self {
-        Self { zoned }
+    pub fn new() -> Self {
+        Self { zoned: Zoned::now() }
     }
 }
 
 impl Function<TeraResult<Value>> for Now {
-    fn call(&self, kwargs: Kwargs, _state: &State) -> TeraResult<Value> {
+    fn call(&self, kwargs: Kwargs, _: &State) -> TeraResult<Value> {
         let use_utc: bool = kwargs.get("utc")?.unwrap_or(false);
         let timestamp: bool = kwargs.get("timestamp")?.unwrap_or(false);
 
-        let datetime = if use_utc {
-            self.zoned.clone().with_time_zone(TimeZone::UTC)
+        let ts = if use_utc {
+            self.zoned.with_time_zone(TimeZone::UTC).timestamp()
         } else {
-            self.zoned.clone()
+            self.zoned.timestamp()
         };
 
-        if timestamp {
-            Ok(Value::from(datetime.timestamp().as_second()))
-        } else {
-            Ok(Value::from(datetime.timestamp().to_string()))
-        }
+        if timestamp { Ok(Value::from(ts.as_second())) } else { Ok(Value::from(ts.to_string())) }
     }
 }
 
@@ -40,7 +36,7 @@ mod tests {
 
     #[test]
     fn now_default() {
-        let now_fn = Now::new(Zoned::now());
+        let now_fn = Now::new();
         let kwargs = Kwargs::default();
         let ctx = Context::new();
 
@@ -52,7 +48,7 @@ mod tests {
 
     #[test]
     fn now_datetime_utc() {
-        let now_fn = Now::new(Zoned::now());
+        let now_fn = Now::new();
 
         let mut map = Map::new();
         map.insert("utc".into(), Value::from(true));
@@ -68,7 +64,7 @@ mod tests {
 
     #[test]
     fn now_timestamp() {
-        let now_fn = Now::new(Zoned::now());
+        let now_fn = Now::new();
 
         let mut map = Map::new();
         map.insert("timestamp".into(), Value::from(true));

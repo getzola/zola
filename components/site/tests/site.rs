@@ -12,6 +12,7 @@ use content::Page;
 use site::Site;
 use site::sitemap;
 use tera::Value;
+use tera::value::Key;
 use utils::types::InsertAnchor;
 
 #[test]
@@ -93,7 +94,13 @@ fn can_parse_site() {
     // Testing extra variables in sections & sitemaps
     // Regression test for #https://github.com/getzola/zola/issues/842
     assert_eq!(
-        prog_section.meta.extra.get("we_have_extra").and_then(Value::as_str),
+        prog_section
+            .meta
+            .extra
+            .as_map()
+            .unwrap()
+            .get(&Key::Str("we_have_extra"))
+            .and_then(Value::as_str),
         Some("variables")
     );
     let sitemap_entries = sitemap::find_entries(&site.library, &site.taxonomies[..], &site.config);
@@ -101,7 +108,7 @@ fn can_parse_site() {
         .iter()
         .find(|e| e.permalink.ends_with("tutorials/programming/"))
         .expect("expected to find programming section in sitemap");
-    assert_eq!(Some(&prog_section.meta.extra), sitemap_entry.extra);
+    assert_eq!(Some(prog_section.meta.extra.clone()), sitemap_entry.extra);
 }
 
 #[test]
