@@ -3,14 +3,14 @@
 title = "Portio-Zola"
 description = "Portio-Zola is a minimal, well-formatted and extremely flexible theme"
 template = "theme.html"
-date = 2026-01-09T10:11:15+01:00
+date = 2026-01-17T14:28:54+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-09T10:11:15+01:00
-updated = 2026-01-09T10:11:15+01:00
+created = 2026-01-17T14:28:54+01:00
+updated = 2026-01-17T14:28:54+01:00
 repository = "https://github.com/quentin-rodriguez/portio-zola.git"
 homepage = "https://github.com/quentin-rodriguez/portio-zola.git"
 minimum_version = "0.21.0"
@@ -26,6 +26,7 @@ homepage = "https://github.com/quentin-rodriguez"
 
 <div align="center">
 
+[![Zola](https://img.shields.io/badge/Zola-0.22.0-red?style=for-the-badge)](https://www.getzola.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Live demo](https://img.shields.io/badge/-Live%20demo-blue?style=for-the-badge)](https://quentin-rodriguez.github.io/portio-zola)
 
@@ -38,6 +39,17 @@ homepage = "https://github.com/quentin-rodriguez"
 Portio-Zola is a minimal, well-formatted theme that is extremely flexible and can be changed in whole or in part as required.
 
 This theme is based on [Portio-Hugo](https://github.com/StaticMania/portio-hugo.git), with all the features mentioned below.
+
+## 📃 Features
+
+- Responsive reedy.
+- Powered by Bootstrap 5.
+- Blog support.
+- Multilingual support.
+- [Formspree.io](https://formspree.io/) support.
+- Portfolio support.
+- Google Analytics.
+- Easy customization.
 
 ## 💻 Installation
 
@@ -67,7 +79,13 @@ git clone https://github.com/quentin-rodriguez/portio-zola.git themes/portio-zol
 cp themes/portio-zola/config.toml .
 ```
 
-5. Copy the theme `content` folder directly into the project
+5. Add the `theme` to the configuration file
+
+```toml
+theme = "portio-zola"
+```
+
+6. Copy the theme `content` folder directly into the project
 
 ```sh
 cp -r themes/portio-zola/content/ content/

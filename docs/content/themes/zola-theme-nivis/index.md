@@ -3,14 +3,14 @@
 title = "nivis"
 description = "A clean zola theme for bloggers"
 template = "theme.html"
-date = 2026-01-09T23:47:34+08:00
+date = 2026-01-18T01:53:17+08:00
 
 [taxonomies]
-theme-tags = ['clean']
+theme-tags = ['Clean', 'Blog', 'Responsive']
 
 [extra]
-created = 2026-01-09T23:47:34+08:00
-updated = 2026-01-09T23:47:34+08:00
+created = 2026-01-18T01:53:17+08:00
+updated = 2026-01-18T01:53:17+08:00
 repository = "https://github.com/Resorie/zola-theme-nivis.git"
 homepage = "https://github.com/Resorie/zola-theme-nivis"
 minimum_version = "0.21.0"
