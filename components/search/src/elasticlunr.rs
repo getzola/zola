@@ -1,11 +1,10 @@
 use config::{Config, Search};
-use content::{Library, Section};
-use elasticlunr::{Index, IndexBuilder, lang};
+use content::Library;
+use elasticlunr::{IndexBuilder, lang};
 use errors::{Result, bail};
-use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
 
-use crate::clean_and_truncate_body;
+use crate::{IndexItem, clean_and_truncate_body, collect_index_items};
 
 pub const ELASTICLUNR_JS: &str = include_str!("elasticlunr.min.js");
 
@@ -40,37 +39,30 @@ fn path_tokenizer(text: &str) -> Vec<String> {
         .collect()
 }
 
-fn fill_index(
-    search_config: &Search,
-    title: &Option<String>,
-    description: &Option<String>,
-    datetime: &Option<OffsetDateTime>,
-    path: &str,
-    content: &str,
-) -> Vec<String> {
+fn fill_index(search_config: &Search, item: IndexItem) -> Vec<String> {
     let mut row = vec![];
 
     if search_config.include_title {
-        row.push(title.clone().unwrap_or_default());
+        row.push(item.title.clone().unwrap_or_default());
     }
 
     if search_config.include_description {
-        row.push(description.clone().unwrap_or_default());
+        row.push(item.description.clone().unwrap_or_default());
     }
 
     if search_config.include_date
-        && let Some(date) = datetime
+        && let Some(date) = item.datetime
         && let Ok(d) = date.format(&Rfc3339)
     {
         row.push(d);
     }
 
     if search_config.include_path {
-        row.push(path.to_string());
+        row.push(item.path.to_string());
     }
 
     if search_config.include_content {
-        row.push(clean_and_truncate_body(search_config.truncate_content_length, content));
+        row.push(clean_and_truncate_body(search_config.truncate_content_length, item.content));
     }
     row
 }
@@ -91,58 +83,13 @@ pub fn build_index(lang: &str, library: &Library, config: &Config) -> Result<Str
     index = build_fields(&language_options.search, index);
     let mut index = index.build();
 
-    for (_, section) in &library.sections {
-        if section.lang == lang {
-            add_section_to_index(&mut index, section, library, &language_options.search);
-        }
+    let items = collect_index_items(lang, library);
+
+    for item in items {
+        index.add_doc(item.url, fill_index(&config.search, item));
     }
 
     Ok(index.to_json())
-}
-
-fn add_section_to_index(
-    index: &mut Index,
-    section: &Section,
-    library: &Library,
-    search_config: &Search,
-) {
-    if !section.meta.in_search_index {
-        return;
-    }
-
-    // Don't index redirecting sections
-    if section.meta.redirect_to.is_none() {
-        index.add_doc(
-            &section.permalink,
-            fill_index(
-                search_config,
-                &section.meta.title,
-                &section.meta.description,
-                &None,
-                &section.path,
-                &section.content,
-            ),
-        );
-    }
-
-    for key in &section.pages {
-        let page = &library.pages[key];
-        if !page.meta.in_search_index {
-            continue;
-        }
-
-        index.add_doc(
-            &page.permalink,
-            fill_index(
-                search_config,
-                &page.meta.title,
-                &page.meta.description,
-                &page.meta.datetime,
-                &page.path,
-                &page.content,
-            ),
-        );
-    }
 }
 
 #[cfg(test)]
@@ -150,6 +97,7 @@ mod tests {
     use super::*;
     use config::Config;
     use elasticlunr::IndexBuilder;
+    use time::OffsetDateTime;
 
     #[test]
     fn can_build_fields() {
@@ -179,7 +127,16 @@ mod tests {
         let path = "/a/page/".to_string();
         let content = "Some content".to_string();
 
-        let res = fill_index(&config.search, &title, &description, &None, &path, &content);
+        let item = crate::IndexItem {
+            url: "http://example.com",
+            title: &title,
+            description: &description,
+            datetime: &None,
+            path: &path,
+            content: &content,
+        };
+
+        let res = fill_index(&config.search, item);
         assert_eq!(res.len(), 2);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], content);
@@ -194,7 +151,16 @@ mod tests {
         let path = "/a/page/".to_string();
         let content = "Some content".to_string();
 
-        let res = fill_index(&config.search, &title, &description, &None, &path, &content);
+        let item = crate::IndexItem {
+            url: "http://example.com",
+            title: &title,
+            description: &description,
+            datetime: &None,
+            path: &path,
+            content: &content,
+        };
+
+        let res = fill_index(&config.search, item);
         assert_eq!(res.len(), 3);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], description.unwrap());
@@ -210,7 +176,16 @@ mod tests {
         let path = "/a/page/".to_string();
         let content = "Some content".to_string();
 
-        let res = fill_index(&config.search, &title, &description, &None, &path, &content);
+        let item = crate::IndexItem {
+            url: "http://example.com",
+            title: &title,
+            description: &description,
+            datetime: &None,
+            path: &path,
+            content: &content,
+        };
+
+        let res = fill_index(&config.search, item);
         assert_eq!(res.len(), 2);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], content[..5]);
@@ -226,7 +201,16 @@ mod tests {
         let content = "Some content".to_string();
         let datetime = Some(OffsetDateTime::parse("2023-01-31T00:00:00Z", &Rfc3339).unwrap());
 
-        let res = fill_index(&config.search, &title, &description, &datetime, &path, &content);
+        let item = crate::IndexItem {
+            url: "http://example.com",
+            title: &title,
+            description: &description,
+            datetime: &datetime,
+            path: &path,
+            content: &content,
+        };
+
+        let res = fill_index(&config.search, item);
         assert_eq!(res.len(), 3);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], "2023-01-31T00:00:00Z");
