@@ -25,7 +25,7 @@ pub enum HighlightConfig {
     Dual { light_theme: String, dark_theme: String },
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Highlighting {
     /// Emit an error for missing highlight languages. Defaults to false
     #[serde(default)]
