@@ -33,3 +33,4 @@ content = { workspace = true }
 tempfile = "3"
 path-slash = "0.2"
 ahash = { workspace = true }
+regex = { workspace = true }
