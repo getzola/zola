@@ -3,14 +3,14 @@
 title = "Zolarwind"
 description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
 template = "theme.html"
-date = 2026-01-11T18:07:42+01:00
+date = 2026-01-18T17:03:11+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-11T18:07:42+01:00
-updated = 2026-01-11T18:07:42+01:00
+created = 2026-01-18T17:03:11+01:00
+updated = 2026-01-18T17:03:11+01:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
 minimum_version = "0.22.0"
@@ -26,11 +26,11 @@ homepage = "https://weitzel.dev"
 
 # The Zolarwind Theme for Zola
 
-Welcome to Zolarwind, the simple Zola blog theme with Tailwind CSS and KaTex support.
+Welcome to Zolarwind, the simple Zola blog theme with Tailwind CSS and KaTeX support.
 This theme is for Zola users aiming to have a nice blog design powered by Tailwind CSS.
 It seamlessly integrates with [Mermaid](https://mermaid.js.org), enabling the creation of various diagrams
 directly within your blog posts using a Markdown-inspired syntax.
-Additionally, the theme smoothly integrates math formulas using [KaTex](https://katex.org).
+Additionally, the theme smoothly integrates math formulas using [KaTeX](https://katex.org).
 Most importantly, while the theme is designed to be easily localizable,
 you can choose your preferred language setting for a consistent blog experience.
 
@@ -42,12 +42,14 @@ you can choose your preferred language setting for a consistent blog experience.
 
 - **Mermaid Integration**: Create diverse diagrams using simple text.
 
-- **KaTex Integration**: Integrate and display math formulas seamlessly in your blog posts.
+- **KaTeX Integration**: Integrate and display math formulas seamlessly in your blog posts.
 
 - **Localization Support**: All theme-specific strings are available in multiple languages; choose the one that's right for you.
   If your language isn't supported yet, just create the resource file with your translations.
 
 - **Dark/Light Mode**: The theme includes a dark/light mode toggle and persists the user preference.
+
+- **Client-side Search**: Built-in search page powered by Zola's index and MiniSearch.
 
 ---
 
@@ -133,7 +135,7 @@ Here's a breakdown of the configuration settings tailored for this theme:
   If you move the theme to the `themes/zolarwind` directory, use `zolarwind` for this entry.
 
 - **build_search_index**: If set to `true`, a search index will be built from the pages and section content for the `default_language`.
-  In this configuration and for this theme, it's disabled (`false`).
+  In this configuration and for this theme, it's enabled (`true`).
 
 - **generate_feed**: Determines if an Atom feed (file `atom.xml`) is automatically generated.
   It's set to `true`, meaning a feed will be generated.
@@ -200,6 +202,34 @@ The `[extra]` section is where you can place any custom variables you want to be
 
 - **displaymode.sun** and **displaymode.moon**: Optional.
   Inline SVG icons used by the dark/light mode toggle.
+  Define both to enable the toggle; if either is missing, the toggle is not rendered.
+
+---
+
+## Subpath base_url support
+
+This theme is safe to run under a subpath (for example `https://example.org/blog/`), as long as all internal links and
+assets are resolved with Zola's `get_url` helper. That is why the templates use `get_url` for CSS, JS, images, and menu
+links. Keep internal links in `config.toml` root-relative (for example `"/pages/about/"`), so Zola can prefix the
+`base_url` subpath reliably.
+
+If you add or adjust templates, avoid hardcoded `href="/..."` or `src="/..."`. Always prefer:
+
+```tera
+{{/* get_url(path="/img/example.jpg") */}}
+```
+
+### Local testing with a subpath
+
+`zola serve` always mounts at `/`, so it does not exercise subpath behavior. To test subpaths locally, build into a
+subdirectory and serve the output from there:
+
+```bash
+zola build --base-url http://127.0.0.1:1111/demo/zolarwind -o public/demo/zolarwind
+python -m http.server --directory public 1111
+```
+
+Then open `http://127.0.0.1:1111/demo/zolarwind/` in your browser.
 
 ---
 
@@ -228,6 +258,13 @@ If you do not provide an image under `extra.image`, a default image is used inst
 - **extra.math**: either `false` (default) or `true`.
   If set to `true`, the post will be rendered with KaTex support for displaying math formulas.
   If the entry is omitted or set to `false`, the post will not have KaTex support.
+  To avoid Markdown conflicts (for example `*` italics or backslash escaping), use the safe KaTeX shortcode.
+  Omit `$` and `$$` delimiters inside the shortcode body:
+
+  ```text
+  {%/* katex() */%} a^2 + b^2 {%/* end */%}
+  {%/* katex(inline=true) */%} 1*2+3*4 {%/* end */%}
+  ```
 
 - **extra.diagram**: either `false` (default) or `true`.
   Controls loading of the necessary JavaScript to render the Mermaid diagram.
@@ -276,6 +313,9 @@ To localize your blog with this theme:
 3. The content that you provide should match this language.
    But that is your responsibility.
    The theme will not translate your content.
+
+This theme uses `default_language` as a build-time switch for a single locale per build.
+It does not target Zola's multi-language output in a single build.
 
 If you need to define your own date format, look [here](https://docs.rs/chrono/latest/chrono/format/strftime/index.html) for supported specifiers.
 
@@ -398,6 +438,41 @@ That way, your local web browser will automatically reload the page with the upd
 
 ---
 
+## Search
+
+This theme ships with a local, client-side search page powered by Zola's search index (Elasticlunr output) and MiniSearch.
+
+1. Enable the search index in `config.toml`:
+   ```toml
+   build_search_index = true
+   ```
+2. Create a page that uses the search template (for example `content/pages/search.md`). If your `content/pages/_index.md`
+   uses `sort_by = "date"`, the page needs a `date` (or `weight`) to avoid being ignored. You can optionally set
+   `extra.results_per_page` to control pagination and `extra.pagination_window` to control the number of pages shown on each side of the current page.
+   ```toml
+   +++
+   date = 2026-01-14
+   title = "Search"
+   template = "search.html"
+   [extra]
+   results_per_page = 5
+   pagination_window = 2
+   +++
+   ```
+3. A search icon appears in the header and links to `/pages/search/`.
+
+When using this theme in another Zola site, add `content/pages/search.md` in that site repository. Theme `content/` is not loaded by Zola.
+
+The search index is built for the current `default_language` only.
+
+---
+
+## Privacy
+
+This theme sets no cookies and does not load resources from third-party sites. The dark/light mode preference is stored in `localStorage` only after a user explicitly toggles the theme.
+
+---
+
 ## Remarks
 
 ### Typography for Markdown
@@ -456,5 +531,14 @@ Use the file `en.toml` as a template for your own translations.
 
 This theme is under the MIT License.
 For details, please refer to the LICENSE file.
+
+### Third-Party Notices
+
+- Heroicons (MIT License): https://heroicons.com
+- KaTeX (MIT License): https://katex.org
+- Mermaid (MIT License): https://mermaid.js.org
+- MiniSearch (MIT License): https://lucaong.github.io/minisearch/
+- mhchem (Apache 2.0 License): https://mhchem.github.io/MathJax-mhchem/
+- Unsplash images (Unsplash License): https://unsplash.com/license
 
         
