@@ -149,8 +149,6 @@ If selecting a specific language for the page, you can pass `lang` with the lang
 {# If "fr" is the default language, this is equivalent to #}
 {% set page = get_page(path="blog/page2.md") %}
 
-{# If "fr" is not the default language, this is equivalent to #}
-{% set page = get_page(path="blog/page2.fr.md") %}
 ```
 
 ### `get_section`
@@ -173,9 +171,6 @@ If selecting a specific language for the section, you can pass `lang` with the l
 
 {# If "fr" is the default language, this is equivalent to #}
 {% set section = get_section(path="blog/_index.md") %}
-
-{# If "fr" is not the default language, this is equivalent to #}
-{% set section = get_section(path="blog/_index.fr.md") %}
 ```
 
 ### `get_taxonomy_url`

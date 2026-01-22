@@ -86,7 +86,10 @@ impl<'a> Renderer<'a> {
         let mut context = Context::new();
 
         context.insert_value("config", self.cache.configs.get(&taxonomy.lang).unwrap().clone());
-        context.insert_value("terms", cached.value.clone());
+        context.insert_value(
+            "terms",
+            cached.value.as_map().unwrap().get(&"items".into()).unwrap().clone(),
+        );
         context.insert("taxonomy", &taxonomy.kind);
         context.insert("lang", &taxonomy.lang);
         context.insert("current_url", &taxonomy.permalink);

@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex, RwLock};
 use log;
 use rayon::prelude::*;
 use std::sync::LazyLock;
-use tera::{Context, Tera};
+use tera::Tera;
 use walkdir::{DirEntry, WalkDir};
 
 use config::{Config, IndexFormat, get_config};
@@ -28,7 +28,6 @@ use utils::fs::{
     clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
 };
 use utils::net::{get_available_port, is_external_link};
-use utils::templates::render_template;
 use utils::types::InsertAnchor;
 
 pub static SITE_CONTENT: LazyLock<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
@@ -579,6 +578,11 @@ impl Site {
             Arc::new(RenderCache::build(&self.config, &self.library, &self.taxonomies, &self.tera));
     }
 
+    /// Create a Renderer for this site
+    fn renderer(&self) -> Renderer<'_> {
+        Renderer::new(&self.tera, &self.config, &self.library, &self.cache)
+    }
+
     /// Inject live reload script tag if in live reload mode
     fn inject_livereload(&self, mut html: String) -> String {
         if let Some(port) = self.live_reload {
@@ -909,10 +913,7 @@ impl Site {
 
     /// Renders 404.html
     pub fn render_404(&self) -> Result<()> {
-        let mut context = Context::new();
-        context.insert("config", &self.config.serialize(&self.config.default_language));
-        context.insert("lang", &self.config.default_language);
-        let output = render_template("404.html", &self.tera, context)?;
+        let output = self.renderer().render_404()?;
         let content = self.inject_livereload(output);
         self.write_content(&[], "404.html", content)?;
         Ok(())
@@ -920,9 +921,7 @@ impl Site {
 
     /// Renders robots.txt
     pub fn render_robots(&self) -> Result<()> {
-        let mut context = Context::new();
-        context.insert("config", &self.config.serialize(&self.config.default_language));
-        let content = render_template("robots.txt", &self.tera, context)?;
+        let content = self.renderer().render_robots()?;
         self.write_content(&[], "robots.txt", content)?;
         Ok(())
     }
@@ -955,7 +954,7 @@ impl Site {
 
         components.push(taxonomy.slug.as_ref());
 
-        let list_output = taxonomy.render_all_terms(&self.tera, &self.config, &self.library)?;
+        let list_output = self.renderer().render_taxonomy_list(taxonomy)?;
         let content = self.inject_livereload(list_output);
         self.write_content(&components, "index.html", content)?;
 
@@ -972,8 +971,7 @@ impl Site {
                         &Paginator::from_taxonomy(taxonomy, item, &self.library, &self.tera),
                     )?;
                 } else {
-                    let single_output =
-                        taxonomy.render_term(item, &self.tera, &self.config, &self.library)?;
+                    let single_output = self.renderer().render_taxonomy_term(taxonomy, item)?;
                     let content = self.inject_livereload(single_output);
                     self.write_content(&comp, "index.html", content)?;
                 }

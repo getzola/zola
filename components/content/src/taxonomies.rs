@@ -5,10 +5,7 @@ use serde::Serialize;
 
 use ahash::AHashMap;
 use config::{Config, TaxonomyConfig};
-use errors::{Context as ErrorContext, Result};
-use tera::{Context, Tera};
 use utils::slugs::slugify_paths;
-use utils::templates::render_template;
 
 use crate::library::Library;
 use crate::ser::SerializingPage;
@@ -198,74 +195,6 @@ impl Taxonomy {
         }
     }
 
-    pub fn render_term(
-        &self,
-        item: &TaxonomyTerm,
-        tera: &Tera,
-        config: &Config,
-        library: &Library,
-    ) -> Result<String> {
-        let context = self.build_term_context(item, config, library);
-
-        // Check for taxon-specific template, or use generic as fallback.
-        let specific_template = format!("{}/single.html", self.kind.name);
-        let template = if tera.get_template(&specific_template).is_some() {
-            specific_template.as_str()
-        } else {
-            "taxonomy_single.html"
-        };
-
-        render_template(template, tera, context)
-            .with_context(|| format!("Failed to render single term {} page.", self.kind.name))
-    }
-
-    fn build_term_context(
-        &self,
-        item: &TaxonomyTerm,
-        config: &Config,
-        library: &Library,
-    ) -> Context {
-        let mut context = Context::new();
-        context.insert("config", &config.serialize(&self.lang));
-        context.insert("lang", &self.lang);
-        context.insert("term", &SerializedTaxonomyTerm::from_item(item, library, true));
-        context.insert("taxonomy", &self.kind);
-        context.insert("current_url", &item.permalink);
-        context.insert("current_path", &item.path);
-        context
-    }
-
-    pub fn render_all_terms(
-        &self,
-        tera: &Tera,
-        config: &Config,
-        library: &Library,
-    ) -> Result<String> {
-        let mut context = Context::new();
-        context.insert("config", &config.serialize(&self.lang));
-        let terms: Vec<SerializedTaxonomyTerm> = self
-            .items
-            .iter()
-            .map(|i| SerializedTaxonomyTerm::from_item(i, library, true))
-            .collect();
-        context.insert("terms", &terms);
-        context.insert("lang", &self.lang);
-        context.insert("taxonomy", &self.kind);
-        context.insert("current_url", &self.permalink);
-        context.insert("current_path", &self.path);
-
-        // Check for taxon-specific template, or use generic as fallback.
-        let specific_template = format!("{}/list.html", self.kind.name);
-        let template = if tera.get_template(&specific_template).is_some() {
-            specific_template.as_str()
-        } else {
-            "taxonomy_list.html"
-        };
-
-        render_template(template, tera, context)
-            .with_context(|| format!("Failed to render a list of {} page.", self.kind.name))
-    }
-
     pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializedTaxonomy<'a> {
         SerializedTaxonomy::from_taxonomy(self, library)
     }
@@ -298,27 +227,9 @@ impl<'a> TaxonomyFound<'a> {
 mod tests {
     use config::{Config, TaxonomyConfig};
 
-    use crate::{Library, Taxonomy, TaxonomyTerm};
+    use crate::{Taxonomy, TaxonomyTerm};
 
     use super::TaxonomyFound;
-
-    #[test]
-    fn can_build_term_context() {
-        let conf = Config::default_for_test();
-        let tax_conf = TaxonomyConfig::default();
-        let tax_found = TaxonomyFound::new("tag".into(), &conf.default_language, &tax_conf);
-        let tax = Taxonomy::new(tax_found, &conf);
-        let pages = &[];
-        let term = TaxonomyTerm::new("rust", &conf.default_language, "tags", pages, &conf);
-        let lib = Library::default();
-
-        let ctx = tax.build_term_context(&term, &conf, &lib);
-
-        assert_eq!(ctx.get("current_path").and_then(|x| x.as_str()), Some("/tags/rust/"));
-
-        let path = format!("{}{}", conf.base_url, "/tags/rust/");
-        assert_eq!(ctx.get("current_url").and_then(|x| x.as_str()), Some(path.as_str()));
-    }
 
     #[test]
     fn taxonomy_path_with_taxonomy_root() {

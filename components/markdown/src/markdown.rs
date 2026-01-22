@@ -11,7 +11,7 @@ use pulldown_cmark_escape as cmark_escape;
 use std::sync::LazyLock;
 
 use crate::context::RenderContext;
-use errors::{Context, Error, Result};
+use errors::{Error, Result};
 use pulldown_cmark_escape::escape_html;
 use regex::{Regex, RegexBuilder};
 use tera::value::Key;
@@ -24,8 +24,6 @@ use utils::types::InsertAnchor;
 use self::cmark::{Event, LinkType, Options, Parser, Tag, TagEnd};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
-const SUMMARY_CUTOFF_TEMPLATE: &str = "summary-cutoff.html";
-const ANCHOR_LINK_TEMPLATE: &str = "anchor-link.html";
 static EMOJI_REPLACER: LazyLock<EmojiReplacer> = LazyLock::new(EmojiReplacer::new);
 
 /// Set as a regex to help match some extra cases. This way, spaces and case don't matter.
@@ -668,14 +666,12 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     InsertAnchor::Heading => 0, // modified later to the correct value
                     InsertAnchor::None => unreachable!(),
                 };
-                let mut c = tera::Context::new();
-                c.insert("id", &id);
-                c.insert("level", &heading_ref.level);
-                c.insert("lang", &context.lang);
-
-                let anchor_link =
-                    utils::templates::render_template(ANCHOR_LINK_TEMPLATE, &context.tera, c)
-                        .context("Failed to render anchor link template")?;
+                let anchor_link = utils::templates::render_anchor_link(
+                    &context.tera,
+                    id,
+                    heading_ref.level,
+                    context.lang,
+                )?;
                 if context.insert_anchor != InsertAnchor::Heading {
                     anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
                 } else if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
@@ -741,12 +737,11 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
             // add cutoff template
             if !tags.is_empty() {
-                let mut c = tera::Context::new();
-                c.insert("summary", &summary_html);
-                c.insert("lang", &context.lang);
-                let summary_cutoff =
-                    utils::templates::render_template(SUMMARY_CUTOFF_TEMPLATE, &context.tera, c)
-                        .context("Failed to render summary cutoff template")?;
+                let summary_cutoff = utils::templates::render_summary_cutoff(
+                    &context.tera,
+                    &summary_html,
+                    context.lang,
+                )?;
                 summary_html.push_str(&summary_cutoff);
             }
 

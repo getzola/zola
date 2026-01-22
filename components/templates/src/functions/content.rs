@@ -134,10 +134,7 @@ impl Function<TeraResult<Value>> for GetSection {
             .and_then(|s| self.cache.sections.get(&s.file.path))
             .cloned()
             .ok_or_else(|| {
-                Error::message(format!(
-                    "Section `{}` not found for language `{}`.",
-                    path, lang
-                ))
+                Error::message(format!("Section `{}` not found for language `{}`.", path, lang))
             })
     }
 }
@@ -193,8 +190,7 @@ mod tests {
         let cache = RenderCache::build(&config, &library, &[], &tera);
         let base_path = "/test/base/path".into();
 
-        let get_page =
-            GetPage::new(base_path, "en", Arc::new(library), Arc::new(cache));
+        let get_page = GetPage::new(base_path, "en", Arc::new(library), Arc::new(cache));
 
         // Find with lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes.md"))]);
@@ -204,10 +200,8 @@ mod tests {
         assert_eq!(res_obj.get(&"title".into()).unwrap().as_str().unwrap(), "Recettes");
 
         // Find with lang kwarg (takes precedence over context)
-        let kwargs = Kwargs::from([
-            ("path", Value::from("wiki/recipes.md")),
-            ("lang", Value::from("fr")),
-        ]);
+        let kwargs =
+            Kwargs::from([("path", Value::from("wiki/recipes.md")), ("lang", Value::from("fr"))]);
         let ctx = Context::new();
         let res = get_page.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
@@ -235,10 +229,7 @@ mod tests {
         assert!(res.unwrap_err().to_string().contains("Page `nonexistent.md` not found"));
 
         // Error: path exists but requested lang translation doesn't
-        let kwargs = Kwargs::from([
-            ("path", Value::from("blog.md")),
-            ("lang", Value::from("fr")),
-        ]);
+        let kwargs = Kwargs::from([("path", Value::from("blog.md")), ("lang", Value::from("fr"))]);
         let ctx = Context::new();
         let res = get_page.call(kwargs, &State::new(&ctx));
         assert!(res.is_err());
@@ -284,8 +275,7 @@ mod tests {
         let cache = RenderCache::build(&config, &library, &[], &tera);
         let base_path = "/test/base/path".into();
 
-        let get_section =
-            GetSection::new(base_path, "en", Arc::new(library), Arc::new(cache));
+        let get_section = GetSection::new(base_path, "en", Arc::new(library), Arc::new(cache));
 
         // Find with lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes/_index.md"))]);
@@ -326,10 +316,8 @@ mod tests {
         assert!(res.unwrap_err().to_string().contains("Section `nonexistent/_index.md` not found"));
 
         // Error: path exists but requested lang translation doesn't
-        let kwargs = Kwargs::from([
-            ("path", Value::from("blog/_index.md")),
-            ("lang", Value::from("fr")),
-        ]);
+        let kwargs =
+            Kwargs::from([("path", Value::from("blog/_index.md")), ("lang", Value::from("fr"))]);
         let ctx = Context::new();
         let res = get_section.call(kwargs, &State::new(&ctx));
         assert!(res.is_err());
