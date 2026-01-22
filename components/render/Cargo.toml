@@ -1,6 +1,6 @@
 [package]
 name = "render"
-edition = "2024"
+edition.workspace = true
 version.workspace = true
 
 [dependencies]
@@ -10,3 +10,4 @@ tera = {workspace = true, features = ["fast"]}
 
 config = { workspace = true }
 content = { workspace = true }
+errors = { workspace = true }

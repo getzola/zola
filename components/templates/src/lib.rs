@@ -148,6 +148,7 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
     }
 
     tera.add_raw_templates(templates)?;
+    tera.global_context().insert("zola_version", env!("CARGO_PKG_VERSION"));
 
     Ok(tera)
 }

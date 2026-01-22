@@ -1,8 +1,8 @@
 [package]
 name = "utils"
-version = "0.1.0"
+version.workspace = true
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
-edition = "2024"
+edition.workspace = true
 include = ["src/**/*"]
 
 [dependencies]
