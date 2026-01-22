@@ -1,0 +1,12 @@
+[package]
+name = "render"
+edition = "2024"
+version.workspace = true
+
+[dependencies]
+ahash = { workspace = true }
+tera = {workspace = true, features = ["fast"]}
+
+
+config = { workspace = true }
+content = { workspace = true }
