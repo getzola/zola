@@ -328,6 +328,7 @@ fn can_build_site_with_taxonomies() {
             }
         }
         site.populate_taxonomies().unwrap();
+        site.rebuild_cache();
         (site, false)
     });
 
@@ -648,6 +649,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
             }
         }
         site.populate_taxonomies().unwrap();
+        site.rebuild_cache();
         (site, false)
     });
     let nb_a_pagers: usize =

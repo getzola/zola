@@ -1,5 +1,4 @@
 use crate::Site;
-use std::sync::Arc;
 use templates::{filters, functions};
 
 /// Adds global fns that are to be available during markdown rendering
@@ -45,14 +44,6 @@ pub fn register_early_global_fns(site: &mut Site) {
     );
     site.tera.register_function("trans", functions::Trans::new(site.config.clone()));
     site.tera.register_function(
-        "get_taxonomy_url",
-        functions::GetTaxonomyUrl::new(
-            &site.config.default_language,
-            &site.taxonomies,
-            site.config.slugify.taxonomies,
-        ),
-    );
-    site.tera.register_function(
         "get_hash",
         functions::GetHash::new(
             site.base_path.clone(),
@@ -74,15 +65,13 @@ pub fn register_early_global_fns(site: &mut Site) {
 
 /// Functions filled once we have parsed all the pages/sections only
 pub fn register_tera_global_fns(site: &mut Site) {
-    let language_list: Arc<Vec<String>> =
-        Arc::new(site.config.languages.keys().map(|s| s.to_string()).collect());
     site.tera.register_function(
         "get_page",
         functions::GetPage::new(
             site.base_path.clone(),
             &site.config.default_language,
-            Arc::clone(&language_list),
             site.library.clone(),
+            site.cache.clone(),
         ),
     );
     site.tera.register_function(
@@ -90,24 +79,28 @@ pub fn register_tera_global_fns(site: &mut Site) {
         functions::GetSection::new(
             site.base_path.clone(),
             &site.config.default_language,
-            Arc::clone(&language_list),
             site.library.clone(),
+            site.cache.clone(),
         ),
     );
     site.tera.register_function(
         "get_taxonomy",
-        functions::GetTaxonomy::new(
+        functions::GetTaxonomy::new(&site.config.default_language, site.cache.clone()),
+    );
+    site.tera.register_function(
+        "get_taxonomy_url",
+        functions::GetTaxonomyUrl::new(
             &site.config.default_language,
-            site.taxonomies.clone(),
-            site.library.clone(),
+            site.cache.clone(),
+            site.config.slugify.taxonomies,
         ),
     );
     site.tera.register_function(
         "get_taxonomy_term",
         functions::GetTaxonomyTerm::new(
             &site.config.default_language,
-            site.taxonomies.clone(),
-            site.library.clone(),
+            site.cache.clone(),
+            site.config.slugify.taxonomies,
         ),
     );
 }

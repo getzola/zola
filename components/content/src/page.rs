@@ -4,14 +4,13 @@ use std::path::{Path, PathBuf};
 
 use regex::Regex;
 use std::sync::LazyLock;
-use tera::{Context as TeraContext, Tera};
+use tera::Tera;
 
 use config::Config;
 use errors::{Context, Result};
 use markdown::{RenderContext, render_content};
 use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
-use utils::templates::render_template;
 use utils::types::InsertAnchor;
 
 use crate::file_info::FileInfo;
@@ -232,25 +231,6 @@ impl Page {
         self.internal_links = res.internal_links;
 
         Ok(())
-    }
-
-    /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
-        let tpl_name = match self.meta.template {
-            Some(ref l) => l,
-            None => "page.html",
-        };
-
-        let mut context = TeraContext::new();
-        context.insert("config", &config.serialize(&self.lang));
-        context.insert("current_url", &self.permalink);
-        context.insert("current_path", &self.path);
-        context.insert("zola_version", env!("CARGO_PKG_VERSION"));
-        context.insert("page", &self.serialize(library));
-        context.insert("lang", &self.lang);
-
-        render_template(tpl_name, tera, context)
-            .with_context(|| format!("Failed to render page '{}'", self.file.path.display()))
     }
 
     /// Creates a vectors of asset URLs.

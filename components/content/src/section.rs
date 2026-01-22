@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use tera::{Context as TeraContext, Tera};
+use tera::Tera;
 
 use config::Config;
 use errors::{Context, Result};
@@ -9,7 +9,6 @@ use markdown::{RenderContext, render_content};
 use utils::fs::read_file;
 use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
-use utils::templates::render_template;
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{SectionFrontMatter, split_section_content};
@@ -178,21 +177,6 @@ impl Section {
         self.internal_links = res.internal_links;
 
         Ok(())
-    }
-
-    /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
-        let tpl_name = self.get_template_name();
-
-        let mut context = TeraContext::new();
-        context.insert("config", &config.serialize(&self.lang));
-        context.insert("current_url", &self.permalink);
-        context.insert("current_path", &self.path);
-        context.insert("section", &SerializingSection::new(self, SectionSerMode::Full(library)));
-        context.insert("lang", &self.lang);
-
-        render_template(tpl_name, tera, context)
-            .with_context(|| format!("Failed to render section '{}'", self.file.path.display()))
     }
 
     /// Is this the index section?

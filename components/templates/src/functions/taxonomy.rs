@@ -1,35 +1,26 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 
-use content::{Library, Taxonomy, TaxonomyTerm};
+use render::RenderCache;
 use tera::{Error, Function, Kwargs, State, TeraResult, Value};
 use utils::slugs::{SlugifyStrategy, slugify_paths};
 
 #[derive(Debug)]
 pub struct GetTaxonomyUrl {
-    taxonomies: HashMap<String, HashMap<String, String>>,
+    cache: Arc<RenderCache>,
     default_lang: String,
     slugify: SlugifyStrategy,
 }
 
 impl GetTaxonomyUrl {
-    pub fn new(default_lang: &str, all_taxonomies: &[Taxonomy], slugify: SlugifyStrategy) -> Self {
-        let mut taxonomies = HashMap::new();
-        for taxo in all_taxonomies {
-            let mut items = HashMap::new();
-            for item in &taxo.items {
-                items.insert(slugify_paths(&item.name.clone(), slugify), item.permalink.clone());
-            }
-            taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.lang), items);
-        }
-        Self { taxonomies, default_lang: default_lang.to_string(), slugify }
+    pub fn new(default_lang: &str, cache: Arc<RenderCache>, slugify: SlugifyStrategy) -> Self {
+        Self { cache, default_lang: default_lang.to_string(), slugify }
     }
 }
 
 impl Default for GetTaxonomyUrl {
     fn default() -> Self {
         Self {
-            taxonomies: HashMap::new(),
+            cache: Arc::new(RenderCache::default()),
             default_lang: String::new(),
             slugify: SlugifyStrategy::default(),
         }
@@ -38,12 +29,21 @@ impl Default for GetTaxonomyUrl {
 
 impl Function<TeraResult<Value>> for GetTaxonomyUrl {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
-        let kind: String = kwargs.must_get("kind")?;
-        let name: String = kwargs.must_get("name")?;
+        let kind: &str = kwargs.must_get("kind")?;
+        let term: &str = match (kwargs.get::<&str>("term")?, kwargs.get::<&str>("name")?) {
+            (Some(t), _) => t,
+            (None, Some(n)) => {
+                log::warn!("`get_taxonomy_url`: `name` argument is deprecated, use `term` instead");
+                n
+            }
+            (None, None) => {
+                return Err(Error::message("`get_taxonomy_url` requires a `term` argument"));
+            }
+        };
         let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
         let required: bool = kwargs.get("required")?.unwrap_or(true);
 
-        let container = match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
+        let cached = match (self.cache.get_taxonomy(&lang, &kind), required) {
             (Some(c), _) => c,
             (None, false) => return Ok(Value::null()),
             (None, true) => {
@@ -54,13 +54,18 @@ impl Function<TeraResult<Value>> for GetTaxonomyUrl {
             }
         };
 
-        if let Some(permalink) = container.get(&slugify_paths(&name, self.slugify)) {
-            return Ok(Value::from(permalink.as_str()));
+        let slug = slugify_paths(&term, self.slugify);
+        if let Some(t) = cached.terms.get(&slug) {
+            if let Some(map) = t.as_map() {
+                if let Some(permalink) = map.get(&"permalink".into()).and_then(|v| v.as_str()) {
+                    return Ok(Value::from(permalink));
+                }
+            }
         }
 
         Err(Error::message(format!(
             "`get_taxonomy_url`: couldn't find `{}` in `{}` taxonomy",
-            name, kind
+            term, kind
         )))
     }
 
@@ -71,41 +76,32 @@ impl Function<TeraResult<Value>> for GetTaxonomyUrl {
 
 #[derive(Debug)]
 pub struct GetTaxonomy {
-    library: Arc<Library>,
-    taxonomies: HashMap<String, Taxonomy>,
+    cache: Arc<RenderCache>,
     default_lang: String,
 }
 
 impl GetTaxonomy {
-    pub fn new(default_lang: &str, all_taxonomies: Vec<Taxonomy>, library: Arc<Library>) -> Self {
-        let mut taxonomies = HashMap::new();
-        for taxo in all_taxonomies {
-            taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.lang), taxo);
-        }
-        Self { taxonomies, library, default_lang: default_lang.to_string() }
+    pub fn new(default_lang: &str, cache: Arc<RenderCache>) -> Self {
+        Self { cache, default_lang: default_lang.to_string() }
     }
 }
 
 impl Default for GetTaxonomy {
     fn default() -> Self {
-        Self {
-            library: Arc::new(Library::default()),
-            taxonomies: HashMap::new(),
-            default_lang: String::new(),
-        }
+        Self { cache: Arc::new(RenderCache::default()), default_lang: String::new() }
     }
 }
 
 impl Function<TeraResult<Value>> for GetTaxonomy {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
-        let kind: String = kwargs.must_get("kind")?;
+        let kind: &str = kwargs.must_get("kind")?;
         let required: bool = kwargs.get("required")?.unwrap_or(true);
         let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
 
-        match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
-            (Some(t), _) => Ok(Value::from_serializable(&t.to_serialized(&self.library))),
-            (None, false) => Ok(Value::null()),
-            (None, true) => Err(Error::message(format!(
+        match self.cache.get_taxonomy(&lang, &kind) {
+            Some(cached) => Ok(cached.value.clone()),
+            None if !required => Ok(Value::null()),
+            None => Err(Error::message(format!(
                 "`get_taxonomy` received an unknown taxonomy as kind: {}",
                 kind
             ))),
@@ -115,41 +111,36 @@ impl Function<TeraResult<Value>> for GetTaxonomy {
 
 #[derive(Debug)]
 pub struct GetTaxonomyTerm {
-    library: Arc<Library>,
-    taxonomies: HashMap<String, Taxonomy>,
+    cache: Arc<RenderCache>,
     default_lang: String,
+    slugify: SlugifyStrategy,
 }
 
 impl GetTaxonomyTerm {
-    pub fn new(default_lang: &str, all_taxonomies: Vec<Taxonomy>, library: Arc<Library>) -> Self {
-        let mut taxonomies = HashMap::new();
-        for taxo in all_taxonomies {
-            taxonomies.insert(format!("{}-{}", taxo.kind.name, taxo.lang), taxo);
-        }
-        Self { taxonomies, library, default_lang: default_lang.to_string() }
+    pub fn new(default_lang: &str, cache: Arc<RenderCache>, slugify: SlugifyStrategy) -> Self {
+        Self { cache, default_lang: default_lang.to_string(), slugify }
     }
 }
 
 impl Default for GetTaxonomyTerm {
     fn default() -> Self {
         Self {
-            library: Arc::new(Library::default()),
-            taxonomies: HashMap::new(),
+            cache: Arc::new(RenderCache::default()),
             default_lang: String::new(),
+            slugify: SlugifyStrategy::default(),
         }
     }
 }
 
 impl Function<TeraResult<Value>> for GetTaxonomyTerm {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
-        let kind: String = kwargs.must_get("kind")?;
-        let term: String = kwargs.must_get("term")?;
-        let include_pages: bool = kwargs.get("include_pages")?.unwrap_or(true);
+        let kind: &str = kwargs.must_get("kind")?;
+        let term: &str = kwargs.must_get("term")?;
         let required: bool = kwargs.get("required")?.unwrap_or(true);
         let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
 
-        let tax: &Taxonomy = match (self.taxonomies.get(&format!("{}-{}", kind, lang)), required) {
-            (Some(t), _) => t,
+        let cached = match (self.cache.get_taxonomy(&lang, &kind), required) {
+            (Some(c), _) => c,
             (None, false) => return Ok(Value::null()),
             (None, true) => {
                 return Err(Error::message(format!(
@@ -159,22 +150,14 @@ impl Function<TeraResult<Value>> for GetTaxonomyTerm {
             }
         };
 
-        let taxonomy_term: &TaxonomyTerm =
-            match (tax.items.iter().find(|i| i.name == term), required) {
-                (Some(t), _) => t,
-                (None, false) => return Ok(Value::null()),
-                (None, true) => {
-                    return Err(Error::message(format!(
-                        "`get_taxonomy_term` received an unknown term: {}",
-                        term
-                    )));
-                }
-            };
-
-        if include_pages {
-            Ok(Value::from_serializable(&taxonomy_term.serialize(&self.library)))
-        } else {
-            Ok(Value::from_serializable(&taxonomy_term.serialize_without_pages(&self.library)))
+        let slug = slugify_paths(&term, self.slugify);
+        match (cached.terms.get(&slug).cloned(), required) {
+            (Some(t), _) => Ok(t),
+            (None, false) => Ok(Value::null()),
+            (None, true) => Err(Error::message(format!(
+                "`get_taxonomy_term` received an unknown term: {}",
+                term
+            ))),
         }
     }
 }
@@ -183,8 +166,9 @@ impl Function<TeraResult<Value>> for GetTaxonomyTerm {
 mod tests {
     use super::*;
     use config::{Config, TaxonomyConfig};
-    use content::Library;
-    use tera::{Context, Kwargs};
+    use content::{Library, Taxonomy, TaxonomyTerm};
+    use render::RenderCache;
+    use tera::{Context, Kwargs, Tera};
     use utils::slugs::SlugifyStrategy;
 
     fn make_context_with_lang(lang: &str) -> Context {
@@ -201,7 +185,7 @@ mod tests {
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         config.slugify_taxonomies();
-        let library = Arc::new(Library::new(&config));
+        let library = Library::new(&config);
         let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
         let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
@@ -222,7 +206,9 @@ mod tests {
         };
 
         let taxonomies = vec![tags.clone(), tags_fr.clone()];
-        let get_taxonomy = GetTaxonomy::new(&config.default_language, taxonomies, library);
+        let tera = Tera::default();
+        let cache = Arc::new(RenderCache::build(&config, &library, &taxonomies, &tera));
+        let get_taxonomy = GetTaxonomy::new(&config.default_language, cache);
 
         // can find it correctly (default lang)
         let kwargs = Kwargs::from([("kind", Value::from("tags"))]);
@@ -253,11 +239,13 @@ mod tests {
 
     #[test]
     fn can_get_taxonomy_url() {
-        let mut config = Config::default();
+        let mut config = Config::default_for_test();
         config.slugify.taxonomies = SlugifyStrategy::On;
         let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        config.slugify_taxonomies();
+        let library = Library::new(&config);
         let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
         let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
@@ -278,8 +266,10 @@ mod tests {
         };
 
         let taxonomies = vec![tags, tags_fr];
+        let tera = Tera::default();
+        let cache = Arc::new(RenderCache::build(&config, &library, &taxonomies, &tera));
         let get_taxonomy_url =
-            GetTaxonomyUrl::new(&config.default_language, &taxonomies, config.slugify.taxonomies);
+            GetTaxonomyUrl::new(&config.default_language, cache, config.slugify.taxonomies);
 
         // can find it correctly (default lang)
         let kwargs =
@@ -322,7 +312,7 @@ mod tests {
         let taxo_config_fr =
             TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
         config.slugify_taxonomies();
-        let library = Arc::new(Library::new(&config));
+        let library = Library::new(&config);
         let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
         let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
         let tags = Taxonomy {
@@ -342,8 +332,11 @@ mod tests {
             items: vec![tag_fr],
         };
 
-        let taxonomies = vec![tags.clone(), tags_fr.clone()];
-        let get_taxonomy_term = GetTaxonomyTerm::new(&config.default_language, taxonomies, library);
+        let taxonomies = vec![tags, tags_fr];
+        let tera = Tera::default();
+        let cache = Arc::new(RenderCache::build(&config, &library, &taxonomies, &tera));
+        let get_taxonomy_term =
+            GetTaxonomyTerm::new(&config.default_language, cache, config.slugify.taxonomies);
 
         // can find it correctly (default lang)
         let kwargs =

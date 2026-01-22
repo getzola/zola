@@ -18,9 +18,10 @@ use tera::{Context, Tera};
 use walkdir::{DirEntry, WalkDir};
 
 use config::{Config, IndexFormat, get_config};
-use content::{Library, Page, Paginator, Section, Taxonomy};
+use content::{Library, Page, Section, Taxonomy, TaxonomyTerm};
 use errors::{Result, anyhow, bail};
 use relative_path::RelativePathBuf;
+use render::{FeedInput, Paginator, RenderCache, Renderer};
 use std::time::Instant;
 use templates::{load_tera, render_redirect_template};
 use utils::fs::{
@@ -65,6 +66,8 @@ pub struct Site {
     pub permalinks: HashMap<String, String>,
     /// Contains all pages and sections of the site
     pub library: Arc<Library>,
+    /// Pre-serialized render cache
+    pub cache: Arc<RenderCache>,
     /// Whether to load draft pages
     include_drafts: bool,
     build_mode: BuildMode,
@@ -110,6 +113,7 @@ impl Site {
             include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(Library::default()),
+            cache: Arc::new(RenderCache::default()),
             build_mode: BuildMode::Disk,
             check_external_links: true,
         };
@@ -326,7 +330,8 @@ impl Site {
         self.populate_sections();
         self.render_markdown()?;
         Arc::make_mut(&mut self.library).fill_backlinks();
-        Arc::make_mut(&mut self.library).pre_render();
+        self.cache =
+            Arc::new(RenderCache::build(&self.config, &self.library, &self.taxonomies, &self.tera));
         tpls::register_tera_global_fns(self);
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
@@ -568,6 +573,12 @@ impl Site {
         Ok(())
     }
 
+    /// Rebuild the render cache (needed after modifying library or taxonomies)
+    pub fn rebuild_cache(&mut self) {
+        self.cache =
+            Arc::new(RenderCache::build(&self.config, &self.library, &self.taxonomies, &self.tera));
+    }
+
     /// Inject live reload script tag if in live reload mode
     fn inject_livereload(&self, mut html: String) -> String {
         if let Some(port) = self.live_reload {
@@ -699,7 +710,8 @@ impl Site {
             return Ok(());
         }
 
-        let output = page.render_html(&self.tera, &self.config, &self.library)?;
+        let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
+        let output = renderer.render_page(page)?;
         let content = self.inject_livereload(output);
         let components: Vec<&str> = page.path.split('/').collect();
         let current_path = self.write_content(&components, "index.html", content)?;
@@ -761,7 +773,7 @@ impl Site {
             } else {
                 self.library.pages.values().collect()
             };
-            self.render_feeds(pages, None, &self.config.default_language, |c| c)?;
+            self.render_feed(pages, None, &self.config.default_language)?;
             start = log_time(start, "Generated feed in default language");
         }
 
@@ -770,7 +782,7 @@ impl Site {
                 continue;
             }
             let pages: Vec<_> = self.library.pages.values().filter(|p| &p.lang == code).collect();
-            self.render_feeds(pages, Some(&PathBuf::from(code)), code, |c| c)?;
+            self.render_feed(pages, Some(&PathBuf::from(code)), code)?;
             start = log_time(start, "Generated feed in other language");
         }
         self.render_themes_css()?;
@@ -989,18 +1001,12 @@ impl Site {
                             ))
                         }
                     };
-                    self.render_feeds(
+                    self.render_taxonomy_feed(
                         item.pages.iter().map(|p| self.library.pages.get(p).unwrap()).collect(),
-                        Some(&tax_path),
+                        &tax_path,
                         &taxonomy.lang,
-                        |mut context: Context| {
-                            context.insert("taxonomy", &taxonomy.kind);
-                            context.insert(
-                                "term",
-                                &feeds::SerializedFeedTaxonomyItem::from_item(item),
-                            );
-                            context
-                        },
+                        taxonomy,
+                        item,
                     )
                 } else {
                     Ok(())
@@ -1011,77 +1017,142 @@ impl Site {
 
     /// What it says on the tin
     pub fn render_sitemap(&self) -> Result<()> {
-        let all_sitemap_entries =
-            { sitemap::find_entries(&self.library, &self.taxonomies[..], &self.config) };
-        let sitemap_limit = 30000;
+        let entries = sitemap::find_entries(&self.library, &self.taxonomies[..], &self.config);
+        let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
 
-        if all_sitemap_entries.len() < sitemap_limit {
-            // Create single sitemap
-            let mut context = Context::new();
-            context.insert("entries", &all_sitemap_entries);
-            let sitemap = render_template("sitemap.xml", &self.tera, context)?;
+        if entries.len() < 30000 {
+            let sitemap = renderer.render_sitemap(&entries)?;
             self.write_content(&[], "sitemap.xml", sitemap)?;
             return Ok(());
         }
 
-        // Create multiple sitemaps (max 30000 urls each)
-        let mut sitemap_index = Vec::new();
-        for (i, chunk) in
-            all_sitemap_entries.iter().collect::<Vec<_>>().chunks(sitemap_limit).enumerate()
-        {
-            let mut context = Context::new();
-            context.insert("entries", &chunk);
-            let sitemap = render_template("sitemap.xml", &self.tera, context)?;
+        // Split sitemap
+        let mut sitemap_urls = Vec::new();
+        for (i, chunk) in entries.chunks(30000).enumerate() {
+            let sitemap = renderer.render_sitemap(chunk)?;
             let file_name = format!("sitemap{}.xml", i + 1);
             self.write_content(&[], &file_name, sitemap)?;
-            let mut sitemap_url = self.config.make_permalink(&file_name);
-            sitemap_url.pop(); // Remove trailing slash
-            sitemap_index.push(sitemap_url);
+            let mut url = self.config.make_permalink(&file_name);
+            url.pop();
+            sitemap_urls.push(url);
         }
 
-        // Create main sitemap that reference numbered sitemaps
-        let mut main_context = Context::new();
-        main_context.insert("sitemaps", &sitemap_index);
-        let sitemap = render_template("split_sitemap_index.xml", &self.tera, main_context)?;
-        self.write_content(&[], "sitemap.xml", sitemap)?;
-
+        let index = renderer.render_sitemap_index(&sitemap_urls)?;
+        self.write_content(&[], "sitemap.xml", index)?;
         Ok(())
     }
 
-    /// Renders feeds for the given path and at the given path
-    /// If both arguments are `None`, it will render only the feeds for the whole
-    /// site at the root folder.
-    pub fn render_feeds(
+    /// Renders basic feeds for the given path
+    pub fn render_feed(
         &self,
         all_pages: Vec<&Page>,
         base_path: Option<&PathBuf>,
         lang: &str,
-        additional_context_fn: impl Fn(Context) -> Context,
     ) -> Result<()> {
-        let feeds =
-            match feeds::render_feeds(self, all_pages, lang, base_path, additional_context_fn)? {
-                Some(v) => v,
-                None => return Ok(()),
-            };
+        let feed_data = feeds::prepare_feed(all_pages, self.config.feed_limit, &self.library);
+        let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
 
-        for (feed, feed_filename) in
-            feeds.into_iter().zip(self.config.languages[lang].feed_filenames.iter())
-        {
-            if let Some(base) = base_path {
-                let mut components = Vec::new();
-                for component in base.components() {
-                    components.push(component.as_os_str().to_string_lossy());
-                }
-                self.write_content(
-                    &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
-                    feed_filename,
-                    feed,
-                )?;
-            } else {
-                self.write_content(&[], feed_filename, feed)?;
-            }
+        for feed_filename in &self.config.languages[lang].feed_filenames {
+            let feed_url = self.make_feed_url(base_path, feed_filename);
+            let input = FeedInput {
+                feed_filename,
+                lang,
+                feed_url: &feed_url,
+                pages: &feed_data.pages,
+                last_updated: feed_data.last_updated.as_deref(),
+            };
+            let feed = renderer.render_feed(&input)?;
+            self.write_feed(base_path, feed_filename, feed)?;
         }
 
+        Ok(())
+    }
+
+    /// Renders feeds with section context
+    pub fn render_section_feed(
+        &self,
+        all_pages: Vec<&Page>,
+        base_path: &PathBuf,
+        lang: &str,
+        section: &Section,
+    ) -> Result<()> {
+        let feed_data = feeds::prepare_feed(all_pages, self.config.feed_limit, &self.library);
+        let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
+        let serialized_section = section.serialize(&self.library);
+
+        for feed_filename in &self.config.languages[lang].feed_filenames {
+            let feed_url = self.make_feed_url(Some(base_path), feed_filename);
+            let input = FeedInput {
+                feed_filename,
+                lang,
+                feed_url: &feed_url,
+                pages: &feed_data.pages,
+                last_updated: feed_data.last_updated.as_deref(),
+            };
+            let feed = renderer.render_section_feed(&input, &serialized_section)?;
+            self.write_feed(Some(base_path), feed_filename, feed)?;
+        }
+
+        Ok(())
+    }
+
+    /// Renders feeds with taxonomy context
+    pub fn render_taxonomy_feed(
+        &self,
+        all_pages: Vec<&Page>,
+        base_path: &PathBuf,
+        lang: &str,
+        taxonomy: &Taxonomy,
+        term: &TaxonomyTerm,
+    ) -> Result<()> {
+        let feed_data = feeds::prepare_feed(all_pages, self.config.feed_limit, &self.library);
+        let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
+        let serialized_term = feeds::SerializedFeedTaxonomyItem::from_item(term);
+
+        for feed_filename in &self.config.languages[lang].feed_filenames {
+            let feed_url = self.make_feed_url(Some(base_path), feed_filename);
+            let input = FeedInput {
+                feed_filename,
+                lang,
+                feed_url: &feed_url,
+                pages: &feed_data.pages,
+                last_updated: feed_data.last_updated.as_deref(),
+            };
+            let feed = renderer.render_taxonomy_feed(&input, &taxonomy.kind, &serialized_term)?;
+            self.write_feed(Some(base_path), feed_filename, feed)?;
+        }
+
+        Ok(())
+    }
+
+    fn make_feed_url(&self, base_path: Option<&PathBuf>, feed_filename: &str) -> String {
+        if let Some(base) = base_path {
+            self.config
+                .make_permalink(&base.join(feed_filename).to_string_lossy().replace('\\', "/"))
+        } else {
+            self.config.make_permalink(feed_filename)
+        }
+    }
+
+    fn write_feed(
+        &self,
+        base_path: Option<&PathBuf>,
+        feed_filename: &str,
+        feed: String,
+    ) -> Result<()> {
+        if let Some(base) = base_path {
+            let mut components = Vec::new();
+            for component in base.components() {
+                components.push(component.as_os_str().to_string_lossy());
+            }
+            self.write_content(
+                &components.iter().map(|x| x.as_ref()).collect::<Vec<_>>(),
+                feed_filename,
+                feed,
+            )?;
+        } else {
+            self.write_content(&[], feed_filename, feed)?;
+        }
         Ok(())
     }
 
@@ -1102,14 +1173,11 @@ impl Site {
 
         if section.meta.generate_feeds {
             let pages = section.pages.iter().map(|k| self.library.pages.get(k).unwrap()).collect();
-            self.render_feeds(
+            self.render_section_feed(
                 pages,
-                Some(&PathBuf::from(&section.path[1..])),
+                &PathBuf::from(&section.path[1..]),
                 &section.lang,
-                |mut context: Context| {
-                    context.insert("section", &section.serialize(&self.library));
-                    context
-                },
+                section,
             )?;
         }
 
@@ -1146,7 +1214,8 @@ impl Site {
         if section.meta.is_paginated() {
             self.render_paginated(components, &Paginator::from_section(section, &self.library))?;
         } else {
-            let output = section.render_html(&self.tera, &self.config, &self.library)?;
+            let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
+            let output = renderer.render_section(section)?;
             let content = self.inject_livereload(output);
             self.write_content(&components, "index.html", content)?;
         }
@@ -1188,8 +1257,8 @@ impl Site {
                 pager_components.push(&paginator.paginate_path);
                 let pager_path = format!("{}", pager.index);
                 pager_components.push(&pager_path);
-                let output =
-                    paginator.render_pager(pager, &self.config, &self.tera, &self.library)?;
+                let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
+                let output = renderer.render_paginated(paginator, pager)?;
                 let content = self.inject_livereload(output);
 
                 if pager.index > 1 {

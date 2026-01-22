@@ -20,7 +20,7 @@ pub struct CachedTaxonomy {
 }
 
 /// All pre-serialized data for template rendering.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct RenderCache {
     pub pages: AHashMap<PathBuf, Value>,
     pub sections: AHashMap<PathBuf, Value>,
@@ -89,5 +89,9 @@ impl RenderCache {
         );
 
         Self { pages, sections, configs, taxonomies }
+    }
+
+    pub fn get_taxonomy(&self, lang: &str, slug: &str) -> Option<&CachedTaxonomy> {
+        self.taxonomies.get(lang)?.get(slug)
     }
 }

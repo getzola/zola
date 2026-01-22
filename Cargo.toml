@@ -74,6 +74,7 @@ members = ["components/*"]
 
 [workspace.package]
 version = "0.21.0"
+edition = "2024"
 
 [workspace.dependencies]
 # External dependencies
@@ -135,6 +136,7 @@ search = { path = "components/search" }
 site = { path = "components/site" }
 templates = { path = "components/templates" }
 utils = { path = "components/utils" }
+render = { path = "components/render" }
 
 [profile.release]
 lto = true
