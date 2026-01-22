@@ -707,7 +707,7 @@ dependencies = [
 
 [[package]]
 name = "config"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "errors",
  "giallo",
@@ -733,7 +733,7 @@ dependencies = [
 
 [[package]]
 name = "console"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "anstream",
  "anstyle",
@@ -762,7 +762,7 @@ dependencies = [
 
 [[package]]
 name = "content"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "ahash 0.8.12",
  "config",
@@ -1267,7 +1267,7 @@ dependencies = [
 
 [[package]]
 name = "errors"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "anyhow",
 ]
@@ -1999,7 +1999,7 @@ dependencies = [
 
 [[package]]
 name = "imageproc"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "ahash 0.8.12",
  "avif-parse",
@@ -2541,7 +2541,7 @@ dependencies = [
 
 [[package]]
 name = "link_checker"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "config",
  "errors",
@@ -2616,7 +2616,7 @@ checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
 name = "markdown"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "config",
  "errors",
@@ -4178,7 +4178,7 @@ dependencies = [
 
 [[package]]
 name = "render"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "ahash 0.8.12",
  "config",
@@ -4441,7 +4441,7 @@ checksum = "1c107b6f4780854c8b126e228ea8869f4d7b71260f962fefb57b996b8959ba6b"
 
 [[package]]
 name = "search"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "ammonia",
  "config",
@@ -4662,12 +4662,12 @@ checksum = "56199f7ddabf13fe5074ce809e7d3f42b42ae711800501b5b16ea82ad029c39d"
 
 [[package]]
 name = "site"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "ahash 0.8.12",
  "chrono",
  "config",
- "console 0.21.0",
+ "console 0.22.1",
  "content",
  "errors",
  "globset",
@@ -4880,7 +4880,7 @@ dependencies = [
 
 [[package]]
 name = "templates"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "base64",
  "config",
@@ -5416,7 +5416,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "utils"
-version = "0.21.0"
+version = "0.22.1"
 dependencies = [
  "errors",
  "filetime",
@@ -6082,7 +6082,7 @@ dependencies = [
  "clap 4.5.54",
  "clap_complete",
  "clap_mangen",
- "console 0.21.0",
+ "console 0.22.1",
  "ctrlc",
  "env_logger 0.11.8",
  "errors",

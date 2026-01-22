@@ -1,8 +1,8 @@
 [package]
 name = "zola"
-version = "0.22.1"
+version.workspace = true
+edition.workspace = true
 authors = ["Vincent Prouillet <hello@vincentprouillet.com>"]
-edition = "2024"
 license = "EUPL-1.2"
 readme = "README.md"
 description = "A fast static site generator with everything built-in"
@@ -73,7 +73,7 @@ indexing-ja = ["search/indexing-ja"]
 members = ["components/*"]
 
 [workspace.package]
-version = "0.21.0"
+version = "0.22.1"
 edition = "2024"
 
 [workspace.dependencies]
