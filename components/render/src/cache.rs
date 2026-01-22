@@ -6,6 +6,13 @@ use tera::{Tera, Value};
 use config::Config;
 use content::{Library, Taxonomy};
 
+/// Cached page/section: serialized value + canonical path for translation lookups
+#[derive(Debug, Clone)]
+pub struct CachedContent {
+    pub value: Value,
+    pub canonical: PathBuf,
+}
+
 /// Cached taxonomy data: serialized value, terms, and resolved templates
 #[derive(Debug)]
 pub struct CachedTaxonomy {
@@ -22,8 +29,12 @@ pub struct CachedTaxonomy {
 /// All pre-serialized data for template rendering.
 #[derive(Debug, Default)]
 pub struct RenderCache {
-    pub pages: AHashMap<PathBuf, Value>,
-    pub sections: AHashMap<PathBuf, Value>,
+    pub pages: AHashMap<PathBuf, CachedContent>,
+    pub sections: AHashMap<PathBuf, CachedContent>,
+    /// canonical path -> (lang -> file path)
+    pub pages_by_canonical: AHashMap<PathBuf, AHashMap<String, PathBuf>>,
+    /// canonical path -> (lang -> file path)
+    pub sections_by_canonical: AHashMap<PathBuf, AHashMap<String, PathBuf>>,
     /// Serialized config per language
     pub configs: AHashMap<String, Value>,
     /// Cached taxonomies: lang -> (taxonomy_slug -> CachedTaxonomy)
@@ -32,17 +43,47 @@ pub struct RenderCache {
 
 impl RenderCache {
     pub fn build(config: &Config, library: &Library, taxonomies: &[Taxonomy], tera: &Tera) -> Self {
-        let pages = library
-            .pages
-            .iter()
-            .map(|(k, v)| (k.clone(), Value::from_serializable(&v.serialize(library))))
-            .collect();
+        let (pages, pages_by_canonical) = library.pages.iter().fold(
+            (
+                AHashMap::with_capacity(library.pages.len()),
+                AHashMap::<PathBuf, AHashMap<String, PathBuf>>::new(),
+            ),
+            |(mut pages, mut pages_by_canonical), (path, page)| {
+                pages.insert(
+                    path.clone(),
+                    CachedContent {
+                        value: Value::from_serializable(&page.serialize(library)),
+                        canonical: page.file.canonical.clone(),
+                    },
+                );
+                pages_by_canonical
+                    .entry(page.file.canonical.clone())
+                    .or_default()
+                    .insert(page.lang.clone(), path.clone());
+                (pages, pages_by_canonical)
+            },
+        );
 
-        let sections = library
-            .sections
-            .iter()
-            .map(|(k, v)| (k.clone(), Value::from_serializable(&v.serialize(library))))
-            .collect();
+        let (sections, sections_by_canonical) = library.sections.iter().fold(
+            (
+                AHashMap::with_capacity(library.sections.len()),
+                AHashMap::<PathBuf, AHashMap<String, PathBuf>>::new(),
+            ),
+            |(mut sections, mut sections_by_canonical), (path, section)| {
+                sections.insert(
+                    path.clone(),
+                    CachedContent {
+                        value: Value::from_serializable(&section.serialize(library)),
+                        canonical: section.file.canonical.clone(),
+                    },
+                );
+                sections_by_canonical
+                    .entry(section.file.canonical.clone())
+                    .or_default()
+                    .insert(section.lang.clone(), path.clone());
+                (sections, sections_by_canonical)
+            },
+        );
 
         let configs = config
             .languages
@@ -88,7 +129,7 @@ impl RenderCache {
             },
         );
 
-        Self { pages, sections, configs, taxonomies }
+        Self { pages, sections, pages_by_canonical, sections_by_canonical, configs, taxonomies }
     }
 
     pub fn get_taxonomy(&self, lang: &str, slug: &str) -> Option<&CachedTaxonomy> {

@@ -753,6 +753,8 @@ impl Site {
             self.build_search_index()?;
             start = log_time(start, "Built search index");
         }
+        self.render_themes_css()?;
+        start = log_time(start, "Rendered themes css");
 
         // Render aliases first to allow overwriting
         self.render_aliases()?;
@@ -789,8 +791,6 @@ impl Site {
             self.render_feed(pages, Some(&PathBuf::from(code)), code)?;
             start = log_time(start, "Generated feed in other language");
         }
-        self.render_themes_css()?;
-        start = log_time(start, "Rendered themes css");
         self.render_404()?;
         start = log_time(start, "Rendered 404");
         if self.config.generate_robots_txt {

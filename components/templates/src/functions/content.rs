@@ -1,31 +1,19 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use content::Library;
 use render::RenderCache;
 use tera::{Error, Function, Kwargs, State, TeraResult, Value};
 
 #[derive(Debug)]
 pub struct GetPage {
     base_path: PathBuf,
-    library: Arc<Library>,
     cache: Arc<RenderCache>,
     default_lang: String,
 }
 
 impl GetPage {
-    pub fn new(
-        base_path: PathBuf,
-        default_lang: &str,
-        library: Arc<Library>,
-        cache: Arc<RenderCache>,
-    ) -> Self {
-        Self {
-            base_path: base_path.join("content"),
-            default_lang: default_lang.to_string(),
-            library,
-            cache,
-        }
+    pub fn new(base_path: PathBuf, default_lang: &str, cache: Arc<RenderCache>) -> Self {
+        Self { base_path: base_path.join("content"), default_lang: default_lang.to_string(), cache }
     }
 }
 
@@ -34,7 +22,6 @@ impl Default for GetPage {
         Self {
             base_path: PathBuf::new(),
             default_lang: String::new(),
-            library: Arc::new(Library::default()),
             cache: Arc::new(RenderCache::default()),
         }
     }
@@ -50,49 +37,39 @@ impl Function<TeraResult<Value>> for GetPage {
 
         let full_path = self.base_path.join(&path);
 
-        // Find page by file path to get its canonical
-        let canonical = self
-            .library
+        let cached = self
+            .cache
             .pages
-            .values()
-            .find(|p| p.file.path == full_path)
-            .map(|p| p.file.canonical.clone())
+            .get(&full_path)
             .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))?;
 
-        // Find the page with matching canonical and language
-        self.library
-            .pages
-            .values()
-            .find(|p| p.file.canonical == canonical && p.lang == lang)
-            .and_then(|p| self.cache.pages.get(&p.file.path))
-            .cloned()
+        let file_path = self
+            .cache
+            .pages_by_canonical
+            .get(&cached.canonical)
+            .and_then(|by_lang| by_lang.get(&lang))
             .ok_or_else(|| {
                 Error::message(format!("Page `{}` not found for language `{}`.", path, lang))
-            })
+            })?;
+
+        self.cache
+            .pages
+            .get(file_path)
+            .map(|c| c.value.clone())
+            .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))
     }
 }
 
 #[derive(Debug)]
 pub struct GetSection {
     base_path: PathBuf,
-    library: Arc<Library>,
     cache: Arc<RenderCache>,
     default_lang: String,
 }
 
 impl GetSection {
-    pub fn new(
-        base_path: PathBuf,
-        default_lang: &str,
-        library: Arc<Library>,
-        cache: Arc<RenderCache>,
-    ) -> Self {
-        Self {
-            base_path: base_path.join("content"),
-            default_lang: default_lang.to_string(),
-            library,
-            cache,
-        }
+    pub fn new(base_path: PathBuf, default_lang: &str, cache: Arc<RenderCache>) -> Self {
+        Self { base_path: base_path.join("content"), default_lang: default_lang.to_string(), cache }
     }
 }
 
@@ -101,7 +78,6 @@ impl Default for GetSection {
         Self {
             base_path: PathBuf::new(),
             default_lang: String::new(),
-            library: Arc::new(Library::default()),
             cache: Arc::new(RenderCache::default()),
         }
     }
@@ -117,25 +93,26 @@ impl Function<TeraResult<Value>> for GetSection {
 
         let full_path = self.base_path.join(&path);
 
-        // Find section by file path to get its canonical
-        let canonical = self
-            .library
+        let cached = self
+            .cache
             .sections
-            .values()
-            .find(|s| s.file.path == full_path)
-            .map(|s| s.file.canonical.clone())
+            .get(&full_path)
             .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))?;
 
-        // Find the section with matching canonical and language
-        self.library
-            .sections
-            .values()
-            .find(|s| s.file.canonical == canonical && s.lang == lang)
-            .and_then(|s| self.cache.sections.get(&s.file.path))
-            .cloned()
+        let file_path = self
+            .cache
+            .sections_by_canonical
+            .get(&cached.canonical)
+            .and_then(|by_lang| by_lang.get(&lang))
             .ok_or_else(|| {
                 Error::message(format!("Section `{}` not found for language `{}`.", path, lang))
-            })
+            })?;
+
+        self.cache
+            .sections
+            .get(file_path)
+            .map(|c| c.value.clone())
+            .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))
     }
 }
 
@@ -190,7 +167,7 @@ mod tests {
         let cache = RenderCache::build(&config, &library, &[], &tera);
         let base_path = "/test/base/path".into();
 
-        let get_page = GetPage::new(base_path, "en", Arc::new(library), Arc::new(cache));
+        let get_page = GetPage::new(base_path, "en", Arc::new(cache));
 
         // Find with lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes.md"))]);
@@ -275,7 +252,7 @@ mod tests {
         let cache = RenderCache::build(&config, &library, &[], &tera);
         let base_path = "/test/base/path".into();
 
-        let get_section = GetSection::new(base_path, "en", Arc::new(library), Arc::new(cache));
+        let get_section = GetSection::new(base_path, "en", Arc::new(cache));
 
         // Find with lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes/_index.md"))]);

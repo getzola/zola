@@ -70,7 +70,6 @@ pub fn register_tera_global_fns(site: &mut Site) {
         functions::GetPage::new(
             site.base_path.clone(),
             &site.config.default_language,
-            site.library.clone(),
             site.cache.clone(),
         ),
     );
@@ -79,7 +78,6 @@ pub fn register_tera_global_fns(site: &mut Site) {
         functions::GetSection::new(
             site.base_path.clone(),
             &site.config.default_language,
-            site.library.clone(),
             site.cache.clone(),
         ),
     );

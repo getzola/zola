@@ -183,7 +183,7 @@ impl<'a> Paginator<'a> {
         let pages: Vec<Value> = current_pager
             .page_indices
             .iter()
-            .filter_map(|&idx| cache.pages.get(&self.all_pages[idx]).cloned())
+            .filter_map(|&idx| cache.pages.get(&self.all_pages[idx]).map(|c| c.value.clone()))
             .collect();
         map.insert("pages".into(), Value::from(pages));
 

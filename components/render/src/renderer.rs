@@ -38,7 +38,7 @@ impl<'a> Renderer<'a> {
         let mut context = Context::new();
 
         context.insert_value("config", self.cache.configs.get(&page.lang).unwrap().clone());
-        context.insert_value("page", self.cache.pages.get(&page.file.path).unwrap().clone());
+        context.insert_value("page", self.cache.pages.get(&page.file.path).unwrap().value.clone());
         context.insert("current_url", &page.permalink);
         context.insert("current_path", &page.path);
         context.insert("lang", &page.lang);
@@ -52,8 +52,10 @@ impl<'a> Renderer<'a> {
         let mut context = Context::new();
 
         context.insert_value("config", self.cache.configs.get(&section.lang).unwrap().clone());
-        context
-            .insert_value("section", self.cache.sections.get(&section.file.path).unwrap().clone());
+        context.insert_value(
+            "section",
+            self.cache.sections.get(&section.file.path).unwrap().value.clone(),
+        );
         context.insert("current_url", &section.permalink);
         context.insert("current_path", &section.path);
         context.insert("lang", &section.lang);
@@ -131,7 +133,7 @@ impl<'a> Renderer<'a> {
             PaginationRoot::Section(s) => {
                 context.insert_value(
                     "section",
-                    self.cache.sections.get(&s.file.path).unwrap().clone(),
+                    self.cache.sections.get(&s.file.path).unwrap().value.clone(),
                 );
                 context.insert("lang", &s.lang);
                 context.insert_value("config", self.cache.configs.get(&s.lang).unwrap().clone());
