@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.2x.x (unrelease)
+
 ## 0.22.1 (2026-01-22)
 
 - Update deps to fix some JPEG decoding issue + highlighting speed
