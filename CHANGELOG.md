@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.22.1 (unreleased)
+## 0.22.1 (2026-01-22)
 
 - Update deps to fix some JPEG decoding issue + highlighting speed
 - Make sure all content is included in fuse search backend
