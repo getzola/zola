@@ -16,6 +16,7 @@ pub fn register_early_global_fns(site: &mut Site) -> TeraResult<()> {
             site.base_path.clone(),
             site.config.clone(),
             site.permalinks.clone(),
+            site.assets_permalinks.clone(),
             site.output_path.clone(),
         ),
     );

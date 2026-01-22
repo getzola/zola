@@ -71,7 +71,7 @@ impl FileInfo {
         // If we have a folder with an asset, don't consider it as a component
         // Splitting on `.` as we might have a language so it isn't *only* index but also index.fr
         // etc
-        if !components.is_empty() && name.split('.').collect::<Vec<_>>()[0] == "index" {
+        if !components.is_empty() && name.split('.').next() == Some("index") {
             colocated_path = Some({
                 let mut val = components.join("/");
                 val.push('/');
@@ -109,6 +109,18 @@ impl FileInfo {
             format!("{}.md", name)
         };
         let grand_parent = parent.parent().map(|p| p.to_path_buf());
+        let mut colocated_path = None;
+
+        // If we have a folder with an asset, don't consider it as a component
+        // Splitting on `.` as we might have a language so it isn't *only* index but also index.fr
+        // etc
+        if !components.is_empty() && name.split('.').collect::<Vec<_>>()[0] == "_index" {
+            colocated_path = Some({
+                let mut val = components.join("/");
+                val.push('/');
+                val
+            });
+        }
 
         FileInfo {
             filename: file_path.file_name().unwrap().to_string_lossy().to_string(),
@@ -119,7 +131,7 @@ impl FileInfo {
             name,
             components,
             relative,
-            colocated_path: None,
+            colocated_path,
         }
     }
 
@@ -292,5 +304,42 @@ mod tests {
             file.canonical,
             Path::new("/home/vincent/code/site/content/posts/tutorials/python/index")
         );
+    }
+
+    #[test]
+    fn correct_colocated_path() {
+        struct Test<'a> {
+            file_info: FileInfo,
+            expected_colocated_path: &'a str,
+        }
+
+        // A colocated path:
+        // - MUST NOT start with a '/'
+        // - MUST end with a '/'
+        // Breaking those assumptions may have uncontrolled side effects in some other code, including but not limited to assets permalinks generation.
+        let tests = vec![
+            Test {
+                file_info: FileInfo::new_page(
+                    Path::new("/home/vincent/code/site/content/posts/tutorials/python/index.md"),
+                    &PathBuf::new(),
+                ),
+                expected_colocated_path: "posts/tutorials/python/",
+            },
+            Test {
+                file_info: FileInfo::new_section(
+                    Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
+                    &PathBuf::new(),
+                ),
+                expected_colocated_path: "posts/tutorials/",
+            },
+        ];
+
+        for test in tests {
+            assert!(test.file_info.colocated_path.is_some());
+            assert_eq!(
+                test.file_info.colocated_path.as_ref().unwrap(),
+                test.expected_colocated_path
+            )
+        }
     }
 }
