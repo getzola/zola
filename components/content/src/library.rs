@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use ahash::{AHashMap, AHashSet};
-use config::Config;
+use config::{Config, TaxonomyConfig};
 
 use crate::ser::TranslatedContent;
 use crate::sorting::sort_pages;
@@ -99,10 +99,10 @@ impl Library {
                     .get_mut(&self.taxo_name_to_slug[taxa_name])
                     .expect("taxa not found");
 
-                if !taxa_def.contains_key(term) {
-                    taxa_def.insert(term.to_string(), Vec::new());
-                }
-                taxa_def.get_mut(term).unwrap().push(page.file.path.clone());
+                taxa_def
+                    .entry(term.to_string())
+                    .or_default()
+                    .push(page.file.path.clone());
             }
         }
 
@@ -150,12 +150,18 @@ impl Library {
     pub fn find_taxonomies(&self, config: &Config) -> Vec<Taxonomy> {
         let mut taxonomies = Vec::new();
 
+        let taxo_configs: AHashMap<(&str, &str), &TaxonomyConfig> = config
+            .languages
+            .iter()
+            .flat_map(|(lang, lang_config)| {
+                lang_config.taxonomies.iter().map(move |t| ((lang.as_str(), t.slug.as_str()), t))
+            })
+            .collect();
+
         for (lang, taxonomies_data) in &self.taxonomies_def {
             for (taxa_slug, terms_pages) in taxonomies_data {
-                let taxo_config = &config.languages[lang]
-                    .taxonomies
-                    .iter()
-                    .find(|t| &t.slug == taxa_slug)
+                let taxo_config = taxo_configs
+                    .get(&(lang.as_str(), taxa_slug.as_str()))
                     .expect("taxo should exist");
                 let mut taxo_found = TaxonomyFound::new(taxa_slug.to_string(), lang, taxo_config);
                 for (term, page_path) in terms_pages {
@@ -351,8 +357,7 @@ impl Library {
         if let Some(paths) = self.translations.get(canonical_path) {
             for path in paths {
                 let (lang, permalink, title, path) = {
-                    if self.sections.contains_key(path) {
-                        let s = &self.sections[path];
+                    if let Some(s) = self.sections.get(path) {
                         (&s.lang, &s.permalink, &s.meta.title, &s.file.path)
                     } else {
                         let s = &self.pages[path];

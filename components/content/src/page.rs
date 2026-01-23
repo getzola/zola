@@ -182,8 +182,6 @@ impl Page {
         Ok(page)
     }
 
-    pub fn find_language(&mut self) {}
-
     /// Read and parse a .md file into a Page struct
     pub fn from_file<P: AsRef<Path>>(path: P, config: &Config, base_path: &Path) -> Result<Page> {
         let path = path.as_ref();
@@ -247,7 +245,7 @@ impl Page {
                 path.push(filename);
                 path = path
                     .strip_prefix(base_path.join("content"))
-                    .expect("Should be able to stripe prefix")
+                    .expect("Should be able to strip prefix")
                     .to_path_buf();
                 path
             })

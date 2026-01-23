@@ -51,9 +51,7 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
         assets.retain(|p| !globset.is_match(p));
     }
 
-    assets.sort_by(|a, b| {
-        a.to_str().unwrap().to_ascii_lowercase().cmp(&b.to_str().unwrap().to_ascii_lowercase())
-    });
+    assets.sort_by_cached_key(|a| a.to_str().unwrap().to_ascii_lowercase());
 
     assets
 }
