@@ -224,6 +224,8 @@ impl Page {
 
         self.summary = res.summary;
         self.content = res.body;
+        // We don't need the raw content anymore
+        self.raw_content.clear();
         self.toc = res.toc;
         self.external_links = res.external_links;
         self.internal_links = res.internal_links;
@@ -303,7 +305,8 @@ Hello world"#;
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
-        assert_eq!(page.raw_content, "Hello world".to_string());
+        // it should have been cleared
+        assert_eq!(page.raw_content, String::new());
         assert_eq!(page.content, "<p>Hello world</p>\n".to_string());
     }
 

@@ -99,10 +99,7 @@ impl Library {
                     .get_mut(&self.taxo_name_to_slug[taxa_name])
                     .expect("taxa not found");
 
-                taxa_def
-                    .entry(term.to_string())
-                    .or_default()
-                    .push(page.file.path.clone());
+                taxa_def.entry(term.to_string()).or_default().push(page.file.path.clone());
             }
         }
 

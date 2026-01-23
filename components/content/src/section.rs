@@ -165,6 +165,8 @@ impl Section {
         let res = render_content(&self.raw_content, &context)
             .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
         self.content = res.body;
+        // We don't need the raw content anymore
+        self.raw_content.clear();
         self.toc = res.toc;
 
         self.external_links = res.external_links;
