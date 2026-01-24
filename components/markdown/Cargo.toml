@@ -16,6 +16,7 @@ log = { workspace = true }
 errors = { workspace = true }
 utils = { workspace = true }
 config = { workspace = true }
+render = { workspace = true }
 
 [dev-dependencies]
 templates = { workspace = true }

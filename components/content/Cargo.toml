@@ -20,9 +20,6 @@ errors = { workspace = true }
 utils = { workspace = true }
 config = { workspace = true }
 
-# TODO: remove it?
-markdown = { workspace = true }
-
 [dev-dependencies]
 # TODO: can we solve that usecase in src/page.rs in a simpler way? A custom macro_rules! maybe
 test-case = "3"

@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use config::Config;
 use errors::Result;
-use markdown::{RenderContext, Rendered, render_content};
+use markdown::{MarkdownContext, Rendered, render_content};
 use templates::ZOLA_TERA;
 use utils::types::InsertAnchor;
 
@@ -23,15 +23,15 @@ fn configurable_render(
         "markdown",
         templates::filters::MarkdownFilter::new(config.clone(), permalinks.clone(), tera.clone()),
     );
-    let mut context = RenderContext::new(
-        &tera,
-        &config,
-        &config.default_language,
-        "https://www.getzola.org/test/",
-        &permalinks,
+    let context = MarkdownContext {
+        tera: &tera,
+        config: &config,
+        permalinks: &permalinks,
+        lang: &config.default_language,
+        current_permalink: "https://www.getzola.org/test/",
+        current_path: "my_page.md",
         insert_anchor,
-    );
-    context.set_current_page_path("my_page.md");
+    };
 
     render_content(content, &context)
 }

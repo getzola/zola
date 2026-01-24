@@ -10,11 +10,10 @@ use pulldown_cmark as cmark;
 use pulldown_cmark_escape as cmark_escape;
 use std::sync::LazyLock;
 
-use crate::context::RenderContext;
+use crate::context::MarkdownContext;
 use errors::{Error, Result};
 use pulldown_cmark_escape::escape_html;
 use regex::{Regex, RegexBuilder};
-use tera::value::Key;
 use utils::net::is_external_link;
 use utils::site::resolve_internal_link;
 use utils::slugs::slugify_anchors;
@@ -155,7 +154,7 @@ fn find_anchor(anchors: &[String], name: String, level: u16) -> String {
 fn fix_link(
     link_type: LinkType,
     link: &str,
-    context: &RenderContext,
+    context: &MarkdownContext,
     internal_links: &mut Vec<(String, Option<String>)>,
     external_links: &mut Vec<String>,
 ) -> Result<String> {
@@ -174,11 +173,7 @@ fn fix_link(
                 resolved.permalink
             }
             Err(_) => {
-                let msg = format!(
-                    "Broken relative link `{}` in {}",
-                    link,
-                    context.current_page_path.unwrap_or("unknown"),
-                );
+                let msg = format!("Broken relative link `{}` in {}", link, context.current_path,);
                 match context.config.link_checker.internal_level {
                     config::LinkCheckerLevel::Error => bail!(msg),
                     config::LinkCheckerLevel::Warn => {
@@ -189,7 +184,7 @@ fn fix_link(
             }
         }
     } else if is_colocated_asset_link(link) {
-        format!("{}{}", context.current_page_permalink, link)
+        format!("{}{}", context.current_permalink, link)
     } else if is_external_link(link) {
         external_links.push(link.to_owned());
         link.to_owned()
@@ -197,12 +192,10 @@ fn fix_link(
         link.to_string()
     } else if let Some(stripped_link) = link.strip_prefix('#') {
         // local anchor without the internal zola path
-        if let Some(current_path) = context.current_page_path {
-            internal_links.push((current_path.to_owned(), Some(stripped_link.to_owned())));
-            format!("{}{}", context.current_page_permalink, &link)
-        } else {
-            link.to_string()
+        if !context.current_path.is_empty() {
+            internal_links.push((context.current_path.to_owned(), Some(stripped_link.to_owned())));
         }
+        format!("{}{}", context.current_permalink, &link)
     } else {
         link.to_string()
     };
@@ -400,11 +393,8 @@ fn convert_footnotes_to_github_style(old_events: &mut Vec<Event>) {
     old_events.push(Event::Html("</ol>\n</section>\n".into()));
 }
 
-pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Rendered> {
-    let path =
-        context.tera_context.get("page").or_else(|| context.tera_context.get("section")).map(|x| {
-            x.as_map().unwrap().get(&Key::Str("relative_path")).unwrap().as_str().unwrap()
-        });
+pub fn markdown_to_html(content: &str, context: &MarkdownContext) -> Result<Rendered> {
+    let path = context.current_path;
     // the rendered html
     let mut html = String::with_capacity(content.len());
     let mut summary = None;
@@ -479,13 +469,8 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     let html = if let Some(code) = code_block.take() {
                         if let Some(hl) = &context.config.markdown.highlighting {
                             if !hl.registry.contains_grammar(&code.lang) {
-                                let location = if let Some(p) = path {
-                                    format!(" in {p:?}")
-                                } else {
-                                    String::new()
-                                };
                                 let warning = format!(
-                                    "Language `{}` not found for syntax highlighting{location}.`",
+                                    "Language `{}` not found for syntax highlighting in {path:?}.`",
                                     code.lang
                                 );
                                 if hl.error_on_missing_language {
@@ -528,7 +513,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                 }
                 Event::Start(Tag::Image { link_type, dest_url, title, id }) => {
                     let link = if is_colocated_asset_link(&dest_url) {
-                        let link = format!("{}{}", context.current_page_permalink, &*dest_url);
+                        let link = format!("{}{}", context.current_permalink, &*dest_url);
                         link.into()
                     } else {
                         dest_url
@@ -666,7 +651,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
                     InsertAnchor::Heading => 0, // modified later to the correct value
                     InsertAnchor::None => unreachable!(),
                 };
-                let anchor_link = utils::templates::render_anchor_link(
+                let anchor_link = render::render_anchor_link(
                     &context.tera,
                     id,
                     heading_ref.level,
@@ -682,7 +667,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
             }
 
             // record heading to make table of contents
-            let permalink = format!("{}#{}", context.current_page_permalink, id);
+            let permalink = format!("{}#{}", context.current_permalink, id);
             let h = Heading {
                 level: heading_ref.level,
                 id: id.to_owned(),
@@ -737,7 +722,7 @@ pub fn markdown_to_html(content: &str, context: &RenderContext) -> Result<Render
 
             // add cutoff template
             if !tags.is_empty() {
-                let summary_cutoff = utils::templates::render_summary_cutoff(
+                let summary_cutoff = render::render_summary_cutoff(
                     &context.tera,
                     &summary_html,
                     context.lang,
@@ -773,8 +758,8 @@ mod tests {
     use super::*;
     use config::Config;
     use insta::assert_snapshot;
-    use std::borrow::Cow;
     use templates::ZOLA_TERA;
+    use utils::types::InsertAnchor;
 
     #[test]
     fn insert_many_works() {
@@ -830,8 +815,17 @@ mod tests {
         let mores =
             ["<!-- more -->", "<!--more-->", "<!-- MORE -->", "<!--MORE-->", "<!--\t MoRe \t-->"];
         let config = Config::default();
-        let mut context = RenderContext::from_config(&config);
-        context.tera = Cow::Owned(ZOLA_TERA.clone());
+        let tera = ZOLA_TERA.clone();
+        let permalinks = HashMap::new();
+        let context = MarkdownContext {
+            tera: &tera,
+            config: &config,
+            permalinks: &permalinks,
+            lang: &config.default_language,
+            current_permalink: "",
+            current_path: "",
+            insert_anchor: InsertAnchor::None,
+        };
         for more in mores {
             let content = format!("{top}\n\n{more}\n\n{bottom}");
             let rendered = markdown_to_html(&content, &context).unwrap();

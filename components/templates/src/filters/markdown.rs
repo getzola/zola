@@ -1,9 +1,9 @@
-use std::borrow::Cow;
 use std::collections::HashMap;
 
 use config::Config;
-use markdown::{RenderContext, render_content};
-use tera::{Error, Filter, Kwargs, State, TeraResult};
+use markdown::{MarkdownContext, render_content};
+use tera::{Error, Filter, Kwargs, State, TeraResult, Value};
+use utils::types::InsertAnchor;
 
 #[derive(Debug)]
 pub struct MarkdownFilter {
@@ -19,16 +19,47 @@ impl MarkdownFilter {
 }
 
 impl Filter<&str, TeraResult<String>> for MarkdownFilter {
-    fn call(&self, value: &str, kwargs: Kwargs, _: &State) -> TeraResult<String> {
-        // NOTE: RenderContext below is not aware of the current language
-        // However, it should not be a problem because the surrounding tera
-        // template has language context, and will most likely call a piece of
-        // markdown respecting language preferences.
-        let mut context = RenderContext::from_config(&self.config);
-        context.permalinks = Cow::Borrowed(&self.permalinks);
-        context.tera = Cow::Borrowed(&self.tera);
-
+    fn call(&self, value: &str, kwargs: Kwargs, state: &State) -> TeraResult<String> {
         let inline: bool = kwargs.get("inline")?.unwrap_or_default();
+
+        // Extract page/section context from Tera state when available
+        let page_or_section = state
+            .get::<Value>("page")
+            .ok()
+            .flatten()
+            .or_else(|| state.get::<Value>("section").ok().flatten());
+
+        let (current_path, current_permalink, lang) = page_or_section
+            .as_ref()
+            .and_then(|v| v.as_map())
+            .map(|map| {
+                let path = map
+                    .get(&"relative_path".into())
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                let permalink =
+                    map.get(&"permalink".into()).and_then(|v| v.as_str()).unwrap_or("").to_string();
+                let lang = state
+                    .get::<String>("lang")
+                    .ok()
+                    .flatten()
+                    .unwrap_or_else(|| self.config.default_language.clone());
+                (path, permalink, lang)
+            })
+            .unwrap_or_else(|| {
+                (String::new(), String::new(), self.config.default_language.clone())
+            });
+
+        let context = MarkdownContext {
+            tera: &self.tera,
+            config: &self.config,
+            permalinks: &self.permalinks,
+            lang: &lang,
+            current_permalink: &current_permalink,
+            current_path: &current_path,
+            insert_anchor: InsertAnchor::None,
+        };
 
         let mut html = render_content(value, &context)
             .map_err(|e| Error::message(format!("Failed to render markdown filter: {:?}", e)))?

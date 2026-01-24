@@ -1,5 +1,6 @@
 pub mod feeds;
 pub mod link_checking;
+mod md_render;
 mod minify;
 pub mod sass;
 pub mod sitemap;
@@ -463,7 +464,7 @@ impl Site {
             .par_iter_mut()
             .map(|page| {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
-                page.render_markdown(permalinks, tera, config, insert_anchor)
+                md_render::render_page(page, permalinks, tera, config, insert_anchor)
             })
             .collect::<Result<()>>()?;
 
@@ -472,7 +473,7 @@ impl Site {
             .values_mut()
             .collect::<Vec<_>>()
             .par_iter_mut()
-            .map(|section| section.render_markdown(permalinks, tera, config))
+            .map(|section| md_render::render_section(section, permalinks, tera, config))
             .collect::<Result<()>>()?;
 
         Ok(())
@@ -495,7 +496,13 @@ impl Site {
         if render_md {
             let insert_anchor =
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
-            page.render_markdown(&self.permalinks, &self.tera, &self.config, insert_anchor)?;
+            md_render::render_page(
+                &mut page,
+                &self.permalinks,
+                &self.tera,
+                &self.config,
+                insert_anchor,
+            )?;
         }
 
         let library = Arc::make_mut(&mut self.library);
@@ -521,7 +528,7 @@ impl Site {
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
         if render_md {
-            section.render_markdown(&self.permalinks, &self.tera, &self.config)?;
+            md_render::render_section(&mut section, &self.permalinks, &self.tera, &self.config)?;
         }
         let library = Arc::make_mut(&mut self.library);
         library.sections.remove(&section.file.path);

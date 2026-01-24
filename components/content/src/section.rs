@@ -1,13 +1,8 @@
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use tera::Tera;
-
 use config::Config;
-use errors::{Context, Result};
-use markdown::{RenderContext, render_content};
+use errors::Result;
 use utils::fs::read_file;
-use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
 
 use crate::file_info::FileInfo;
@@ -139,46 +134,6 @@ impl Section {
                 "section.html"
             }
         }
-    }
-
-    /// We need access to all pages url to render links relative to content
-    /// so that can't happen at the same time as parsing
-    pub fn render_markdown(
-        &mut self,
-        permalinks: &HashMap<String, String>,
-        tera: &Tera,
-        config: &Config,
-    ) -> Result<()> {
-        let mut context = RenderContext::new(
-            tera,
-            config,
-            &self.lang,
-            &self.permalink,
-            permalinks,
-            self.meta.insert_anchor_links.unwrap_or(config.markdown.insert_anchor_links),
-        );
-        context.set_current_page_path(&self.file.relative);
-        context
-            .tera_context
-            .insert("section", &SerializingSection::new(self, SectionSerMode::ForMarkdown));
-
-        let res = render_content(&self.raw_content, &context)
-            .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
-        self.content = res.body;
-        // We don't need the raw content anymore
-        self.raw_content.clear();
-        self.toc = res.toc;
-
-        self.external_links = res.external_links;
-        if let Some(ref redirect_to) = self.meta.redirect_to
-            && is_external_link(redirect_to)
-        {
-            self.external_links.push(redirect_to.to_owned());
-        }
-
-        self.internal_links = res.internal_links;
-
-        Ok(())
     }
 
     /// Is this the index section?

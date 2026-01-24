@@ -2,7 +2,7 @@ mod cache;
 mod pagination;
 mod renderer;
 
-use errors::{Result, bail};
+use errors::{Context as _, Result, bail};
 use tera::{Context, Tera};
 
 pub use cache::RenderCache;
@@ -45,4 +45,19 @@ pub(crate) fn render_template(name: &str, tera: &Tera, context: Context) -> Resu
 
     // Template exists, render it and propagate any errors
     tera.render(name, &context).map_err(Into::into)
+}
+
+pub fn render_anchor_link(tera: &Tera, id: &str, level: u32, lang: &str) -> Result<String> {
+    let mut context = Context::new();
+    context.insert("id", id);
+    context.insert("level", &level);
+    context.insert("lang", lang);
+    tera.render("anchor-link.html", &context).context("Failed to render anchor link template")
+}
+
+pub fn render_summary_cutoff(tera: &Tera, summary: &str, lang: &str) -> Result<String> {
+    let mut context = Context::new();
+    context.insert("summary", summary);
+    context.insert("lang", lang);
+    tera.render("summary-cutoff.html", &context).context("Failed to render summary cutoff template")
 }

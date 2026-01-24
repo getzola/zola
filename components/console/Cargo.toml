@@ -6,5 +6,3 @@ edition.workspace = true
 [dependencies]
 anstream = { workspace = true }
 anstyle = { workspace = true }
-
-errors = { workspace = true }
