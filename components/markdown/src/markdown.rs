@@ -651,12 +651,8 @@ pub fn markdown_to_html(content: &str, context: &MarkdownContext) -> Result<Rend
                     InsertAnchor::Heading => 0, // modified later to the correct value
                     InsertAnchor::None => unreachable!(),
                 };
-                let anchor_link = render::render_anchor_link(
-                    &context.tera,
-                    id,
-                    heading_ref.level,
-                    context.lang,
-                )?;
+                let anchor_link =
+                    render::render_anchor_link(&context.tera, id, heading_ref.level, context.lang)?;
                 if context.insert_anchor != InsertAnchor::Heading {
                     anchors_to_insert.push((anchor_idx, Event::Html(anchor_link.into())));
                 } else if let Some(captures) = A_HTML_TAG.captures(&anchor_link) {
@@ -722,11 +718,8 @@ pub fn markdown_to_html(content: &str, context: &MarkdownContext) -> Result<Rend
 
             // add cutoff template
             if !tags.is_empty() {
-                let summary_cutoff = render::render_summary_cutoff(
-                    &context.tera,
-                    &summary_html,
-                    context.lang,
-                )?;
+                let summary_cutoff =
+                    render::render_summary_cutoff(&context.tera, &summary_html, context.lang)?;
                 summary_html.push_str(&summary_cutoff);
             }
 

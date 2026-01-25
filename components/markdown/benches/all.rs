@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use config::{Config, HighlightConfig, Highlighting};
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
+use markdown::{MarkdownContext, render_content, render_content2};
 use std::hint::black_box;
-use markdown::{render_content, MarkdownContext};
 use templates::ZOLA_TERA;
 use utils::types::InsertAnchor;
 
@@ -90,6 +90,27 @@ fn bench_without_highlighting(c: &mut Criterion) {
     });
 }
 
+fn bench_without_highlighting_new(c: &mut Criterion) {
+    let mut tera = ZOLA_TERA.clone();
+    tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
+    let permalinks = HashMap::new();
+    let config = Config::default_for_test();
+
+    let context = MarkdownContext {
+        tera: &tera,
+        config: &config,
+        permalinks: &permalinks,
+        lang: &config.default_language,
+        current_permalink: "https://www.example.com/bench/",
+        current_path: "bench.md",
+        insert_anchor: InsertAnchor::None,
+    };
+
+    c.bench_function("render_without_highlighting", |b| {
+        b.iter(|| render_content2(black_box(CONTENT), &context).unwrap())
+    });
+}
+
 fn bench_with_highlighting(c: &mut Criterion) {
     let mut tera = ZOLA_TERA.clone();
     tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
@@ -122,5 +143,10 @@ fn bench_with_highlighting(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench_without_highlighting, bench_with_highlighting);
+criterion_group!(
+    benches,
+    bench_without_highlighting,
+    bench_without_highlighting_new,
+    bench_with_highlighting
+);
 criterion_main!(benches);
