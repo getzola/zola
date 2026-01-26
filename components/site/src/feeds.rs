@@ -1,9 +1,11 @@
 use std::cmp::Ordering;
 
 use rayon::prelude::*;
+use render::RenderCache;
 use serde::Serialize;
+use tera::Value;
 
-use content::{Library, Page, SerializingPage, TaxonomyTerm};
+use content::{Page, TaxonomyTerm};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SerializedFeedTaxonomyItem<'a> {
@@ -22,18 +24,18 @@ impl<'a> SerializedFeedTaxonomyItem<'a> {
     }
 }
 
-pub struct FeedData<'a> {
-    pub pages: Vec<SerializingPage<'a>>,
+pub struct FeedData {
+    pub pages: Vec<Value>,
     pub last_updated: Option<String>,
 }
 
 /// Prepares feed data by filtering, sorting, and serializing pages.
 /// Returns the serialized pages and the last_updated timestamp.
-pub fn prepare_feed<'a>(
-    all_pages: Vec<&'a Page>,
+pub fn prepare_feed(
+    all_pages: Vec<&Page>,
     feed_limit: Option<usize>,
-    library: &'a Library,
-) -> FeedData<'a> {
+    cache: &RenderCache,
+) -> FeedData {
     let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
 
     pages.par_sort_unstable_by(|a, b| {
@@ -53,7 +55,7 @@ pub fn prepare_feed<'a>(
     let serialized_pages = pages
         .iter()
         .take(num_entries)
-        .map(|x| x.serialize_without_siblings(library))
+        .map(|page| cache.pages.get(&page.file.path).unwrap().value.clone())
         .collect::<Vec<_>>();
 
     FeedData { pages: serialized_pages, last_updated }

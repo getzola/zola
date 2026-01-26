@@ -16,5 +16,5 @@ pub use library::Library;
 pub use page::Page;
 pub use section::Section;
 pub use ser::{SerializingPage, SerializingSection};
-pub use taxonomies::{Taxonomy, TaxonomyTerm};
+pub use taxonomies::{SerializedTaxonomy, SerializedTaxonomyTerm, Taxonomy, TaxonomyTerm};
 pub use types::*;

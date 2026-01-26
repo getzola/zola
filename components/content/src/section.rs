@@ -7,8 +7,6 @@ use utils::table_of_contents::Heading;
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{SectionFrontMatter, split_section_content};
-use crate::library::Library;
-use crate::ser::{SectionSerMode, SerializingSection};
 use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
@@ -163,14 +161,6 @@ impl Section {
                 _ => Some(x),
             },
         }
-    }
-
-    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
-        SerializingSection::new(self, SectionSerMode::Full(library))
-    }
-
-    pub fn serialize_basic<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
-        SerializingSection::new(self, SectionSerMode::MetadataOnly(library))
     }
 }
 

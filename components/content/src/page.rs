@@ -11,8 +11,6 @@ use utils::table_of_contents::Heading;
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{PageFrontMatter, split_page_content};
-use crate::library::Library;
-use crate::ser::SerializingPage;
 use crate::utils::get_reading_analytics;
 use crate::utils::{find_related_assets, has_anchor};
 use utils::anchors::has_anchor_id;
@@ -220,14 +218,6 @@ impl Page {
 
     pub fn has_anchor_id(&self, id: &str) -> bool {
         has_anchor_id(&self.content, id)
-    }
-
-    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
-        SerializingPage::new(self, Some(library), true)
-    }
-
-    pub fn serialize_without_siblings<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
-        SerializingPage::new(self, Some(library), false)
     }
 }
 

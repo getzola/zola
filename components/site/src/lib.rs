@@ -1048,7 +1048,7 @@ impl Site {
         base_path: Option<&PathBuf>,
         lang: &str,
     ) -> Result<()> {
-        let feed_data = feeds::prepare_feed(all_pages, self.config.feed_limit, &self.library);
+        let feed_data = feeds::prepare_feed(all_pages, self.config.feed_limit, &self.cache);
         let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
 
         for feed_filename in &self.config.languages[lang].feed_filenames {
@@ -1075,9 +1075,9 @@ impl Site {
         lang: &str,
         section: &Section,
     ) -> Result<()> {
-        let feed_data = feeds::prepare_feed(all_pages, self.config.feed_limit, &self.library);
+        let feed_data = feeds::prepare_feed(all_pages, self.config.feed_limit, &self.cache);
         let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
-        let serialized_section = section.serialize(&self.library);
+        let cached_section = &self.cache.sections[&section.file.path].value;
 
         for feed_filename in &self.config.languages[lang].feed_filenames {
             let feed_url = self.make_feed_url(Some(base_path), feed_filename);
@@ -1088,7 +1088,7 @@ impl Site {
                 pages: &feed_data.pages,
                 last_updated: feed_data.last_updated.as_deref(),
             };
-            let feed = renderer.render_section_feed(&input, &serialized_section)?;
+            let feed = renderer.render_section_feed(&input, cached_section.clone())?;
             self.write_feed(Some(base_path), feed_filename, feed)?;
         }
 
@@ -1104,7 +1104,7 @@ impl Site {
         taxonomy: &Taxonomy,
         term: &TaxonomyTerm,
     ) -> Result<()> {
-        let feed_data = feeds::prepare_feed(all_pages, self.config.feed_limit, &self.library);
+        let feed_data = feeds::prepare_feed(all_pages, self.config.feed_limit, &self.cache);
         let renderer = Renderer::new(&self.tera, &self.config, &self.library, &self.cache);
         let serialized_term = feeds::SerializedFeedTaxonomyItem::from_item(term);
 

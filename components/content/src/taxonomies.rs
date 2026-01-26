@@ -2,13 +2,12 @@ use std::cmp::Ordering;
 use std::path::PathBuf;
 
 use serde::Serialize;
+use tera::Value;
 
 use ahash::AHashMap;
 use config::{Config, TaxonomyConfig};
 use utils::slugs::slugify_paths;
 
-use crate::library::Library;
-use crate::ser::SerializingPage;
 use crate::{Page, SortBy};
 
 use crate::sorting::sort_pages;
@@ -19,27 +18,20 @@ pub struct SerializedTaxonomyTerm<'a> {
     slug: &'a str,
     path: &'a str,
     permalink: &'a str,
-    pages: Vec<SerializingPage<'a>>,
+    pages: Vec<Value>,
     page_count: usize,
 }
 
 impl<'a> SerializedTaxonomyTerm<'a> {
-    pub fn from_item(item: &'a TaxonomyTerm, library: &'a Library, include_pages: bool) -> Self {
-        let mut pages = vec![];
-
-        if include_pages {
-            for p in &item.pages {
-                pages.push(SerializingPage::new(&library.pages[p], Some(library), false));
-            }
-        }
-
+    /// Build from pre-cached page Values (used by RenderCache)
+    pub fn from_item_with_pages(item: &'a TaxonomyTerm, pages: Vec<Value>) -> Self {
         SerializedTaxonomyTerm {
             name: &item.name,
             slug: &item.slug,
             path: &item.path,
             permalink: &item.permalink,
-            pages,
             page_count: item.pages.len(),
+            pages,
         }
     }
 }
@@ -85,17 +77,6 @@ impl TaxonomyTerm {
         TaxonomyTerm { name: name.to_string(), permalink, path, slug: item_slug, pages }
     }
 
-    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializedTaxonomyTerm<'a> {
-        SerializedTaxonomyTerm::from_item(self, library, true)
-    }
-
-    pub fn serialize_without_pages<'a>(
-        &'a self,
-        library: &'a Library,
-    ) -> SerializedTaxonomyTerm<'a> {
-        SerializedTaxonomyTerm::from_item(self, library, false)
-    }
-
     pub fn merge(&mut self, other: Self) {
         self.pages.extend(other.pages);
     }
@@ -118,17 +99,16 @@ pub struct SerializedTaxonomy<'a> {
 }
 
 impl<'a> SerializedTaxonomy<'a> {
-    pub fn from_taxonomy(taxonomy: &'a Taxonomy, library: &'a Library) -> Self {
-        let items: Vec<SerializedTaxonomyTerm> = taxonomy
-            .items
-            .iter()
-            .map(|i| SerializedTaxonomyTerm::from_item(i, library, true))
-            .collect();
+    /// Build from pre-built terms (used by RenderCache)
+    pub fn from_taxonomy_with_terms(
+        taxonomy: &'a Taxonomy,
+        terms: Vec<SerializedTaxonomyTerm<'a>>,
+    ) -> Self {
         SerializedTaxonomy {
             kind: &taxonomy.kind,
             lang: &taxonomy.lang,
             permalink: &taxonomy.permalink,
-            items,
+            items: terms,
         }
     }
 }
@@ -189,10 +169,6 @@ impl Taxonomy {
             permalink,
             items: sorted_items,
         }
-    }
-
-    pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializedTaxonomy<'a> {
-        SerializedTaxonomy::from_taxonomy(self, library)
     }
 
     pub fn len(&self) -> usize {

@@ -4,7 +4,10 @@ use ahash::AHashMap;
 use tera::{Tera, Value};
 
 use config::Config;
-use content::{Library, Taxonomy};
+use content::{
+    Library, SerializedTaxonomy, SerializedTaxonomyTerm, SerializingPage, SerializingSection,
+    Taxonomy,
+};
 
 /// Cached page/section: serialized value + canonical path for translation lookups
 #[derive(Debug, Clone)]
@@ -43,7 +46,8 @@ pub struct RenderCache {
 
 impl RenderCache {
     pub fn build(config: &Config, library: &Library, taxonomies: &[Taxonomy], tera: &Tera) -> Self {
-        let (pages, pages_by_canonical) = library.pages.iter().fold(
+        // First pass: serialize all pages without siblings
+        let (mut pages, pages_by_canonical) = library.pages.iter().fold(
             (
                 AHashMap::with_capacity(library.pages.len()),
                 AHashMap::<PathBuf, AHashMap<String, PathBuf>>::new(),
@@ -52,7 +56,7 @@ impl RenderCache {
                 pages.insert(
                     path.clone(),
                     CachedContent {
-                        value: Value::from_serializable(&page.serialize(library)),
+                        value: Value::from_serializable(&SerializingPage::new(page, library)),
                         canonical: page.file.canonical.clone(),
                     },
                 );
@@ -64,16 +68,63 @@ impl RenderCache {
             },
         );
 
+        // Second pass: inject sibling Values from cache
+        // Collect siblings first to avoid borrow issues
+        let siblings: Vec<_> = library
+            .pages
+            .iter()
+            .filter_map(|(path, page)| {
+                let lower = page.lower.as_ref().and_then(|p| pages.get(p)).map(|c| c.value.clone());
+                let higher =
+                    page.higher.as_ref().and_then(|p| pages.get(p)).map(|c| c.value.clone());
+                if lower.is_some() || higher.is_some() {
+                    Some((path.clone(), lower, higher))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        for (path, lower, higher) in siblings {
+            if let Some(mut cached) = pages.remove(&path) {
+                let new_value = match cached.value.into_map() {
+                    Some(mut map) => {
+                        if let Some(lower_val) = lower {
+                            map.insert("lower".into(), lower_val);
+                        }
+                        if let Some(higher_val) = higher {
+                            map.insert("higher".into(), higher_val);
+                        }
+                        Value::from(map)
+                    }
+                    None => unreachable!("serialized page should always be a map"),
+                };
+                cached.value = new_value;
+                pages.insert(path, cached);
+            }
+        }
+
         let (sections, sections_by_canonical) = library.sections.iter().fold(
             (
                 AHashMap::with_capacity(library.sections.len()),
                 AHashMap::<PathBuf, AHashMap<String, PathBuf>>::new(),
             ),
             |(mut sections, mut sections_by_canonical), (path, section)| {
+                // Look up cached page values
+                let section_pages: Vec<Value> = section
+                    .pages
+                    .iter()
+                    .filter_map(|p| pages.get(p).map(|c| c.value.clone()))
+                    .collect();
+
                 sections.insert(
                     path.clone(),
                     CachedContent {
-                        value: Value::from_serializable(&section.serialize(library)),
+                        value: Value::from_serializable(&SerializingSection::new(
+                            section,
+                            library,
+                            section_pages,
+                        )),
                         canonical: section.file.canonical.clone(),
                     },
                 );
@@ -101,17 +152,28 @@ impl RenderCache {
                     tera.get_template(&single_tpl).is_some().then_some(single_tpl);
                 let list_template = tera.get_template(&list_tpl).is_some().then_some(list_tpl);
 
-                // Serialize all terms
+                // Serialize all terms using cached page values
                 let mut terms = AHashMap::with_capacity(t.items.len());
+                let mut serialized_terms = Vec::with_capacity(t.items.len());
                 for term in &t.items {
-                    terms.insert(
-                        term.slug.clone(),
-                        Value::from_serializable(&term.serialize(library)),
-                    );
+                    // Look up pre-cached page values
+                    let term_pages: Vec<Value> = term
+                        .pages
+                        .iter()
+                        .filter_map(|p| pages.get(p).map(|c| c.value.clone()))
+                        .collect();
+
+                    let serialized_term =
+                        SerializedTaxonomyTerm::from_item_with_pages(term, term_pages);
+                    terms.insert(term.slug.clone(), Value::from_serializable(&serialized_term));
+                    serialized_terms.push(serialized_term);
                 }
 
                 let cached = CachedTaxonomy {
-                    value: Value::from_serializable(&t.to_serialized(library)),
+                    value: Value::from_serializable(&SerializedTaxonomy::from_taxonomy_with_terms(
+                        t,
+                        serialized_terms,
+                    )),
                     terms,
                     single_template,
                     list_template,

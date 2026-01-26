@@ -10,6 +10,13 @@ use markdown::MarkdownContext;
 use utils::net::is_external_link;
 use utils::types::InsertAnchor;
 
+#[inline]
+fn needs_templating(s: &str) -> bool {
+    let bytes = s.as_bytes();
+    memchr::memchr_iter(b'{', bytes)
+        .any(|i| i + 1 < bytes.len() && (bytes[i + 1] == b'{' || bytes[i + 1] == b'%'))
+}
+
 /// We need access to all pages url to render links relative to content
 /// so that can't happen at the same time as parsing
 pub fn render_page(

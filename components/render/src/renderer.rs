@@ -1,16 +1,16 @@
 use config::Config;
 use config::TaxonomyConfig;
-use content::{Library, Page, Section, SerializingPage, Taxonomy, TaxonomyTerm};
+use content::{Library, Page, Section, Taxonomy, TaxonomyTerm};
 use errors::{Context as _, Result};
 use serde::Serialize;
-use tera::{Context, Tera};
+use tera::{Context, Tera, Value};
 
 /// Common parameters for rendering feeds
 pub struct FeedInput<'a> {
     pub feed_filename: &'a str,
     pub lang: &'a str,
     pub feed_url: &'a str,
-    pub pages: &'a [SerializingPage<'a>],
+    pub pages: &'a [Value],
     pub last_updated: Option<&'a str>,
 }
 
@@ -179,13 +179,9 @@ impl<'a> Renderer<'a> {
             .with_context(|| format!("Failed to render feed '{}'", input.feed_filename))
     }
 
-    pub fn render_section_feed<S: Serialize>(
-        &self,
-        input: &FeedInput<'_>,
-        section: &S,
-    ) -> Result<String> {
+    pub fn render_section_feed(&self, input: &FeedInput<'_>, section: Value) -> Result<String> {
         let mut context = self.build_feed_context(input);
-        context.insert("section", section);
+        context.insert_value("section", section);
         render_template(input.feed_filename, self.tera, context)
             .with_context(|| format!("Failed to render feed '{}'", input.feed_filename))
     }
@@ -205,7 +201,7 @@ impl<'a> Renderer<'a> {
 
     fn build_feed_context(&self, input: &FeedInput<'_>) -> Context {
         let mut context = Context::new();
-        context.insert("pages", input.pages);
+        context.insert_value("pages", Value::from_serializable(&input.pages));
         context.insert_value("config", self.cache.configs.get(input.lang).unwrap().clone());
         context.insert("lang", input.lang);
         context.insert("feed_url", input.feed_url);

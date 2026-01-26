@@ -123,6 +123,7 @@ webp = "0.3"
 giallo = {version = "0.2", features = ["dump"]}
 insta = "1"
 jiff = "0.2"
+memchr = "2.7.6"
 
 # Internal crates
 config = { path = "components/config" }

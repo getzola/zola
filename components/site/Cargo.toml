@@ -27,6 +27,7 @@ link_checker = { workspace = true }
 content = { workspace = true }
 render = { workspace = true }
 markdown = { workspace = true }
+memchr = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
