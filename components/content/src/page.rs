@@ -269,7 +269,7 @@ impl Page {
                 path.push(filename);
                 path = path
                     .strip_prefix(base_path.join("content"))
-                    .expect("Should be able to stripe prefix")
+                    .expect("Should be able to strip prefix")
                     .to_path_buf();
                 path
             })
