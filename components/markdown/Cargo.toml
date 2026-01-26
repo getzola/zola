@@ -20,7 +20,7 @@ render = { workspace = true }
 
 [dev-dependencies]
 templates = { workspace = true }
-insta = "1.12.0"
+insta = { workspace = true }
 criterion = { version = "0.7", features = ["html_reports"] }
 
 [[bench]]

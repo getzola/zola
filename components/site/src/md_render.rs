@@ -127,27 +127,25 @@ And here's another. [^3]
         let mut page = res.unwrap();
         render_page(&mut page, &HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None)
             .unwrap();
-        assert_eq!(
-            page.summary,
-            Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n<p>Here's another. </p>".to_string())
-        );
-        assert_eq!(
-            page.content,
-            r##"<p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference"><a href="#1">1</a></sup></p>
-<p>Here's another. <sup class="footnote-reference"><a href="#2">2</a></sup></p>
-<span id="continue-reading"></span>
-<p>And here's another. <sup class="footnote-reference"><a href="#3">3</a></sup></p>
-<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
-<p>This is the first footnote.</p>
-</div>
-<div class="footnote-definition" id="2"><sup class="footnote-definition-label">2</sup>
-<p>This is the second footnote.</p>
-</div>
-<div class="footnote-definition" id="3"><sup class="footnote-definition-label">3</sup>
-<p>This is the third footnote.</p>
-</div>
-"##
-        );
+        insta::assert_snapshot!(page.summary.as_deref().unwrap_or(""), @r###"
+        <p>This page use <sup>1.5</sup> and has footnotes, here's one. </p>
+        <p>Here's another. </p>
+        "###);
+        insta::assert_snapshot!(page.content, @r###"
+        <p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference"><a href="#1">1</a></sup></p>
+        <p>Here's another. <sup class="footnote-reference"><a href="#2">2</a></sup></p>
+        <span id="continue-reading"></span>
+        <p>And here's another. <sup class="footnote-reference"><a href="#3">3</a></sup></p>
+        <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
+        <p>This is the first footnote.</p>
+        </div>
+        <div class="footnote-definition" id="2"><sup class="footnote-definition-label">2</sup>
+        <p>This is the second footnote.</p>
+        </div>
+        <div class="footnote-definition" id="3"><sup class="footnote-definition-label">3</sup>
+        <p>This is the third footnote.</p>
+        </div>
+        "###);
 
         let res = Page::parse(Path::new("hello.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
@@ -155,30 +153,28 @@ And here's another. [^3]
         let mut page = res.unwrap();
         render_page(&mut page, &HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None)
             .unwrap();
-        assert_eq!(
-            page.summary,
-            Some("<p>This page use <sup>1.5</sup> and has footnotes, here's one. </p>\n<p>Here's another. </p>".to_string())
-        );
-        assert_eq!(
-            page.content,
-            r##"<p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">1</a></sup></p>
-<p>Here's another. <sup class="footnote-reference" id="fr-2-1"><a href="#fn-2">2</a></sup></p>
-<span id="continue-reading"></span>
-<p>And here's another. <sup class="footnote-reference" id="fr-3-1"><a href="#fn-3">3</a></sup></p>
-<section class="footnotes">
-<ol class="footnotes-list">
-<li id="fn-1">
-<p>This is the first footnote. <a href="#fr-1-1">↩</a></p>
-</li>
-<li id="fn-2">
-<p>This is the second footnote. <a href="#fr-2-1">↩</a></p>
-</li>
-<li id="fn-3">
-<p>This is the third footnote. <a href="#fr-3-1">↩</a></p>
-</li>
-</ol>
-</section>
-"##
-        );
+        insta::assert_snapshot!(page.summary.as_deref().unwrap_or(""), @r###"
+        <p>This page use <sup>1.5</sup> and has footnotes, here's one. </p>
+        <p>Here's another. </p>
+        "###);
+        insta::assert_snapshot!(page.content, @r###"
+        <p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup></p>
+        <p>Here's another. <sup class="footnote-reference" id="fr-2-1"><a href="#fn-2">[2]</a></sup></p>
+        <span id="continue-reading"></span>
+        <p>And here's another. <sup class="footnote-reference" id="fr-3-1"><a href="#fn-3">[3]</a></sup></p>
+        <section class="footnotes">
+        <ol class="footnotes-list">
+        <li id="fn-1">
+        <p>This is the first footnote. <a href="#fr-1-1">↩</a></p>
+        </li>
+        <li id="fn-2">
+        <p>This is the second footnote. <a href="#fr-2-1">↩</a></p>
+        </li>
+        <li id="fn-3">
+        <p>This is the third footnote. <a href="#fr-3-1">↩</a></p>
+        </li>
+        </ol>
+        </section>
+        "###);
     }
 }

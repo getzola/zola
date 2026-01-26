@@ -4742,6 +4742,7 @@ dependencies = [
  "globset",
  "grass",
  "imageproc",
+ "insta",
  "link_checker",
  "log",
  "markdown",

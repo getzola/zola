@@ -1,8 +1,8 @@
 ---
 source: components/markdown/src/markdown.rs
-expression: html
+expression: rendered.body
 ---
-<p>This text has a footnote<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">1</a></sup></p>
+<p>This text has a footnote<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup></p>
 <section class="footnotes">
 <ol class="footnotes-list">
 <li id="fn-1">
