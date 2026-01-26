@@ -11,7 +11,7 @@ in the [docs/content](docs/content) folder of this repository or visit the [Zola
 This tool and its template engine [tera](https://keats.github.io/tera/) were born from an intense dislike of the (insane) Golang template engine and therefore of
 Hugo that I was using before for 6+ sites.
 
-# List of features
+## List of features
 
 - [Single binary](https://www.getzola.org/documentation/getting-started/cli-usage/)
 - [Syntax highlighting](https://www.getzola.org/documentation/content/syntax-highlighting/)
@@ -31,3 +31,12 @@ Hugo that I was using before for 6+ sites.
 - [Search with no servers or any third parties involved](https://www.getzola.org/documentation/content/search/)
 - [Live reload](https://www.getzola.org/documentation/getting-started/cli-usage/#serve)
 - Deploy on many platforms easily: [Netlify](https://www.getzola.org/documentation/deployment/netlify/), [Vercel](https://www.getzola.org/documentation/deployment/vercel/), [Cloudflare Pages](https://www.getzola.org/documentation/deployment/cloudflare-pages/), etc
+
+## License
+
+This project contains code under multiple licenses.
+
+Code introduced after version 0.22 is licensed under the EUPL-1.2.
+Code that existed prior to commit 3c9131db0d203640b6d5619ca1f75ce1e0d49d8f remains licensed under the MIT License, including in later versions of the project.
+
+See LICENSE and LICENSE-MIT for details.
