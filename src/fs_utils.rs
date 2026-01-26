@@ -3,7 +3,6 @@
 
 use ahash::HashMap;
 use globset::GlobSet;
-use log;
 use notify_debouncer_full::DebouncedEvent;
 use notify_debouncer_full::notify::event::*;
 use std::fs::read_dir;

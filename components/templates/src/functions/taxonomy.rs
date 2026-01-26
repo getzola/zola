@@ -43,7 +43,7 @@ impl Function<TeraResult<Value>> for GetTaxonomyUrl {
         let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
         let required: bool = kwargs.get("required")?.unwrap_or(true);
 
-        let cached = match (self.cache.get_taxonomy(&lang, &kind), required) {
+        let cached = match (self.cache.get_taxonomy(&lang, kind), required) {
             (Some(c), _) => c,
             (None, false) => return Ok(Value::null()),
             (None, true) => {
@@ -54,13 +54,12 @@ impl Function<TeraResult<Value>> for GetTaxonomyUrl {
             }
         };
 
-        let slug = slugify_paths(&term, self.slugify);
-        if let Some(t) = cached.terms.get(&slug) {
-            if let Some(map) = t.as_map() {
-                if let Some(permalink) = map.get(&"permalink".into()).and_then(|v| v.as_str()) {
-                    return Ok(Value::from(permalink));
-                }
-            }
+        let slug = slugify_paths(term, self.slugify);
+        if let Some(t) = cached.terms.get(&slug)
+            && let Some(map) = t.as_map()
+            && let Some(permalink) = map.get(&"permalink".into()).and_then(|v| v.as_str())
+        {
+            return Ok(Value::from(permalink));
         }
 
         Err(Error::message(format!(
@@ -98,7 +97,7 @@ impl Function<TeraResult<Value>> for GetTaxonomy {
         let required: bool = kwargs.get("required")?.unwrap_or(true);
         let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
 
-        match self.cache.get_taxonomy(&lang, &kind) {
+        match self.cache.get_taxonomy(&lang, kind) {
             Some(cached) => Ok(cached.value.clone()),
             None if !required => Ok(Value::null()),
             None => Err(Error::message(format!(
@@ -139,7 +138,7 @@ impl Function<TeraResult<Value>> for GetTaxonomyTerm {
         let required: bool = kwargs.get("required")?.unwrap_or(true);
         let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
 
-        let cached = match (self.cache.get_taxonomy(&lang, &kind), required) {
+        let cached = match (self.cache.get_taxonomy(&lang, kind), required) {
             (Some(c), _) => c,
             (None, false) => return Ok(Value::null()),
             (None, true) => {
@@ -150,7 +149,7 @@ impl Function<TeraResult<Value>> for GetTaxonomyTerm {
             }
         };
 
-        let slug = slugify_paths(&term, self.slugify);
+        let slug = slugify_paths(term, self.slugify);
         match (cached.terms.get(&slug).cloned(), required) {
             (Some(t), _) => Ok(t),
             (None, false) => Ok(Value::null()),

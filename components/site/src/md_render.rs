@@ -65,10 +65,10 @@ pub fn render_section(
     section.raw_content.clear();
     section.toc = res.toc;
     section.external_links = res.external_links;
-    if let Some(ref redirect_to) = section.meta.redirect_to {
-        if is_external_link(redirect_to) {
-            section.external_links.push(redirect_to.to_owned());
-        }
+    if let Some(ref redirect_to) = section.meta.redirect_to
+        && is_external_link(redirect_to)
+    {
+        section.external_links.push(redirect_to.to_owned());
     }
     section.internal_links = res.internal_links;
     Ok(())

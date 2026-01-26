@@ -112,10 +112,10 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
     let theme_tpl_dir =
         config.theme.as_ref().map(|t| path.join("themes").join(t).join("templates"));
 
-    if let Some(ref theme_dir) = theme_tpl_dir {
-        if !theme_dir.exists() {
-            bail!("Theme `{}` is missing a templates folder", config.theme.as_ref().unwrap());
-        }
+    if let Some(ref theme_dir) = theme_tpl_dir
+        && !theme_dir.exists()
+    {
+        bail!("Theme `{}` is missing a templates folder", config.theme.as_ref().unwrap());
     }
 
     if !site_tpl_dir.exists() && theme_tpl_dir.is_none() {

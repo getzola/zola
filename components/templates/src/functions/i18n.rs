@@ -1,7 +1,7 @@
 use config::Config;
 use tera::{Error, Function, Kwargs, State, TeraResult};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Trans {
     config: Config,
 }
@@ -9,12 +9,6 @@ pub struct Trans {
 impl Trans {
     pub fn new(config: Config) -> Self {
         Self { config }
-    }
-}
-
-impl Default for Trans {
-    fn default() -> Self {
-        Self { config: Config::default() }
     }
 }
 

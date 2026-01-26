@@ -1,4 +1,3 @@
-use log;
 use std::convert::TryInto;
 use std::time::Instant;
 use time::Duration;

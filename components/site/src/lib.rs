@@ -12,7 +12,6 @@ use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
-use log;
 use rayon::prelude::*;
 use std::sync::LazyLock;
 use tera::Tera;
@@ -830,7 +829,7 @@ impl Site {
         }
 
         for (filename, content) in themes {
-            let p = self.static_path.join(&filename);
+            let p = self.static_path.join(filename);
             if !p.exists() {
                 create_file(&p, content)?;
             }
@@ -993,18 +992,13 @@ impl Site {
                         } else {
                             PathBuf::from(format!("{}/{}", taxonomy.slug, item.slug))
                         }
+                    } else if let Some(ref taxonomy_root) = self.config.taxonomy_root {
+                        PathBuf::from(format!(
+                            "{}/{}/{}/{}",
+                            taxonomy.lang, taxonomy_root, taxonomy.slug, item.slug
+                        ))
                     } else {
-                        if let Some(ref taxonomy_root) = self.config.taxonomy_root {
-                            PathBuf::from(format!(
-                                "{}/{}/{}/{}",
-                                taxonomy.lang, taxonomy_root, taxonomy.slug, item.slug
-                            ))
-                        } else {
-                            PathBuf::from(format!(
-                                "{}/{}/{}",
-                                taxonomy.lang, taxonomy.slug, item.slug
-                            ))
-                        }
+                        PathBuf::from(format!("{}/{}/{}", taxonomy.lang, taxonomy.slug, item.slug))
                     };
                     self.render_taxonomy_feed(
                         item.pages.iter().map(|p| self.library.pages.get(p).unwrap()).collect(),

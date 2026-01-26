@@ -9,7 +9,7 @@ pub use cache::RenderCache;
 pub use pagination::{Pager, Paginator};
 pub use renderer::{FeedInput, Renderer};
 
-/// TODO: add a custom default theme?
+// TODO: add a custom default theme?
 
 const DEFAULT_TPL: &str = include_str!("default_tpl.html");
 

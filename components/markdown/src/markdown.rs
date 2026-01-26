@@ -386,7 +386,7 @@ impl<'a> State<'a> {
         }
 
         let result = if link.starts_with("@/") {
-            match resolve_internal_link(&link, &ctx.permalinks) {
+            match resolve_internal_link(link, ctx.permalinks) {
                 Ok(resolved) => {
                     self.internal_links.push((resolved.md_path, resolved.anchor));
                     resolved.permalink
@@ -589,7 +589,7 @@ impl<'a> State<'a> {
         html.truncate(html.trim_end().len());
         // add cutoff template
         if !open_tags.is_empty() {
-            match render::render_summary_cutoff(&ctx.tera, &html, ctx.lang) {
+            match render::render_summary_cutoff(ctx.tera, &html, ctx.lang) {
                 Ok(cutoff) => {
                     html.push_str(&cutoff);
                 }

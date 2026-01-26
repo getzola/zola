@@ -119,11 +119,8 @@ impl Page {
         };
 
         if let Some(ref caps) = RFC3339_DATE.captures(&file_path_for_slug) {
-            if caps.name("slug").is_some() {
-                if !config.slugify.paths_keep_dates {
-                    slug_from_dated_filename =
-                        Some(caps.name("slug").unwrap().as_str().to_string());
-                }
+            if caps.name("slug").is_some() && !config.slugify.paths_keep_dates {
+                slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
             }
             if page.meta.date.is_none() {
                 page.meta.date = Some(caps.name("datetime").unwrap().as_str().to_string());

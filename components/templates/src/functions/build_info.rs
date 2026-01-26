@@ -7,6 +7,12 @@ pub struct Now {
     zoned: Zoned,
 }
 
+impl Default for Now {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Now {
     pub fn new() -> Self {
         Self { zoned: Zoned::now() }
