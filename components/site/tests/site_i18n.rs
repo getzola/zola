@@ -192,6 +192,10 @@ fn correct_translations_on_all_pages() {
     let translations = find_expected_translations("test_site_i18n", &site.config.default_language);
 
     for (path, link) in &site.permalinks {
+        if !link.ends_with('/') {
+            continue;
+        }
+
         // link ends with /, does not add index.html
         let link = format!("{}index.html", link);
 

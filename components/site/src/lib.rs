@@ -493,6 +493,8 @@ impl Site {
         }
 
         self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
+        self.permalinks.extend(page.asset_permalinks.clone().into_iter());
+
         if render_md {
             let insert_anchor =
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);

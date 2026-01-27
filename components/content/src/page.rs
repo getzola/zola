@@ -1,6 +1,6 @@
 /// A page, can be a blog post or a basic page
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -56,6 +56,8 @@ pub struct Page {
     pub components: Vec<String>,
     /// The full URL for that page
     pub permalink: String,
+    /// Full URLs to non-md files associated with the .md file
+    pub asset_permalinks: HashMap<String, String>,
     /// The summary for the article, defaults to None
     /// When <!-- more --> is found in the text, will take the content up to that part
     /// as summary
@@ -195,6 +197,37 @@ impl Page {
             let parent_dir = path.parent().unwrap();
             page.assets = find_related_assets(parent_dir, config, true);
             page.serialized_assets = page.serialize_assets(base_path);
+
+            // TOOD: Do we need to fix `serialized_assets`? They're strings, hinting that they are
+            //       URL components, but...
+
+            for asset in &page.assets {
+                let page_relative = asset.strip_prefix(&parent_dir).unwrap();
+                let str_components = page_relative
+                    .components()
+                    .map(|m| {
+                        if let Component::Normal(n) = m {
+                            n.to_str().expect("path not utf-8")
+                        } else {
+                            panic!("non-normal component in asset path `{:?}`", asset);
+                        }
+                    })
+                    .collect::<Vec<_>>();
+
+                let url_path = str_components.join("/"); // TODO: handle escapes
+
+                let path_to_page_parent = page
+                    .file
+                    .relative
+                    .rsplit_once('/')
+                    .map(|x| format!("{}/", x.0))
+                    .unwrap_or_default();
+
+                let local_path = path_to_page_parent + &str_components.join("/");
+
+                page.asset_permalinks
+                    .insert(local_path.clone(), format!("{}{}", page.permalink, url_path));
+            }
         } else {
             page.assets = vec![];
         }
@@ -269,7 +302,7 @@ impl Page {
                 path.push(filename);
                 path = path
                     .strip_prefix(base_path.join("content"))
-                    .expect("Should be able to stripe prefix")
+                    .expect("Should be able to strip prefix")
                     .to_path_buf();
                 path
             })
@@ -646,6 +679,20 @@ And here's another. [^3]
         assert_eq!(page.assets.len(), 3);
         assert!(page.serialized_assets[0].starts_with('/'));
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+
+        assert_eq!(page.asset_permalinks.len(), 3);
+        assert_eq!(
+            page.asset_permalinks["posts/with-assets/example.js"],
+            "http://a-website.com/posts/with-assets/example.js"
+        );
+        assert_eq!(
+            page.asset_permalinks["posts/with-assets/graph.jpg"],
+            "http://a-website.com/posts/with-assets/graph.jpg"
+        );
+        assert_eq!(
+            page.asset_permalinks["posts/with-assets/fail.png"],
+            "http://a-website.com/posts/with-assets/fail.png"
+        );
     }
 
     #[test]
@@ -669,6 +716,20 @@ And here's another. [^3]
         assert_eq!(page.slug, "hey");
         assert_eq!(page.assets.len(), 3);
         assert_eq!(page.permalink, "http://a-website.com/posts/hey/");
+
+        assert_eq!(page.asset_permalinks.len(), 3);
+        assert_eq!(
+            page.asset_permalinks["posts/with-assets/example.js"],
+            "http://a-website.com/posts/hey/example.js"
+        );
+        assert_eq!(
+            page.asset_permalinks["posts/with-assets/graph.jpg"],
+            "http://a-website.com/posts/hey/graph.jpg"
+        );
+        assert_eq!(
+            page.asset_permalinks["posts/with-assets/fail.png"],
+            "http://a-website.com/posts/hey/fail.png"
+        );
     }
 
     // https://github.com/getzola/zola/issues/674
@@ -695,6 +756,21 @@ And here's another. [^3]
         // We should not get with-assets since that's the slugified version
         assert!(page.serialized_assets[0].contains("with_assets"));
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+
+        // Permalinks use the on-disk path, so no slugifying here.
+        assert_eq!(page.asset_permalinks.len(), 3);
+        assert_eq!(
+            page.asset_permalinks["posts/with_assets/example.js"],
+            "http://a-website.com/posts/with-assets/example.js"
+        );
+        assert_eq!(
+            page.asset_permalinks["posts/with_assets/graph.jpg"],
+            "http://a-website.com/posts/with-assets/graph.jpg"
+        );
+        assert_eq!(
+            page.asset_permalinks["posts/with_assets/fail.png"],
+            "http://a-website.com/posts/with-assets/fail.png"
+        );
     }
 
     // https://github.com/getzola/zola/issues/607
@@ -720,6 +796,20 @@ And here's another. [^3]
         assert_eq!(page.meta.date, Some("2013-06-02".to_string()));
         assert_eq!(page.assets.len(), 3);
         assert_eq!(page.permalink, "http://a-website.com/posts/with-assets/");
+
+        assert_eq!(page.asset_permalinks.len(), 3);
+        assert_eq!(
+            page.asset_permalinks["posts/2013-06-02_with-assets/example.js"],
+            "http://a-website.com/posts/with-assets/example.js"
+        );
+        assert_eq!(
+            page.asset_permalinks["posts/2013-06-02_with-assets/graph.jpg"],
+            "http://a-website.com/posts/with-assets/graph.jpg"
+        );
+        assert_eq!(
+            page.asset_permalinks["posts/2013-06-02_with-assets/fail.png"],
+            "http://a-website.com/posts/with-assets/fail.png"
+        );
     }
 
     #[test]
@@ -747,6 +837,12 @@ And here's another. [^3]
         let page = res.unwrap();
         assert_eq!(page.assets.len(), 1);
         assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
+
+        assert_eq!(page.asset_permalinks.len(), 1);
+        assert_eq!(
+            page.asset_permalinks["posts/with-assets/graph.jpg"],
+            "http://a-website.com/posts/hey/graph.jpg"
+        );
     }
 
     // https://github.com/getzola/zola/issues/1566
