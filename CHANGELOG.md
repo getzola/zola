@@ -9,7 +9,7 @@
 
 ### Breaking
 Syntect has been replaced with [Giallo](https://github.com/getzola/giallo) and all the highlighting options
-of the `markdown` section in the config file have been moved/changed in `[markdown.highlighting].
+of the `markdown` section in the config file have been moved/changed in `[markdown.highlighting]`.
 
 The themes are different so you will need to find something you like from <https://textmate-grammars-themes.netlify.app/>.
 
