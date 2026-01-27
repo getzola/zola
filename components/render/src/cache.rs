@@ -17,7 +17,7 @@ pub struct CachedContent {
 }
 
 /// Cached taxonomy data: serialized value, terms, and resolved templates
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CachedTaxonomy {
     /// Serialized taxonomy (for list page, e.g., /tags/)
     pub value: Value,
@@ -30,7 +30,7 @@ pub struct CachedTaxonomy {
 }
 
 /// All pre-serialized data for template rendering.
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct RenderCache {
     pub pages: AHashMap<PathBuf, CachedContent>,
     pub sections: AHashMap<PathBuf, CachedContent>,
@@ -45,7 +45,18 @@ pub struct RenderCache {
 }
 
 impl RenderCache {
-    pub fn build(config: &Config, library: &Library, taxonomies: &[Taxonomy], tera: &Tera) -> Self {
+    pub fn new(config: &Config) -> Self {
+        let mut c = Self::default();
+        let configs = config
+            .languages
+            .keys()
+            .map(|lang| (lang.clone(), Value::from_serializable(&config.serialize(lang))))
+            .collect();
+        c.configs = configs;
+        c
+    }
+
+    pub fn build(&mut self, library: &Library, taxonomies: &[Taxonomy], tera: &Tera) {
         // First pass: serialize all pages without siblings
         let (mut pages, pages_by_canonical) = library.pages.iter().fold(
             (
@@ -136,12 +147,6 @@ impl RenderCache {
             },
         );
 
-        let configs = config
-            .languages
-            .keys()
-            .map(|lang| (lang.clone(), Value::from_serializable(&config.serialize(lang))))
-            .collect();
-
         let cached_taxonomies: Vec<(_, _, _)> = taxonomies
             .iter()
             .map(|t| {
@@ -191,7 +196,11 @@ impl RenderCache {
             },
         );
 
-        Self { pages, sections, pages_by_canonical, sections_by_canonical, configs, taxonomies }
+        self.pages = pages;
+        self.sections = sections;
+        self.pages_by_canonical = pages_by_canonical;
+        self.sections_by_canonical = sections_by_canonical;
+        self.taxonomies = taxonomies;
     }
 
     pub fn get_taxonomy(&self, lang: &str, slug: &str) -> Option<&CachedTaxonomy> {

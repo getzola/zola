@@ -334,7 +334,8 @@ mod tests {
 
         let config = config::Config::default();
         let tera = Tera::default();
-        let cache = RenderCache::build(&config, &library, &[], &tera);
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &tera);
 
         let context = paginator.build_context(&paginator.pagers[0], &cache);
         let context = context.as_map().unwrap();
@@ -434,7 +435,8 @@ mod tests {
 
         let config = config::Config::default();
         let tera = Tera::default();
-        let cache = RenderCache::build(&config, &library, &[], &tera);
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &tera);
         let context = paginator.build_context(&paginator.pagers[0], &cache);
         let context = context.as_map().unwrap();
         assert_eq!(
@@ -471,7 +473,8 @@ mod tests {
         // Verify total_pages is correct (only rendered)
         let config = config::Config::default();
         let tera = Tera::default();
-        let cache = RenderCache::build(&config, &library, &[], &tera);
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &tera);
         let context = paginator.build_context(&paginator.pagers[0], &cache);
         let context = context.as_map().unwrap();
         assert_eq!(context.get(&"total_pages".into()).unwrap(), &Value::from(3));

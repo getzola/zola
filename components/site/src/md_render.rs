@@ -1,12 +1,15 @@
 //! This is here to avoid content depending on the markdown subcrate
+
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use tera::Tera;
 
 use config::Config;
 use content::{Page, Section};
-use errors::{Context, Result};
+use errors::{Context as _, Result};
 use markdown::MarkdownContext;
+use render::Renderer;
 use utils::net::is_external_link;
 use utils::types::InsertAnchor;
 
@@ -21,11 +24,18 @@ fn needs_templating(s: &str) -> bool {
 /// so that can't happen at the same time as parsing
 pub fn render_page(
     page: &mut Page,
+    renderer: Renderer,
     permalinks: &HashMap<String, String>,
     tera: &Tera,
     config: &Config,
     insert_anchor: InsertAnchor,
 ) -> Result<()> {
+    let input = if needs_templating(&page.raw_content) {
+        Cow::Owned(renderer.render_page_content(&page.raw_content, page)?)
+    } else {
+        Cow::Borrowed(&page.raw_content)
+    };
+
     let context = MarkdownContext {
         tera,
         config,
@@ -35,7 +45,7 @@ pub fn render_page(
         current_path: &page.file.relative,
         insert_anchor,
     };
-    let res = markdown::render_content(&page.raw_content, &context)
+    let res = markdown::render_content(&input, &context)
         .with_context(|| format!("Failed to render content of {}", page.file.path.display()))?;
 
     page.summary = res.summary;
@@ -49,10 +59,16 @@ pub fn render_page(
 
 pub fn render_section(
     section: &mut Section,
+    renderer: Renderer,
     permalinks: &HashMap<String, String>,
     tera: &Tera,
     config: &Config,
 ) -> Result<()> {
+    let input = if needs_templating(&section.raw_content) {
+        Cow::Owned(renderer.render_section_content(&section.raw_content, section)?)
+    } else {
+        Cow::Borrowed(&section.raw_content)
+    };
     let context = MarkdownContext {
         tera,
         config,
@@ -65,7 +81,7 @@ pub fn render_section(
             .insert_anchor_links
             .unwrap_or(config.markdown.insert_anchor_links),
     };
-    let res = markdown::render_content(&section.raw_content, &context)
+    let res = markdown::render_content(&input, &context)
         .with_context(|| format!("Failed to render content of {}", section.file.path.display()))?;
 
     section.content = res.body;
@@ -88,15 +104,27 @@ mod tests {
     use std::path::PathBuf;
 
     use config::Config;
-    use content::Page;
+    use content::{Library, Page};
+    use render::{RenderCache, Renderer};
     use templates::ZOLA_TERA;
     use utils::types::InsertAnchor;
 
     use super::render_page;
 
+    fn make_renderer<'a>(
+        config: &'a Config,
+        library: &'a Library,
+        cache: &'a RenderCache,
+    ) -> Renderer<'a> {
+        Renderer::new(&ZOLA_TERA, config, library, cache)
+    }
+
     #[test]
     fn can_specify_summary() {
         let config = Config::default_for_test();
+        let library = Library::default();
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &ZOLA_TERA);
         let content = r#"
 +++
 +++
@@ -105,14 +133,25 @@ Hello world
         let res = Page::parse(Path::new("hello.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        render_page(&mut page, &HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None)
-            .unwrap();
+        let renderer = make_renderer(&config, &library, &cache);
+        render_page(
+            &mut page,
+            renderer,
+            &HashMap::default(),
+            &ZOLA_TERA,
+            &config,
+            InsertAnchor::None,
+        )
+        .unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>".to_string()));
     }
 
     #[test]
     fn strips_footnotes_in_summary() {
         let mut config = Config::default_for_test();
+        let library = Library::default();
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &ZOLA_TERA);
         let content = r#"
 +++
 +++
@@ -132,8 +171,16 @@ And here's another. [^3]
         let res = Page::parse(Path::new("hello.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         let mut page = res.unwrap();
-        render_page(&mut page, &HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None)
-            .unwrap();
+        let renderer = make_renderer(&config, &library, &cache);
+        render_page(
+            &mut page,
+            renderer,
+            &HashMap::default(),
+            &ZOLA_TERA,
+            &config,
+            InsertAnchor::None,
+        )
+        .unwrap();
         insta::assert_snapshot!(page.summary.as_deref().unwrap_or(""), @r###"
         <p>This page use <sup>1.5</sup> and has footnotes, here's one. </p>
         <p>Here's another. </p>
@@ -157,9 +204,19 @@ And here's another. [^3]
         let res = Page::parse(Path::new("hello.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
         config.markdown.bottom_footnotes = true;
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &ZOLA_TERA);
         let mut page = res.unwrap();
-        render_page(&mut page, &HashMap::default(), &ZOLA_TERA, &config, InsertAnchor::None)
-            .unwrap();
+        let renderer = make_renderer(&config, &library, &cache);
+        render_page(
+            &mut page,
+            renderer,
+            &HashMap::default(),
+            &ZOLA_TERA,
+            &config,
+            InsertAnchor::None,
+        )
+        .unwrap();
         insta::assert_snapshot!(page.summary.as_deref().unwrap_or(""), @r###"
         <p>This page use <sup>1.5</sup> and has footnotes, here's one. </p>
         <p>Here's another. </p>

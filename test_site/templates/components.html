@@ -1,3 +1,13 @@
+{% component basic() -%}
+<h4>Basic shortcode</h4>
+{%- endcomponent %}
+
+{% component pirate(name: string) -%}
+Arrrh {{ name }}
+{%- endcomponent %}
+
+{% component youtube(id, class=None, playlist=None, autoplay=None) -%}
 <div {% if class %}class="{{class}}"{% endif %}>
     <iframe src="https://www.youtube-nocookie.com/embed/{{id}}{% if playlist %}?list={{playlist}}{% endif %}{% if autoplay %}?autoplay=1{% endif %}" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 </div>
+{%- endcomponent %}

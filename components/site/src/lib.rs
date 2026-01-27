@@ -322,6 +322,7 @@ impl Site {
             return Err(anyhow!(msg));
         }
 
+        self.cache = Arc::new(RenderCache::new(&self.config));
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
@@ -329,8 +330,7 @@ impl Site {
         self.populate_sections();
         self.render_markdown()?;
         Arc::make_mut(&mut self.library).fill_backlinks();
-        self.cache =
-            Arc::new(RenderCache::build(&self.config, &self.library, &self.taxonomies, &self.tera));
+        Arc::make_mut(&mut self.cache).build(&self.library, &self.taxonomies, &self.tera);
         tpls::register_tera_global_fns(self);
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
@@ -455,6 +455,10 @@ impl Site {
             );
         }
 
+        // For rendering content, we do not need the real library since it's not going to be filled
+        let dummy_library = Library::default();
+        let renderer = Renderer { tera, config, library: &dummy_library, cache: &self.cache };
+
         let library = Arc::make_mut(&mut self.library);
         library
             .pages
@@ -463,7 +467,14 @@ impl Site {
             .par_iter_mut()
             .map(|page| {
                 let insert_anchor = pages_insert_anchors[&page.file.path];
-                md_render::render_page(page, permalinks, tera, config, insert_anchor)
+                md_render::render_page(
+                    page,
+                    renderer.clone(),
+                    permalinks,
+                    tera,
+                    config,
+                    insert_anchor,
+                )
             })
             .collect::<Result<()>>()?;
 
@@ -472,7 +483,9 @@ impl Site {
             .values_mut()
             .collect::<Vec<_>>()
             .par_iter_mut()
-            .map(|section| md_render::render_section(section, permalinks, tera, config))
+            .map(|section| {
+                md_render::render_section(section, renderer.clone(), permalinks, tera, config)
+            })
             .collect::<Result<()>>()?;
 
         Ok(())
@@ -497,6 +510,7 @@ impl Site {
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
             md_render::render_page(
                 &mut page,
+                self.renderer(),
                 &self.permalinks,
                 &self.tera,
                 &self.config,
@@ -527,7 +541,13 @@ impl Site {
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
         if render_md {
-            md_render::render_section(&mut section, &self.permalinks, &self.tera, &self.config)?;
+            md_render::render_section(
+                &mut section,
+                self.renderer(),
+                &self.permalinks,
+                &self.tera,
+                &self.config,
+            )?;
         }
         let library = Arc::make_mut(&mut self.library);
         library.sections.remove(&section.file.path);
@@ -580,8 +600,9 @@ impl Site {
 
     /// Rebuild the render cache (needed after modifying library or taxonomies)
     pub fn rebuild_cache(&mut self) {
-        self.cache =
-            Arc::new(RenderCache::build(&self.config, &self.library, &self.taxonomies, &self.tera));
+        let mut cache = RenderCache::new(&self.config);
+        cache.build(&self.library, &self.taxonomies, &self.tera);
+        self.cache = Arc::new(cache);
     }
 
     /// Create a Renderer for this site

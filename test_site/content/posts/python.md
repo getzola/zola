@@ -8,9 +8,12 @@ Same filename but different path
 
 <!-- more -->
 
-{{ basic() }}
+{{ <basic /> }}
 
-{{ pirate(name="Bob") }}
-{{ pirate(name="Bob_Sponge") }}
+{{ <pirate name="Bob" /> }}
+{{ <pirate name="Bob_Sponge" /> }}
 
+{% if page.description %}
+DESCRIPTION: {{page.description}}
+{% endif %}
 

@@ -206,7 +206,9 @@ mod tests {
 
         let taxonomies = vec![tags.clone(), tags_fr.clone()];
         let tera = Tera::default();
-        let cache = Arc::new(RenderCache::build(&config, &library, &taxonomies, &tera));
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &taxonomies, &tera);
+        let cache = Arc::new(cache);
         let get_taxonomy = GetTaxonomy::new(&config.default_language, cache);
 
         // can find it correctly (default lang)
@@ -266,7 +268,9 @@ mod tests {
 
         let taxonomies = vec![tags, tags_fr];
         let tera = Tera::default();
-        let cache = Arc::new(RenderCache::build(&config, &library, &taxonomies, &tera));
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &taxonomies, &tera);
+        let cache = Arc::new(cache);
         let get_taxonomy_url =
             GetTaxonomyUrl::new(&config.default_language, cache, config.slugify.taxonomies);
 
@@ -333,7 +337,9 @@ mod tests {
 
         let taxonomies = vec![tags, tags_fr];
         let tera = Tera::default();
-        let cache = Arc::new(RenderCache::build(&config, &library, &taxonomies, &tera));
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &taxonomies, &tera);
+        let cache = Arc::new(cache);
         let get_taxonomy_term =
             GetTaxonomyTerm::new(&config.default_language, cache, config.slugify.taxonomies);
 

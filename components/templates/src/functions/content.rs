@@ -164,7 +164,8 @@ mod tests {
             library.insert_page(create_page(t, f, l));
         }
         let tera = Tera::default();
-        let cache = RenderCache::build(&config, &library, &[], &tera);
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &tera);
         let base_path = "/test/base/path".into();
 
         let get_page = GetPage::new(base_path, "en", Arc::new(cache));
@@ -249,7 +250,8 @@ mod tests {
             library.insert_section(create_section(t, f, l));
         }
         let tera = Tera::default();
-        let cache = RenderCache::build(&config, &library, &[], &tera);
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &tera);
         let base_path = "/test/base/path".into();
 
         let get_section = GetSection::new(base_path, "en", Arc::new(cache));

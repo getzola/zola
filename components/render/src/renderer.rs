@@ -1,6 +1,8 @@
 use config::Config;
 use config::TaxonomyConfig;
-use content::{Library, Page, Section, Taxonomy, TaxonomyTerm};
+use content::{
+    Library, Page, Section, SerializingPage, SerializingSection, Taxonomy, TaxonomyTerm,
+};
 use errors::{Context as _, Result};
 use serde::Serialize;
 use tera::{Context, Tera, Value};
@@ -17,6 +19,7 @@ pub struct FeedInput<'a> {
 use crate::pagination::{Pager, PaginationRoot, Paginator};
 use crate::{RenderCache, render_template};
 
+#[derive(Debug, Clone)]
 pub struct Renderer<'a> {
     pub tera: &'a Tera,
     pub config: &'a Config,
@@ -201,7 +204,7 @@ impl<'a> Renderer<'a> {
 
     fn build_feed_context(&self, input: &FeedInput<'_>) -> Context {
         let mut context = Context::new();
-        context.insert_value("pages", Value::from_serializable(&input.pages));
+        context.insert_value("pages", Value::from(input.pages));
         context.insert_value("config", self.cache.configs.get(input.lang).unwrap().clone());
         context.insert("lang", input.lang);
         context.insert("feed_url", input.feed_url);
@@ -209,5 +212,27 @@ impl<'a> Renderer<'a> {
             context.insert("last_updated", updated);
         }
         context
+    }
+
+    pub fn render_page_content(&self, content: &str, page: &Page) -> Result<String> {
+        let mut context = Context::new();
+        context.insert("lang", &page.lang);
+        context.insert_value("config", self.cache.configs.get(&page.lang).unwrap().clone());
+        context.insert("page", &SerializingPage::new(page, self.library));
+
+        self.tera.render_str(content, &context, false).with_context(|| {
+            format!("Failed to render page content of '{}'", page.file.path.display())
+        })
+    }
+
+    pub fn render_section_content(&self, content: &str, section: &Section) -> Result<String> {
+        let mut context = Context::new();
+        context.insert("lang", &section.lang);
+        context.insert_value("config", self.cache.configs.get(&section.lang).unwrap().clone());
+        context.insert("section", &SerializingSection::new(section, self.library, Vec::new()));
+
+        self.tera.render_str(content, &context, false).with_context(|| {
+            format!("Failed to render section content of '{}'", section.file.path.display())
+        })
     }
 }
