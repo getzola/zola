@@ -185,25 +185,24 @@ impl Site {
     /// out of them
     pub fn load(&mut self) -> Result<()> {
         self.library = Arc::new(Library::new(&self.config));
-        let mut pages_insert_anchors = HashMap::new();
 
         // not the most elegant loop, but this is necessary to use skip_current_dir
         // which we can only decide to use after we've deserialised the section
-        // so it's kinda necessecary
+        // so it's kinda necessary
         let mut dir_walker =
             WalkDir::new(self.base_path.join("content")).follow_links(true).into_iter();
-        let mut allowed_index_filenames: Vec<_> = self
+        let mut allowed_index_filenames: HashSet<_> = self
             .config
             .other_languages()
             .keys()
             .map(|code| format!("_index.{}.md", code))
             .collect();
-        allowed_index_filenames.push("_index.md".to_string());
+        allowed_index_filenames.insert("_index.md".to_string());
 
-        // We will insert colocated pages (those with a index.md filename)
+        // We will insert colocated pages (those with an index.md filename)
         // at the end to detect pages that are actually errors:
         // when there is both a _index.md and index.md in the same folder
-        let mut pages = Vec::new();
+        let mut page_paths = Vec::new();
         let mut sections = HashSet::new();
 
         loop {
@@ -251,9 +250,7 @@ impl Site {
                         Ok(f) => {
                             let path_str = f.path().file_name().unwrap().to_str().unwrap();
                             // https://github.com/getzola/zola/issues/1244
-                            if f.path().is_file()
-                                && allowed_index_filenames.iter().any(|s| s == path_str)
-                            {
+                            if f.path().is_file() && allowed_index_filenames.contains(path_str) {
                                 Some(f)
                             } else {
                                 None
@@ -276,10 +273,29 @@ impl Site {
                     self.add_section(section, false)?;
                 }
             } else {
-                let page = Page::from_file(path, &self.config, &self.base_path)?;
-                pages.push(page);
+                page_paths.push(path.to_path_buf());
             }
         }
+        let results: Vec<(PathBuf, Result<Page>)> = page_paths
+            .par_iter()
+            .map(|p| (p.clone(), Page::from_file(p, &self.config, &self.base_path)))
+            .collect();
+        let (pages, errors): (Vec<_>, Vec<_>) = results.into_iter().partition(|(_, r)| r.is_ok());
+
+        if !errors.is_empty() {
+            let mut errors: Vec<_> = errors.into_iter().map(|(p, r)| (p, r.unwrap_err())).collect();
+            // sort by path for deterministic output
+            errors.sort_by(|(a, _), (b, _)| a.cmp(b));
+
+            let msg = errors
+                .iter()
+                .map(|(p, e)| format!("  - {}: {e}", p.display()))
+                .collect::<Vec<_>>()
+                .join("\n");
+            return Err(anyhow!("Failed to parse {} page(s):\n{msg}", errors.len()));
+        }
+
+        let pages: Vec<Page> = pages.into_iter().map(|(_, r)| r.unwrap()).collect();
         self.create_default_index_sections()?;
 
         for page in pages {
@@ -305,10 +321,6 @@ impl Site {
                 }
             }
 
-            pages_insert_anchors.insert(
-                page.file.path.clone(),
-                self.find_parent_section_insert_anchor(&page.file.parent.clone(), &page.lang),
-            );
             self.add_page(page, false)?;
         }
 
