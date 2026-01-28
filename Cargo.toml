@@ -49,6 +49,7 @@ reqwest = { workspace = true }
 
 # Direct workspace deps used by the binary
 ahash = { workspace = true }
+fs-err = { workspace = true }
 anstream = { workspace = true }
 anstyle = { workspace = true }
 globset = { workspace = true }

@@ -579,8 +579,8 @@ mod tests {
     use std::path::PathBuf;
 
     use super::Method;
+    use fs_err as fs;
     use serde_json::json;
-    use std::fs::{copy, create_dir_all};
     use tempfile::tempdir;
     use tera::{Context, Function, Kwargs, State, Value};
 
@@ -590,7 +590,7 @@ mod tests {
     // paths when adding or modifying tests that use Mockito.
 
     fn get_test_file(filename: &str) -> PathBuf {
-        let test_files = PathBuf::from("../utils/test-files").canonicalize().unwrap();
+        let test_files = fs::canonicalize(PathBuf::from("../utils/test-files")).unwrap();
         test_files.join(filename)
     }
 
@@ -739,12 +739,15 @@ mod tests {
     #[test]
     fn can_handle_various_local_file_locations() {
         let dir = tempdir().unwrap();
-        create_dir_all(dir.path().join("content").join("gallery")).unwrap();
-        create_dir_all(dir.path().join("static")).unwrap();
-        copy(get_test_file("test.css"), dir.path().join("content").join("test.css")).unwrap();
-        copy(get_test_file("test.css"), dir.path().join("content").join("gallery").join("new.css"))
-            .unwrap();
-        copy(get_test_file("test.css"), dir.path().join("static").join("test.css")).unwrap();
+        fs::create_dir_all(dir.path().join("content").join("gallery")).unwrap();
+        fs::create_dir_all(dir.path().join("static")).unwrap();
+        fs::copy(get_test_file("test.css"), dir.path().join("content").join("test.css")).unwrap();
+        fs::copy(
+            get_test_file("test.css"),
+            dir.path().join("content").join("gallery").join("new.css"),
+        )
+        .unwrap();
+        fs::copy(get_test_file("test.css"), dir.path().join("static").join("test.css")).unwrap();
 
         let static_fn = LoadData::new(dir.path().to_path_buf(), None, PathBuf::new());
         let val = if cfg!(windows) { ".hello {}\r\n" } else { ".hello {}\n" };

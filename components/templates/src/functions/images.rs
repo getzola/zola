@@ -143,24 +143,24 @@ impl Function<TeraResult<Value>> for GetImageMetadata {
 mod tests {
     use super::{GetImageMetadata, ResizeImage};
 
-    use std::fs::{copy, create_dir_all};
     use std::path::{Path, PathBuf};
     use std::sync::{Arc, Mutex};
 
     use config::Config;
+    use fs_err as fs;
     use tempfile::{TempDir, tempdir};
     use tera::{Context, Function, Kwargs, State, Value};
 
     fn create_dir_with_image() -> TempDir {
         let dir = tempdir().unwrap();
-        create_dir_all(dir.path().join("content").join("gallery")).unwrap();
-        create_dir_all(dir.path().join("static")).unwrap();
-        create_dir_all(dir.path().join("themes").join("name").join("static")).unwrap();
-        copy("gutenberg.jpg", dir.path().join("content").join("gutenberg.jpg")).unwrap();
-        copy("gutenberg.jpg", dir.path().join("content").join("gallery").join("asset.jpg"))
+        fs::create_dir_all(dir.path().join("content").join("gallery")).unwrap();
+        fs::create_dir_all(dir.path().join("static")).unwrap();
+        fs::create_dir_all(dir.path().join("themes").join("name").join("static")).unwrap();
+        fs::copy("gutenberg.jpg", dir.path().join("content").join("gutenberg.jpg")).unwrap();
+        fs::copy("gutenberg.jpg", dir.path().join("content").join("gallery").join("asset.jpg"))
             .unwrap();
-        copy("gutenberg.jpg", dir.path().join("static").join("gutenberg.jpg")).unwrap();
-        copy(
+        fs::copy("gutenberg.jpg", dir.path().join("static").join("gutenberg.jpg")).unwrap();
+        fs::copy(
             "gutenberg.jpg",
             dir.path().join("themes").join("name").join("static").join("in-theme.jpg"),
         )

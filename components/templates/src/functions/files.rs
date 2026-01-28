@@ -1,7 +1,8 @@
 use std::collections::HashMap;
-use std::fs;
 use std::io::Read;
 use std::path::PathBuf;
+
+use fs_err as fs;
 
 use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
 use sha2::{Sha256, Sha384, Sha512, digest};
@@ -216,9 +217,9 @@ mod tests {
     use super::{GetHash, GetUrl};
 
     use std::collections::HashMap;
-    use std::fs::{copy, create_dir};
     use std::path::PathBuf;
 
+    use fs_err as fs;
     use tempfile::{TempDir, tempdir};
     use tera::{Context, Kwargs, State};
 
@@ -265,7 +266,7 @@ title = "A title"
         );
 
         // And binary files as well
-        copy("gutenberg.jpg", dir.path().join("gutenberg.jpg")).unwrap();
+        fs::copy("gutenberg.jpg", dir.path().join("gutenberg.jpg")).unwrap();
         let kwargs = Kwargs::from([
             ("path", tera::Value::from("gutenberg.jpg")),
             ("cachebust", tera::Value::from(true)),
@@ -353,7 +354,7 @@ title = "A title"
         use tera::Function;
         let dir = create_temp_dir();
         let public = dir.path().join("public");
-        create_dir(&public).expect("Failed to create output directory");
+        fs::create_dir(&public).expect("Failed to create output directory");
         create_file(&public.join("style.css"), "// Hello world")
             .expect("Failed to create file in output directory");
 

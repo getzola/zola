@@ -22,6 +22,7 @@ config = { workspace = true }
 
 [dev-dependencies]
 # TODO: can we solve that usecase in src/page.rs in a simpler way? A custom macro_rules! maybe
+fs-err = { workspace = true }
 test-case = "3"
 globset = { workspace = true }
 tempfile = "3.3.0"

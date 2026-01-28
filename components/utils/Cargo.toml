@@ -8,6 +8,7 @@ include = ["src/**/*"]
 [dependencies]
 serde = { workspace = true }
 filetime = { workspace = true }
+fs-err = { workspace = true }
 globset = { workspace = true }
 percent-encoding = { workspace = true }
 regex = { workspace = true }

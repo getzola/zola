@@ -223,10 +223,10 @@ impl Page {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{File, create_dir};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
+    use fs_err as fs;
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
 
@@ -420,15 +420,15 @@ Hello world"#;
     fn page_with_assets_gets_right_info() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
@@ -444,15 +444,15 @@ Hello world"#;
     fn page_with_assets_and_slug_overrides_path() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
@@ -468,15 +468,15 @@ Hello world"#;
     fn page_with_assets_uses_filepath_for_assets() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with_assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
@@ -494,15 +494,15 @@ Hello world"#;
     fn page_with_assets_and_date_in_folder_name() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("2013-06-02_with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\n\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
@@ -518,15 +518,15 @@ Hello world"#;
     fn page_with_ignored_assets_filters_out_correct_files() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let mut gsb = GlobSetBuilder::new();
         gsb.add(Glob::new("*.{js,png}").unwrap());
@@ -546,15 +546,15 @@ Hello world"#;
     fn colocated_page_with_slug_and_date_in_path() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
         let articles_path = path.join("content").join("articles");
-        create_dir(&articles_path).expect("create posts temp dir");
+        fs::create_dir(&articles_path).expect("create posts temp dir");
 
         let config = Config::default();
 
         // first a non-colocated one
         let file_path = articles_path.join("2021-07-29-sample-article-1.md");
-        let mut f = File::create(&file_path).unwrap();
+        let mut f = fs::File::create(&file_path).unwrap();
         f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
         let res = Page::from_file(&file_path, &config, path);
         assert!(res.is_ok());
@@ -563,8 +563,8 @@ Hello world"#;
 
         // then a colocated one, it should still work
         let dir_path = articles_path.join("2021-07-29-sample-article-2.md");
-        create_dir(&dir_path).expect("create posts temp dir");
-        let mut f = File::create(&dir_path.join("index.md")).unwrap();
+        fs::create_dir(&dir_path).expect("create posts temp dir");
+        let mut f = fs::File::create(&dir_path.join("index.md")).unwrap();
         f.write_all(b"+++\nslug=\"ho\"\n+++\n").unwrap();
         let res = Page::from_file(&dir_path.join("index.md"), &config, path);
         assert!(res.is_ok());

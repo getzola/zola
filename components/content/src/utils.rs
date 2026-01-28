@@ -71,26 +71,26 @@ pub fn get_reading_analytics(content: &str) -> (usize, usize) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::{File, create_dir};
 
     use config::Config;
+    use fs_err as fs;
     use tempfile::tempdir;
 
     #[test]
     fn can_find_related_assets_recursive() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        File::create(path.join("index.md")).unwrap();
-        File::create(path.join("example.js")).unwrap();
-        File::create(path.join("graph.jpg")).unwrap();
-        File::create(path.join("fail.png")).unwrap();
-        File::create(path.join("extensionless")).unwrap();
-        create_dir(path.join("subdir")).expect("create subdir temp dir");
-        File::create(path.join("subdir").join("index.md")).unwrap();
-        File::create(path.join("subdir").join("example.js")).unwrap();
-        File::create(path.join("FFF.txt")).unwrap();
-        File::create(path.join("GRAPH.txt")).unwrap();
-        File::create(path.join("subdir").join("GGG.txt")).unwrap();
+        fs::File::create(path.join("index.md")).unwrap();
+        fs::File::create(path.join("example.js")).unwrap();
+        fs::File::create(path.join("graph.jpg")).unwrap();
+        fs::File::create(path.join("fail.png")).unwrap();
+        fs::File::create(path.join("extensionless")).unwrap();
+        fs::create_dir(path.join("subdir")).expect("create subdir temp dir");
+        fs::File::create(path.join("subdir").join("index.md")).unwrap();
+        fs::File::create(path.join("subdir").join("example.js")).unwrap();
+        fs::File::create(path.join("FFF.txt")).unwrap();
+        fs::File::create(path.join("GRAPH.txt")).unwrap();
+        fs::File::create(path.join("subdir").join("GGG.txt")).unwrap();
 
         let assets = find_related_assets(path, &Config::default(), true);
         assert_eq!(assets.len(), 7);
@@ -120,17 +120,17 @@ mod tests {
     fn can_find_related_assets_non_recursive() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        File::create(path.join("index.md")).unwrap();
-        File::create(path.join("example.js")).unwrap();
-        File::create(path.join("graph.jpg")).unwrap();
-        File::create(path.join("fail.png")).unwrap();
-        File::create(path.join("extensionless")).unwrap();
-        create_dir(path.join("subdir")).expect("create subdir temp dir");
-        File::create(path.join("subdir").join("index.md")).unwrap();
-        File::create(path.join("subdir").join("example.js")).unwrap();
-        File::create(path.join("FFF.txt")).unwrap();
-        File::create(path.join("GRAPH.txt")).unwrap();
-        File::create(path.join("subdir").join("GGG.txt")).unwrap();
+        fs::File::create(path.join("index.md")).unwrap();
+        fs::File::create(path.join("example.js")).unwrap();
+        fs::File::create(path.join("graph.jpg")).unwrap();
+        fs::File::create(path.join("fail.png")).unwrap();
+        fs::File::create(path.join("extensionless")).unwrap();
+        fs::create_dir(path.join("subdir")).expect("create subdir temp dir");
+        fs::File::create(path.join("subdir").join("index.md")).unwrap();
+        fs::File::create(path.join("subdir").join("example.js")).unwrap();
+        fs::File::create(path.join("FFF.txt")).unwrap();
+        fs::File::create(path.join("GRAPH.txt")).unwrap();
+        fs::File::create(path.join("subdir").join("GGG.txt")).unwrap();
 
         let assets = find_related_assets(path, &Config::default(), false);
         assert_eq!(assets.len(), 5);

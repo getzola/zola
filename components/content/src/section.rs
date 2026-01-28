@@ -160,10 +160,10 @@ impl Section {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{File, create_dir, create_dir_all};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
+    use fs_err as fs;
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
 
@@ -174,15 +174,15 @@ mod tests {
     fn section_with_assets_gets_right_info() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("_index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("_index.md")).unwrap();
         f.write_all(b"+++\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Section::from_file(
             nested_path.join("_index.md").as_path(),
@@ -201,17 +201,17 @@ mod tests {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
         let article_path = path.join("content/posts/with-assets");
-        create_dir_all(path.join(&article_path).join("foo/bar/baz/quux"))
+        fs::create_dir_all(path.join(&article_path).join("foo/bar/baz/quux"))
             .expect("create nested temp dir");
-        create_dir_all(path.join(&article_path).join("foo/baz/quux"))
+        fs::create_dir_all(path.join(&article_path).join("foo/baz/quux"))
             .expect("create nested temp dir");
-        let mut f = File::create(article_path.join("_index.md")).unwrap();
+        let mut f = fs::File::create(article_path.join("_index.md")).unwrap();
         f.write_all(b"+++\n+++\n").unwrap();
-        File::create(article_path.join("example.js")).unwrap();
-        File::create(article_path.join("graph.jpg")).unwrap();
-        File::create(article_path.join("fail.png")).unwrap();
-        File::create(article_path.join("foo/bar/baz/quux/quo.xlsx")).unwrap();
-        File::create(article_path.join("foo/bar/baz/quux/quo.docx")).unwrap();
+        fs::File::create(article_path.join("example.js")).unwrap();
+        fs::File::create(article_path.join("graph.jpg")).unwrap();
+        fs::File::create(article_path.join("fail.png")).unwrap();
+        fs::File::create(article_path.join("foo/bar/baz/quux/quo.xlsx")).unwrap();
+        fs::File::create(article_path.join("foo/bar/baz/quux/quo.docx")).unwrap();
 
         let mut gsb = GlobSetBuilder::new();
         gsb.add(Glob::new("*.{js,png}").unwrap());
