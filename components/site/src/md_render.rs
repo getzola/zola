@@ -30,7 +30,12 @@ pub fn render_page(
     config: &Config,
     insert_anchor: InsertAnchor,
 ) -> Result<()> {
-    let input = if needs_templating(&page.raw_content) {
+    let skip_templating = config
+        .skip_content_templating_globset
+        .as_ref()
+        .is_some_and(|gs| gs.is_match(&page.file.relative));
+
+    let input = if !skip_templating && needs_templating(&page.raw_content) {
         Cow::Owned(renderer.render_page_content(&page.raw_content, page)?)
     } else {
         Cow::Borrowed(&page.raw_content)
@@ -64,7 +69,12 @@ pub fn render_section(
     tera: &Tera,
     config: &Config,
 ) -> Result<()> {
-    let input = if needs_templating(&section.raw_content) {
+    let skip_templating = config
+        .skip_content_templating_globset
+        .as_ref()
+        .is_some_and(|gs| gs.is_match(&section.file.relative));
+
+    let input = if !skip_templating && needs_templating(&section.raw_content) {
         Cow::Owned(renderer.render_section_content(&section.raw_content, section)?)
     } else {
         Cow::Borrowed(&section.raw_content)

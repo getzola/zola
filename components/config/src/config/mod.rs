@@ -90,6 +90,11 @@ pub struct Config {
     #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are needed
     pub ignored_static_globset: Option<GlobSet>,
 
+    /// A list of file glob patterns to skip templating in content. Defaults to none.
+    pub skip_content_templating: Vec<String>,
+    #[serde(skip_serializing, skip_deserializing)]
+    pub skip_content_templating_globset: Option<GlobSet>,
+
     /// The mode Zola is currently being ran on. Some logging/feature can differ depending on the
     /// command being used.
     #[serde(skip_serializing)]
@@ -161,11 +166,15 @@ impl Config {
         config.slugify_taxonomies();
         config.link_checker.resolve_globset()?;
 
-        let content_glob_set = build_ignore_glob_set(&config.ignored_content, "content")?;
+        let content_glob_set = build_ignore_glob_set(&config.ignored_content, "ignored_content")?;
         config.ignored_content_globset = Some(content_glob_set);
 
-        let static_glob_set = build_ignore_glob_set(&config.ignored_static, "static")?;
+        let static_glob_set = build_ignore_glob_set(&config.ignored_static, "ignored_static")?;
         config.ignored_static_globset = Some(static_glob_set);
+
+        let skip_templating_glob_set =
+            build_ignore_glob_set(&config.skip_content_templating, "skip_content_templating")?;
+        config.skip_content_templating_globset = Some(skip_templating_glob_set);
 
         Ok(config)
     }
@@ -426,6 +435,8 @@ impl Default for Config {
             ignored_content_globset: None,
             ignored_static: Vec::new(),
             ignored_static_globset: None,
+            skip_content_templating: Vec::new(),
+            skip_content_templating_globset: None,
             translations: HashMap::new(),
             output_dir: "public".to_string(),
             preserve_dotfiles_in_output: false,

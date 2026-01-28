@@ -172,5 +172,7 @@ upon the summary before the cutoff.
 By default, it will show an ellipsis (…) regardless of the content of the summary, but you can use a different template if you want to only show an ellipsis if the summary does not end in any punctuation:
 
 ```jinja
+{% raw -%}
 {% if summary is matching("\PP$") %}&hellip;{% endif %}
+{%- endraw -%}
 ```
