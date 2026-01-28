@@ -45,7 +45,7 @@ impl Function<TeraResult<Value>> for GetTaxonomyUrl {
 
         let cached = match (self.cache.get_taxonomy(&lang, kind), required) {
             (Some(c), _) => c,
-            (None, false) => return Ok(Value::null()),
+            (None, false) => return Ok(Value::none()),
             (None, true) => {
                 return Err(Error::message(format!(
                     "`get_taxonomy_url` received an unknown taxonomy as kind: {}",
@@ -99,7 +99,7 @@ impl Function<TeraResult<Value>> for GetTaxonomy {
 
         match self.cache.get_taxonomy(&lang, kind) {
             Some(cached) => Ok(cached.value.clone()),
-            None if !required => Ok(Value::null()),
+            None if !required => Ok(Value::none()),
             None => Err(Error::message(format!(
                 "`get_taxonomy` received an unknown taxonomy as kind: {}",
                 kind
@@ -140,7 +140,7 @@ impl Function<TeraResult<Value>> for GetTaxonomyTerm {
 
         let cached = match (self.cache.get_taxonomy(&lang, kind), required) {
             (Some(c), _) => c,
-            (None, false) => return Ok(Value::null()),
+            (None, false) => return Ok(Value::none()),
             (None, true) => {
                 return Err(Error::message(format!(
                     "`get_taxonomy_term` received an unknown taxonomy as kind: {}",
@@ -152,7 +152,7 @@ impl Function<TeraResult<Value>> for GetTaxonomyTerm {
         let slug = slugify_paths(term, self.slugify);
         match (cached.terms.get(&slug).cloned(), required) {
             (Some(t), _) => Ok(t),
-            (None, false) => Ok(Value::null()),
+            (None, false) => Ok(Value::none()),
             (None, true) => Err(Error::message(format!(
                 "`get_taxonomy_term` received an unknown term: {}",
                 term

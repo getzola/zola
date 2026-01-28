@@ -289,7 +289,7 @@ impl Function<TeraResult<Value>> for LoadData {
         ) {
             // If the file was not required, return a Null value to the template
             (Ok(None), false) | (Err(_), false) => {
-                return Ok(Value::null());
+                return Ok(Value::none());
             }
             (Err(e), true) => {
                 return Err(e);
@@ -366,7 +366,7 @@ impl Function<TeraResult<Value>> for LoadData {
                         if !required {
                             // HTTP error is discarded (because required=false) and
                             // Null value is returned to the template
-                            return Ok(Value::null());
+                            return Ok(Value::none());
                         }
                         Err(match e.status() {
                             Some(status) => Error::message(format!(
@@ -733,7 +733,7 @@ mod tests {
         let ctx = Context::new();
         let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), tera::Value::null());
+        assert_eq!(result.unwrap(), tera::Value::none());
     }
 
     #[test]
@@ -941,7 +941,7 @@ mod tests {
         let ctx = Context::new();
         let result = static_fn.call(kwargs, &State::new(&ctx));
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), tera::Value::null());
+        assert_eq!(result.unwrap(), tera::Value::none());
     }
 
     #[test]

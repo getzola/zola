@@ -116,7 +116,7 @@ impl Function<TeraResult<Value>> for GetImageMetadata {
                 Some((f, p)) => (f, p),
                 None => {
                     if allow_missing {
-                        return Ok(Value::null());
+                        return Ok(Value::none());
                     }
                     return Err(Error::message(format!(
                         "`get_image_metadata`: Cannot find path: {}",

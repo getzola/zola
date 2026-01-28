@@ -192,14 +192,14 @@ impl<'a> Paginator<'a> {
             let prev_pager = &self.pagers[pager_index - 1];
             map.insert("previous".into(), Value::from(prev_pager.permalink.as_str()));
         } else {
-            map.insert("previous".into(), Value::null());
+            map.insert("previous".into(), Value::none());
         }
 
         if pager_index < self.pagers.len() - 1 {
             let next_pager = &self.pagers[pager_index + 1];
             map.insert("next".into(), Value::from(next_pager.permalink.as_str()));
         } else {
-            map.insert("next".into(), Value::null());
+            map.insert("next".into(), Value::none());
         }
         let base_url = self.build_paginate_url(&self.permalink, None);
         map.insert("base_url".into(), Value::from(base_url));
@@ -348,7 +348,7 @@ mod tests {
             context.get(&"last".into()).unwrap(),
             &Value::from("https://vincent.is/posts/page/2/")
         );
-        assert_eq!(context.get(&"previous".into()).unwrap(), &Value::null());
+        assert_eq!(context.get(&"previous".into()).unwrap(), &Value::none());
         assert_eq!(
             context.get(&"next".into()).unwrap(),
             &Value::from("https://vincent.is/posts/page/2/")
@@ -367,7 +367,7 @@ mod tests {
             context.get(&"last".into()).unwrap(),
             &Value::from("https://vincent.is/posts/page/2/")
         );
-        assert_eq!(context.get(&"next".into()).unwrap(), &Value::null());
+        assert_eq!(context.get(&"next".into()).unwrap(), &Value::none());
         assert_eq!(
             context.get(&"previous".into()).unwrap(),
             &Value::from("https://vincent.is/posts/")
