@@ -82,17 +82,17 @@ pub struct Config {
     /// Had to remove the PartialEq derive because GlobSet does not implement it. No impact
     /// because it's unused anyway (who wants to sort Configs?).
     pub ignored_content: Vec<String>,
-    #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are needed
+    #[serde(skip)]
     pub ignored_content_globset: Option<GlobSet>,
 
     /// A list of file glob patterns to ignore when processing the static folder. Defaults to none.
     pub ignored_static: Vec<String>,
-    #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are needed
+    #[serde(skip)]
     pub ignored_static_globset: Option<GlobSet>,
 
     /// A list of file glob patterns to skip templating in content. Defaults to none.
     pub skip_content_templating: Vec<String>,
-    #[serde(skip_serializing, skip_deserializing)]
+    #[serde(skip)]
     pub skip_content_templating_globset: Option<GlobSet>,
 
     /// The mode Zola is currently being ran on. Some logging/feature can differ depending on the
@@ -310,7 +310,7 @@ impl Config {
 
     /// Is this site using i18n?
     pub fn is_multilingual(&self) -> bool {
-        !self.other_languages().is_empty()
+        self.languages.iter().len() > 1
     }
 
     pub fn is_in_check_mode(&self) -> bool {
@@ -339,7 +339,7 @@ impl Config {
                 .ok_or_else(|| {
                     anyhow!("Translation key '{}' for language '{}' is missing", key, lang)
                 })
-                .map(|term| term.to_string())
+                .cloned()
         } else {
             bail!("Language '{}' not found.", lang)
         }
@@ -371,7 +371,7 @@ impl Config {
             build_search_index: options.build_search_index,
             extra: &self.extra,
             markdown: &self.markdown,
-            search: self.search.serialize(),
+            search: options.search.serialize(),
             generate_sitemap: self.generate_sitemap,
             generate_robots_txt: self.generate_robots_txt,
             exclude_paginated_pages_in_sitemap: self.exclude_paginated_pages_in_sitemap,
