@@ -48,7 +48,7 @@ impl<'a> Renderer<'a> {
 
         let tpl_name = page.meta.template.as_deref().unwrap_or("page.html");
         render_template(tpl_name, self.tera, context)
-            .with_context(|| format!("Failed to render section '{}'", page.file.path.display()))
+            .with_context(|| format!("Failed to render page '{}'", page.file.path.display()))
     }
 
     pub fn render_section(&self, section: &Section) -> Result<String> {

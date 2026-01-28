@@ -82,10 +82,7 @@ impl SectionFrontMatter {
 
     /// Only applies to section, whether it is paginated or not.
     pub fn is_paginated(&self) -> bool {
-        match self.paginate_by {
-            Some(v) => v > 0,
-            None => false,
-        }
+        self.paginate_by.is_some_and(|v| v > 0)
     }
 }
 

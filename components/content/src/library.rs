@@ -72,7 +72,7 @@ impl Library {
             .iter()
             .filter_map(|(alias, files)| {
                 if files.len() > 1 {
-                    Some((alias.clone(), files.clone().into_iter().collect::<Vec<_>>()))
+                    Some((alias.clone(), files.iter().cloned().collect::<Vec<_>>()))
                 } else {
                     None
                 }

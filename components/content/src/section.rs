@@ -154,13 +154,7 @@ impl Section {
     }
 
     pub fn paginate_by(&self) -> Option<usize> {
-        match self.meta.paginate_by {
-            None => None,
-            Some(x) => match x {
-                0 => None,
-                _ => Some(x),
-            },
-        }
+        self.meta.paginate_by.filter(|&x| x > 0)
     }
 }
 

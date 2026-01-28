@@ -208,11 +208,7 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
 
     let mut links_by_domain: HashMap<&str, Vec<&LinkDef>> = HashMap::new();
     for link in checked_links.iter() {
-        if links_by_domain.contains_key(link.domain.as_str()) {
-            links_by_domain.get_mut(link.domain.as_str()).unwrap().push(link);
-        } else {
-            links_by_domain.insert(link.domain.as_str(), vec![link]);
-        }
+        links_by_domain.entry(link.domain.as_str()).or_default().push(link);
     }
 
     let cpu_count = match thread::available_parallelism() {

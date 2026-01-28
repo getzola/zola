@@ -638,21 +638,12 @@ impl Site {
         }
         // We're fine with missing static folders
         if self.static_path.exists() {
-            if let Some(gs) = &self.config.ignored_static_globset {
-                copy_directory(
-                    &self.static_path,
-                    &self.output_path,
-                    self.config.hard_link_static,
-                    Some(gs),
-                )?;
-            } else {
-                copy_directory(
-                    &self.static_path,
-                    &self.output_path,
-                    self.config.hard_link_static,
-                    None,
-                )?;
-            }
+            copy_directory(
+                &self.static_path,
+                &self.output_path,
+                self.config.hard_link_static,
+                self.config.ignored_static_globset.as_ref(),
+            )?;
         }
 
         Ok(())

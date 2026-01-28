@@ -22,7 +22,7 @@ pub fn is_valid(res: &Result) -> bool {
 
 pub fn message(res: &Result) -> String {
     match res {
-        Ok(code) => format!("{}", code),
+        Ok(code) => code.to_string(),
         Err(error) => error.clone(),
     }
 }
