@@ -324,11 +324,11 @@ impl Site {
             self.add_page(page, false)?;
         }
 
-        let collisions = self.library.find_path_collisions();
+        let collisions = self.library.find_path_collisions(&self.config);
         if !collisions.is_empty() {
             let mut msg = String::from("Found path collisions:\n");
-            for (path, filepaths) in collisions {
-                let row = format!("- `{}` from files {:?}\n", path, filepaths);
+            for c in collisions {
+                let row = format!("- {c}");
                 msg.push_str(&row);
             }
             return Err(anyhow!(msg));

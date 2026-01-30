@@ -55,7 +55,7 @@ impl TaxonomyTerm {
         config: &Config,
     ) -> Self {
         let slug = slugify_paths(name, config.slugify.taxonomies);
-        let path = config.get_taxonomy_term_path(lang, &taxo, &slug);
+        let path = config.get_taxonomy_term_path(lang, taxo, &slug);
         let permalink = config.make_permalink(&path);
 
         // Taxonomy are almost always used for blogs so we filter by dates
@@ -122,7 +122,7 @@ impl Taxonomy {
             sorted_items.push(TaxonomyTerm::new(
                 name,
                 tax_found.lang,
-                &tax_found.config,
+                tax_found.config,
                 &pages,
                 config,
             ));
