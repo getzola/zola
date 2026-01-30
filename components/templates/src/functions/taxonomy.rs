@@ -180,13 +180,17 @@ mod tests {
     fn can_get_taxonomy() {
         let mut config = Config::default_for_test();
         config.slugify.taxonomies = SlugifyStrategy::On;
-        let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let taxo_config_fr =
-            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        let taxo_config = TaxonomyConfig {
+            name: "tags".to_string(),
+            slug: "tags".to_string(),
+            ..TaxonomyConfig::default()
+        };
+        let taxo_config_fr = taxo_config.clone();
         config.slugify_taxonomies();
         let library = Library::new(&config);
-        let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
-        let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
+        let tag =
+            TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config);
+        let tag_fr = TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
@@ -242,13 +246,17 @@ mod tests {
     fn can_get_taxonomy_url() {
         let mut config = Config::default_for_test();
         config.slugify.taxonomies = SlugifyStrategy::On;
-        let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let taxo_config_fr =
-            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        let taxo_config = TaxonomyConfig {
+            name: "tags".to_string(),
+            slug: "tags".to_string(),
+            ..TaxonomyConfig::default()
+        };
+        let taxo_config_fr = taxo_config.clone();
         config.slugify_taxonomies();
         let library = Library::new(&config);
-        let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
-        let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
+        let tag =
+            TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config);
+        let tag_fr = TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
@@ -311,13 +319,17 @@ mod tests {
     fn can_get_taxonomy_term() {
         let mut config = Config::default_for_test();
         config.slugify.taxonomies = SlugifyStrategy::On;
-        let taxo_config = TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
-        let taxo_config_fr =
-            TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() };
+        let taxo_config = TaxonomyConfig {
+            name: "tags".to_string(),
+            slug: "tags".to_string(),
+            ..TaxonomyConfig::default()
+        };
+        let taxo_config_fr = taxo_config.clone();
         config.slugify_taxonomies();
         let library = Library::new(&config);
-        let tag = TaxonomyTerm::new("Programming", &config.default_language, "tags", &[], &config);
-        let tag_fr = TaxonomyTerm::new("Programmation", "fr", "tags", &[], &config);
+        let tag =
+            TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config);
+        let tag_fr = TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),

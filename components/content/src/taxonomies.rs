@@ -50,22 +50,12 @@ impl TaxonomyTerm {
     pub fn new(
         name: &str,
         lang: &str,
-        taxo_slug: &str,
+        taxo: &TaxonomyConfig,
         taxo_pages: &[&Page],
         config: &Config,
     ) -> Self {
-        let item_slug = slugify_paths(name, config.slugify.taxonomies);
-        let path = if lang != config.default_language {
-            if let Some(ref taxonomy_root) = config.taxonomy_root {
-                format!("/{}/{}/{}/{}/", lang, taxonomy_root, taxo_slug, item_slug)
-            } else {
-                format!("/{}/{}/{}/", lang, taxo_slug, item_slug)
-            }
-        } else if let Some(ref taxonomy_root) = config.taxonomy_root {
-            format!("/{}/{}/{}/", taxonomy_root, taxo_slug, item_slug)
-        } else {
-            format!("/{}/{}/", taxo_slug, item_slug)
-        };
+        let slug = slugify_paths(name, config.slugify.taxonomies);
+        let path = config.get_taxonomy_term_path(lang, &taxo, &slug);
         let permalink = config.make_permalink(&path);
 
         // Taxonomy are almost always used for blogs so we filter by dates
@@ -74,7 +64,7 @@ impl TaxonomyTerm {
         let (mut pages, ignored_pages) = sort_pages(taxo_pages, SortBy::Date);
         // We still append pages without dates at the end
         pages.extend(ignored_pages);
-        TaxonomyTerm { name: name.to_string(), permalink, path, slug: item_slug, pages }
+        TaxonomyTerm { name: name.to_string(), permalink, path, slug, pages }
     }
 
     pub fn merge(&mut self, other: Self) {
@@ -129,7 +119,13 @@ impl Taxonomy {
         let mut sorted_items = vec![];
         let slug = tax_found.slug;
         for (name, pages) in tax_found.terms {
-            sorted_items.push(TaxonomyTerm::new(name, tax_found.lang, &slug, &pages, config));
+            sorted_items.push(TaxonomyTerm::new(
+                name,
+                tax_found.lang,
+                &tax_found.config,
+                &pages,
+                config,
+            ));
         }
 
         sorted_items.sort_by(|a, b| match a.slug.cmp(&b.slug) {
@@ -148,17 +144,7 @@ impl Taxonomy {
                 false
             }
         });
-        let path = if tax_found.lang != config.default_language {
-            if let Some(ref taxonomy_root) = config.taxonomy_root {
-                format!("/{}/{}/{}/", tax_found.lang, taxonomy_root, slug)
-            } else {
-                format!("/{}/{}/", tax_found.lang, slug)
-            }
-        } else if let Some(ref taxonomy_root) = config.taxonomy_root {
-            format!("/{}/{}/", taxonomy_root, slug)
-        } else {
-            format!("/{}/", slug)
-        };
+        let path = config.get_taxonomy_path(tax_found.lang, tax_found.config);
         let permalink = config.make_permalink(&path);
 
         Taxonomy {
@@ -207,11 +193,12 @@ mod tests {
     fn taxonomy_path_with_taxonomy_root() {
         let mut conf = Config::default_for_test();
         conf.taxonomy_root = Some("blog".to_string());
-        let tax_conf = TaxonomyConfig::default();
+        let mut tax_conf = TaxonomyConfig::default();
+        tax_conf.slug = "tags".to_string();
         let tax_found = TaxonomyFound::new("tags".into(), &conf.default_language, &tax_conf);
         let tax = Taxonomy::new(tax_found, &conf);
         let pages = &[];
-        let term = TaxonomyTerm::new("rust", &conf.default_language, "tags", pages, &conf);
+        let term = TaxonomyTerm::new("rust", &conf.default_language, &tax_conf, pages, &conf);
 
         // Verify taxonomy list path
         assert_eq!(tax.path, "/blog/tags/");
@@ -225,11 +212,12 @@ mod tests {
     #[test]
     fn taxonomy_path_without_taxonomy_root() {
         let conf = Config::default_for_test();
-        let tax_conf = TaxonomyConfig::default();
+        let mut tax_conf = TaxonomyConfig::default();
+        tax_conf.slug = "tags".to_string();
         let tax_found = TaxonomyFound::new("tags".into(), &conf.default_language, &tax_conf);
         let tax = Taxonomy::new(tax_found, &conf);
         let pages = &[];
-        let term = TaxonomyTerm::new("rust", &conf.default_language, "tags", pages, &conf);
+        let term = TaxonomyTerm::new("rust", &conf.default_language, &tax_conf, pages, &conf);
 
         // Verify taxonomy list path
         assert_eq!(tax.path, "/tags/");

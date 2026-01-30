@@ -12,6 +12,7 @@ use globset::GlobSet;
 use serde::{Deserialize, Serialize};
 use toml::Value as Toml;
 
+use crate::TaxonomyConfig;
 use crate::theme::Theme;
 use errors::{Result, anyhow, bail};
 use utils::fs::read_file;
@@ -211,6 +212,42 @@ impl Config {
             for tax_def in lang_options.taxonomies.iter_mut() {
                 tax_def.slug = slugify_paths(&tax_def.name, self.slugify.taxonomies);
             }
+        }
+    }
+
+    /// Gets the path to use for the given combo of lang/taxo
+    pub fn get_taxonomy_path(&self, lang: &str, taxo: &TaxonomyConfig) -> String {
+        let slug = &taxo.slug;
+        if lang != self.default_language {
+            if let Some(ref taxo_root) = self.taxonomy_root {
+                format!("/{lang}/{taxo_root}/{slug}/")
+            } else {
+                format!("/{lang}/{slug}/")
+            }
+        } else if let Some(ref taxo_root) = self.taxonomy_root {
+            format!("/{taxo_root}/{slug}/")
+        } else {
+            format!("/{slug}/")
+        }
+    }
+
+    pub fn get_taxonomy_term_path(
+        &self,
+        lang: &str,
+        taxo: &TaxonomyConfig,
+        term_slug: &str,
+    ) -> String {
+        let taxo_slug = &taxo.slug;
+        if lang != self.default_language {
+            if let Some(ref taxo_root) = self.taxonomy_root {
+                format!("/{lang}/{taxo_root}/{taxo_slug}/{term_slug}/")
+            } else {
+                format!("/{lang}/{taxo_slug}/{term_slug}/")
+            }
+        } else if let Some(ref taxo_root) = self.taxonomy_root {
+            format!("/{taxo_root}/{taxo_slug}/{term_slug}/")
+        } else {
+            format!("/{taxo_slug}/{term_slug}/")
         }
     }
 
