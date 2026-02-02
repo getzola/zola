@@ -156,6 +156,13 @@ impl Section {
     pub fn paginate_by(&self) -> Option<usize> {
         self.meta.paginate_by.filter(|&x| x > 0)
     }
+
+    pub fn needs_pages_render(&self, old_meta: &SectionFrontMatter) -> bool {
+        self.meta.page_template != old_meta.page_template
+            || self.meta.sort_by != old_meta.sort_by
+            || self.meta.insert_anchor_links != old_meta.insert_anchor_links
+            || self.meta.transparent != old_meta.transparent
+    }
 }
 
 #[cfg(test)]

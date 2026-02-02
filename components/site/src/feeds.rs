@@ -32,11 +32,12 @@ pub struct FeedData {
 /// Prepares feed data by filtering, sorting, and serializing pages.
 /// Returns the serialized pages and the last_updated timestamp.
 pub fn prepare_feed(
-    all_pages: Vec<&Page>,
+    all_pages: &[&Page],
     feed_limit: Option<usize>,
     cache: &RenderCache,
 ) -> FeedData {
-    let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
+    let mut pages: Vec<_> =
+        all_pages.iter().copied().filter(|p| p.meta.date.is_some() && p.meta.render).collect();
 
     pages.par_sort_unstable_by(|a, b| {
         let ord = b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap());

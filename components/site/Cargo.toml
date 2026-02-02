@@ -35,3 +35,8 @@ tempfile = "3"
 path-slash = "0.2"
 ahash = { workspace = true }
 insta = { workspace = true }
+criterion = "0.8"
+
+[[bench]]
+name = "load"
+harness = false

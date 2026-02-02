@@ -115,21 +115,21 @@ impl Library {
                 }
 
                 if let Some(lang_taxonomies) = self.taxonomies_def.get(lang)
-                    && let Some(terms) = lang_taxonomies.get(&tax_def.slug) {
-                        for term_name in terms.keys() {
-                            let term_slug = slugify_paths(term_name, config.slugify.taxonomies);
-                            let term_path =
-                                config.get_taxonomy_term_path(lang, tax_def, &term_slug);
-                            if let Some(files) = self.reverse_aliases.get(&term_path) {
-                                collisions.push(PathCollision::TaxonomyTerm {
-                                    path: term_path,
-                                    taxonomy: tax_def.name.as_str(),
-                                    term: term_name.as_str(),
-                                    files,
-                                });
-                            }
+                    && let Some(terms) = lang_taxonomies.get(&tax_def.slug)
+                {
+                    for term_name in terms.keys() {
+                        let term_slug = slugify_paths(term_name, config.slugify.taxonomies);
+                        let term_path = config.get_taxonomy_term_path(lang, tax_def, &term_slug);
+                        if let Some(files) = self.reverse_aliases.get(&term_path) {
+                            collisions.push(PathCollision::TaxonomyTerm {
+                                path: term_path,
+                                taxonomy: tax_def.name.as_str(),
+                                term: term_name.as_str(),
+                                files,
+                            });
                         }
                     }
+                }
             }
         }
         collisions
@@ -141,20 +141,20 @@ impl Library {
             let mut entries = vec![page.path.clone()];
             entries.extend(page.meta.aliases.to_vec());
             self.insert_reverse_aliases(&file_path, entries);
-        }
 
-        for (taxa_name, terms) in &page.meta.taxonomies {
-            for term in terms {
-                // Safe unwraps as we create all lang/taxa and we validated that they are correct
-                // before getting there
-                let taxa_def = self
-                    .taxonomies_def
-                    .get_mut(&page.lang)
-                    .expect("lang not found")
-                    .get_mut(&self.taxo_name_to_slug[taxa_name])
-                    .expect("taxa not found");
+            for (taxa_name, terms) in &page.meta.taxonomies {
+                for term in terms {
+                    // Safe unwraps as we create all lang/taxa and we validated that they are correct
+                    // before getting there
+                    let taxa_def = self
+                        .taxonomies_def
+                        .get_mut(&page.lang)
+                        .expect("lang not found")
+                        .get_mut(&self.taxo_name_to_slug[taxa_name])
+                        .expect("taxa not found");
 
-                taxa_def.entry(term.to_string()).or_default().push(page.file.path.clone());
+                    taxa_def.entry(term.to_string()).or_default().push(page.file.path.clone());
+                }
             }
         }
 
