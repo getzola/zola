@@ -3,14 +3,14 @@
 title = "Goyo"
 description = "A simplicity and clean documentation theme"
 template = "theme.html"
-date = 2026-01-18T00:40:47+09:00
+date = 2026-02-01T11:36:55+09:00
 
 [taxonomies]
 theme-tags = ['documentation', 'Multilingual', 'Responsive', 'minimal']
 
 [extra]
-created = 2026-01-18T00:40:47+09:00
-updated = 2026-01-18T00:40:47+09:00
+created = 2026-02-01T11:36:55+09:00
+updated = 2026-02-01T11:36:55+09:00
 repository = "https://github.com/hahwul/goyo"
 homepage = "https://github.com/hahwul/goyo"
 minimum_version = "0.17.0"

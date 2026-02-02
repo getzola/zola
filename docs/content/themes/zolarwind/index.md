@@ -1,19 +1,19 @@
 
 +++
 title = "Zolarwind"
-description = "A localizable blog theme using Tailwind CSS for styling and KaTex for math"
+description = "A GDPR-friendly Zola blog theme: no third-party requests, Tailwind CSS, KaTeX, Mermaid, localization"
 template = "theme.html"
-date = 2026-01-18T17:03:11+01:00
+date = 2026-01-29T19:59:35+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-18T17:03:11+01:00
-updated = 2026-01-18T17:03:11+01:00
+created = 2026-01-29T19:59:35+01:00
+updated = 2026-01-29T19:59:35+01:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
-minimum_version = "0.22.0"
+minimum_version = "0.22.1"
 license = "MIT"
 demo = "https://pureandroid.com"
 
@@ -26,34 +26,35 @@ homepage = "https://weitzel.dev"
 
 # The Zolarwind Theme for Zola
 
-Welcome to Zolarwind, the simple Zola blog theme with Tailwind CSS and KaTeX support.
-This theme is for Zola users aiming to have a nice blog design powered by Tailwind CSS.
-It seamlessly integrates with [Mermaid](https://mermaid.js.org), enabling the creation of various diagrams
-directly within your blog posts using a Markdown-inspired syntax.
-Additionally, the theme smoothly integrates math formulas using [KaTeX](https://katex.org).
-Most importantly, while the theme is designed to be easily localizable,
-you can choose your preferred language setting for a consistent blog experience.
+Welcome to Zolarwind, a Zola blog theme with Tailwind CSS, KaTeX, and Mermaid support.
+It targets blogs that want Tailwind-based styling, diagrams, and math rendering.
+Localization is built in for a single-locale build.
 
 ---
 
-## Features:
+## Features
 
-- **Tailwind CSS**: Utilize the utility-first CSS framework for rapid UI development.
+- **GDPR-clean by default**: No third-party requests, no cookies, no tracking.
+  All JS/CSS is self-hosted, so no consent banner is required for a default Zolarwind site.
 
-- **Mermaid Integration**: Create diverse diagrams using simple text.
+- **Tailwind CSS**: Use Tailwind for layout and UI.
 
-- **KaTeX Integration**: Integrate and display math formulas seamlessly in your blog posts.
+- **Mermaid Integration**: Render diagrams from text.
 
-- **Localization Support**: All theme-specific strings are available in multiple languages; choose the one that's right for you.
+- **KaTeX Integration**: Render math formulas in posts.
+
+- **Localization Support**: Theme strings live in language files; pick the one you want.
   If your language isn't supported yet, just create the resource file with your translations.
 
-- **Dark/Light Mode**: The theme includes a dark/light mode toggle and persists the user preference.
+- **Dark/Light Mode**: Includes a dark/light toggle and persists the preference after a user toggle.
 
 - **Client-side Search**: Built-in search page powered by Zola's index and MiniSearch.
 
+- **Series Support**: Group posts into a series taxonomy with ordered navigation on series posts.
+
 ---
 
-## IMPORTANT NOTE
+## Important Note
 
 As of Zola v0.22.0 from 2026-01-09, color syntax highlighting has changed and requires a different configuration.
 I have updated the theme to reflect this change.
@@ -61,15 +62,23 @@ This also means that the theme is no longer compatible with Zola v0.21.0 and ear
 
 ---
 
-## Table of Contents:
+## Table of Contents
+- Features
+- Important Note
 - Demo Website
 - Prerequisites
 - Installation
 - Configuration
-- Front Matter
+- Subpath base_url support
+- Front matter
+- Series
+- Shortcodes
+- Light/Dark Images
+- Search
 - Localization
 - Integrating the theme folder
 - Development
+- Privacy
 - Remarks
 - Contributing
 - License
@@ -78,25 +87,24 @@ This also means that the theme is no longer compatible with Zola v0.21.0 and ear
 
 ## Demo Website
 
-You can see the theme in action on my [personal website](https://pureandroid.com).
+You can see the theme on my [personal website](https://pureandroid.com).
 The site uses the German language.
 
 ---
 
 ## Prerequisites
 
-To use the theme, you need some software pre-installed:
+To use the theme, you need the following software installed:
 
-- [Git](https://git-scm.com/downloads), Required for version control.
+- [Git](https://git-scm.com/downloads), required for version control.
 
-- [Node](https://nodejs.org/en/download), an open-source, cross-platform JavaScript runtime environment.
-  Node is optional and only needed if you want to change the CSS in `css/main.css`.
+- [Node.js](https://nodejs.org/en/download), an open-source, cross-platform JavaScript runtime environment.
+  Node.js is optional and only needed if you want to change the CSS in `css/main.css`.
 
-- [Zola](https://github.com/getzola/zola/releases), a fast static site generator.
+- [Zola](https://github.com/getzola/zola/releases), a static site generator.
 
-- an editor or integrated development environment of your choice —
-  I use [JetBrains IDEA](https://www.jetbrains.com/idea/download),
-  an IDE that makes development a more productive and enjoyable experience. 
+- an editor or integrated development environment of your choice -
+  I use [JetBrains IDEA](https://www.jetbrains.com/idea/download).
 
 ---
 
@@ -105,7 +113,7 @@ To use the theme, you need some software pre-installed:
 1. Clone this theme repository with e.g. `git@github.com:thomasweitzel/zolarwind.git`.
    Or download it from `https://github.com/thomasweitzel/zolarwind`.
 
-2. Make adjustments to the `config.toml` file as needed.
+2. Make adjustments to the `zola.toml` file as needed.
    To run the theme as a standalone site, you need to adjust the `base_url` to your domain.
    If you want to try it out on your local machine, you can leave it as is.
    Just run `zola serve` from the theme's root directory. 
@@ -114,8 +122,8 @@ To use the theme, you need some software pre-installed:
 
 ## Configuration
 
-Your `config.toml` file is crucial in customizing the Zola site.
-Here's a breakdown of the configuration settings tailored for this theme:
+Your `zola.toml` file controls customization for the Zola site.
+Configuration settings used by this theme:
 
 ### Basic Configuration:
 
@@ -131,24 +139,26 @@ Here's a breakdown of the configuration settings tailored for this theme:
   As of now, German (`de`) is available in the `i18n` directory.
 
 - **theme**: The theme used for the site.
-  The provided line is commented out, indicating that the theme's files are taken from the `template` directory.
+  The provided line is commented out, indicating that the theme's files are taken from the `templates` directory.
   If you move the theme to the `themes/zolarwind` directory, use `zolarwind` for this entry.
 
 - **build_search_index**: If set to `true`, a search index will be built from the pages and section content for the `default_language`.
   In this configuration and for this theme, it's enabled (`true`).
 
-- **generate_feed**: Determines if an Atom feed (file `atom.xml`) is automatically generated.
+- **generate_feeds**: Determines if an Atom feed (file `atom.xml`) is automatically generated.
   It's set to `true`, meaning a feed will be generated.
 
 - **taxonomies**: An array of taxonomies (classification systems) used for the site.
-  Here, a taxonomy for `tags` is defined, with a pagination limit of 6 and an enabled feed.
-
-- **ignored_static**: An array of GLOB patterns (files and directories) that Zola should ignore.
-  Here, a pattern is defined to ignore the `static/giallo*.css` file, which is included by Tailwind CSS and should not directly be used by the web site.
+  Here, `tags` (feed enabled) and `series` (feed disabled) are defined, each with a pagination limit of 6.
 
 ### Markdown Highlighting Configuration:
 
-- **theme**: The name of the theme to be used for code highlighting. The chosen theme in this configuration is `ayu-dark`.
+- **light_theme** and **dark_theme**: The themes used for code highlighting in light and dark mode.
+  Zola writes `giallo-light.css` and `giallo-dark.css` into `static/`.
+  The base template loads both files and switches them based on the selected theme.
+  If you want the same style in both modes, set both to the same theme.
+  Zolarwind expects both values to be set, because the template loads both highlight files.
+  Note: If you change `light_theme` or `dark_theme`, delete `static/giallo-light.css` and `static/giallo-dark.css` and run `zola build` to regenerate them; Zola does not overwrite existing giallo files.
 
 - **error_on_missing_language**: If the language to be highlighted is not found, how should Zola handle this? Set to `true` so missing languages cause a build error.
 
@@ -171,7 +181,7 @@ The `[extra]` section is where you can place any custom variables you want to be
 
 - **generator**: Optional.
   Specify the generator used for creating the static website.
-  This site is generated using `Zola v0.22.0`.
+  This site is generated using `Zola v0.22.1`.
 
 - **favicon_svg**: Optional.
   Provides a path to the site's favicon in SVG format.
@@ -210,7 +220,7 @@ The `[extra]` section is where you can place any custom variables you want to be
 
 This theme is safe to run under a subpath (for example `https://example.org/blog/`), as long as all internal links and
 assets are resolved with Zola's `get_url` helper. That is why the templates use `get_url` for CSS, JS, images, and menu
-links. Keep internal links in `config.toml` root-relative (for example `"/pages/about/"`), so Zola can prefix the
+links. Keep internal links in `zola.toml` root-relative (for example `"/pages/about/"`), so Zola can prefix the
 `base_url` subpath reliably.
 
 If you add or adjust templates, avoid hardcoded `href="/..."` or `src="/..."`. Always prefer:
@@ -228,6 +238,8 @@ subdirectory and serve the output from there:
 zola build --base-url http://127.0.0.1:1111/demo/zolarwind -o public/demo/zolarwind
 python -m http.server --directory public 1111
 ```
+
+`python -m http.server` is only an example static file server; any server that can serve `public/` works (for example Apache, Nginx, or `static-web-server`).
 
 Then open `http://127.0.0.1:1111/demo/zolarwind/` in your browser.
 
@@ -251,15 +263,14 @@ If you do not provide an image under `extra.image`, a default image is used inst
 - **authors**: an optional array of all the post's authors, e.g. `["Thomas Weitzel"]`.
   You can leave it empty, but then the first author will show up as `Unknown` in the feed (`atom.xml`).
 
-- **taxonomies**: only the optional `tags` taxonomy is used by this theme.
-  I tend to list programming languages used in the post, e.g. `["rust", "javascript"]`.
-  You can omit it, but then the post will not show up under `tags`. 
+- **taxonomies**: optional `tags` and `series` taxonomies are supported.
+  Tags are shown on posts and tag index pages, series are shown on series pages and the series navigation at the bottom of series posts.
 
 - **extra.math**: either `false` (default) or `true`.
-  If set to `true`, the post will be rendered with KaTex support for displaying math formulas.
-  If the entry is omitted or set to `false`, the post will not have KaTex support.
-  To avoid Markdown conflicts (for example `*` italics or backslash escaping), use the safe KaTeX shortcode.
-  Omit `$` and `$$` delimiters inside the shortcode body:
+  If set to `true`, the post will be rendered with KaTeX support for displaying math formulas.
+  If the entry is omitted or set to `false`, the post will not have KaTeX support.
+  Markdown is parsed before KaTeX, so characters like `*` and backslashes inside `$...$` are interpreted by Markdown first, which can alter formulas.
+  To avoid this, use the safe KaTeX shortcode and omit `$`/`$$` delimiters inside the shortcode body:
 
   ```text
   {%/* katex() */%} a^2 + b^2 {%/* end */%}
@@ -277,6 +288,43 @@ If you do not provide an image under `extra.image`, a default image is used inst
 
 ---
 
+## Series
+
+Zolarwind supports series via Zola taxonomies. Series navigation appears at the bottom of posts that belong to a series.
+
+1. Enable the taxonomy in `zola.toml`:
+   ```toml
+   taxonomies = [
+       { name = "tags", paginate_by = 6, feed = true },
+       { name = "series", paginate_by = 6, feed = false },
+   ]
+   ```
+   Series feeds are less commonly consumed than post/tag feeds, so the default disables it to keep output minimal; enable it if you want subscribers to follow series pages.
+
+2. Assign a post to a series:
+   ```toml
+   [taxonomies]
+   series = ["my-series"]
+   ```
+
+3. Optional ordering: set `extra.series_order` in the post front matter. When omitted, the series list falls back to the post date.
+
+Series index pages are available at `/series/` and `/series/<name>/`.
+Note: If no posts use the `series` taxonomy, Zola does not generate `/series/`, so it will 404.
+
+---
+
+## Shortcodes
+
+Zolarwind provides some shortcodes. Use them when you want the feature, not as formatting helpers.
+
+- **katex**: render math without Markdown interfering with characters like `*` or backslashes.
+  Use this when you want safe math and do not include `$`/`$$` delimiters inside the shortcode body.
+
+- **diagram**: render Mermaid diagrams. Use this when `extra.diagram = true` on the post.
+
+---
+
 ## Light/Dark Images
 
 If you want images that switch with the theme, wrap two images in a container using class `light-dark-image`.
@@ -291,6 +339,38 @@ The first image is shown in light mode, the second in dark mode:
 
 ---
 
+## Search
+
+This theme ships with a local, client-side search page powered by Zola's search index (Elasticlunr output) and MiniSearch.
+
+1. Enable the search index in `zola.toml`:
+   ```toml
+   build_search_index = true
+   ```
+2. Create a page that uses the search template (for example `content/pages/search.md`). If your `content/pages/_index.md`
+   uses `sort_by = "date"`, the page needs a `date` (or `weight`) to avoid being ignored. You can optionally set
+   `extra.results_per_page` to control pagination and `extra.pagination_window` to control the number of pages shown on each side of the current page.
+   ```toml
+   +++
+   date = 2026-01-14
+   title = "Search"
+   template = "search.html"
+   [extra]
+   results_per_page = 5
+   pagination_window = 2
+   +++
+   ```
+3. A search icon appears in the header and links to `/pages/search/`.
+   Note: The search icon is only rendered when `build_search_index = true`.
+
+When using this theme in another Zola site, add `content/pages/search.md` in that site repository. Theme `content/` is not loaded by Zola.
+
+The search index is built for the current `default_language` only.
+
+Note: If `build_search_index = true` but you don’t create `content/pages/search.md`, the search link will 404.
+
+---
+
 ## Localization
 
 Consider this text on a page where a blog post is published as an example: `Published on July 04, 2023; 1,234 words`.
@@ -301,7 +381,7 @@ This theme takes care of that.
 
 To localize your blog with this theme:
 
-1. Pick your desired language by setting the `default_language` in `config.toml`.
+1. Pick your desired language by setting the `default_language` in `zola.toml`.
    As of now, English (`en`) and German (`de`) have language resources available in the `i18n` directory.
    If your language is not supported yet, just create a new resource file with your translations.
    Use the file `en.toml` as a template for your own translations.
@@ -323,12 +403,19 @@ If you need to define your own date format, look [here](https://docs.rs/chrono/l
 
 ## Integrating the theme folder
 
-This project is structured as a stand-alone Zola site.
+This repo is a standalone Zola site.
 This section is for those who might want to integrate the theme into an existing Zola website.
 You can do so by moving the relevant theme files to the `themes/zolarwind` directory.
 All other files stay in the root directory.
 If you have your own files there, you need to merge them with the ones from this theme.
-You also need to adjust the `config.toml` and `package.json` files in the root accordingly.
+You also need to adjust the `zola.toml` and `package.json` files in the root accordingly.
+
+Most `extra.*` settings are optional (except `title` and `path_language_resources`),
+but if you omit them the related UI elements won’t render (menu, footer links, social icons, or the theme toggle).
+If you enable search, add `content/pages/search.md` in your site repository. Theme `content/` is not loaded by Zola (see the Search.
+
+There is a helper script, `integrate-theme-folder.sh`, which performs the steps in this section on Linux with bash.
+Run it only on a fresh checkout, because it moves and edits files in place.
 
 I will only show you the relevant directories that need to be moved.
 This is the directory structure of the stand-alone site, where the theme is in the root directory:
@@ -340,18 +427,23 @@ This is the directory structure of the stand-alone site, where the theme is in t
 ├── static
 │   ├── css
 │   ├── img
-│   └── js
+│   ├── js
+│   ├── giallo-dark.css
+│   └── giallo-light.css
 ├── syntaxes
 ├── templates
 └── theme.toml
 ```
 
-Create a new directory `themes/zolarwind` and move the following files and directories there:
+Create a new directory `themes/zolarwind` and move the theme-specific files there. The tree below shows what stays in the site root and what moves under `themes/zolarwind`:
 
 ```
 /
 ├── static
-│   └── css
+│   ├── css
+│   ├── giallo-dark.css
+│   └── giallo-light.css
+├── syntaxes
 └── themes
     └── zolarwind
         ├── css
@@ -359,17 +451,22 @@ Create a new directory `themes/zolarwind` and move the following files and direc
         ├── static
         │   ├── img
         │   └── js
-        ├── syntaxes
         ├── templates
         └── theme.toml
 ```
 
+The directory `syntaxes` stays in its original location. If you want to move it, you have to adjust the `extra_grammars` entries in `zola.toml`.
+
 The `static/css` directory is a special case.
 It contains the generated Tailwind CSS file with the name `generated.css`.
 It will stay in its original location.
+Zola always serves the site’s `static/` directory, even when a theme is used.
 This file is generated from the file `css/main.css`, which is the input for the CSS generation.
+
+The `giallo-dark.css` and `giallo-light.css` files also stay in the root `static/` directory, because the base template loads them from there.
+
 The generation process can be triggered with a script in the `package.json` file.
-**You only need to adjust and run the script** in `package.json` if you make changes to the theme's template files or use new Tailwind CSS classes directly in your content files.
+You **only** need to adjust and run the script in `package.json` if you make changes to the theme's template files or use new Tailwind CSS classes directly in your content files.
 Since the source file `css/main.css` has moved to the directory `themes/zolarwind/css/main.css`, we need to adjust the script in `package.json` accordingly.
 
 This is what the relevant part of it looks like for the stand-alone site:
@@ -392,8 +489,8 @@ Now change it so that the input file `css/main.css` will be the file `themes/zol
 }
 ```
 
-Since you now use Zolarwind as a theme, you need to declare it in the `config.toml` file.
-The theme's files have moved to the directory `themes/zolarwind`, so you need to adjust the only reference to the theme's files in the `config.toml` file accordingly by changing the `path_language_resources` entry:
+Since you now use Zolarwind as a theme, you need to declare it in the `zola.toml` file.
+The theme's files have moved to the directory `themes/zolarwind`, so you need to adjust the only reference to the theme's files in the `zola.toml` file accordingly by changing the `path_language_resources` entry:
 
 ```toml
 # The site theme to use
@@ -402,6 +499,7 @@ theme = "zolarwind"
 # ...
 
 # Path to the language resource files
+[extra]
 path_language_resources = "themes/zolarwind/i18n/"
 ```
 
@@ -438,38 +536,32 @@ That way, your local web browser will automatically reload the page with the upd
 
 ---
 
-## Search
-
-This theme ships with a local, client-side search page powered by Zola's search index (Elasticlunr output) and MiniSearch.
-
-1. Enable the search index in `config.toml`:
-   ```toml
-   build_search_index = true
-   ```
-2. Create a page that uses the search template (for example `content/pages/search.md`). If your `content/pages/_index.md`
-   uses `sort_by = "date"`, the page needs a `date` (or `weight`) to avoid being ignored. You can optionally set
-   `extra.results_per_page` to control pagination and `extra.pagination_window` to control the number of pages shown on each side of the current page.
-   ```toml
-   +++
-   date = 2026-01-14
-   title = "Search"
-   template = "search.html"
-   [extra]
-   results_per_page = 5
-   pagination_window = 2
-   +++
-   ```
-3. A search icon appears in the header and links to `/pages/search/`.
-
-When using this theme in another Zola site, add `content/pages/search.md` in that site repository. Theme `content/` is not loaded by Zola.
-
-The search index is built for the current `default_language` only.
-
----
-
 ## Privacy
 
 This theme sets no cookies and does not load resources from third-party sites. The dark/light mode preference is stored in `localStorage` only after a user explicitly toggles the theme.
+
+KaTeX, Mermaid, and MiniSearch are bundled in `static/` so they can be served from your own domain and remain pinned to known versions.
+If you instead load them from a Content Delivery Network (CDN), consider the following GDPR implications:
+
+- **Third-Party Requests & Data Privacy**: When you load resources from a CDN, it triggers third-party requests to the CDN's servers.
+  These servers might log your IP address, user agent, and other request-related metadata.
+  Under GDPR, IP addresses can be considered personal data.
+  By serving these libraries from your domain, you reduce third-party data transfers, limiting the amount of personal data you expose to external entities.
+
+- **Cookies**: Many CDNs set cookies for various reasons, including analytics or performance optimizations.
+  These cookies can track users across different websites that use the same CDN, potentially infringing on their privacy rights.
+  By hosting these libraries on your domain, you control cookies and can ensure compliance with GDPR.
+
+- **Consent**: If you're using a CDN that sets cookies or collects data, you might need to get explicit user consent before loading resources from that CDN.
+  This can complicate user experience and lead to a reduced site performance for users who opt-out.
+  By self-hosting, you circumvent this issue.
+
+- **Transparency & Control**: By self-hosting, you know exactly which versions of these libraries you're using and can ensure there are no modifications or unexpected behaviors.
+  With CDNs, there's a risk of the library being compromised, which could affect all sites using that resource.
+
+- **Data Transfer Outside the EU**: If the CDN servers are located outside the European Union, you might be transferring data out of the EU,
+  which adds another layer of GDPR compliance requirements.
+  By self-hosting, you ensure that user data doesn't leave the region unless you specifically choose a hosting solution outside the EU.
 
 ---
 
@@ -484,35 +576,10 @@ The `@apply` directive in Tailwind CSS enables you to compose utility classes in
 This makes it possible to apply multiple utility styles within a single class, making it efficient to style Markdown content.
 
 This approach has pros and cons.
-But it gives me fine-grained control over how the result looks like.
-While it is time-consuming, I prefer this solution over the `@tailwindcss/typography` plugin.
+But it gives me control over how the result looks.
+It requires manual styling, but I prefer this solution over the `@tailwindcss/typography` plugin.
  
-Yes, I'm reinventing the wheel here, because for common typographic patterns, I'm just recreating what's already provided by the typography plugin.
-
-### Serve KaTex files locally
-
-All KaTex files are included in the `static` directory for this theme.
-Using KaTeX (or any other library) by serving it from a Content Delivery Network (CDN) has implications concerning the General Data Protection Regulation (GDPR) and the use of cookies:
-
-- **Third-Party Requests & Data Privacy**: When you load resources from a CDN, it triggers third-party requests to the CDN's servers.
-  These servers might log your IP address, user agent, and other request-related metadata.
-  Under GDPR, IP addresses can be considered personal data.
-  By serving KaTeX from your domain, you reduce third-party data transfers, limiting the amount of personal data you expose to external entities.
-
-- **Cookies**: Many CDNs set cookies for various reasons, including analytics or performance optimizations.
-  These cookies can track users across different websites that use the same CDN, potentially infringing on their privacy rights.
-  By hosting KaTeX on your domain, you have full control over cookies and can ensure compliance with GDPR.
-
-- **Consent**: If you're using a CDN that sets cookies or collects data, you might need to get explicit user consent before loading resources from that CDN.
-  This can complicate user experience and lead to a reduced site performance for users who opt-out.
-  By self-hosting, you circumvent this issue.
-
-- **Transparency & Control**: By self-hosting, you know exactly which version of KaTeX you're using and can ensure there are no modifications or unexpected behaviors.
-  With CDNs, there's a minor risk of the library being compromised, which could affect all sites using that resource.
-
-- **Data Transfer Outside the EU**: If the CDN servers are located outside the European Union, you might be transferring data out of the EU,
-  which adds another layer of GDPR compliance requirements.
-  By self-hosting, you ensure that user data doesn't leave the region unless you specifically choose a hosting solution outside the EU.
+This recreates common typographic patterns that the typography plugin already provides.
 
 ---
 
