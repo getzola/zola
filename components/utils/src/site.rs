@@ -21,11 +21,11 @@ pub fn resolve_internal_link(
     link: &str,
     permalinks: &HashMap<String, String>,
 ) -> Result<ResolvedInternalLink> {
-    // First we remove the ./ since that's zola specific
-    let clean_link = link.replacen("@/", "", 1);
+    // First we remove the @/ since that's zola specific
+    let clean_link = link.strip_prefix("@/").expect("internal links start with `@/`");
     // Then we remove any potential anchor
     // parts[0] will be the file path and parts[1] the anchor if present
-    let parts = clean_link.split('#').collect::<Vec<_>>();
+    let parts = clean_link.splitn(2, '#').collect::<Vec<_>>();
     // If we have slugification turned off, we might end up with some escaped characters so we need
     // to decode them first
     let decoded = percent_decode(parts[0].as_bytes()).decode_utf8_lossy().to_string();

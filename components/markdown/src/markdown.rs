@@ -625,11 +625,18 @@ pub fn markdown_to_html(
                     code_block_content.clear();
                 }
                 Event::Start(Tag::Image { link_type, dest_url, title, id }) => {
-                    let link = if is_colocated_asset_link(&dest_url) {
-                        let link = format!("{}{}", context.current_page_permalink, &*dest_url);
-                        link.into()
-                    } else {
-                        dest_url
+                    let link = match fix_link(
+                        link_type,
+                        &dest_url,
+                        context,
+                        &mut internal_links,
+                        &mut external_links,
+                    ) {
+                        Ok(fixed_link) => fixed_link.into(),
+                        Err(err) => {
+                            error = Some(err);
+                            dest_url
+                        }
                     };
 
                     events.push(if lazy_async_image {
@@ -907,6 +914,8 @@ pub fn markdown_to_html(
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::Cow;
+
     use super::*;
     use config::Config;
     use insta::assert_snapshot;
@@ -1083,5 +1092,21 @@ mod tests {
         let mut html = String::new();
         cmark::html::push_html(&mut html, events.into_iter());
         assert_snapshot!(html);
+    }
+
+    #[test]
+    // Tests that images using `@/...` links resolve the correct URL
+    fn test_image_internal_link() {
+        let config = Config::default();
+        let mut context = RenderContext::from_config(&config);
+        let mut permalinks = HashMap::<String, String>::new();
+        permalinks.insert("posts/image.jpg".into(), "https://example.com/posts/image.jpg".into());
+        context.permalinks = Cow::Owned(permalinks);
+
+        let content = "![](@/posts/image.jpg)";
+
+        let rendered = markdown_to_html(&content, &context, vec![]).unwrap();
+
+        assert!(rendered.body.contains("https://example.com/posts/image.jpg"));
     }
 }
