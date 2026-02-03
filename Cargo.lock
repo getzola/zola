@@ -5020,7 +5020,9 @@ dependencies = [
 
 [[package]]
 name = "tera"
-version = "2.0.0"
+version = "2.0.0-alpha.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4474ebcd62d4f59f621199fac9be6aa30d313cf068ece2e2588b2e3b7c07ddf9"
 dependencies = [
  "ahash 0.8.12",
  "globset",
@@ -5032,7 +5034,9 @@ dependencies = [
 
 [[package]]
 name = "tera-contrib"
-version = "0.1.0"
+version = "0.2.0-alpha.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f58a4c307b7cba5af98c1b8aeab749819d001f48dbf90d6509a2f31eb8bb9d43"
 dependencies = [
  "base64",
  "formatx",

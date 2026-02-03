@@ -112,8 +112,7 @@ serde_yaml = "0.9"
 sha2 = "0.10"
 slug = "0.1"
 svg_metadata = "0.6"
-#tera = { version = "1.17", features = ["preserve_order", "date-locale"] }
-tera = {path = "../tera2/tera", features = ["fast", "glob_fs"] }
+tera = {version = "2.0.0-alpha.1", features = ["fast", "glob_fs"] }
 time = "0.3"
 toml = "0.9"
 unic-langid = "0.9"

@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-tera-contrib = {path = "../../../tera2/tera-contrib", features = ["base64", "date", "urlencode", "json", "filesize_format", "format", "slug", "rand", "regex"] }
+tera-contrib = {version = "0.2.0-alpha.1", features = ["base64", "date", "urlencode", "json", "filesize_format", "format", "slug", "rand", "regex"] }
 base64 = { workspace = true }
 csv = { workspace = true }
 jiff = { workspace = true }
