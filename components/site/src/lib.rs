@@ -163,7 +163,8 @@ impl Site {
 
     /// Reloads the templates and rebuild the site without re-markdown the Markdown.
     pub fn reload_templates(&mut self) -> Result<()> {
-        self.tera.full_reload()?;
+        self.tera = load_tera(&self.base_path, &self.config)?;
+        tpls::register_early_global_fns(self);
         // TODO: be smarter than that, no need to recompile sass for example
         self.build()
     }

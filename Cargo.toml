@@ -12,6 +12,13 @@ keywords = ["static", "site", "generator", "blog"]
 
 include = ["src/**/*", "LICENSE", "README.md"]
 
+[workspace]
+members = ["components/*"]
+
+[workspace.package]
+version = "0.23.0"
+edition = "2024"
+
 [build-dependencies]
 clap = { version = "4", features = ["derive"] }
 clap_complete = "4"
@@ -69,13 +76,6 @@ rust-tls = ["reqwest/rustls-tls", "link_checker/rust-tls", "templates/rust-tls"]
 native-tls = ["reqwest/default-tls", "link_checker/native-tls", "templates/native-tls"]
 indexing-zh = ["search/indexing-zh"]
 indexing-ja = ["search/indexing-ja"]
-
-[workspace]
-members = ["components/*"]
-
-[workspace.package]
-version = "0.22.1"
-edition = "2024"
 
 [workspace.dependencies]
 # External dependencies
