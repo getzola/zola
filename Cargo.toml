@@ -49,6 +49,7 @@ errors = { workspace = true }
 console = { workspace = true }
 utils = { workspace = true }
 # For feature forwarding
+image = { workspace = true }
 link_checker = { workspace = true }
 search = { workspace = true }
 templates = { workspace = true }
@@ -74,6 +75,7 @@ same-file = "1"
 default = ["rust-tls"]
 rust-tls = ["reqwest/rustls-tls", "link_checker/rust-tls", "templates/rust-tls"]
 native-tls = ["reqwest/default-tls", "link_checker/native-tls", "templates/native-tls"]
+load-avif = ["image/avif-native"]
 indexing-zh = ["search/indexing-zh"]
 indexing-ja = ["search/indexing-ja"]
 

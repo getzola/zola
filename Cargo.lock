@@ -222,6 +222,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
+name = "av-data"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fca67ba5d317924c02180c576157afd54babe48a76ebc66ce6d34bb8ba08308e"
+dependencies = [
+ "byte-slice-cast",
+ "bytes",
+ "num-derive",
+ "num-rational",
+ "num-traits",
+]
+
+[[package]]
 name = "av-scenechange"
 version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -264,7 +277,7 @@ dependencies = [
  "arrayvec",
  "bitreader",
  "byteorder",
- "fallible_collections",
+ "fallible_collections 0.5.1",
  "leb128",
  "log",
 ]
@@ -459,6 +472,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "byte-slice-cast"
+version = "1.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7575182f7272186991736b70173b0ea045398f984bf5ebbb3804736ce1330c9d"
+
+[[package]]
 name = "bytecheck"
 version = "0.6.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -544,6 +563,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d910bedd62c24733263d0bed247460853c9d22e8956bd4cd964302095e04e90"
 dependencies = [
  "smallvec",
+]
+
+[[package]]
+name = "cfg-expr"
+version = "0.20.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9acd0bdbbf4b2612d09f52ba61da432140cb10930354079d0d53fafc12968726"
+dependencies = [
+ "smallvec",
+ "target-lexicon",
 ]
 
 [[package]]
@@ -1061,6 +1090,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "dav1d"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80c3f80814db85397819d464bb553268992c393b4b3b5554b89c1655996d5926"
+dependencies = [
+ "av-data",
+ "bitflags 2.10.0",
+ "dav1d-sys",
+ "static_assertions",
+]
+
+[[package]]
+name = "dav1d-sys"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3c91aea6668645415331133ed6f8ddf0e7f40160cd97a12d59e68716a58704b"
+dependencies = [
+ "libc",
+ "system-deps",
+]
+
+[[package]]
 name = "deranged"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1347,6 +1398,15 @@ dependencies = [
  "rayon-core",
  "smallvec",
  "zune-inflate",
+]
+
+[[package]]
+name = "fallible_collections"
+version = "0.4.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a88c69768c0a15262df21899142bc6df9b9b823546d4b4b9a7bc2d6c448ec6fd"
+dependencies = [
+ "hashbrown 0.13.2",
 ]
 
 [[package]]
@@ -1710,6 +1770,15 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
+version = "0.13.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43a3c133739dddd0d2990f9a4bdf8eb4b21ef50e4851ca85ab661199821d510e"
+dependencies = [
+ "ahash 0.8.12",
+]
+
+[[package]]
+name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
@@ -2010,10 +2079,12 @@ dependencies = [
  "bytemuck",
  "byteorder-lite",
  "color_quant",
+ "dav1d",
  "exr",
  "gif",
  "image-webp",
  "moxcms",
+ "mp4parse",
  "num-traits",
  "png",
  "qoi",
@@ -2843,6 +2914,20 @@ checksum = "ac9557c559cd6fc9867e122e20d2cbefc9ca29d80d027a8e39310920ed2f0a97"
 dependencies = [
  "num-traits",
  "pxfm",
+]
+
+[[package]]
+name = "mp4parse"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "63a35203d3c6ce92d5251c77520acb2e57108c88728695aa883f70023624c570"
+dependencies = [
+ "bitreader",
+ "byteorder",
+ "fallible_collections 0.4.9",
+ "log",
+ "num-traits",
+ "static_assertions",
 ]
 
 [[package]]
@@ -4936,6 +5021,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "system-deps"
+version = "7.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48c8f33736f986f16d69b6cb8b03f55ddcad5c41acc4ccc39dd88e84aa805e7f"
+dependencies = [
+ "cfg-expr",
+ "heck 0.5.0",
+ "pkg-config",
+ "toml",
+ "version-compare",
+]
+
+[[package]]
 name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4951,6 +5049,12 @@ dependencies = [
  "libc",
  "xattr",
 ]
+
+[[package]]
+name = "target-lexicon"
+version = "0.13.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df7f62577c25e07834649fc3b39fafdc597c0a3527dc1c60129201ccfcbaa50c"
 
 [[package]]
 name = "tauri-winres"
@@ -5571,6 +5675,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 
 [[package]]
+name = "version-compare"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "03c2856837ef78f57382f06b2b8563a2f512f7185d732608fd9176cb3b8edf0e"
+
+[[package]]
 name = "version_check"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6146,6 +6256,7 @@ dependencies = [
  "errors",
  "fs-err",
  "globset",
+ "image",
  "link_checker",
  "log",
  "mime",
