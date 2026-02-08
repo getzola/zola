@@ -1,0 +1,3 @@
+{
+    "rust-analyzer.diagnostics.useRustcErrorCode": true
+}

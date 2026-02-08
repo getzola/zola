@@ -11,7 +11,6 @@ use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, RwLock};
 
-use log;
 use once_cell::sync::Lazy;
 use rayon::prelude::*;
 use tera::{Context, Tera};
@@ -824,7 +823,7 @@ impl Site {
         }
 
         for (filename, content) in themes {
-            let p = self.static_path.join(&filename);
+            let p = self.static_path.join(filename);
             if !p.exists() {
                 create_file(&p, content)?;
             }

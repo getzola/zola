@@ -41,11 +41,7 @@ pub fn is_directory_quasi_empty(path: &Path) -> Result<bool> {
         let mut entries = match path.read_dir() {
             Ok(entries) => entries,
             Err(e) => {
-                bail!(
-                    "Could not read `{}` because of error: {}",
-                    path.to_string_lossy().to_string(),
-                    e
-                );
+                bail!("Could not read `{}` because of error: {}", path.to_string_lossy(), e);
             }
         };
         // If any entry raises an error or isn't hidden (i.e. starts with `.`), we raise an error
@@ -79,10 +75,7 @@ pub fn create_new_project(name: &str, force: bool) -> Result<()> {
         if name == "." {
             bail!("The current directory is not an empty folder (hidden files are ignored).");
         } else {
-            bail!(
-                "`{}` is not an empty folder (hidden files are ignored).",
-                path.to_string_lossy().to_string()
-            )
+            bail!("`{}` is not an empty folder (hidden files are ignored).", path.to_string_lossy())
         }
     }
 

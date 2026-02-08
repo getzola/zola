@@ -5,17 +5,12 @@ use std::path::Path;
 use errors::{Result, bail};
 use utils::types::InsertAnchor;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum HighlightStyle {
+    #[default]
     Inline,
     Class,
-}
-
-impl Default for HighlightStyle {
-    fn default() -> HighlightStyle {
-        HighlightStyle::Inline
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -58,16 +53,16 @@ impl Highlighting {
 
         match &self.theme {
             HighlightConfig::Single { theme } => {
-                if !registry.contains_theme(&theme) {
+                if !registry.contains_theme(theme) {
                     bail!("Theme `{theme}` does not exist");
                 }
             }
             HighlightConfig::Dual { light_theme, dark_theme } => {
-                if !registry.contains_theme(&light_theme) {
+                if !registry.contains_theme(light_theme) {
                     bail!("Theme `{light_theme}` does not exist");
                 }
 
-                if !registry.contains_theme(&dark_theme) {
+                if !registry.contains_theme(dark_theme) {
                     bail!("Theme `{dark_theme}` does not exist");
                 }
             }

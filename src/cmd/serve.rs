@@ -47,7 +47,6 @@ use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
 use tokio::sync::broadcast;
 
-use log;
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use relative_path::{RelativePath, RelativePathBuf};
 

@@ -73,17 +73,11 @@ impl TeraFn for GetTaxonomyUrl {
 }
 
 fn add_lang_to_path<'a>(path: &str, lang: &str) -> Result<Cow<'a, str>> {
-    match path.rfind('.') {
-        Some(period_offset) => {
-            let prefix = path.get(0..period_offset);
-            let suffix = path.get(period_offset..);
-            if prefix.is_none() || suffix.is_none() {
-                Err(format!("Error adding language code to {}", path).into())
-            } else {
-                Ok(Cow::Owned(format!("{}.{}{}", prefix.unwrap(), lang, suffix.unwrap())))
-            }
-        }
-        None => Ok(Cow::Owned(format!("{}.{}", path, lang))),
+    if let Some(period_offset) = path.rfind('.') {
+        let (prefix, suffix) = path.split_at(period_offset);
+        Ok(Cow::Owned(format!("{}.{}{}", prefix, lang, suffix)))
+    } else {
+        Ok(Cow::Owned(format!("{}.{}", path, lang)))
     }
 }
 
@@ -700,5 +694,23 @@ mod tests {
         args.insert("kind".to_string(), to_value("tags").unwrap());
         args.insert("kind".to_string(), to_value("something-else").unwrap());
         assert!(static_fn.call(&args).is_err());
+    }
+
+    #[test]
+    fn test_add_lang_to_path() {
+        let cases = [
+            ("readme", "en", "readme.en"),
+            ("file.txt", "en", "file.en.txt"),
+            ("archive.tar.gz", "en", "archive.tar.en.gz"),
+            (".env", "en", ".en.env"),
+            ("foo.", "en", "foo.en."),
+            ("dir/sub/file.sql", "fr", "dir/sub/file.fr.sql"),
+            (".gitignore", "de", ".de.gitignore"),
+        ];
+
+        for (path, lang, expected) in cases {
+            let out = add_lang_to_path(path, lang).unwrap();
+            assert_eq!(out.as_ref(), expected, "path={path:?}, lang={lang:?}");
+        }
     }
 }

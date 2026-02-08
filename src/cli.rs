@@ -5,7 +5,12 @@ use clap::{Parser, Subcommand};
 use clap_complete::Shell;
 
 #[derive(Parser)]
-#[clap(version, author, about, after_help = "License: EUPL-1.2 <https://eupl.eu>, MIT for code existing before 0.22")]
+#[clap(
+    version,
+    author,
+    about,
+    after_help = "License: EUPL-1.2 <https://eupl.eu>, MIT for code existing before 0.22"
+)]
 pub struct Cli {
     /// Directory to use as root of project
     #[clap(short = 'r', long, default_value = ".")]

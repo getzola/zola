@@ -3,7 +3,6 @@
 
 use ahash::HashMap;
 use globset::GlobSet;
-use log;
 use notify_debouncer_full::DebouncedEvent;
 use notify_debouncer_full::notify::event::*;
 use std::fs::read_dir;
@@ -68,7 +67,7 @@ pub fn filter_events(
     ignored_content_globset: &Option<GlobSet>,
 ) -> HashMap<ChangeKind, Vec<MeaningfulEvent>> {
     // Arrange events from oldest to newest.
-    events.sort_by(|e1, e2| e1.time.cmp(&e2.time));
+    events.sort_by_key(|e1| e1.time);
 
     // Use a map to keep only the last event that occurred for a particular path.
     // Map `full_path -> (partial_path, simple_event_kind, change_kind)`.
@@ -174,10 +173,15 @@ mod tests {
     use notify_debouncer_full::notify::event::*;
     use std::path::{Path, PathBuf};
 
-    use super::{
-        ChangeKind, SimpleFileSystemEventKind, detect_change_kind, get_relevant_event_kind,
-        is_temp_file,
-    };
+    use super::{ChangeKind, SimpleFileSystemEventKind, filter_events};
+    use super::{detect_change_kind, get_relevant_event_kind, is_temp_file};
+    use globset::GlobSet;
+    use notify_debouncer_full::DebouncedEvent;
+    use notify_debouncer_full::notify::event::CreateKind;
+    use notify_debouncer_full::notify::{Event, EventKind};
+    use std::env;
+    use std::fs;
+    use std::time::Instant;
 
     // This test makes sure we at least have code coverage on the `notify` event kinds we care
     // about when watching the file system for site changes. This is to make sure changes to the
@@ -319,5 +323,48 @@ mod tests {
         let path = Path::new("templates/hello.html");
         let config_filename = Path::new("config.toml");
         assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
+    }
+
+    #[test]
+    fn test_filter_events_produces_a_key() -> Result<(), Box<dyn std::error::Error>> {
+        let base = env::temp_dir().join("filter_events_test");
+
+        let _ = fs::remove_dir_all(&base);
+        fs::create_dir_all(&base)?;
+
+        let root_dir = base.clone();
+        let config_path = base.join("config.toml");
+        fs::write(&config_path, "title = 'test'\n")?;
+
+        let content_dir = base.join("content");
+        fs::create_dir_all(&content_dir)?;
+        let content_file = content_dir.join("one.md");
+        fs::write(&content_file, "# hello\n")?;
+
+        let mut ev = Event::new(EventKind::Create(CreateKind::File));
+        ev.paths.push(content_file.clone());
+        let debounced = DebouncedEvent::new(ev, Instant::now());
+
+        let ignored: Option<GlobSet> = None;
+
+        let filtered =
+            filter_events(vec![debounced], root_dir.as_path(), config_path.as_path(), &ignored);
+
+        assert!(
+            filtered.contains_key(&ChangeKind::Content),
+            "expected Content key, got keys: {:?}",
+            filtered.keys().collect::<Vec<_>>()
+        );
+
+        let events = &filtered[&ChangeKind::Content];
+        assert_eq!(events.len(), 1);
+
+        let (partial, full, kind) = &events[0];
+        assert!(partial.ends_with("/content/one.md"), "partial={partial:?}");
+        assert_eq!(full, &content_file);
+        assert_eq!(*kind, SimpleFileSystemEventKind::Create);
+
+        let _ = fs::remove_dir_all(&base);
+        Ok(())
     }
 }
