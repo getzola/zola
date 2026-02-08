@@ -51,9 +51,9 @@ $ sudo dpkg -i zola_<version>_amd64_debian_<debian_version>.deb
 
 Zola is available via [GURU](https://wiki.gentoo.org/wiki/Project:GURU).
 
+See the end user documentation for how to [enable](https://wiki.gentoo.org/wiki/Project:GURU/Information_for_End_Users#Adding_the_GURU_repository) the GURU repository. Afterwards simply run:
+
 ```sh
-$ sudo eselect repository enable guru
-$ sudo emaint sync --repo guru
 $ sudo emerge --ask www-apps/zola
 ```
 
