@@ -4,7 +4,7 @@ weight = 120
 +++
 
 Zola provides support for automatic image resizing through the built-in function `resize_image`,
-which is available in template code as well as in shortcodes.
+which is available in all template code including content.
 
 The function usage is as follows:
 
@@ -98,7 +98,7 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
   `resize_image(..., width=150, height=150, op="scale")`
 
-  {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=150, height=150, op="scale") }}
+  {{ <resize_image path="documentation/content/image-processing/01-zola.png" width={150} height={150} op="scale" /> }}
 
 ### **`"fit_width"`**
   Resizes the image such that the resulting width is `width` and height is whatever will preserve the aspect ratio.
@@ -106,7 +106,7 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
   `resize_image(..., width=100, op="fit_width")`
 
-  {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=100, height=0, op="fit_width") }}
+  {{ <resize_image path="documentation/content/image-processing/01-zola.png" width={100} height={0} op="fit_width" /> }}
 
 ### **`"fit_height"`**
   Resizes the image such that the resulting height is `height` and width is whatever will preserve the aspect ratio.
@@ -114,7 +114,7 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
   `resize_image(..., height=150, op="fit_height")`
 
-  {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=0, height=150, op="fit_height") }}
+  {{ <resize_image path="documentation/content/image-processing/01-zola.png" width={0} height={150} op="fit_height" /> }}
 
 ### **`"fit"`**
   Like `"fit_width"` and `"fit_height"` combined, but only resize if the image is bigger than any of the specified dimensions.
@@ -127,11 +127,11 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
   `resize_image(..., width=5000, height=5000, op="fit")`
 
-  {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=5000, height=5000, op="fit") }}
+  {{ <resize_image path="documentation/content/image-processing/01-zola.png" width={5000} height={5000} op="fit" /> }}
 
   `resize_image(..., width=150, height=150, op="fit")`
 
-  {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=150, height=150, op="fit") }}
+  {{ <resize_image path="documentation/content/image-processing/01-zola.png" width={150} height={150} op="fit" /> }}
 
 ### **`"fill"`**
   This is the default operation. It takes the image's center part with the same aspect ratio as the `width` and
@@ -140,20 +140,8 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
   `resize_image(..., width=150, height=150, op="fill")`
 
-  {{ resize_image(path="documentation/content/image-processing/01-zola.png", width=150, height=150, op="fill") }}
+  {{ <resize_image path="documentation/content/image-processing/01-zola.png" width={150} height={150} op="fill" /> }}
 
-
-## Using `resize_image` in markdown via shortcodes
-
-`resize_image` is a Zola built-in Tera function (see the [templates](@/documentation/templates/_index.md) chapter),
-but it can be used in Markdown using [shortcodes](@/documentation/content/shortcodes.md).
-
-The examples above were generated using a shortcode file named `resize_image.html` with this content:
-
-```jinja
-{% set image = resize_image(path=path, width=width, height=height, op=op) %}
-<img src="{{ image.url }}" />
-```
 
 ## Creating picture galleries
 
@@ -164,13 +152,14 @@ The `assets` variable holds paths to all assets in the directory of a page with 
 (see [asset colocation](@/documentation/content/overview.md#asset-colocation)); if you have files other than images you
 will need to filter them out in the loop first like in the example below.
 
-This can be used in shortcodes. For example, we can create a very simple html-only clickable
-picture gallery with the following shortcode named `gallery.html`:
+For example, we can create a very simple html-only clickable
+picture gallery with the following component named `gallery`:
 
 ```jinja
+{% component gallery() -%}
 <div>
 {% for asset in page.assets -%}
-  {%- if asset is matching("[.](jpg|png)$") -%}
+  {%- if asset is matching(pat="[.](jpg|png)$") -%}
     {% set image = resize_image(path=asset, width=240, height=180) %}
     <a href="{{ get_url(path=asset) }}" target="_blank">
       <img src="{{ image.url }}" />
@@ -178,6 +167,7 @@ picture gallery with the following shortcode named `gallery.html`:
   {%- endif %}
 {%- endfor %}
 </div>
+{%- endcomponent %}
 ```
 
 As you can notice, we didn't specify an `op` argument, which means that it'll default to `"fill"`. Similarly,
@@ -186,12 +176,14 @@ the format will default to `"auto"` (choosing PNG or JPEG as appropriate) and th
 To call it from a Markdown file, simply do:
 
 ```jinja
-{{/* gallery() */}}
+{% raw -%}
+{{ <gallery /> }}
+{%- endraw -%}
 ```
 
 Here is the result:
 
-{{ gallery() }}
+{{ <gallery page /> }}
 
 <small>
   Image attribution: Public domain, except: _06-example.jpg_: Willi Heidelbach, _07-example.jpg_: Daniel Ullrich.
@@ -206,16 +198,18 @@ Sometimes when building a gallery it is useful to know the dimensions of each as
 This can also be useful in combination with `resize_image()` to do a relative resizing. So we can create a relative image resizing function with the following shortcode named `resize_image_relative.html`:
 
 ```jinja
+{% raw -%}
 {% set mdata = get_image_metadata(path=path) %}
 {% set image = resize_image(path=path, width=(mdata.width * scale)|int, op="fit_width") %}
 <img src="{{ image.url }}" />
+{%- endraw -%}
 ```
 
 It can be invoked from Markdown like this:
 
 `resize_image_relative(..., scale=0.5)`
 
-{{ resize_image_relative(path="documentation/content/image-processing/01-zola.png", scale=0.5) }}
+{{ <resize_image_relative path="documentation/content/image-processing/01-zola.png" scale={0.5} /> }}
 
 ## Creating scaled-down versions of high-resolution images
 
@@ -224,11 +218,13 @@ With the above, we can also create a shortcode that creates a 50% scaled-down ve
 Consider the following shortcode named `high_res_image.html`:
 
 ```jinja
+{% raw -%}
 {% set mdata = get_image_metadata(path=path) %}
 {% set w = (mdata.width / 2) | int %}
 {% set h = (mdata.height / 2) | int %}
 {% set image = resize_image(path=path, width=w, height=h, op="fit_width") %}
 <img src="{{ image.url }}" srcset="/{{path}} 2x"/>
+{%- endraw -%}
 ```
 
-{{ high_res_image(path="documentation/content/image-processing/08-example.jpg") }}
+{{ <high_res_image path="documentation/content/image-processing/08-example.jpg" /> }}

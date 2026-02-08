@@ -1,168 +1,81 @@
-//! Benchmarking loading/markdown markdown of generated sites of various sizes
-#![feature(test)]
-extern crate test;
-
+//! Benchmarking loading/markdown of generated sites of various sizes
 use std::env;
 
+use config::{HighlightConfig, Highlighting};
+use criterion::{Criterion, criterion_group, criterion_main};
 use site::Site;
 
-#[bench]
-fn bench_loading_small_blog(b: &mut test::Bencher) {
+fn bench_loading_small_blog(c: &mut Criterion) {
     let mut path = env::current_dir().unwrap();
     path.push("benches");
     path.push("small-blog");
     let config_file = path.join("config.toml");
     let mut site = Site::new(&path, &config_file).unwrap();
 
-    b.iter(|| site.load().unwrap());
+    c.bench_function("loading_small_blog", |b| b.iter(|| site.load().unwrap()));
 }
 
-#[bench]
-fn bench_loading_small_blog_with_syntax_highlighting(b: &mut test::Bencher) {
+fn bench_loading_small_blog_with_syntax_highlighting(c: &mut Criterion) {
     let mut path = env::current_dir().unwrap();
     path.push("benches");
     path.push("small-blog");
     let config_file = path.join("config.toml");
     let mut site = Site::new(&path, &config_file).unwrap();
-    site.config.markdown.highlight_code = true;
 
-    b.iter(|| site.load().unwrap());
+    let mut highlighting = Highlighting {
+        error_on_missing_language: false,
+        style: Default::default(),
+        theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+        extra_grammars: vec![],
+        extra_themes: vec![],
+        registry: Default::default(),
+    };
+    highlighting.init(std::path::Path::new(".")).unwrap();
+    site.config.markdown.highlighting = Some(highlighting);
+
+    c.bench_function("loading_small_blog_with_syntax_highlighting", |b| {
+        b.iter(|| site.load().unwrap())
+    });
 }
 
-//#[bench]
-//fn bench_loading_medium_blog(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("medium-blog");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//
-//    b.iter(|| site.load().unwrap());
-//}
-//
-//#[bench]
-//fn bench_loading_medium_blog_with_syntax_highlighting(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("medium-blog");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//    site.config.highlight_code = true;
-//
-//    b.iter(|| site.load().unwrap());
-//}
-//
-//#[bench]
-//fn bench_loading_big_blog(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("big-blog");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//
-//    b.iter(|| site.load().unwrap());
-//}
-//
-//#[bench]
-//fn bench_loading_big_blog_with_syntax_highlighting(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("big-blog");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//    site.config.highlight_code = true;
-//
-//    b.iter(|| site.load().unwrap());
-//}
-
-//#[bench]
-//fn bench_loading_huge_blog(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("huge-blog");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//
-//    b.iter(|| site.load().unwrap());
-//}
-//
-//#[bench]
-//fn bench_loading_huge_blog_with_syntax_highlighting(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("huge-blog");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//    site.config.highlight_code = true;
-//
-//    b.iter(|| site.load().unwrap());
-//}
-
-#[bench]
-fn bench_loading_small_kb(b: &mut test::Bencher) {
+fn bench_loading_small_kb(c: &mut Criterion) {
     let mut path = env::current_dir().unwrap();
     path.push("benches");
     path.push("small-kb");
     let config_file = path.join("config.toml");
     let mut site = Site::new(&path, &config_file).unwrap();
 
-    b.iter(|| site.load().unwrap());
+    c.bench_function("loading_small_kb", |b| b.iter(|| site.load().unwrap()));
 }
 
-#[bench]
-fn bench_loading_small_kb_with_syntax_highlighting(b: &mut test::Bencher) {
+fn bench_loading_small_kb_with_syntax_highlighting(c: &mut Criterion) {
     let mut path = env::current_dir().unwrap();
     path.push("benches");
     path.push("small-kb");
     let config_file = path.join("config.toml");
     let mut site = Site::new(&path, &config_file).unwrap();
-    site.config.markdown.highlight_code = true;
 
-    b.iter(|| site.load().unwrap());
+    let mut highlighting = Highlighting {
+        error_on_missing_language: false,
+        style: Default::default(),
+        theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+        extra_grammars: vec![],
+        extra_themes: vec![],
+        registry: Default::default(),
+    };
+    highlighting.init(std::path::Path::new(".")).unwrap();
+    site.config.markdown.highlighting = Some(highlighting);
+
+    c.bench_function("loading_small_kb_with_syntax_highlighting", |b| {
+        b.iter(|| site.load().unwrap())
+    });
 }
 
-//#[bench]
-//fn bench_loading_medium_kb(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("medium-kb");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//
-//    b.iter(|| site.load().unwrap());
-//}
-//
-//#[bench]
-//fn bench_loading_medium_kb_with_syntax_highlighting(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("medium-kb");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//    site.config.highlight_code = Some(true);
-//
-//    b.iter(|| site.load().unwrap());
-//}
-
-//#[bench]
-//fn bench_loading_huge_kb(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("huge-kb");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//
-//    b.iter(|| site.load().unwrap());
-//}
-//
-//#[bench]
-//fn bench_loading_huge_kb_with_syntax_highlighting(b: &mut test::Bencher) {
-//    let mut path = env::current_dir().unwrap().to_path_buf();
-//    path.push("benches");
-//    path.push("huge-kb");
-//    let config_file = path.join("config.toml");
-//    let mut site = Site::new(&path, &config_file).unwrap();
-//    site.config.highlight_code = Some(true);
-//
-//    b.iter(|| site.load().unwrap());
-//}
+criterion_group!(
+    benches,
+    bench_loading_small_blog,
+    bench_loading_small_blog_with_syntax_highlighting,
+    bench_loading_small_kb,
+    bench_loading_small_kb_with_syntax_highlighting,
+);
+criterion_main!(benches);

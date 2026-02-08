@@ -1,10 +1,9 @@
 [package]
 name = "link_checker"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-once_cell = { workspace = true }
 reqwest = { workspace = true }
 
 config = { workspace = true }

@@ -2,6 +2,14 @@
 
 ## 0.2x.x (unrelease)
 
+### Breaking
+
+- `get_page` and `get_section` no longer work with paths containing language code, eg "content/some.fr.md".
+
+### Other
+
+- `get_taxonomy_url` `name` parameter is deprecated. Use `term` to be consistent with the other functions
+
 ## 0.22.1 (2026-01-22)
 
 - Update deps to fix some JPEG decoding issue + highlighting speed

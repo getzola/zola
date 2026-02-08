@@ -12,6 +12,7 @@ use globset::GlobSet;
 use serde::{Deserialize, Serialize};
 use toml::Value as Toml;
 
+use crate::TaxonomyConfig;
 use crate::theme::Theme;
 use errors::{Result, anyhow, bail};
 use utils::fs::read_file;
@@ -82,13 +83,18 @@ pub struct Config {
     /// Had to remove the PartialEq derive because GlobSet does not implement it. No impact
     /// because it's unused anyway (who wants to sort Configs?).
     pub ignored_content: Vec<String>,
-    #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are needed
+    #[serde(skip)]
     pub ignored_content_globset: Option<GlobSet>,
 
     /// A list of file glob patterns to ignore when processing the static folder. Defaults to none.
     pub ignored_static: Vec<String>,
-    #[serde(skip_serializing, skip_deserializing)] // not a typo, 2 are needed
+    #[serde(skip)]
     pub ignored_static_globset: Option<GlobSet>,
+
+    /// A list of file glob patterns to skip templating in content. Defaults to none.
+    pub skip_content_templating: Vec<String>,
+    #[serde(skip)]
+    pub skip_content_templating_globset: Option<GlobSet>,
 
     /// The mode Zola is currently being ran on. Some logging/feature can differ depending on the
     /// command being used.
@@ -161,11 +167,15 @@ impl Config {
         config.slugify_taxonomies();
         config.link_checker.resolve_globset()?;
 
-        let content_glob_set = build_ignore_glob_set(&config.ignored_content, "content")?;
+        let content_glob_set = build_ignore_glob_set(&config.ignored_content, "ignored_content")?;
         config.ignored_content_globset = Some(content_glob_set);
 
-        let static_glob_set = build_ignore_glob_set(&config.ignored_static, "static")?;
+        let static_glob_set = build_ignore_glob_set(&config.ignored_static, "ignored_static")?;
         config.ignored_static_globset = Some(static_glob_set);
+
+        let skip_templating_glob_set =
+            build_ignore_glob_set(&config.skip_content_templating, "skip_content_templating")?;
+        config.skip_content_templating_globset = Some(skip_templating_glob_set);
 
         Ok(config)
     }
@@ -202,6 +212,42 @@ impl Config {
             for tax_def in lang_options.taxonomies.iter_mut() {
                 tax_def.slug = slugify_paths(&tax_def.name, self.slugify.taxonomies);
             }
+        }
+    }
+
+    /// Gets the path to use for the given combo of lang/taxo
+    pub fn get_taxonomy_path(&self, lang: &str, taxo: &TaxonomyConfig) -> String {
+        let slug = &taxo.slug;
+        if lang != self.default_language {
+            if let Some(ref taxo_root) = self.taxonomy_root {
+                format!("/{lang}/{taxo_root}/{slug}/")
+            } else {
+                format!("/{lang}/{slug}/")
+            }
+        } else if let Some(ref taxo_root) = self.taxonomy_root {
+            format!("/{taxo_root}/{slug}/")
+        } else {
+            format!("/{slug}/")
+        }
+    }
+
+    pub fn get_taxonomy_term_path(
+        &self,
+        lang: &str,
+        taxo: &TaxonomyConfig,
+        term_slug: &str,
+    ) -> String {
+        let taxo_slug = &taxo.slug;
+        if lang != self.default_language {
+            if let Some(ref taxo_root) = self.taxonomy_root {
+                format!("/{lang}/{taxo_root}/{taxo_slug}/{term_slug}/")
+            } else {
+                format!("/{lang}/{taxo_slug}/{term_slug}/")
+            }
+        } else if let Some(ref taxo_root) = self.taxonomy_root {
+            format!("/{taxo_root}/{taxo_slug}/{term_slug}/")
+        } else {
+            format!("/{taxo_slug}/{term_slug}/")
         }
     }
 
@@ -301,7 +347,7 @@ impl Config {
 
     /// Is this site using i18n?
     pub fn is_multilingual(&self) -> bool {
-        !self.other_languages().is_empty()
+        self.languages.iter().len() > 1
     }
 
     pub fn is_in_check_mode(&self) -> bool {
@@ -330,7 +376,7 @@ impl Config {
                 .ok_or_else(|| {
                     anyhow!("Translation key '{}' for language '{}' is missing", key, lang)
                 })
-                .map(|term| term.to_string())
+                .cloned()
         } else {
             bail!("Language '{}' not found.", lang)
         }
@@ -362,7 +408,7 @@ impl Config {
             build_search_index: options.build_search_index,
             extra: &self.extra,
             markdown: &self.markdown,
-            search: self.search.serialize(),
+            search: options.search.serialize(),
             generate_sitemap: self.generate_sitemap,
             generate_robots_txt: self.generate_robots_txt,
             exclude_paginated_pages_in_sitemap: self.exclude_paginated_pages_in_sitemap,
@@ -426,6 +472,8 @@ impl Default for Config {
             ignored_content_globset: None,
             ignored_static: Vec::new(),
             ignored_static_globset: None,
+            skip_content_templating: Vec::new(),
+            skip_content_templating_globset: None,
             translations: HashMap::new(),
             output_dir: "public".to_string(),
             preserve_dotfiles_in_output: false,

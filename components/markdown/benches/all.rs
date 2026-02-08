@@ -1,165 +1,126 @@
-#![feature(test)]
-extern crate test;
-
 use std::collections::HashMap;
 
-use config::Config;
-use markdown::{RenderContext, render_content};
-use tera::Tera;
+use config::{Config, HighlightConfig, Highlighting};
+use criterion::{Criterion, criterion_group, criterion_main};
+use markdown::{MarkdownContext, render_content};
+use std::hint::black_box;
+use templates::ZOLA_TERA;
 use utils::types::InsertAnchor;
 
 const CONTENT: &str = r#"
-# Modus cognitius profanam ne duae virtutis mundi
+# Heading 1
 
-## Ut vita
+This is a paragraph with **bold** and *italic* text.
 
-Lorem markdownum litora, care ponto nomina, et ut aspicit gelidas sui et
-purpureo genuit. Tamen colla venientis [delphina](http://nil-sol.com/ecquis)
-Tusci et temptata citaeque curam isto ubi vult vulnere reppulit.
+## Heading 2
 
-- :one: Seque vidit flendoque de quodam
-- :two: Dabit minimos deiecto caputque noctis pluma
-- :three: Leti coniunx est Helicen
-- :four: Illius pulvereumque Icare inpositos
-- :five: Vivunt pereo pluvio tot ramos Olenios gelidis
-- :six: Quater teretes natura inde
+Here's a list:
 
-### A subsection
+- Item 1
+- Item 2
+- Item 3
 
-Protinus dicunt, breve per, et vivacis genus Orphei munere. Me terram [dimittere
-casside](http://corpus.org/) pervenit saxo primoque frequentat genuum sorori
-praeferre causas Libys. Illud in serpit adsuetam utrimque nunc haberent,
-**terrae si** veni! Hectoreis potes sumite [Mavortis retusa](http://tua.org/)
-granum captantur potuisse Minervae, frugum.
+And a numbered list:
 
-> Clivo sub inprovisoque nostrum minus fama est, discordia patrem petebat precatur
-absumitur, poena per sit. Foramina *tamen cupidine* memor supplex tollentes
-dictum unam orbem, Anubis caecae. Viderat formosior tegebat satis, Aethiopasque
-sit submisso coniuge tristis ubi! :exclamation:
+1. First item
+2. Second item
+3. Third item
 
-## Praeceps Corinthus totidem quem crus vultum cape
+> This is a blockquote
+> with multiple lines
 
-```rs
-#[derive(Debug)]
-pub struct Site {
-    /// The base path of the gutenberg site
-    pub base_path: PathBuf,
-    /// The parsed config for the site
-    pub config: Config,
-    pub pages: HashMap<PathBuf, Page>,
-    pub sections: HashMap<PathBuf, Section>,
-    pub tera: Tera,
-    live_reload: bool,
-    output_path: PathBuf,
-    static_path: PathBuf,
-    pub tags: Option<Taxonomy>,
-    pub categories: Option<Taxonomy>,
-    /// A map of all .md files (section and pages) and their permalink
-    /// We need that if there are relative links in the content that need to be resolved
-    pub permalinks: HashMap<String, String>,
+Here's a [link to Zola](https://www.getzola.org/).
+
+### Code Examples
+
+Some inline `code` here.
+
+```rust
+fn main() {
+    let message = "Hello, world!";
+    println!("{}", message);
+
+    for i in 0..10 {
+        println!("Count: {}", i);
+    }
 }
 ```
 
-## More stuff
-And a shortcode:
+```python
+def greet(name):
+    """Greet someone by name."""
+    return f"Hello, {name}!"
 
-{{ youtube(id="my_youtube_id") }}
-
-### Another subsection
-Gotta make the toc do a little bit of work
-
-# A big title :fire:
-
-- hello
-- world
-- !
-
-```py
 if __name__ == "__main__":
-    gen_site("basic-blog", [""], 250, paginate=True)
+    print(greet("World"))
+    numbers = [1, 2, 3, 4, 5]
+    squared = [n ** 2 for n in numbers]
 ```
+
+## Another Section
+
+Some more text with a table:
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| A        | B        | C        |
+| D        | E        | F        |
+
+The end.
 "#;
 
-#[bench]
-fn bench_render_content_with_highlighting(b: &mut test::Bencher) {
-    let mut tera = Tera::default();
-    tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
-    let permalinks_ctx = HashMap::new();
-    let mut config = Config::default_for_test();
-    config.markdown.highlight_code = true;
-    let current_page_permalink = "";
-    let mut context = RenderContext::new(
-        &tera,
-        &config,
-        &config.default_language,
-        current_page_permalink,
-        &permalinks_ctx,
-        InsertAnchor::None,
-    );
-    let shortcode_def = utils::templates::get_shortcodes(&tera);
-    context.set_shortcode_definitions(&shortcode_def);
-    b.iter(|| render_content(CONTENT, &context).unwrap());
+fn bench_without_highlighting(c: &mut Criterion) {
+    let mut tera = ZOLA_TERA.clone();
+    tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
+    let permalinks = HashMap::new();
+    let config = Config::default_for_test();
+
+    let context = MarkdownContext {
+        tera: &tera,
+        config: &config,
+        permalinks: &permalinks,
+        lang: &config.default_language,
+        current_permalink: "https://www.example.com/bench/",
+        current_path: "bench.md",
+        insert_anchor: InsertAnchor::None,
+    };
+
+    c.bench_function("render_without_highlighting", |b| {
+        b.iter(|| render_content(black_box(CONTENT), &context).unwrap())
+    });
 }
 
-#[bench]
-fn bench_render_content_without_highlighting(b: &mut test::Bencher) {
-    let mut tera = Tera::default();
-    tera.add_raw_template("shortcodes/youtube.html", "{{id}}").unwrap();
-    let permalinks_ctx = HashMap::new();
-    let mut config = Config::default_for_test();
-    config.markdown.highlight_code = false;
-    let current_page_permalink = "";
-    let mut context = RenderContext::new(
-        &tera,
-        &config,
-        &config.default_language,
-        current_page_permalink,
-        &permalinks_ctx,
-        InsertAnchor::None,
-    );
-    let shortcode_def = utils::templates::get_shortcodes(&tera);
-    context.set_shortcode_definitions(&shortcode_def);
-    b.iter(|| render_content(CONTENT, &context).unwrap());
-}
-
-#[bench]
-fn bench_render_content_no_shortcode(b: &mut test::Bencher) {
-    let tera = Tera::default();
-    let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
-    let mut config = Config::default_for_test();
-    config.markdown.highlight_code = false;
-    let permalinks_ctx = HashMap::new();
-    let current_page_permalink = "";
-    let context = RenderContext::new(
-        &tera,
-        &config,
-        &config.default_language,
-        current_page_permalink,
-        &permalinks_ctx,
-        InsertAnchor::None,
-    );
-
-    b.iter(|| render_content(&content2, &context).unwrap());
-}
-
-#[bench]
-fn bench_render_content_with_emoji(b: &mut test::Bencher) {
-    let tera = Tera::default();
-    let content2 = CONTENT.replace(r#"{{ youtube(id="my_youtube_id") }}"#, "");
+fn bench_with_highlighting(c: &mut Criterion) {
+    let mut tera = ZOLA_TERA.clone();
+    tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
+    let permalinks = HashMap::new();
     let mut config = Config::default_for_test();
 
-    config.markdown.highlight_code = false;
-    config.markdown.render_emoji = true;
-    let permalinks_ctx = HashMap::new();
-    let current_page_permalink = "";
-    let context = RenderContext::new(
-        &tera,
-        &config,
-        &config.default_language,
-        current_page_permalink,
-        &permalinks_ctx,
-        InsertAnchor::None,
-    );
+    let mut highlighting = Highlighting {
+        error_on_missing_language: false,
+        style: Default::default(),
+        theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+        extra_grammars: vec![],
+        extra_themes: vec![],
+        registry: Default::default(),
+    };
+    highlighting.init(std::path::Path::new(".")).unwrap();
+    config.markdown.highlighting = Some(highlighting);
 
-    b.iter(|| render_content(&content2, &context).unwrap());
+    let context = MarkdownContext {
+        tera: &tera,
+        config: &config,
+        permalinks: &permalinks,
+        lang: &config.default_language,
+        current_permalink: "https://www.example.com/bench/",
+        current_path: "bench.md",
+        insert_anchor: InsertAnchor::None,
+    };
+
+    c.bench_function("render_with_highlighting", |b| {
+        b.iter(|| render_content(black_box(CONTENT), &context).unwrap())
+    });
 }
+
+criterion_group!(benches, bench_without_highlighting, bench_with_highlighting);
+criterion_main!(benches);

@@ -62,6 +62,7 @@ Next we need to create the *Github Action* to build and deploy our files to S3. 
 `.github/workflows/publish.yml`:
 
 ```yaml
+{% raw -%}
 name: Build and Publish to AWS
 on:
   push:
@@ -90,6 +91,7 @@ jobs:
           # Use the next two only if you have created a CloudFront distribution
           dist-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
           invalidation: /*
+{%- endraw -%}
 ```
 
 Note, that you may need to change the branch name in the above snippet if you desire a different behavior.

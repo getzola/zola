@@ -142,9 +142,11 @@ example: a `blog` directory with three files: `blog/Post_1.md`,
 create a list of links to the posts, a simple template might look like this:
 
 ```jinja
+{% raw -%}
 {% for post in section.pages %}
   <h1><a href="{{ post.permalink }}">{{ post.title }}</a></h1>
 {% endfor %}
+{%- endraw -%}
 ```
 
 This would iterate over the posts in the order specified

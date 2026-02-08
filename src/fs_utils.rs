@@ -2,11 +2,10 @@
 //! event-watching libraries.
 
 use ahash::HashMap;
+use fs_err as fs;
 use globset::GlobSet;
-use log;
 use notify_debouncer_full::DebouncedEvent;
 use notify_debouncer_full::notify::event::*;
-use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 use utils::fs::is_temp_file;
 
@@ -141,7 +140,7 @@ fn is_ignored_file(ignored_content_globset: &Option<GlobSet>, path: &Path) -> bo
 fn is_folder_empty(dir: &Path) -> bool {
     // Can panic if we don't have the rights I guess?
 
-    read_dir(dir).expect("Failed to read a directory to see if it was empty").next().is_none()
+    fs::read_dir(dir).expect("Failed to read a directory to see if it was empty").next().is_none()
 }
 
 /// Detect what changed from the given path so we have an idea what needs
