@@ -3,14 +3,14 @@
 title = "Zolarwind"
 description = "A GDPR-friendly Zola blog theme: no third-party requests, Tailwind CSS, KaTeX, Mermaid, localization"
 template = "theme.html"
-date = 2026-01-29T19:59:35+01:00
+date = 2026-02-08T18:02:55+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-29T19:59:35+01:00
-updated = 2026-01-29T19:59:35+01:00
+created = 2026-02-08T18:02:55+01:00
+updated = 2026-02-08T18:02:55+01:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
 minimum_version = "0.22.1"
@@ -22,13 +22,13 @@ name = "Thomas Weitzel"
 homepage = "https://weitzel.dev"
 +++        
 
-![A screenshot of how the theme looks like](screenshot.png)
+# Zolarwind Theme
 
-# The Zolarwind Theme for Zola
-
-Welcome to Zolarwind, a Zola blog theme with Tailwind CSS, KaTeX, and Mermaid support.
+Zolarwind is a Zola blog theme with Tailwind CSS, KaTeX, and Mermaid support.
 It targets blogs that want Tailwind-based styling, diagrams, and math rendering.
-Localization is built in for a single-locale build.
+Localization is built-in for a single-locale build.
+
+![A screenshot of how the theme looks like](screenshot.png)
 
 ---
 
@@ -52,31 +52,43 @@ Localization is built in for a single-locale build.
 
 - **Series Support**: Group posts into a series taxonomy with ordered navigation on series posts.
 
+- **Artalk Comments**: Optional integration with a self-hosted Artalk server. See [docs/artalk.md](docs/artalk.md).
+
 ---
 
 ## Important Note
 
 As of Zola v0.22.0 from 2026-01-09, color syntax highlighting has changed and requires a different configuration.
-I have updated the theme to reflect this change.
-This also means that the theme is no longer compatible with Zola v0.21.0 and earlier.
+The theme reflects this change.
+This theme is not compatible with Zola v0.21.0 and earlier.
 
 ---
 
 ## Table of Contents
+- Table of Contents
 - Features
 - Important Note
 - Demo Website
 - Prerequisites
 - Installation
+  - Standalone (Quick Start)
+  - As a Theme (Integration)
 - Configuration
+  - Basic Configuration
+  - Markdown Highlighting Configuration
+  - Extra Configuration
 - Subpath base_url support
 - Front matter
+  - Example Front Matter
+  - Fields description
 - Series
 - Shortcodes
 - Light/Dark Images
 - Search
 - Localization
 - Integrating the theme folder
+  - Option 1: Automated Integration (Recommended)
+  - Option 2: Manual Integration
 - Development
 - Privacy
 - Remarks
@@ -87,7 +99,7 @@ This also means that the theme is no longer compatible with Zola v0.21.0 and ear
 
 ## Demo Website
 
-You can see the theme on my [personal website](https://pureandroid.com).
+You can see the theme on the [demo website](https://pureandroid.com).
 The site uses the German language.
 
 ---
@@ -98,25 +110,41 @@ To use the theme, you need the following software installed:
 
 - [Git](https://git-scm.com/downloads), required for version control.
 
-- [Node.js](https://nodejs.org/en/download), an open-source, cross-platform JavaScript runtime environment.
-  Node.js is optional and only needed if you want to change the CSS in `css/main.css`.
+- [Node.js](https://nodejs.org/en/download), an open-source, cross-platform JavaScript runtime environment. Node.js is
+  **optional**. It is only needed if you want to change the CSS in `css/main.css`. The theme comes with pre-compiled CSS
+  and is fully functional without Node.js.
 
-- [Zola](https://github.com/getzola/zola/releases), a static site generator.
-
-- an editor or integrated development environment of your choice -
-  I use [JetBrains IDEA](https://www.jetbrains.com/idea/download).
+- [Zola](https://github.com/getzola/zola/releases), a static site generator. **This is the only absolute requirement**
+  to build your site with Zolarwind.
 
 ---
 
 ## Installation
 
-1. Clone this theme repository with e.g. `git@github.com:thomasweitzel/zolarwind.git`.
-   Or download it from `https://github.com/thomasweitzel/zolarwind`.
+### Standalone (Quick Start)
 
-2. Make adjustments to the `zola.toml` file as needed.
-   To run the theme as a standalone site, you need to adjust the `base_url` to your domain.
-   If you want to try it out on your local machine, you can leave it as is.
-   Just run `zola serve` from the theme's root directory. 
+If you want to use this repository as the base for your new blog, this is the fastest way:
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/thomasweitzel/zolarwind.git
+   cd zolarwind
+   ```
+
+2. **Run the site:**
+   ```bash
+   zola serve
+   ```
+   Now open the link provided by `zola serve` in your browser.
+
+3. **Configure:**
+   Adjust `base_url` and other settings in `zola.toml` to your needs.
+
+### As a Theme (Integration)
+
+If you already have a Zola site and want to use Zolarwind as a theme in your `themes/` folder, please refer to
+the Integrating the theme folder section for detailed instructions or to use the
+automated script.
 
 ---
 
@@ -241,26 +269,48 @@ python -m http.server --directory public 1111
 
 `python -m http.server` is only an example static file server; any server that can serve `public/` works (for example Apache, Nginx, or `static-web-server`).
 
-Then open `http://127.0.0.1:1111/demo/zolarwind/` in your browser.
+Then open the link provided by the server in your browser.
 
 ---
 
 ## Front matter
 
-For blog posts (Markdown files in folder `content/blog`), this theme uses a directory structure where each post has its own folder.
-This way, I have all resources for a post in one place.
-It can include images, videos, and other files.
+For blog posts (Markdown files in folder `content/blog`), each post has its own folder.
+This structure keeps all resources for a post in one place, including images, videos, and other files.
 
 Each post is associated with an image displayed on the blog's main page and on the post's detail page.
 If you do not provide an image under `extra.image`, a default image is used instead.
 
-- **date**: the date of the blog posts, e.g. `2020-06-11`.
+### Example Front Matter
 
-- **title**: the title of the blog posts, e.g. `The Game of Fifteen`.
+You can copy and paste this into a new post (e.g., `content/blog/perception-vs-math/index.md`):
+
+```toml
++++
+date = 2026-02-05
+title = "Intuition vs. mathematical facts"
+description = "Examine the reliability of tests using probability trees and Bayes' theorem."
+authors = ["Jane Doe"]
+
+[taxonomies]
+tags = ["math", "statistics"]
+
+[extra]
+math = true
+diagram = true
+image = "banner.jpg"
++++
+```
+
+### Fields description
+
+- **date**: the date of the blog posts, e.g. `2026-02-05`.
+
+- **title**: the title of the blog posts, e.g. `Intuition vs. mathematical facts`.
  
 - **description**: the description of the blog posts. It is used as a summary on the blog's main page.
  
-- **authors**: an optional array of all the post's authors, e.g. `["Thomas Weitzel"]`.
+- **authors**: an optional array of all the post's authors, e.g. `["Jane Doe"]`.
   You can leave it empty, but then the first author will show up as `Unknown` in the feed (`atom.xml`).
 
 - **taxonomies**: optional `tags` and `series` taxonomies are supported.
@@ -403,22 +453,35 @@ If you need to define your own date format, look [here](https://docs.rs/chrono/l
 
 ## Integrating the theme folder
 
-This repo is a standalone Zola site.
-This section is for those who might want to integrate the theme into an existing Zola website.
-You can do so by moving the relevant theme files to the `themes/zolarwind` directory.
+This repository is a standalone Zola site by default.
+If you want to integrate Zolarwind into an existing Zola website as a theme, you have two options:
+
+### Option 1: Automated Integration (Recommended)
+
+There is a helper script, `integrate-theme-folder.sh`, which performs all the necessary file moves and configuration
+updates automatically (tested on Linux/Bash).
+
+**Note:** Run it only on a fresh checkout of Zolarwind, as it moves and edits files in place.
+
+```bash
+./integrate-theme-folder.sh
+```
+
+### Option 2: Manual Integration
+
+This section is for those who prefer to move files manually or are on a non-Linux system.
+You can integrate the theme by moving the relevant theme files to the `themes/zolarwind` directory.
 All other files stay in the root directory.
 If you have your own files there, you need to merge them with the ones from this theme.
 You also need to adjust the `zola.toml` and `package.json` files in the root accordingly.
 
-Most `extra.*` settings are optional (except `title` and `path_language_resources`),
-but if you omit them the related UI elements won’t render (menu, footer links, social icons, or the theme toggle).
-If you enable search, add `content/pages/search.md` in your site repository. Theme `content/` is not loaded by Zola (see the Search.
+Most `extra.*` settings are optional (except `title` and `path_language_resources`), but if omitted the related UI
+elements won’t render (menu, footer links, social icons, or the theme toggle). If search is enabled, add
+`content/pages/search.md` in the site repository. Theme `content/` is not loaded by Zola (see the Search
+section).
 
-There is a helper script, `integrate-theme-folder.sh`, which performs the steps in this section on Linux with bash.
-Run it only on a fresh checkout, because it moves and edits files in place.
-
-I will only show you the relevant directories that need to be moved.
-This is the directory structure of the stand-alone site, where the theme is in the root directory:
+The manual integration section shows the directories that need to be moved.
+This is the directory structure of the standalone site, where the theme is in the root directory:
 
 ```
 /
@@ -507,32 +570,25 @@ path_language_resources = "themes/zolarwind/i18n/"
 
 ## Development
 
-If you want to adjust the CSS of the theme to your needs, you will need to edit the files in the `templates` and `css`
-directories. While you do this, you should make sure that the CSS file `static/css/generated.css` is up to date. This
-file is generated from the file `css/main.css`, and all the files that Tailwind automatically identifies via automatic
-content detection.
+To customize the CSS, edit the files in the `templates` and `css` directories.
+Ensure that the CSS file `static/css/generated.css` is updated.
+This file is generated from `css/main.css` and the files identified via automatic content detection.
 
 The theme uses a custom color palette (`neutral`, `primary`, `ok`, `warn`, `fail`) instead of the default Tailwind colors.
-When you add new classes in templates or content, rebuild the CSS so the generated palette classes are included.
+When new classes are added in templates or content, rebuild the CSS to include the generated palette classes.
 
-If you ever need to explicitly add a source file excluded by default, you can always add it with the `@source`
-directive, right in your `css/main.css` file:
+If a source file is excluded by default, it can be added with the `@source` directive in `css/main.css`:
 
 ```css
 @source "../node_modules/@my-company/ui-lib";
 ```
 
-So whenever one of these files changes, you need to run the script `css:build` from the `package.json` file.
-To achieve this, you need to have `Node.js` and all dependencies from `package.json` installed (with `npm install`).
-Then you can run the script with `npm run css:watch`.
-It monitors all files mentioned above and triggers the CSS generation whenever a relevant file changes.
-This ensures, that the file `static/css/generated.css` is always up to date.
+When these files change, run the `css:build` script from `package.json`. This requires `Node.js` and the dependencies
+from `package.json` (installed with `npm install`). Running `npm run css:watch` monitors the files and triggers CSS
+generation on changes. This ensures `static/css/generated.css` remains current.
 
-I recommend having two terminals open.
-In one terminal, run `npm run server` - or just `zola serve` - to start the Zola server.
-In the other terminal, run `npm run css:watch` to start the CSS generation whenever a relevant file changes.
-
-That way, your local web browser will automatically reload the page with the updated CSS whenever you change a file.
+It is recommended to have two terminals open: one for the Zola server (`zola serve`) and another for the CSS watch
+script (`npm run css:watch`). The browser reloads with updated CSS when files are modified.
 
 ---
 
@@ -569,15 +625,13 @@ If you instead load them from a Content Delivery Network (CDN), consider the fol
 
 ### Typography for Markdown
 
-I'm not using `@tailwindcss/typography` for styling of Markdown files.
-I don't like how it looks.
-Instead, I use `@apply` in the `css/main.css` file.
-The `@apply` directive in Tailwind CSS enables you to compose utility classes into custom CSS classes.
-This makes it possible to apply multiple utility styles within a single class, making it efficient to style Markdown content.
+This theme does not use `@tailwindcss/typography` for styling of Markdown files.
+Instead, it uses `@apply` in the `css/main.css` file.
+The `@apply` directive in Tailwind CSS enables composing utility classes into custom CSS classes.
+This allows applying multiple utility styles within a single class for Markdown content styling.
 
-This approach has pros and cons.
-But it gives me control over how the result looks.
-It requires manual styling, but I prefer this solution over the `@tailwindcss/typography` plugin.
+This approach provides control over the visual result.
+It requires manual styling instead of using the `@tailwindcss/typography` plugin.
  
 This recreates common typographic patterns that the typography plugin already provides.
 

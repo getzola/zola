@@ -3,14 +3,14 @@
 title = "zola-hacker"
 description = "Hacker is a theme for Zola"
 template = "theme.html"
-date = 2026-01-13T21:25:04-05:00
+date = 2026-02-02T14:33:32-05:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-13T21:25:04-05:00
-updated = 2026-01-13T21:25:04-05:00
+created = 2026-02-02T14:33:32-05:00
+updated = 2026-02-02T14:33:32-05:00
 repository = "https://github.com/en9inerd/zola-hacker"
 homepage = "https://github.com/en9inerd/zola-hacker"
 minimum_version = "0.19.1"
@@ -73,17 +73,17 @@ git submodule add git@github.com:en9inerd/zola-hacker.git themes/hacker
 
 ### Step 3: Configuration
 
-Enable the theme in your `config.toml` in the site directory:
+Enable the theme in your `zola.toml` in the site directory:
 
 ```toml
 theme = "hacker"
 ```
 
-Or copy the `config.toml` from the theme directory to your project's
+Or copy the `zola.toml` from the theme directory to your project's
 root directory:
 
 ```bash
-cp themes/hacker/config.toml config.toml
+cp themes/hacker/zola.toml zola.toml
 ```
 
 ### Step 4: Add new content
@@ -111,16 +111,16 @@ This command will start the Zola development web server accessible by default at
 ## Customization
 
 You can customize your configurations, templates and content for yourself. Look
-at the `config.toml`, `theme.toml`, `content` files and templates files in this
+at the `zola.toml`, `theme.toml`, `content` files and templates files in this
 repo for an idea.
 
 ### Global Configuration
 
-There are some configuration options that you can customize in `config.toml`.
+There are some configuration options that you can customize in `zola.toml`.
 
 #### Configuration options before `extra` options
 
-Set the tags taxonomy in the `config.toml`:
+Set the tags taxonomy in the `zola.toml`:
 
 ```toml
 taxonomies = [
@@ -130,7 +130,7 @@ taxonomies = [
 
 #### Configuration options under the `extra`
 
-The following options should be under the `[extra]` in `config.toml`
+The following options should be under the `[extra]` in `zola.toml`
 
 - `language_code` - set HTML file language (default to `en-US`)
 - `title_separator` - the separator to your site title, like `|` and `-` (defaults to `|`)
@@ -158,7 +158,7 @@ The theme provides some shortcodes to help you write your content:
 
 `contact_form`
 The `contact_form` shortcode is based on [Google Apps Mail](https://github.com/en9inerd/learn-to-send-email-via-google-script-html-no-server) to send emails without a server.
-It depends on `contact_form_script_id` in the `config.toml`.
+It depends on `contact_form_script_id` in the `zola.toml`.
 
 ```markdown
 {{/* contact_form() */}}
@@ -172,14 +172,14 @@ The `cv` shortcode is used to display the CV in the page. Data for CV is stored 
 ```
 
 `github_avatar`
-The `github_avatar` shortcode is used to display the GitHub avatar image. It depends on `extra.github.username` in the `config.toml`. Also, you can pass size as an argument.
+The `github_avatar` shortcode is used to display the GitHub avatar image. It depends on `extra.github.username` in the `zola.toml`. Also, you can pass size as an argument.
 
 ```markdown
 {{/* github_avatar(size=100) */}}
 ```
 
 `projects`
-The `projects` shortcode is used to display repositories from GitHub. It depends on `extra.github.username` in the `config.toml` and `extra.repo_names` in page front matter to filter the repositories.
+The `projects` shortcode is used to display repositories from GitHub. It depends on `extra.github.username` in the `zola.toml` and `extra.repo_names` in page front matter to filter the repositories.
 
 ```markdown
 {{/* projects() */}}

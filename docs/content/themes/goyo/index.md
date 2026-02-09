@@ -3,14 +3,14 @@
 title = "Goyo"
 description = "A simplicity and clean documentation theme"
 template = "theme.html"
-date = 2026-02-01T11:36:55+09:00
+date = 2026-02-08T03:26:10Z
 
 [taxonomies]
 theme-tags = ['documentation', 'Multilingual', 'Responsive', 'minimal']
 
 [extra]
-created = 2026-02-01T11:36:55+09:00
-updated = 2026-02-01T11:36:55+09:00
+created = 2026-02-08T03:26:10Z
+updated = 2026-02-08T03:26:10Z
 repository = "https://github.com/hahwul/goyo"
 homepage = "https://github.com/hahwul/goyo"
 minimum_version = "0.17.0"
@@ -207,5 +207,11 @@ zola serve
 
 # and open http://localhost:1111 in your browser.
 ```
+
+## Contributing
+
+Goyo is an open-source project made with ❤️. If you would like to contribute, please check [CONTRIBUTING.md](CONTRIBUTING.md) and submit a Pull Request.
+
+![](static/images/CONTRIBUTORS.svg)
 
         
