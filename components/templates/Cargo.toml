@@ -20,6 +20,7 @@ toml = { workspace = true }
 url = { workspace = true }
 fs-err = { workspace = true }
 log = { workspace = true }
+giallo = { workspace = true }
 
 markdown = { workspace = true }
 errors = { workspace = true }

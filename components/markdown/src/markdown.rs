@@ -143,6 +143,13 @@ impl CodeBlock {
             let renderer = HtmlRenderer {
                 other_metadata: self.fence.rest,
                 css_class_prefix: if hl.uses_classes() { Some("z-".to_string()) } else { None },
+                data_attr_position: ctx
+                    .config
+                    .markdown
+                    .highlighting
+                    .as_ref()
+                    .map(|x| x.data_attr_position.clone())
+                    .unwrap_or_default(),
             };
             let out =
                 match hl.registry.highlight(&self.content, &hl.highlight_options(&self.fence.lang))

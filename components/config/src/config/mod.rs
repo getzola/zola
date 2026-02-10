@@ -66,7 +66,7 @@ pub struct Config {
     pub feed_filenames: Vec<String>,
     /// If set, files from static/ will be hardlinked instead of copied to the output dir.
     pub hard_link_static: bool,
-    pub taxonomies: Vec<taxonomies::TaxonomyConfig>,
+    pub taxonomies: Vec<TaxonomyConfig>,
     /// Optional base path for all taxonomies. If set, all taxonomy paths will be relative to this path.
     /// For example, if taxonomy_root is "blog" and taxonomy is "tags", the path will be /blog/tags/
     pub taxonomy_root: Option<String>,

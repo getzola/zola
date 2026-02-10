@@ -1,4 +1,4 @@
-use giallo::{HighlightOptions, Registry, ThemeVariant};
+use giallo::{DataAttrPosition, HighlightOptions, Registry, ThemeVariant};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -34,6 +34,8 @@ pub struct Highlighting {
     pub extra_grammars: Vec<String>,
     #[serde(default)]
     pub extra_themes: Vec<String>,
+    #[serde(default)]
+    pub data_attr_position: DataAttrPosition,
     #[serde(skip, default)]
     pub registry: Registry,
 }

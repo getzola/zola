@@ -82,6 +82,7 @@ mod tests {
     use std::collections::HashMap;
 
     use config::{Config, HighlightConfig, HighlightStyle, Highlighting, Registry};
+    use giallo::DataAttrPosition;
     use tera::{Context, Filter, Kwargs, State, Value};
 
     use super::MarkdownFilter;
@@ -150,6 +151,7 @@ mod tests {
             theme: HighlightConfig::Single { theme: "github-dark".to_string() },
             extra_grammars: vec![],
             extra_themes: vec![],
+            data_attr_position: DataAttrPosition::default(),
             registry: get_test_registry(),
         });
         config.markdown.smart_punctuation = true;

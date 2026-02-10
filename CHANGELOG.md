@@ -1,14 +1,16 @@
 # Changelog
 
-## 0.2x.x (unrelease)
+## 0.23.x (unrelease)
 
 ### Breaking
 
 - `get_page` and `get_section` no longer work with paths containing language code, eg "content/some.fr.md".
+- TODO: write migration from shortcodes to components + tera v2 upgrade
 
 ### Other
 
 - `get_taxonomy_url` `name` parameter is deprecated. Use `term` to be consistent with the other functions
+- Add `data_attr_position` to the markdown highlighting config to handle where all the data attributes should be passed
 
 ## 0.22.1 (2026-01-22)
 
