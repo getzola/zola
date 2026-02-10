@@ -3,17 +3,17 @@
 title = "radion"
 description = "A sleek, modern blog theme."
 template = "theme.html"
-date = 2026-01-26T12:05:58-08:00
+date = 2026-02-07T23:12:58-08:00
 
 [taxonomies]
 theme-tags = ['SEO', 'search', 'accessible']
 
 [extra]
-created = 2026-01-26T12:05:58-08:00
-updated = 2026-01-26T12:05:58-08:00
+created = 2026-02-07T23:12:58-08:00
+updated = 2026-02-07T23:12:58-08:00
 repository = "https://github.com/micahkepe/radion.git"
 homepage = "https://github.com/micahkepe/radion"
-minimum_version = "0.20.0"
+minimum_version = "0.22.0"
 license = "MIT"
 demo = "https://micahkepe.com/radion/"
 
@@ -86,6 +86,10 @@ site demo [here](https://micahkepe.com/radion/).
 - Acknowledgements
 
 ## Installation
+
+> [!IMPORTANT]
+> **Requires Zola >= 0.22.** For older Zola versions (0.20–0.21), use
+> [v1.0.0](https://github.com/micahkepe/radion/releases/tag/v1.0.0).
 
 First download this theme to your `themes` directory:
 
@@ -255,49 +259,55 @@ mastodon = "https://my.instance.example.com/@username"
 
 #### Syntax Highlighting:
 
-This theme uses **class-based syntax highlighting** for better security (CSP
-compliance) and theme flexibility.
+This theme uses [giallo](https://github.com/getzola/giallo) for **class-based
+syntax highlighting**, which was introduced in Zola 0.22 as a replacement for
+[syntect](https://github.com/trishume/syntect).
 
 In your `config.toml`:
 
 ```toml
-[markdown]
-highlight_code = true
-highlight_theme = "css"  # Required for class-based highlighting
-
-# Specify theme(s) for dark and light modes
-highlight_themes_css = [
-  { theme = "one-dark", filename = "syntax/syntax-theme-dark.css" },
-  { theme = "gruvbox-dark", filename = "syntax/syntax-theme-light.css" },
-]
+[markdown.highlighting]
+style = "class"
+dark_theme = "material-theme-palenight"
+light_theme = "everforest-light"
 ```
 
-For example, the above configuration will use the `one-dark` theme for dark mode
-and the `gruvbox-dark` theme for light mode.
+The above configuration will use the `material-theme-palenight` theme for dark
+mode and the `gruvbox-dark-medium` theme for light mode. Zola will automatically
+generate `giallo-dark.css` and `giallo-light.css` in the build output.
 
 ##### Choosing Themes
 
-1. Browse available themes at [Zola's syntax highlighting
-   docs](https://www.getzola.org/documentation/getting-started/configuration/#syntax-highlighting)
-2. Update both entries in `highlight_themes_css` with your preferred themes
-3. Run `zola serve` or `zola build` - the CSS files will be automatically
-   generated in `static/`
+1. Browse available themes in the [giallo
+   README](https://github.com/getzola/giallo) or preview them at
+   [textmate-grammars-themes.netlify.app](https://textmate-grammars-themes.netlify.app/)
+2. Update `dark_theme` and `light_theme` with your preferred themes
+3. Run `zola serve` or `zola build` — the CSS files will be regenerated
+   automatically
 
-> [!NOTE]
-> If you change the syntax themes, delete the `static/syntax` directory to
-> ensure that the new Syntect CSS files are properly updated.
+##### Migration from v1.0.0 (syntect)
 
-##### Migration from Previous Versions
+If upgrading from [v1.0.0](https://github.com/micahkepe/radion/releases/tag/v1.0.0)
+or earlier (Zola <0.22):
 
-**Breaking Change:** If upgrading from an older version that used inline styles:
+1. Replace the old `[markdown]` highlighting config:
 
-1. Change `highlight_theme` from a specific theme name to `"css"`
-2. Add the `highlight_themes_css` configuration as shown above
-3. Delete any old `syntax-theme-*.css` files from your `static/` folder
-4. Run `zola build` to regenerate the CSS files
+   ```diff
+   - [markdown]
+   - highlight_code = true
+   - highlight_theme = "css"
+   - highlight_themes_css = [
+   -   { theme = "one-dark", filename = "syntax/syntax-theme-dark.css" },
+   -   { theme = "gruvbox-dark", filename = "syntax/syntax-theme-light.css" },
+   - ]
+   + [markdown.highlighting]
+   + style = "class"
+   + dark_theme = "one-dark-pro"
+   + light_theme = "everforest-light"
+   ```
 
-This change improves security by removing inline styles and enables proper CSP
-headers.
+2. Delete the `static/syntax/` directory (old syntect CSS files)
+3. Run `zola build` to generate the new giallo CSS files
 
 #### Enhanced Codeblocks (Clipboard Support and Language Tags)
 

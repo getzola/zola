@@ -3,14 +3,14 @@
 title = "Prism"
 description = "A modern Zola theme featuring glassmorphism design and aurora-inspired animations."
 template = "theme.html"
-date = 2026-02-02T10:15:10+05:00
+date = 2026-02-07T20:23:55+05:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-02-02T10:15:10+05:00
-updated = 2026-02-02T10:15:10+05:00
+created = 2026-02-07T20:23:55+05:00
+updated = 2026-02-07T20:23:55+05:00
 repository = "https://github.com/jahamars/zola-prism.git"
 homepage = "https://github.com/jahamars/zola-prism"
 minimum_version = "0.4.0"
