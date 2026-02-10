@@ -71,9 +71,6 @@ url = { workspace = true }
 same-file = "1"
 
 [features]
-default = ["rust-tls"]
-rust-tls = ["reqwest/rustls-tls", "link_checker/rust-tls", "templates/rust-tls"]
-native-tls = ["reqwest/default-tls", "link_checker/native-tls", "templates/native-tls"]
 indexing-zh = ["search/indexing-zh"]
 indexing-ja = ["search/indexing-ja"]
 
@@ -105,7 +102,7 @@ roxmltree_to_serde = "0.6"
 rayon = "1"
 regex = "1"
 relative-path = "2"
-reqwest = { version = "0.12", default-features = false, features = ["blocking"] }
+reqwest = { version = "0.13", features = ["blocking"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"

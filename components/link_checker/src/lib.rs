@@ -90,7 +90,9 @@ pub fn check_url(url: &str, config: &LinkChecker) -> Result {
                 Err(error_string)
             }
         }
-        Err(e) => Err(e.to_string()),
+        Err(e) => {
+            Err(e.to_string())
+        },
     };
 
     LINKS.write().unwrap().insert(url.to_string(), res.clone());

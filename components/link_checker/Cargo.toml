@@ -13,7 +13,3 @@ utils = { workspace = true }
 [dev-dependencies]
 mockito = "1.6"
 
-[features]
-default = ["rust-tls"]
-rust-tls = ["reqwest/rustls-tls"]
-native-tls = ["reqwest/default-tls"]

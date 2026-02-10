@@ -4,6 +4,7 @@
 
 ### Breaking
 
+- remove `native-tls` feature to build zola
 - `get_page` and `get_section` no longer work with paths containing language code, eg "content/some.fr.md".
 - TODO: write migration from shortcodes to components + tera v2 upgrade
 
