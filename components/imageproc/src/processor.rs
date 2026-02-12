@@ -1,4 +1,4 @@
-use std::fs;
+use fs_err as fs;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 

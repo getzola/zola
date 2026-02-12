@@ -1,6 +1,6 @@
 use filetime::{FileTime, set_file_mtime};
+use fs_err as fs;
 use globset::GlobSet;
-use std::fs::{File, copy, create_dir_all, metadata, remove_dir_all, remove_file};
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
@@ -9,12 +9,8 @@ use walkdir::WalkDir;
 use errors::{Context, Result};
 
 pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
-    let canonical_path = path
-        .canonicalize()
-        .with_context(|| format!("Failed to canonicalize {}", path.display()))?;
-    let canonical_parent = parent
-        .canonicalize()
-        .with_context(|| format!("Failed to canonicalize {}", parent.display()))?;
+    let canonical_path = fs::canonicalize(path)?;
+    let canonical_parent = fs::canonicalize(parent)?;
 
     Ok(canonical_path.starts_with(canonical_parent))
 }
@@ -31,8 +27,8 @@ fn create_parent(path: &Path) -> Result<()> {
 /// `content`` can be `&str`, `String`, or `&String` (and probably others)
 pub fn create_file(path: &Path, content: impl AsRef<str>) -> Result<()> {
     create_parent(path)?;
-    let mut file =
-        File::create(path).with_context(|| format!("Failed to create file {}", path.display()))?;
+    let mut file = fs::File::create(path)
+        .with_context(|| format!("Failed to create file {}", path.display()))?;
     file.write_all(content.as_ref().as_bytes())?;
     Ok(())
 }
@@ -41,7 +37,7 @@ pub fn create_file(path: &Path, content: impl AsRef<str>) -> Result<()> {
 /// exists before creating it
 pub fn create_directory(path: &Path) -> Result<()> {
     if !path.exists() {
-        create_dir_all(path)
+        fs::create_dir_all(path)
             .with_context(|| format!("Failed to create folder {}", path.display()))?;
     }
     Ok(())
@@ -50,7 +46,7 @@ pub fn create_directory(path: &Path) -> Result<()> {
 /// Return the content of a file, with error handling added
 pub fn read_file(path: &Path) -> Result<String> {
     let mut content = String::new();
-    File::open(path)
+    fs::File::open(path)
         .with_context(|| format!("Failed to open file {}", path.display()))?
         .read_to_string(&mut content)?;
 
@@ -65,7 +61,7 @@ pub fn read_file(path: &Path) -> Result<String> {
 /// Copy a file but takes into account where to start the copy as
 /// there might be folders we need to create on the way.
 pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> Result<()> {
-    let relative_path = src.strip_prefix(base_path).unwrap();
+    let relative_path = src.strip_prefix(base_path)?;
     let target_path = dest.join(relative_path);
 
     create_parent(&target_path)?;
@@ -81,26 +77,25 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
 
     if hard_link {
         if dest.exists() {
-            std::fs::remove_file(dest)
-                .with_context(|| format!("Error removing file: {:?}", dest))?;
+            fs::remove_file(dest).with_context(|| format!("Error removing file: {:?}", dest))?;
         }
-        std::fs::hard_link(src, dest)
+        fs::hard_link(src, dest)
             .with_context(|| format!("Error hard linking file, src: {:?}, dst: {:?}", src, dest))?;
     } else {
-        let src_metadata = metadata(src)
+        let src_metadata = fs::metadata(src)
             .with_context(|| format!("Failed to get metadata of {}", src.display()))?;
         let src_mtime = FileTime::from_last_modification_time(&src_metadata);
         if Path::new(&dest).is_file() {
-            let target_metadata = metadata(dest)?;
+            let target_metadata = fs::metadata(dest)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
             if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
-                copy(src, dest).with_context(|| {
+                fs::copy(src, dest).with_context(|| {
                     format!("Was not able to copy file {} to {}", src.display(), dest.display())
                 })?;
                 set_file_mtime(dest, src_mtime)?;
             }
         } else {
-            copy(src, dest).with_context(|| {
+            fs::copy(src, dest).with_context(|| {
                 format!("Was not able to copy directory {} to {}", src.display(), dest.display())
             })?;
             set_file_mtime(dest, src_mtime)?;
@@ -224,11 +219,10 @@ pub fn clean_site_output_folder(
 ) -> Result<()> {
     if output_path.exists() {
         if !preserve_dotfiles_in_output {
-            return remove_dir_all(output_path).context("Couldn't delete output directory");
+            return fs::remove_dir_all(output_path).context("Couldn't delete output directory");
         }
 
-        for entry in output_path
-            .read_dir()
+        for entry in fs::read_dir(output_path)
             .context(format!("Couldn't read output directory `{}`", output_path.display()))?
         {
             let entry = entry.context("Couldn't read entry in output directory")?.path();
@@ -239,10 +233,10 @@ pub fn clean_site_output_folder(
             }
 
             if entry.is_dir() {
-                remove_dir_all(entry)
+                fs::remove_dir_all(entry)
                     .context("Couldn't delete folder while cleaning the output directory")?;
             } else {
-                remove_file(entry)
+                fs::remove_file(entry)
                     .context("Couldn't delete file while cleaning the output directory")?;
             }
         }
@@ -253,7 +247,7 @@ pub fn clean_site_output_folder(
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{File, metadata, read_to_string};
+    use fs_err as fs;
     use std::io::Write;
     use std::path::PathBuf;
     use std::str::FromStr;
@@ -272,12 +266,12 @@ mod tests {
             tempdir_in(&base_path).expect("failed to create a temporary destination directory.");
         let src_file_path = src_dir.path().join("test.txt");
         let dest_file_path = dest_dir.path().join(src_file_path.strip_prefix(&base_path).unwrap());
-        File::create(&src_file_path).unwrap();
+        fs::File::create(&src_file_path).unwrap();
         copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
 
         assert_eq!(
-            metadata(&src_file_path).and_then(|m| m.modified()).unwrap(),
-            metadata(&dest_file_path).and_then(|m| m.modified()).unwrap()
+            fs::metadata(&src_file_path).and_then(|m| m.modified()).unwrap(),
+            fs::metadata(&dest_file_path).and_then(|m| m.modified()).unwrap()
         );
     }
 
@@ -291,12 +285,12 @@ mod tests {
         let src_file_path = src_dir.path().join("test.txt");
         let dest_file_path = dest_dir.path().join(src_file_path.strip_prefix(&base_path).unwrap());
         {
-            let mut src_file = File::create(&src_file_path).unwrap();
+            let mut src_file = fs::File::create(&src_file_path).unwrap();
             src_file.write_all(b"file1").unwrap();
         }
         copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         {
-            let mut dest_file = File::create(&dest_file_path).unwrap();
+            let mut dest_file = fs::File::create(&dest_file_path).unwrap();
             dest_file.write_all(b"file2").unwrap();
         }
 
@@ -305,25 +299,25 @@ mod tests {
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
             .unwrap();
         copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
-        assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
-        assert_eq!(read_to_string(&dest_file_path).unwrap(), "file2");
+        assert_eq!(fs::read_to_string(&src_file_path).unwrap(), "file1");
+        assert_eq!(fs::read_to_string(&dest_file_path).unwrap(), "file2");
 
         // Copy occurs if the timestamps are different while the filesizes are same.
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(42, 42))
             .unwrap();
         copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
-        assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
-        assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
+        assert_eq!(fs::read_to_string(&src_file_path).unwrap(), "file1");
+        assert_eq!(fs::read_to_string(&dest_file_path).unwrap(), "file1");
 
         // Copy occurs if the timestamps are same while the filesizes are different.
         {
-            let mut dest_file = File::create(&dest_file_path).unwrap();
+            let mut dest_file = fs::File::create(&dest_file_path).unwrap();
             dest_file.write_all(b"This file has different file size to the source file!").unwrap();
         }
         filetime::set_file_mtime(&dest_file_path, filetime::FileTime::from_unix_time(0, 0))
             .unwrap();
         copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
-        assert_eq!(read_to_string(&src_file_path).unwrap(), "file1");
-        assert_eq!(read_to_string(&dest_file_path).unwrap(), "file1");
+        assert_eq!(fs::read_to_string(&src_file_path).unwrap(), "file1");
+        assert_eq!(fs::read_to_string(&dest_file_path).unwrap(), "file1");
     }
 }

@@ -7,7 +7,7 @@ Themes are collections of layouts and styles used to facilitate the creation and
 
 Zola has built-in support for themes which makes it easy to customise and update them. 
 
-All themes can use the full power of Zola, from shortcodes to Sass compilation.
+All themes can use the full power of Zola, from components to Sass compilation.
 
 A list of themes is available [here](@/themes/_index.md).
 

@@ -72,11 +72,6 @@ pub struct Site {
 }
 ```
 
-## More stuff
-And a shortcode:
-
-{{ youtube(id="my_youtube_id") }}
-
 ### Another subsection
 Gotta make the toc do a little bit of work
 
@@ -119,6 +114,11 @@ name = "Vincent Prouillet"
 title = "My site"
 base_url = "https://replace-this-with-your-url.com"
 theme = "sample"
+
+taxonomies = [
+ {name = "tags", feed = true},
+ {name = "categories"}
+]
 
 [extra.author]
 name = "Vincent Prouillet"

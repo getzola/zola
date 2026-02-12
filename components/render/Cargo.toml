@@ -1,0 +1,14 @@
+[package]
+name = "render"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+ahash = { workspace = true }
+tera = {workspace = true, features = ["fast"]}
+serde = { workspace = true, features = ["derive"] }
+
+
+config = { workspace = true }
+content = { workspace = true }
+errors = { workspace = true }

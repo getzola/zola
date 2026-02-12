@@ -18,6 +18,7 @@ Azure should have already created a GitHub Actions YAML file in your GitHub repo
 
 
 ```yaml
+{% raw -%}
 # .github/workflows/azure-static-web-apps-<web-app-name>
 name: Azure Static Web Apps CI/CD
 
@@ -70,6 +71,6 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN<WEB_APP_NAME> }}
           action: "close"
-
+{%- endraw -%}
 ```
 Once your YAML changes have been pushed, GitHub will automatically kick off a workflow deploying your site!

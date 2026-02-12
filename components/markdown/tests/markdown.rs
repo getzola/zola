@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 
-use tera::Tera;
-
 use config::Config;
-use markdown::{RenderContext, render_content};
+use markdown::{MarkdownContext, render_content};
 use templates::ZOLA_TERA;
 use utils::slugs::SlugifyStrategy;
 use utils::types::InsertAnchor;
@@ -108,38 +106,38 @@ fn can_insert_anchors() {
 
 #[test]
 fn can_customise_anchor_template() {
-    let mut tera = Tera::default();
-    tera.extend(&ZOLA_TERA).unwrap();
+    let mut tera = ZOLA_TERA.clone();
     tera.add_raw_template("anchor-link.html", " (in {{ lang }})").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
-        &tera,
-        &config,
-        &config.default_language,
-        "",
-        &permalinks_ctx,
-        InsertAnchor::Right,
-    );
+    let context = MarkdownContext {
+        tera: &tera,
+        config: &config,
+        permalinks: &permalinks_ctx,
+        lang: &config.default_language,
+        current_permalink: "",
+        current_path: "",
+        insert_anchor: InsertAnchor::Right,
+    };
     let body = render_content("# Hello", &context).unwrap().body;
     insta::assert_snapshot!(body);
 }
 
 #[test]
 fn can_customise_summary_template() {
-    let mut tera = Tera::default();
-    tera.extend(&ZOLA_TERA).unwrap();
+    let mut tera = ZOLA_TERA.clone();
     tera.add_raw_template("summary-cutoff.html", " (in {{ lang }})").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
-    let context = RenderContext::new(
-        &tera,
-        &config,
-        &config.default_language,
-        "",
-        &permalinks_ctx,
-        InsertAnchor::Right,
-    );
+    let context = MarkdownContext {
+        tera: &tera,
+        config: &config,
+        permalinks: &permalinks_ctx,
+        lang: &config.default_language,
+        current_permalink: "",
+        current_path: "",
+        insert_anchor: InsertAnchor::Right,
+    };
     let summary = render_content("Hello <!-- more --> World!", &context).unwrap().summary.unwrap();
     insta::assert_snapshot!(summary);
 }
