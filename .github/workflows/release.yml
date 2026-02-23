@@ -123,6 +123,8 @@ jobs:
           fail_on_unmatched_files: true
           body: |
             Welcome to this new release of Zola ${{ github.ref_name }}!
+            
+            See the full changelog at https://github.com/getzola/zola/blob/master/CHANGELOG.md
 
             All artifacts are signed with this repos identity using Sigstore.
             You can verify the signatures using the `GitHub` CLI.
