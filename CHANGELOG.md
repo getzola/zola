@@ -10,6 +10,7 @@ and it was mostly because it contains a lot of Tera syntax (as we will see later
 
 - remove `native-tls` feature to build zola
 - `get_page` and `get_section` no longer work with paths containing language code, eg "content/some.fr.md". Use the canonical path + `lang` argument
+- `get_taxonomy_url` `name` param has been renamed to `term`
 - Tera, the template engine, has been updated to v2. See its own migration guide: <https://github.com/Keats/tera2/blob/master/MIGRATION.md>
 - shortcodes have been removed, see Migration section below for more details
 

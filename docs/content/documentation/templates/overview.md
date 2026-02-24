@@ -195,11 +195,11 @@ Gets the permalink for the taxonomy item found.
 
 ```jinja
 {% raw -%}
-{% set url = get_taxonomy_url(kind="categories", name=page.taxonomies.category, lang=page.lang) %}
+{% set url = get_taxonomy_url(kind="categories", term=page.taxonomies.category, lang=page.lang) %}
 {%- endraw -%}
 ```
 
-`name` will almost always come from a variable but in case you want to do it manually,
+`term` will almost always come from a variable but in case you want to do it manually,
 the value should be the same as the one in the front matter, not the slugified version.
 
 `lang` (optional) default to `config.default_language` in config.toml

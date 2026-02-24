@@ -118,11 +118,10 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
 ### **`"fit"`**
   Like `"fit_width"` and `"fit_height"` combined, but only resize if the image is bigger than any of the specified dimensions.
-  This mode is handy, if for example images are automatically shrunk to certain sizes in a shortcode for
-  mobile optimization.
+  This mode is handy, if for example images are automatically shrunk to certain sizes for mobile optimization.
   Resizes the image such that the result fits within `width` and `height` while preserving the aspect ratio. This
   means that both width or height will be at max `width` and `height`, respectively, but possibly one of them
-  smaller so as to preserve the aspect ratio.
+  smaller to preserve the aspect ratio.
 
 
   `resize_image(..., width=5000, height=5000, op="fit")`
@@ -156,7 +155,7 @@ For example, we can create a very simple html-only clickable
 picture gallery with the following component named `gallery`:
 
 ```jinja
-{% component gallery() -%}
+{% component gallery(page) -%}
 <div>
 {% for asset in page.assets -%}
   {%- if asset is matching(pat="[.](jpg|png)$") -%}
@@ -177,7 +176,7 @@ To call it from a Markdown file, simply do:
 
 ```jinja
 {% raw -%}
-{{ <gallery /> }}
+{{ <gallery page /> }}
 {%- endraw -%}
 ```
 
@@ -195,36 +194,41 @@ Here is the result:
 Sometimes when building a gallery it is useful to know the dimensions of each asset.  You can get this information with
 [get_image_metadata](@/documentation/templates/overview.md#get-image-metadata).
 
-This can also be useful in combination with `resize_image()` to do a relative resizing. So we can create a relative image resizing function with the following shortcode named `resize_image_relative.html`:
+This can also be useful in combination with `resize_image()` to do relative resizing. We can create a component named `resize_image_relative`:
 
 ```jinja
-{% raw -%}
+{% component resize_image_relative(path: string, scale: float) -%}
 {% set mdata = get_image_metadata(path=path) %}
 {% set image = resize_image(path=path, width=(mdata.width * scale)|int, op="fit_width") %}
 <img src="{{ image.url }}" />
-{%- endraw -%}
+{%- endcomponent %}
 ```
 
 It can be invoked from Markdown like this:
 
-`resize_image_relative(..., scale=0.5)`
+```jinja
+{% raw -%}
+{{ <resize_image_relative path="documentation/content/image-processing/01-zola.png" scale={0.5} /> }}
+{%- endraw -%}
+```
 
 {{ <resize_image_relative path="documentation/content/image-processing/01-zola.png" scale={0.5} /> }}
 
 ## Creating scaled-down versions of high-resolution images
 
-With the above, we can also create a shortcode that creates a 50% scaled-down version of a high-resolution image (e.g. screenshots taken on Retina Macs), along with the proper HTML5 `srcset` for the original image to be displayed on high-resolution / retina displays.
+With the above, we can also create a component that creates a 50% scaled-down version of a high-resolution image (e.g. screenshots taken on Retina Macs), 
+along with the proper HTML5 `srcset` for the original image to be displayed on high-resolution / retina displays.
 
-Consider the following shortcode named `high_res_image.html`:
+Consider the following component named `high_res_image`:
 
 ```jinja
-{% raw -%}
+{% component high_res_image(path: string) -%}
 {% set mdata = get_image_metadata(path=path) %}
-{% set w = (mdata.width / 2) | int %}
-{% set h = (mdata.height / 2) | int %}
+{% set w = (mdata.width / 2) | round %}
+{% set h = (mdata.height / 2) | round %}
 {% set image = resize_image(path=path, width=w, height=h, op="fit_width") %}
 <img src="{{ image.url }}" srcset="/{{path}} 2x"/>
-{%- endraw -%}
+{%- endcomponent %}
 ```
 
 {{ <high_res_image path="documentation/content/image-processing/08-example.jpg" /> }}
