@@ -58,7 +58,18 @@ impl ImageOp {
         });
         let img = DynamicImage::from_decoder(decoder)?;
 
-        let mut img = fix_orientation(&img, metadata.as_ref()).unwrap_or(img);
+        let mut img = match fix_orientation(&img, metadata.as_ref()) {
+            Ok(Some(fixed_img)) => fixed_img,
+            Ok(None) => img,
+            Err(e) => {
+                eprintln!(
+                    "Using default orientation for {} because getting orientation data from exif metadata failed: {}",
+                    self.input_path.display(),
+                    e
+                );
+                img
+            }
+        };
 
         let img = match self.instr.crop_instruction {
             Some((x, y, w, h)) => img.crop(x, y, w, h),
