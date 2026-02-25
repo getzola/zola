@@ -36,12 +36,22 @@ impl ImageMeta {
         });
         let metadata = metadata.as_ref();
 
-        if let Some((w, h)) = get_rotated_size(size.0, size.1, metadata) {
-            size = (w, h);
+        if let Ok(Some((w, h))) = get_rotated_size(size.0, size.1, metadata).inspect_err(|e| {
+            eprintln!("Failed to get rotated size from exif for {}: {}", path.display(), e);
+        }) {
+            size = (w, h)
         }
 
-        let description = get_description(metadata);
-        let created = get_created_datetime(metadata);
+        let description = get_description(metadata)
+            .inspect_err(|e| {
+                eprintln!("Failed to get description from exif for {}: {}", path.display(), e);
+            })
+            .ok();
+        let created = get_created_datetime(metadata)
+            .inspect_err(|e| {
+                eprintln!("Failed to get created datetime from exif for {}: {}", path.display(), e);
+            })
+            .ok();
 
         Ok(Self { size, format, description, created })
     }
