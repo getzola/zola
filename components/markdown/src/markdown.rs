@@ -1,6 +1,6 @@
-use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
+use ahash::{AHashMap, AHashSet};
 use gh_emoji::Replacer as EmojiReplacer;
 use giallo::{ExtraHtmlContent, HtmlRenderer, ParsedFence, parse_markdown_fence};
 use pulldown_cmark::{CodeBlockKind, CowStr, Event, LinkType, Parser, Tag, TagEnd};
@@ -89,7 +89,7 @@ fn escape_href_string(s: &str) -> String {
 /// for example an article could have several titles named Example
 /// We add a counter after the slug if the slug is already present, which
 /// means we will have example, example-1, example-2 etc
-fn find_anchor(anchors: &HashSet<String>, name: String, level: u16) -> String {
+fn find_anchor(anchors: &AHashSet<String>, name: String, level: u16) -> String {
     if level == 0 && !anchors.contains(&name) {
         return name;
     }
@@ -269,11 +269,11 @@ pub struct State<'a> {
     footnote: Option<FootnoteDef>,
     complete_footnotes: Vec<FootnoteDef>,
     /// name -> (number, count)
-    footnote_numbers: HashMap<String, (usize, usize)>,
+    footnote_numbers: AHashMap<String, (usize, usize)>,
     /// All heading IDs we've generated so far, for collision detection.
-    anchors: HashSet<String>,
+    anchors: AHashSet<String>,
     /// Explicit heading IDs we've already processed (for collision detection)
-    seen_explicit_ids: HashSet<String>,
+    seen_explicit_ids: AHashSet<String>,
     toc: Vec<Heading>,
     /// At which event we've seen <!-- summary -->
     summary_index: Option<usize>,
@@ -416,7 +416,29 @@ impl<'a> State<'a> {
             return Ok(link.to_string());
         }
 
-        let result = if link.starts_with("@/") {
+        let result = if matches!(link_type, LinkType::WikiLink { .. }) {
+            let (key, anchor) = match link.split_once('#') {
+                Some((k, a)) => (k, Some(a.to_string())),
+                None => (link, None),
+            };
+            if let Some(md_path) = ctx.wikilinks.get(key) {
+                let permalink = &ctx.permalinks[md_path];
+                self.internal_links.push((md_path.clone(), anchor.clone()));
+                match anchor {
+                    Some(a) => format!("{}#{}", permalink, a),
+                    None => permalink.clone(),
+                }
+            } else {
+                let msg = format!("Broken wikilink `[[{}]]` in {}", link, ctx.current_path);
+                match ctx.config.link_checker.internal_level {
+                    config::LinkCheckerLevel::Error => bail!(msg),
+                    config::LinkCheckerLevel::Warn => {
+                        log::warn!("{msg}");
+                        link.to_string()
+                    }
+                }
+            }
+        } else if link.starts_with("@/") {
             if let Some(url) = resolve_colocated_asset(link, ctx) {
                 url
             } else {
@@ -732,13 +754,15 @@ mod tests {
     fn make_context<'a>(
         config: &'a Config,
         tera: &'a tera::Tera,
-        permalinks: &'a HashMap<String, String>,
+        permalinks: &'a AHashMap<String, String>,
+        wikilinks: &'a AHashMap<String, String>,
     ) -> MarkdownContext<'a> {
         MarkdownContext {
             tera,
             config,
             permalinks,
             colocated_assets: &EMPTY_ASSETS,
+            wikilinks,
             lang: &config.default_language,
             current_permalink: "",
             current_path: "",
@@ -766,7 +790,7 @@ mod tests {
     fn colocated_asset_falls_back_to_default_language() {
         let config = Config::default();
         let tera = ZOLA_TERA.clone();
-        let mut permalinks = HashMap::new();
+        let mut permalinks = AHashMap::new();
         permalinks.insert(
             "blog/english-only/index.md".to_string(),
             "https://example.com/blog/english-only/".to_string(),
@@ -776,7 +800,8 @@ mod tests {
             "blog/english-only/img.png".to_string(),
             ("blog/english-only/index.md".to_string(), "img.png".to_string()),
         );
-        let mut context = make_context(&config, &tera, &permalinks);
+        let wikilinks = AHashMap::new();
+        let mut context = make_context(&config, &tera, &permalinks, &wikilinks);
         context.colocated_assets = &colocated_assets;
         context.lang = "fr";
 
@@ -796,8 +821,9 @@ mod tests {
             ["<!-- more -->", "<!--more-->", "<!-- MORE -->", "<!--MORE-->", "<!--\t MoRe \t-->"];
         let config = Config::default();
         let tera = ZOLA_TERA.clone();
-        let permalinks = HashMap::new();
-        let context = make_context(&config, &tera, &permalinks);
+        let permalinks = AHashMap::new();
+        let wikilinks = AHashMap::new();
+        let context = make_context(&config, &tera, &permalinks, &wikilinks);
         for more in mores {
             let content = format!("{top}\n\n{more}\n\n{bottom}");
             let rendered = State::default().render(&content, &context).unwrap();
@@ -818,8 +844,9 @@ mod tests {
         let mut config = Config::default();
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
-        let permalinks = HashMap::new();
-        let context = make_context(&config, &tera, &permalinks);
+        let permalinks = AHashMap::new();
+        let wikilinks = AHashMap::new();
+        let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "Some text *without* footnotes.\n\nOnly ~~fancy~~ formatting.";
         let rendered = State::default().render(content, &context).unwrap();
@@ -831,11 +858,11 @@ mod tests {
         let mut config = Config::default();
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
-        let permalinks = HashMap::new();
-        let mut context = make_context(&config, &tera, &permalinks);
+        let permalinks = AHashMap::new();
+        let wikilinks = AHashMap::new();
+        let mut context = make_context(&config, &tera, &permalinks, &wikilinks);
         // https://github.com/getzola/zola/issues/2613
         context.current_permalink = "https://example.com/post/";
-
         let content = "This text has a footnote[^1]\n [^1]:But it is meaningless.";
         let rendered = State::default().render(content, &context).unwrap();
         assert_snapshot!(rendered.body);
@@ -846,8 +873,9 @@ mod tests {
         let mut config = Config::default();
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
-        let permalinks = HashMap::new();
-        let context = make_context(&config, &tera, &permalinks);
+        let permalinks = AHashMap::new();
+        let wikilinks = AHashMap::new();
+        let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "This text has two[^2] footnotes[^1]\n[^1]: not sorted.\n[^2]: But they are";
         let rendered = State::default().render(content, &context).unwrap();
@@ -859,8 +887,9 @@ mod tests {
         let mut config = Config::default();
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
-        let permalinks = HashMap::new();
-        let context = make_context(&config, &tera, &permalinks);
+        let permalinks = AHashMap::new();
+        let wikilinks = AHashMap::new();
+        let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "[^1]:It's before the reference.\n\n There is footnote definition?[^1]";
         let rendered = State::default().render(content, &context).unwrap();
@@ -872,8 +901,9 @@ mod tests {
         let mut config = Config::default();
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
-        let permalinks = HashMap::new();
-        let context = make_context(&config, &tera, &permalinks);
+        let permalinks = AHashMap::new();
+        let wikilinks = AHashMap::new();
+        let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "This text has two[^1] identical footnotes[^1]\n[^1]: So one is present.\n[^2]: But another in not.";
         let rendered = State::default().render(content, &context).unwrap();
@@ -885,8 +915,9 @@ mod tests {
         let mut config = Config::default();
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
-        let permalinks = HashMap::new();
-        let context = make_context(&config, &tera, &permalinks);
+        let permalinks = AHashMap::new();
+        let wikilinks = AHashMap::new();
+        let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "This text has a footnote[^1]\n[^1]: But the footnote has another footnote[^2].\n[^2]: That's it.";
         let rendered = State::default().render(content, &context).unwrap();
