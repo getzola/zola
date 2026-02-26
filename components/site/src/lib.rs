@@ -6,19 +6,21 @@ mod queue;
 pub mod sass;
 pub mod sitemap;
 pub mod tpls;
+mod wikilinks;
 
-use std::collections::{HashMap, HashSet};
 use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
 
+use ahash::{AHashMap as HashMap, AHashSet as HashSet};
 use rayon::prelude::*;
 use tera::Tera;
 use walkdir::{DirEntry, WalkDir};
 
 use crate::queue::Queue;
+use crate::wikilinks::build_wikilinks;
 use config::{Config, IndexFormat, get_config};
 use content::{Library, Page, Section, Taxonomy};
 use errors::{Result, anyhow, bail};
@@ -64,6 +66,10 @@ pub struct Site {
     /// A map of all .md files (section and pages) and their permalink
     /// We need that if there are relative links in the content that need to be resolved
     pub permalinks: HashMap<String, String>,
+    /// A map of filename stems (with the full relative path and also without when possible)
+    /// to relative path for wikilink resolution
+    /// Built from the permalinks field
+    pub wikilinks: HashMap<String, String>,
     /// Contains all pages and sections of the site
     pub library: Arc<Library>,
     /// Pre-serialized render cache
@@ -110,6 +116,7 @@ impl Site {
             templates_path,
             taxonomies: Vec::new(),
             permalinks: HashMap::new(),
+            wikilinks: HashMap::new(),
             include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(Library::default()),
@@ -340,8 +347,9 @@ impl Site {
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
-        tpls::register_early_global_fns(self);
         self.populate_sections();
+        self.build_wikilinks();
+        tpls::register_early_global_fns(self);
         self.render_markdown()?;
         Arc::make_mut(&mut self.library).fill_backlinks();
         Arc::make_mut(&mut self.cache).build(&self.library, &self.taxonomies, &self.tera);
@@ -457,6 +465,7 @@ impl Site {
         // Another silly thing needed to not borrow &self in parallel and
         // make the borrow checker happy
         let permalinks = &self.permalinks;
+        let wikilinks = &self.wikilinks;
         let tera = &self.tera;
         let config = &self.config;
 
@@ -485,6 +494,7 @@ impl Site {
                     page,
                     renderer.clone(),
                     permalinks,
+                    wikilinks,
                     tera,
                     config,
                     insert_anchor,
@@ -498,7 +508,14 @@ impl Site {
             .collect::<Vec<_>>()
             .par_iter_mut()
             .map(|section| {
-                md_render::render_section(section, renderer.clone(), permalinks, tera, config)
+                md_render::render_section(
+                    section,
+                    renderer.clone(),
+                    permalinks,
+                    wikilinks,
+                    tera,
+                    config,
+                )
             })
             .collect::<Result<()>>()?;
 
@@ -506,7 +523,7 @@ impl Site {
     }
 
     /// Add a page to the site
-    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
+    /// The `render_md` parameter is used in the serve command with --fast, when rebuilding a page.
     pub fn add_page(&mut self, mut page: Page, render_md: bool) -> Result<()> {
         for taxa_name in page.meta.taxonomies.keys() {
             if !self.config.has_taxonomy(taxa_name, &page.lang) {
@@ -526,6 +543,7 @@ impl Site {
                 &mut page,
                 self.renderer(),
                 &self.permalinks,
+                &self.wikilinks,
                 &self.tera,
                 &self.config,
                 insert_anchor,
@@ -549,7 +567,7 @@ impl Site {
     }
 
     /// Add a section to the site
-    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
+    /// The `render_md` parameter is used in the serve command with --fast, when rebuilding a page.
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
         if render_md {
@@ -557,6 +575,7 @@ impl Site {
                 &mut section,
                 self.renderer(),
                 &self.permalinks,
+                &self.wikilinks,
                 &self.tera,
                 &self.config,
             )?;
@@ -604,6 +623,14 @@ impl Site {
     pub fn populate_sections(&mut self) {
         let library = Arc::make_mut(&mut self.library);
         library.populate_sections(&self.config, &self.content_path);
+    }
+
+    fn build_wikilinks(&mut self) {
+        if self.config.markdown.wikilinks {
+            self.wikilinks = build_wikilinks(&self.permalinks);
+        } else {
+            self.wikilinks.clear();
+        }
     }
 
     /// Find all the tags and categories if it's asked in the config

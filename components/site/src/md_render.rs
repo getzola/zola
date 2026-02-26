@@ -1,8 +1,8 @@
 //! This is here to avoid content depending on the markdown subcrate
 
 use std::borrow::Cow;
-use std::collections::HashMap;
 
+use ahash::AHashMap as HashMap;
 use tera::Tera;
 
 use config::Config;
@@ -26,6 +26,7 @@ pub fn render_page(
     page: &mut Page,
     renderer: Renderer,
     permalinks: &HashMap<String, String>,
+    wikilinks: &HashMap<String, String>,
     tera: &Tera,
     config: &Config,
     insert_anchor: InsertAnchor,
@@ -45,6 +46,7 @@ pub fn render_page(
         tera,
         config,
         permalinks,
+        wikilinks,
         lang: &page.lang,
         current_permalink: &page.permalink,
         current_path: &page.file.relative,
@@ -66,6 +68,7 @@ pub fn render_section(
     section: &mut Section,
     renderer: Renderer,
     permalinks: &HashMap<String, String>,
+    wikilinks: &HashMap<String, String>,
     tera: &Tera,
     config: &Config,
 ) -> Result<()> {
@@ -83,6 +86,7 @@ pub fn render_section(
         tera,
         config,
         permalinks,
+        wikilinks,
         lang: &section.lang,
         current_permalink: &section.permalink,
         current_path: &section.file.relative,
@@ -109,7 +113,6 @@ pub fn render_section(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
     use std::path::Path;
     use std::path::PathBuf;
 
@@ -119,7 +122,7 @@ mod tests {
     use templates::ZOLA_TERA;
     use utils::types::InsertAnchor;
 
-    use super::render_page;
+    use super::{HashMap, render_page};
 
     fn make_renderer<'a>(
         config: &'a Config,
@@ -147,6 +150,7 @@ Hello world
         render_page(
             &mut page,
             renderer,
+            &HashMap::default(),
             &HashMap::default(),
             &ZOLA_TERA,
             &config,
@@ -186,6 +190,7 @@ And here's another. [^3]
             &mut page,
             renderer,
             &HashMap::default(),
+            &HashMap::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
@@ -221,6 +226,7 @@ And here's another. [^3]
         render_page(
             &mut page,
             renderer,
+            &HashMap::default(),
             &HashMap::default(),
             &ZOLA_TERA,
             &config,

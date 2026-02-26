@@ -2769,6 +2769,7 @@ checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 name = "markdown"
 version = "0.23.0"
 dependencies = [
+ "ahash 0.8.12",
  "config",
  "criterion",
  "errors",
@@ -5097,6 +5098,7 @@ dependencies = [
 name = "templates"
 version = "0.23.0"
 dependencies = [
+ "ahash 0.8.12",
  "base64",
  "config",
  "content",
@@ -5644,6 +5646,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 name = "utils"
 version = "0.23.0"
 dependencies = [
+ "ahash 0.8.12",
  "errors",
  "filetime",
  "fs-err",

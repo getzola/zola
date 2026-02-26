@@ -1,0 +1,8 @@
+---
+source: components/markdown/tests/markdown.rs
+expression: res.body
+---
+<p><a href="https://getzola.org/guides/quickstart/">quickstart</a>
+<a href="https://getzola.org/guides/quickstart/">guides/quickstart</a>
+<a href="https://getzola.org/guides/quickstart/#install">quickstart#install</a>
+<a href="https://getzola.org/guides/quickstart/">Get Started</a></p>
