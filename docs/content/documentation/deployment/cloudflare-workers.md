@@ -26,7 +26,7 @@ main() {
     ./zola build
 }
 
-set -euo pipe
+set -euo pipefail
 ```
 
 ### Add the wrangler configuration
