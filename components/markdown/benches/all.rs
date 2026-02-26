@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use ahash::AHashMap;
 use config::{Config, Highlighting};
 use criterion::{Criterion, criterion_group, criterion_main};
@@ -73,7 +71,8 @@ The end.
 fn bench_without_highlighting(c: &mut Criterion) {
     let mut tera = ZOLA_TERA.clone();
     tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
-    let permalinks = HashMap::new();
+    let permalinks = AHashMap::new();
+    let wikilinks = AHashMap::new();
     let config = Config::default_for_test();
 
     let colocated_assets = AHashMap::new();
@@ -82,6 +81,7 @@ fn bench_without_highlighting(c: &mut Criterion) {
         config: &config,
         permalinks: &permalinks,
         colocated_assets: &colocated_assets,
+        wikilinks: &wikilinks,
         lang: &config.default_language,
         current_permalink: "https://www.example.com/bench/",
         current_path: "bench.md",
@@ -96,7 +96,8 @@ fn bench_without_highlighting(c: &mut Criterion) {
 fn bench_with_highlighting(c: &mut Criterion) {
     let mut tera = ZOLA_TERA.clone();
     tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
-    let permalinks = HashMap::new();
+    let permalinks = AHashMap::new();
+    let wikilinks = AHashMap::new();
     let mut config = Config::default_for_test();
 
     let mut highlighting = Highlighting {
@@ -120,6 +121,7 @@ fn bench_with_highlighting(c: &mut Criterion) {
         config: &config,
         permalinks: &permalinks,
         colocated_assets: &colocated_assets,
+        wikilinks: &wikilinks,
         lang: &config.default_language,
         current_permalink: "https://www.example.com/bench/",
         current_path: "bench.md",

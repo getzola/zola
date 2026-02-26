@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
-
 use ahash::AHashMap;
 use config::Config;
 use errors::Result;
@@ -16,8 +14,17 @@ fn configurable_render(
 ) -> Result<Rendered> {
     let mut tera = ZOLA_TERA.clone();
 
-    let mut permalinks = HashMap::new();
-    permalinks.insert("pages/about.md".to_owned(), "https://getzola.org/about/".to_owned());
+    let permalinks = AHashMap::from_iter([
+        ("pages/about.md".to_owned(), "https://getzola.org/about/".to_owned()),
+        ("guides/quickstart.md".to_owned(), "https://getzola.org/guides/quickstart/".to_owned()),
+        ("about.md".to_owned(), "https://getzola.org/about/".to_owned()),
+    ]);
+
+    let wikilinks = AHashMap::from_iter([
+        ("guides/quickstart".to_owned(), "guides/quickstart.md".to_owned()),
+        ("quickstart".to_owned(), "guides/quickstart.md".to_owned()),
+        ("about".to_owned(), "about.md".to_owned()),
+    ]);
 
     tera.register_filter(
         "markdown",
@@ -25,6 +32,7 @@ fn configurable_render(
             config.clone(),
             permalinks.clone(),
             AHashMap::new(),
+            wikilinks.clone(),
             tera.clone(),
         ),
     );
@@ -34,6 +42,7 @@ fn configurable_render(
         config: &config,
         permalinks: &permalinks,
         colocated_assets: &colocated_assets,
+        wikilinks: &wikilinks,
         lang: &config.default_language,
         current_permalink: "https://www.getzola.org/test/",
         current_path: "my_page.md",

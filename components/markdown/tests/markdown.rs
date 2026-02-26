@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use ahash::AHashMap;
 use config::Config;
 use markdown::{MarkdownContext, render_content};
@@ -109,14 +107,16 @@ fn can_insert_anchors() {
 fn can_customise_anchor_template() {
     let mut tera = ZOLA_TERA.clone();
     tera.add_raw_template("anchor-link.html", " (in {{ lang }})").unwrap();
-    let permalinks_ctx = HashMap::new();
+    let permalinks_ctx = AHashMap::new();
     let config = Config::default_for_test();
     let colocated_assets = AHashMap::new();
+    let wikilinks_ctx = AHashMap::new();
     let context = MarkdownContext {
         tera: &tera,
         config: &config,
         permalinks: &permalinks_ctx,
         colocated_assets: &colocated_assets,
+        wikilinks: &wikilinks_ctx,
         lang: &config.default_language,
         current_permalink: "",
         current_path: "",
@@ -130,7 +130,8 @@ fn can_customise_anchor_template() {
 fn can_customise_summary_template() {
     let mut tera = ZOLA_TERA.clone();
     tera.add_raw_template("summary-cutoff.html", " (in {{ lang }})").unwrap();
-    let permalinks_ctx = HashMap::new();
+    let permalinks_ctx = AHashMap::new();
+    let wikilinks_ctx = AHashMap::new();
     let config = Config::default_for_test();
     let colocated_assets = AHashMap::new();
     let context = MarkdownContext {
@@ -138,6 +139,7 @@ fn can_customise_summary_template() {
         config: &config,
         permalinks: &permalinks_ctx,
         colocated_assets: &colocated_assets,
+        wikilinks: &wikilinks_ctx,
         lang: &config.default_language,
         current_permalink: "",
         current_path: "",
@@ -485,4 +487,37 @@ fn github_alerts() {
 
     let body = common::render_with_config(&markdown, config).unwrap().body;
     insta::assert_snapshot!(body);
+}
+
+#[test]
+fn wikilink_resolution() {
+    let mut config = Config::default_for_test();
+    config.markdown.wikilinks = true;
+
+    let cases = vec![
+        "[[quickstart]]",
+        "[[guides/quickstart]]",
+        "[[quickstart#install]]",
+        "[[quickstart|Get Started]]",
+    ];
+
+    let res = common::render_with_config(&cases.join("\n"), config).unwrap();
+    insta::assert_snapshot!(res.body);
+    assert!(res.internal_links.contains(&("guides/quickstart.md".into(), Some("install".into()))));
+}
+
+#[test]
+fn wikilink_nonexistent() {
+    // warn level: renders with raw link
+    let mut config = Config::default_for_test();
+    config.markdown.wikilinks = true;
+    config.link_checker.internal_level = config::LinkCheckerLevel::Warn;
+    let body = common::render_with_config("[[nope]]", config).unwrap().body;
+    assert!(body.contains("href=\"nope\""), "body was: {body}");
+
+    // error level: returns Err
+    let mut config = Config::default_for_test();
+    config.markdown.wikilinks = true;
+    config.link_checker.internal_level = config::LinkCheckerLevel::Error;
+    assert!(common::render_with_config("[[nope]]", config).is_err());
 }
