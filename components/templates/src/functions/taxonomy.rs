@@ -40,7 +40,8 @@ impl Function<TeraResult<Value>> for GetTaxonomyUrl {
                 return Err(Error::message("`get_taxonomy_url` requires a `term` argument"));
             }
         };
-        let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
+        let lang: String =
+            kwargs.get("lang")?.or(state.get("lang")?).unwrap_or_else(|| self.default_lang.clone());
         let required: bool = kwargs.get("required")?.unwrap_or(true);
 
         let cached = match (self.cache.get_taxonomy(&lang, kind), required) {
@@ -95,7 +96,8 @@ impl Function<TeraResult<Value>> for GetTaxonomy {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
         let kind: &str = kwargs.must_get("kind")?;
         let required: bool = kwargs.get("required")?.unwrap_or(true);
-        let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
+        let lang: String =
+            kwargs.get("lang")?.or(state.get("lang")?).unwrap_or_else(|| self.default_lang.clone());
 
         match self.cache.get_taxonomy(&lang, kind) {
             Some(cached) => Ok(cached.value.clone()),
@@ -136,7 +138,8 @@ impl Function<TeraResult<Value>> for GetTaxonomyTerm {
         let kind: &str = kwargs.must_get("kind")?;
         let term: &str = kwargs.must_get("term")?;
         let required: bool = kwargs.get("required")?.unwrap_or(true);
-        let lang: String = state.get("lang")?.unwrap_or_else(|| self.default_lang.clone());
+        let lang: String =
+            kwargs.get("lang")?.or(state.get("lang")?).unwrap_or_else(|| self.default_lang.clone());
 
         let cached = match (self.cache.get_taxonomy(&lang, kind), required) {
             (Some(c), _) => c,
@@ -236,6 +239,16 @@ mod tests {
         let item = items[0].as_map().unwrap();
         assert_eq!(item.get(&"name".into()).unwrap().as_str().unwrap(), "Programmation");
 
+        // kwargs lang takes priority over state lang
+        let kwargs = Kwargs::from([("kind", Value::from("tags")), ("lang", Value::from("en"))]);
+        let ctx = make_context_with_lang("fr");
+        let res = get_taxonomy.call(kwargs, &State::new(&ctx)).unwrap();
+        let res_obj = res.as_map().unwrap();
+        let items = res_obj.get(&"items".into()).unwrap().as_vec().unwrap();
+        assert_eq!(items.len(), 1);
+        let item = items[0].as_map().unwrap();
+        assert_eq!(item.get(&"name".into()).unwrap().as_str().unwrap(), "Programming");
+
         // and errors if it can't find it
         let kwargs = Kwargs::from([("kind", Value::from("something-else"))]);
         let ctx = Context::new();
@@ -309,6 +322,18 @@ mod tests {
             "http://a-website.com/fr/tags/programmation/"
         );
 
+        // kwargs lang takes priority over state lang
+        let kwargs = Kwargs::from([
+            ("kind", Value::from("tags")),
+            ("name", Value::from("Programming")),
+            ("lang", Value::from("en")),
+        ]);
+        let ctx = make_context_with_lang("fr");
+        assert_eq!(
+            get_taxonomy_url.call(kwargs, &State::new(&ctx)).unwrap().as_str().unwrap(),
+            "http://a-website.com/tags/programming/"
+        );
+
         // and errors if it can't find it
         let kwargs = Kwargs::from([("kind", Value::from("tags")), ("name", Value::from("random"))]);
         let ctx = Context::new();
@@ -371,6 +396,17 @@ mod tests {
         let res = get_taxonomy_term.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
         assert_eq!(res_obj.get(&"name".into()).unwrap().as_str().unwrap(), "Programmation");
+
+        // kwargs lang takes priority over state lang
+        let kwargs = Kwargs::from([
+            ("kind", Value::from("tags")),
+            ("term", Value::from("Programming")),
+            ("lang", Value::from("en")),
+        ]);
+        let ctx = make_context_with_lang("fr");
+        let res = get_taxonomy_term.call(kwargs, &State::new(&ctx)).unwrap();
+        let res_obj = res.as_map().unwrap();
+        assert_eq!(res_obj.get(&"name".into()).unwrap().as_str().unwrap(), "Programming");
 
         // and errors if it can't find either taxonomy or term
         let kwargs = Kwargs::from([
