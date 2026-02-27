@@ -70,13 +70,13 @@ impl Function<TeraResult<String>> for GetUrl {
         let path: String = kwargs.must_get("path")?;
         let cachebust: bool = kwargs.get("cachebust")?.unwrap_or(false);
         let trailing_slash: bool = kwargs.get("trailing_slash")?.unwrap_or(false);
-        let lang: String = kwargs
-            .get("lang")?
-            .or(state.get("lang")?)
-            .unwrap_or_else(|| self.config.default_language.clone());
+        let explicit_lang: Option<String> = kwargs.get("lang")?;
 
         // if it starts with @/, resolve it as an internal link
         if path.starts_with("@/") {
+            let lang: String = explicit_lang
+                .or(state.get("lang")?)
+                .unwrap_or_else(|| self.config.default_language.clone());
             let path_with_lang = make_path_with_lang(path, &lang, &self.config)?;
 
             match resolve_internal_link(&path_with_lang, &self.permalinks) {
@@ -90,10 +90,12 @@ impl Function<TeraResult<String>> for GetUrl {
             // anything else
             let mut segments = vec![];
 
-            if lang != self.config.default_language
-                && (path.is_empty() || !path[1..].starts_with(&lang))
-            {
-                segments.push(lang.clone());
+            if let Some(ref lang) = explicit_lang {
+                if *lang != self.config.default_language
+                    && (path.is_empty() || !path[1..].starts_with(lang))
+                {
+                    segments.push(lang.clone());
+                }
             }
 
             segments.push(path.clone());
@@ -221,7 +223,7 @@ mod tests {
 
     use fs_err as fs;
     use tempfile::{TempDir, tempdir};
-    use tera::{Context, Kwargs, State};
+    use tera::{Context, Function, Kwargs, State};
 
     use config::Config;
     use utils::fs::create_file;
@@ -246,7 +248,6 @@ title = "A title"
 
     #[test]
     fn can_add_cachebust_to_url() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_url = GetUrl::new(
             dir.path().to_path_buf(),
@@ -280,7 +281,6 @@ title = "A title"
 
     #[test]
     fn can_add_trailing_slashes() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_url = GetUrl::new(
             dir.path().to_path_buf(),
@@ -302,7 +302,6 @@ title = "A title"
 
     #[test]
     fn can_add_slashes_and_cachebust() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_url = GetUrl::new(
             dir.path().to_path_buf(),
@@ -325,7 +324,6 @@ title = "A title"
 
     #[test]
     fn can_link_to_some_static_file() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_url = GetUrl::new(
             dir.path().to_path_buf(),
@@ -351,7 +349,6 @@ title = "A title"
 
     #[test]
     fn can_link_to_file_in_output_path() {
-        use tera::Function;
         let dir = create_temp_dir();
         let public = dir.path().join("public");
         fs::create_dir(&public).expect("Failed to create output directory");
@@ -371,7 +368,6 @@ title = "A title"
 
     #[test]
     fn error_when_language_not_available() {
-        use tera::Function;
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
         let get_url = GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
@@ -387,7 +383,6 @@ title = "A title"
 
     #[test]
     fn can_get_url_with_default_language() {
-        use tera::Function;
         let mut permalinks = HashMap::new();
         permalinks.insert(
             "a_section/a_page.md".to_string(),
@@ -419,7 +414,6 @@ title = "A title"
 
     #[test]
     fn can_get_url_with_other_language() {
-        use tera::Function;
         let config = Config::parse(CONFIG_DATA).unwrap();
         let mut permalinks = HashMap::new();
         permalinks.insert(
@@ -446,7 +440,6 @@ title = "A title"
 
     #[test]
     fn does_not_duplicate_lang() {
-        use tera::Function;
         let config = Config::parse(CONFIG_DATA).unwrap();
         let mut permalinks = HashMap::new();
         permalinks.insert(
@@ -473,7 +466,6 @@ title = "A title"
 
     #[test]
     fn can_get_feed_urls_with_default_language() {
-        use tera::Function;
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
         let get_url =
@@ -494,7 +486,6 @@ title = "A title"
 
     #[test]
     fn can_get_feed_urls_with_other_language() {
-        use tera::Function;
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
         let get_url =
@@ -515,7 +506,6 @@ title = "A title"
 
     #[test]
     fn can_get_file_hash_sha256_no_base64() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -533,7 +523,6 @@ title = "A title"
 
     #[test]
     fn can_get_file_hash_sha256_base64() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -551,7 +540,6 @@ title = "A title"
 
     #[test]
     fn can_get_file_hash_sha384_no_base64() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -568,7 +556,6 @@ title = "A title"
 
     #[test]
     fn can_get_file_hash_sha384() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -582,7 +569,6 @@ title = "A title"
 
     #[test]
     fn can_get_file_hash_sha512_no_base64() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -600,7 +586,6 @@ title = "A title"
 
     #[test]
     fn can_get_file_hash_sha512() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -617,7 +602,6 @@ title = "A title"
 
     #[test]
     fn can_get_hash_sha256_no_base64() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -635,7 +619,6 @@ title = "A title"
 
     #[test]
     fn can_get_hash_sha256_base64() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -653,7 +636,6 @@ title = "A title"
 
     #[test]
     fn can_get_hash_sha384_no_base64() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -670,7 +652,6 @@ title = "A title"
 
     #[test]
     fn can_get_hash_sha384() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -684,7 +665,6 @@ title = "A title"
 
     #[test]
     fn can_get_hash_sha512_no_base64() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -702,7 +682,6 @@ title = "A title"
 
     #[test]
     fn can_get_hash_sha512() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
@@ -718,8 +697,24 @@ title = "A title"
     }
 
     #[test]
+    fn static_file_does_not_get_lang_prefix_from_context() {
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let dir = create_temp_dir();
+        let get_url =
+            GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
+
+        // lang="en" (non-default) comes from template context, not from kwarg
+        let kwargs = Kwargs::from([("path", tera::Value::from("app.css"))]);
+        let mut ctx = Context::new();
+        ctx.insert("lang", "en");
+        assert_eq!(
+            get_url.call(kwargs, &State::new(&ctx)).unwrap(),
+            "https://remplace-par-ton-url.fr/app.css"
+        );
+    }
+
+    #[test]
     fn error_when_file_not_found_for_hash() {
-        use tera::Function;
         let dir = create_temp_dir();
         let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
 
