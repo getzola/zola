@@ -90,12 +90,11 @@ impl Function<TeraResult<String>> for GetUrl {
             // anything else
             let mut segments = vec![];
 
-            if let Some(ref lang) = explicit_lang {
-                if *lang != self.config.default_language
-                    && (path.is_empty() || !path[1..].starts_with(lang))
-                {
-                    segments.push(lang.clone());
-                }
+            if let Some(ref lang) = explicit_lang
+                && *lang != self.config.default_language
+                && (path.is_empty() || !path[1..].starts_with(lang))
+            {
+                segments.push(lang.clone());
             }
 
             segments.push(path.clone());
@@ -700,8 +699,7 @@ title = "A title"
     fn static_file_does_not_get_lang_prefix_from_context() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let get_url =
-            GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
+        let get_url = GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
 
         // lang="en" (non-default) comes from template context, not from kwarg
         let kwargs = Kwargs::from([("path", tera::Value::from("app.css"))]);
