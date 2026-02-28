@@ -8,7 +8,7 @@ mod helpers;
 use fs_err as fs;
 use tera::{Context, Tera};
 
-use crate::filters::{NumFormatFilter, MarkdownFilter};
+use crate::filters::{MarkdownFilter, NumFormatFilter};
 use crate::functions::{
     GetHash, GetImageMetadata, GetPage, GetSection, GetTaxonomy, GetTaxonomyTerm, GetTaxonomyUrl,
     GetUrl, LoadData, ResizeImage, Trans,
@@ -70,7 +70,7 @@ pub static ZOLA_TERA: LazyLock<Tera> = LazyLock::new(|| {
 
     tera.register_filter("num_format", NumFormatFilter::default());
     tera.register_filter("markdown", MarkdownFilter::default());
-    
+
     tera.add_raw_templates(BUILTIN_TEMPLATES.to_vec()).unwrap();
 
     tera
