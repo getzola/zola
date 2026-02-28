@@ -1,20 +1,20 @@
 use std::path::Path;
 
 use errors::{Context, Result, bail};
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 
 use crate::front_matter::page::PageFrontMatter;
 use crate::front_matter::section::SectionFrontMatter;
 
-static TOML_RE: Lazy<Regex> = Lazy::new(|| {
+static TOML_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
         r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))",
     )
     .unwrap()
 });
 
-static YAML_RE: Lazy<Regex> = Lazy::new(|| {
+static YAML_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))")
         .unwrap()
 });
@@ -43,10 +43,10 @@ impl RawFrontMatter<'_> {
 /// Split a file between the front matter and its content
 /// Will return an error if the front matter wasn't found
 fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(RawFrontMatter<'c>, &'c str)> {
-    let (re, is_toml) = if TOML_RE.is_match(content) {
-        (&TOML_RE as &Regex, true)
-    } else if YAML_RE.is_match(content) {
-        (&YAML_RE as &Regex, false)
+    let (caps, is_toml) = if let Some(caps) = TOML_RE.captures(content) {
+        (caps, true)
+    } else if let Some(caps) = YAML_RE.captures(content) {
+        (caps, false)
     } else {
         bail!(
             "Couldn't find front matter in `{}`. Did you forget to add `+++` or `---`?",
@@ -55,7 +55,6 @@ fn split_content<'c>(file_path: &Path, content: &'c str) -> Result<(RawFrontMatt
     };
 
     // 2. extract the front matter and the content
-    let caps = re.captures(content).unwrap();
     // caps[0] is the full match
     // caps[1] => front matter
     // caps[2] => content
@@ -91,7 +90,7 @@ pub fn split_page_content<'c>(
 ) -> Result<(PageFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
     let meta = PageFrontMatter::parse(&front_matter).with_context(|| {
-        format!("Error when parsing front matter of section `{}`", file_path.to_string_lossy())
+        format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy())
     })?;
     Ok((meta, content))
 }

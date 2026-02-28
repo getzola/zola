@@ -1,4 +1,4 @@
-use giallo::{HighlightOptions, Registry, ThemeVariant};
+use giallo::{DataAttrPosition, HighlightOptions, Registry, ThemeVariant};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -7,15 +7,11 @@ use utils::types::InsertAnchor;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum HighlightStyle {
+    #[default]
     Inline,
     Class,
-}
-
-impl Default for HighlightStyle {
-    fn default() -> HighlightStyle {
-        HighlightStyle::Inline
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -38,6 +34,8 @@ pub struct Highlighting {
     pub extra_grammars: Vec<String>,
     #[serde(default)]
     pub extra_themes: Vec<String>,
+    #[serde(default)]
+    pub data_attr_position: DataAttrPosition,
     #[serde(skip, default)]
     pub registry: Registry,
 }
@@ -58,16 +56,16 @@ impl Highlighting {
 
         match &self.theme {
             HighlightConfig::Single { theme } => {
-                if !registry.contains_theme(&theme) {
+                if !registry.contains_theme(theme) {
                     bail!("Theme `{theme}` does not exist");
                 }
             }
             HighlightConfig::Dual { light_theme, dark_theme } => {
-                if !registry.contains_theme(&light_theme) {
+                if !registry.contains_theme(light_theme) {
                     bail!("Theme `{light_theme}` does not exist");
                 }
 
-                if !registry.contains_theme(&dark_theme) {
+                if !registry.contains_theme(dark_theme) {
                     bail!("Theme `{dark_theme}` does not exist");
                 }
             }

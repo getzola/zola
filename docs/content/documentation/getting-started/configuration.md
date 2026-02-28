@@ -198,6 +198,10 @@ extra_grammars = []
 # Get themes from https://textmate-grammars-themes.netlify.app/
 extra_themes = []
 
+# Where to insert the data attributes for codeblocks. Default to on the <code> element.
+# Other options are: "pre", "both" and "none"
+data_attr_position = "code"
+
 # Configuration of the link checker.
 [link_checker]
 # Skip link checking for external URLs that start with these prefixes

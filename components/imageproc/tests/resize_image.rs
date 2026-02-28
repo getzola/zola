@@ -4,7 +4,7 @@ use std::path::{MAIN_SEPARATOR as SLASH, PathBuf};
 use config::Config;
 use image::{self, DynamicImage, GenericImageView, ImageDecoder, ImageReader, Pixel};
 use imageproc::{ImageMetaResponse, Processor, ResizeOperation, fix_orientation, get_rotated_size};
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
 /// Assert that `address` matches `prefix` + RESIZED_FILENAME regex + "." + `extension`,
 fn assert_processed_path_matches(path: &str, prefix: &str, extension: &str) {
@@ -23,10 +23,10 @@ compile_sass = false
 build_search_index = false
 "#;
 
-static TEST_IMGS: Lazy<PathBuf> =
-    Lazy::new(|| [env!("CARGO_MANIFEST_DIR"), "tests", "test_imgs"].iter().collect());
-static PROCESSED_PREFIX: Lazy<String> =
-    Lazy::new(|| format!("static{0}processed_images{0}", SLASH));
+static TEST_IMGS: LazyLock<PathBuf> =
+    LazyLock::new(|| [env!("CARGO_MANIFEST_DIR"), "tests", "test_imgs"].iter().collect());
+static PROCESSED_PREFIX: LazyLock<String> =
+    LazyLock::new(|| format!("static{0}processed_images{0}", SLASH));
 
 #[allow(clippy::too_many_arguments)]
 fn image_op_test(

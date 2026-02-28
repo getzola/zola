@@ -1,18 +1,17 @@
 [package]
 name = "site"
-version = "0.1.0"
+version.workspace = true
 authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
-edition = "2024"
+edition.workspace = true
 include = ["src/**/*"]
 
 [dependencies]
 serde = { workspace = true }
-chrono = { workspace = true }
+fs-err = { workspace = true }
 globset = { workspace = true }
 grass = { workspace = true }
 log = { workspace = true }
 minify-html = { workspace = true }
-once_cell = { workspace = true }
 rayon = { workspace = true }
 relative-path = { workspace = true }
 tera = { workspace = true }
@@ -21,15 +20,23 @@ walkdir = { workspace = true }
 
 errors = { workspace = true }
 config = { workspace = true }
-console = { workspace = true }
 utils = { workspace = true }
 templates = { workspace = true }
 search = { workspace = true }
 imageproc = { workspace = true }
 link_checker = { workspace = true }
 content = { workspace = true }
+render = { workspace = true }
+markdown = { workspace = true }
+memchr = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
 path-slash = "0.2"
 ahash = { workspace = true }
+insta = { workspace = true }
+criterion = "0.8"
+
+[[bench]]
+name = "load"
+harness = false
