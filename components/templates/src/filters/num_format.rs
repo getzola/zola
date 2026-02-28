@@ -1,6 +1,6 @@
 use tera::{Error, Filter, Kwargs, State, TeraResult};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct NumFormatFilter {
     default_language: String,
 }

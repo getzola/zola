@@ -5,7 +5,7 @@ use markdown::{MarkdownContext, render_content};
 use tera::{Error, Filter, Kwargs, State, TeraResult, Value};
 use utils::types::InsertAnchor;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MarkdownFilter {
     config: Config,
     permalinks: HashMap<String, String>,
