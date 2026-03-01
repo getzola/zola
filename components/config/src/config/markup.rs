@@ -160,6 +160,8 @@ pub struct Markdown {
     pub insert_anchor_links: InsertAnchor,
     /// Whether to enable GitHub-style alerts
     pub github_alerts: bool,
+    /// Whether to enable Wikilinks style links, eg [[title]] like Obsidian
+    pub wikilinks: bool,
 }
 
 impl Markdown {
@@ -231,6 +233,7 @@ impl Default for Markdown {
             lazy_async_image: false,
             insert_anchor_links: InsertAnchor::None,
             github_alerts: false,
+            wikilinks: false,
         }
     }
 }
