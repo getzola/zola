@@ -1,3 +1,4 @@
+pub mod image_compression;
 pub mod languages;
 pub mod link_checker;
 pub mod markup;
@@ -77,6 +78,7 @@ pub struct Config {
     pub compile_sass: bool,
     /// Whether to minify the html output
     pub minify_html: bool,
+    pub compress_images: Option<Vec<image_compression::ImageCompression>>,
     /// Whether to build the search index for the content
     pub build_search_index: bool,
     /// A list of file glob patterns to ignore when processing the content folder. Defaults to none.
@@ -466,6 +468,7 @@ impl Default for Config {
             author: None,
             compile_sass: false,
             minify_html: false,
+            compress_images: None,
             mode: Mode::Build,
             build_search_index: false,
             ignored_content: Vec::new(),

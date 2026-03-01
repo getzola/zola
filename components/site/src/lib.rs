@@ -1,3 +1,4 @@
+mod compress_images;
 pub mod feeds;
 pub mod link_checking;
 mod md_render;
@@ -733,6 +734,14 @@ impl Site {
         // or from templates
         self.process_images()?;
         start = log_time(start, "Processed images");
+
+        if let Some(compress) = &self.config.compress_images
+            && self.build_mode == BuildMode::Disk
+        {
+            compress_images::compress_images(&self.static_path, &self.output_path, compress)?;
+            start = log_time(start, "Compressed images");
+        }
+
         // Processed images will be in static so the last step is to copy it
         self.copy_static_directories()?;
         log_time(start, "Copied static dir");
