@@ -672,7 +672,7 @@ impl Site {
         let mut imageproc =
             self.imageproc.lock().expect("Couldn't lock imageproc (process_images)");
         imageproc.prune()?;
-        imageproc.do_process()
+        imageproc.do_process(&self.config.image_encoders)
     }
 
     /// Deletes the `public` directory if it exists and the `preserve_dotfiles_in_output` option is set to false,

@@ -1,3 +1,4 @@
+pub mod image_encoders;
 pub mod languages;
 pub mod link_checker;
 pub mod markup;
@@ -12,8 +13,8 @@ use globset::GlobSet;
 use serde::{Deserialize, Serialize};
 use toml::Value as Toml;
 
-use crate::TaxonomyConfig;
 use crate::theme::Theme;
+use crate::{ImageEncoderConfig, TaxonomyConfig};
 use errors::{Result, anyhow, bail};
 use utils::fs::read_file;
 use utils::globs::build_ignore_glob_set;
@@ -120,6 +121,9 @@ pub struct Config {
     pub generate_robots_txt: bool,
     /// Whether to exclude paginated pages in sitemap; can take values "none", "all"
     pub exclude_paginated_pages_in_sitemap: ExcludePaginatedPagesInSitemap,
+
+    /// Additional configuration for image encoders.
+    pub image_encoders: ImageEncoderConfig,
 }
 
 #[derive(Serialize)]
@@ -485,6 +489,7 @@ impl Default for Config {
             generate_sitemap: true,
             generate_robots_txt: true,
             exclude_paginated_pages_in_sitemap: ExcludePaginatedPagesInSitemap::None,
+            image_encoders: ImageEncoderConfig::default(),
         }
     }
 }

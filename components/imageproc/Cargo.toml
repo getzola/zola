@@ -19,5 +19,6 @@ webp = { workspace = true }
 errors = { workspace = true }
 utils = { workspace = true }
 config = { workspace = true }
+perceptual-image = { git = "https://codeberg.org/BezPowell/perceptual-image", branch = "dssim", features = ["avif", "jpeg", "webp"] }
 
 [dev-dependencies]
