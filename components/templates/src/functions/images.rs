@@ -57,7 +57,7 @@ impl Function<TeraResult<Value>> for ResizeImage {
             .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?;
 
         let mut imageproc = self.imageproc.lock().unwrap();
-        let (file_path, unified_path) =
+        let file_path =
             match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
                 .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?
             {
@@ -71,7 +71,7 @@ impl Function<TeraResult<Value>> for ResizeImage {
             };
 
         let response = imageproc
-            .enqueue(resize_op, unified_path, file_path, &format, quality, speed)
+            .enqueue(resize_op, file_path, &format, quality, speed)
             .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?;
 
         Ok(Value::from_serializable(&response))
@@ -83,7 +83,7 @@ pub struct GetImageMetadata {
     /// The base path of the Zola site
     base_path: PathBuf,
     theme: Option<String>,
-    result_cache: Arc<Mutex<HashMap<String, Value>>>,
+    result_cache: Arc<Mutex<HashMap<PathBuf, Value>>>,
     output_path: PathBuf,
 }
 
@@ -109,31 +109,30 @@ impl Function<TeraResult<Value>> for GetImageMetadata {
         let path: String = kwargs.must_get("path")?;
         let allow_missing: bool = kwargs.get("allow_missing")?.unwrap_or(false);
 
-        let (src_path, unified_path) =
-            match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
-                .map_err(|e| Error::message(format!("`get_image_metadata`: {}", e)))?
-            {
-                Some((f, p)) => (f, p),
-                None => {
-                    if allow_missing {
-                        return Ok(Value::none());
-                    }
-                    return Err(Error::message(format!(
-                        "`get_image_metadata`: Cannot find path: {}",
-                        path
-                    )));
+        let src_path = match search_for_file(&self.base_path, &path, &self.theme, &self.output_path)
+            .map_err(|e| Error::message(format!("`get_image_metadata`: {}", e)))?
+        {
+            Some(f) => f,
+            None => {
+                if allow_missing {
+                    return Ok(Value::none());
                 }
-            };
+                return Err(Error::message(format!(
+                    "`get_image_metadata`: Cannot find path: {}",
+                    path
+                )));
+            }
+        };
 
         let mut cache = self.result_cache.lock().expect("result cache lock");
-        if let Some(cached_result) = cache.get(&unified_path) {
+        if let Some(cached_result) = cache.get(&src_path) {
             return Ok(cached_result.clone());
         }
 
-        let response = imageproc::read_image_metadata(src_path)
+        let response = imageproc::read_image_metadata(&src_path)
             .map_err(|e| Error::message(format!("`get_image_metadata`: {}", e)))?;
         let out = Value::from_serializable(&response);
-        cache.insert(unified_path, out.clone());
+        cache.insert(src_path, out.clone());
 
         Ok(out)
     }
@@ -200,12 +199,12 @@ mod tests {
             data.get(&"static_path".into()).unwrap(),
             &Value::from(format!(
                 "{}",
-                static_path.join("gutenberg.e99218b5a3185c99.jpg").display()
+                static_path.join("gutenberg.9786ef7a62f75bc4.jpg").display()
             ))
         );
         assert_eq!(
             data.get(&"url".into()).unwrap(),
-            &Value::from("http://a-website.com/processed_images/gutenberg.e99218b5a3185c99.jpg")
+            &Value::from("http://a-website.com/processed_images/gutenberg.9786ef7a62f75bc4.jpg")
         );
 
         // 2. resizing an image in content with a relative path
@@ -220,12 +219,12 @@ mod tests {
             data.get(&"static_path".into()).unwrap(),
             &Value::from(format!(
                 "{}",
-                static_path.join("gutenberg.155d032b1aae0133.jpg").display()
+                static_path.join("gutenberg.9786ef7a62f75bc4.jpg").display()
             ))
         );
         assert_eq!(
             data.get(&"url".into()).unwrap(),
-            &Value::from("http://a-website.com/processed_images/gutenberg.155d032b1aae0133.jpg")
+            &Value::from("http://a-website.com/processed_images/gutenberg.9786ef7a62f75bc4.jpg")
         );
 
         // 3. resizing with an absolute path is the same as the above
@@ -256,11 +255,11 @@ mod tests {
         let data = data.as_map().unwrap();
         assert_eq!(
             data.get(&"static_path".into()).unwrap(),
-            &Value::from(format!("{}", static_path.join("asset.160461e0d0be19e6.jpg").display()))
+            &Value::from(format!("{}", static_path.join("asset.9786ef7a62f75bc4.jpg").display()))
         );
         assert_eq!(
             data.get(&"url".into()).unwrap(),
-            &Value::from("http://a-website.com/processed_images/asset.160461e0d0be19e6.jpg")
+            &Value::from("http://a-website.com/processed_images/asset.9786ef7a62f75bc4.jpg")
         );
 
         // 6. Looking up a file in the theme
@@ -275,12 +274,12 @@ mod tests {
             data.get(&"static_path".into()).unwrap(),
             &Value::from(format!(
                 "{}",
-                static_path.join("in-theme.d8f4f6eef30de1b2.jpg").display()
+                static_path.join("in-theme.9786ef7a62f75bc4.jpg").display()
             ))
         );
         assert_eq!(
             data.get(&"url".into()).unwrap(),
-            &Value::from("http://a-website.com/processed_images/in-theme.d8f4f6eef30de1b2.jpg")
+            &Value::from("http://a-website.com/processed_images/in-theme.9786ef7a62f75bc4.jpg")
         );
     }
 
