@@ -5,6 +5,7 @@ edition.workspace = true
 
 [dependencies]
 tera-contrib = {version = "0.2.0-alpha.1", features = ["base64", "date", "urlencode", "json", "filesize_format", "format", "slug", "rand", "regex"] }
+ahash = { workspace = true }
 base64 = { workspace = true }
 csv = { workspace = true }
 jiff = { workspace = true }

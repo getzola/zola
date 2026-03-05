@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use ahash::AHashMap as HashMap;
 use config::{Config, HighlightConfig, Highlighting};
 use criterion::{Criterion, criterion_group, criterion_main};
 use markdown::{MarkdownContext, render_content};
@@ -73,12 +72,14 @@ fn bench_without_highlighting(c: &mut Criterion) {
     let mut tera = ZOLA_TERA.clone();
     tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
     let permalinks = HashMap::new();
+    let wikilinks = HashMap::new();
     let config = Config::default_for_test();
 
     let context = MarkdownContext {
         tera: &tera,
         config: &config,
         permalinks: &permalinks,
+        wikilinks: &wikilinks,
         lang: &config.default_language,
         current_permalink: "https://www.example.com/bench/",
         current_path: "bench.md",
@@ -94,6 +95,7 @@ fn bench_with_highlighting(c: &mut Criterion) {
     let mut tera = ZOLA_TERA.clone();
     tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
     let permalinks = HashMap::new();
+    let wikilinks = HashMap::new();
     let mut config = Config::default_for_test();
 
     let mut highlighting = Highlighting {
@@ -112,6 +114,7 @@ fn bench_with_highlighting(c: &mut Criterion) {
         tera: &tera,
         config: &config,
         permalinks: &permalinks,
+        wikilinks: &wikilinks,
         lang: &config.default_language,
         current_permalink: "https://www.example.com/bench/",
         current_path: "bench.md",

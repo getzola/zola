@@ -1,9 +1,9 @@
-use std::collections::HashMap;
 use std::io::Read;
 use std::path::PathBuf;
 
 use fs_err as fs;
 
+use ahash::AHashMap as HashMap;
 use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
 use sha2::{Sha256, Sha384, Sha512, digest};
 
@@ -215,9 +215,8 @@ impl Function<TeraResult<String>> for GetHash {
 
 #[cfg(test)]
 mod tests {
-    use super::{GetHash, GetUrl};
+    use super::{GetHash, GetUrl, HashMap};
 
-    use std::collections::HashMap;
     use std::path::PathBuf;
 
     use fs_err as fs;

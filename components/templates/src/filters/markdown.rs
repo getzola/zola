@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use ahash::AHashMap as HashMap;
 
 use config::Config;
 use markdown::{MarkdownContext, render_content};
@@ -9,12 +9,18 @@ use utils::types::InsertAnchor;
 pub struct MarkdownFilter {
     config: Config,
     permalinks: HashMap<String, String>,
+    wikilinks: HashMap<String, String>,
     tera: tera::Tera,
 }
 
 impl MarkdownFilter {
-    pub fn new(config: Config, permalinks: HashMap<String, String>, tera: tera::Tera) -> Self {
-        Self { config, permalinks, tera }
+    pub fn new(
+        config: Config,
+        permalinks: HashMap<String, String>,
+        wikilinks: HashMap<String, String>,
+        tera: tera::Tera,
+    ) -> Self {
+        Self { config, permalinks, wikilinks, tera }
     }
 }
 
@@ -55,6 +61,7 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
             tera: &self.tera,
             config: &self.config,
             permalinks: &self.permalinks,
+            wikilinks: &self.wikilinks,
             lang: &lang,
             current_permalink: &current_permalink,
             current_path: &current_path,
@@ -79,13 +86,11 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use config::{Config, HighlightConfig, HighlightStyle, Highlighting, Registry};
     use giallo::DataAttrPosition;
     use tera::{Context, Filter, Kwargs, State, Value};
 
-    use super::MarkdownFilter;
+    use super::{HashMap, MarkdownFilter};
 
     fn get_test_registry() -> Registry {
         let mut registry = Registry::builtin().unwrap();
@@ -99,8 +104,13 @@ mod tests {
         let state = State::new(&ctx);
         let kwargs = Kwargs::from([]);
 
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), tera::Tera::default())
-            .call("# Hey", kwargs, &state);
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            HashMap::new(),
+            tera::Tera::default(),
+        )
+        .call("# Hey", kwargs, &state);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), "<h1 id=\"hey\">Hey</h1>\n");
     }
@@ -111,8 +121,13 @@ mod tests {
         let state = State::new(&ctx);
         let kwargs = Kwargs::from([("inline", Value::from(true))]);
 
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), tera::Tera::default())
-            .call("Using `map`, `filter`, and `fold` instead of `for`", kwargs, &state);
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            HashMap::new(),
+            tera::Tera::default(),
+        )
+        .call("Using `map`, `filter`, and `fold` instead of `for`", kwargs, &state);
         assert!(result.is_ok());
         assert_eq!(
             result.unwrap(),
@@ -127,17 +142,22 @@ mod tests {
         let state = State::new(&ctx);
         let kwargs = Kwargs::from([("inline", Value::from(true))]);
 
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), tera::Tera::default())
-            .call(
-                r#"
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            HashMap::new(),
+            tera::Tera::default(),
+        )
+        .call(
+            r#"
 |id|author_id|       timestamp_created|title                 |content           |
 |-:|--------:|-----------------------:|:---------------------|:-----------------|
 | 1|        1|2018-09-05 08:03:43.141Z|How to train your ORM |Badly written blog|
 | 2|        1|2018-08-22 13:11:50.050Z|How to bake a nice pie|Badly written blog|
         "#,
-                kwargs,
-                &state,
-            );
+            kwargs,
+            &state,
+        );
         assert!(result.is_ok());
         assert!(result.unwrap().contains("<table>"));
     }
@@ -163,8 +183,13 @@ mod tests {
 
         let md = "Hello <https://google.com> :smile: ...";
         let kwargs = Kwargs::from([]);
-        let result = MarkdownFilter::new(config.clone(), HashMap::new(), tera::Tera::default())
-            .call(md, kwargs, &state);
+        let result = MarkdownFilter::new(
+            config.clone(),
+            HashMap::new(),
+            HashMap::new(),
+            tera::Tera::default(),
+        )
+        .call(md, kwargs, &state);
         assert!(result.is_ok());
         assert_eq!(
             result.unwrap(),
@@ -173,8 +198,9 @@ mod tests {
 
         let md = "```py\ni=0\n```";
         let kwargs = Kwargs::from([]);
-        let result = MarkdownFilter::new(config, HashMap::new(), tera::Tera::default())
-            .call(md, kwargs, &state);
+        let result =
+            MarkdownFilter::new(config, HashMap::new(), HashMap::new(), tera::Tera::default())
+                .call(md, kwargs, &state);
         assert!(result.is_ok());
         assert!(result.unwrap().contains("style"));
     }
@@ -189,8 +215,13 @@ mod tests {
         let kwargs = Kwargs::from([]);
 
         let md = "Hello. Check out [my blog](@/blog/_index.md)!";
-        let result = MarkdownFilter::new(Config::default(), permalinks, tera::Tera::default())
-            .call(md, kwargs, &state);
+        let result = MarkdownFilter::new(
+            Config::default(),
+            permalinks,
+            HashMap::new(),
+            tera::Tera::default(),
+        )
+        .call(md, kwargs, &state);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), "<p>Hello. Check out <a href=\"/foo/blog\">my blog</a>!</p>\n");
     }

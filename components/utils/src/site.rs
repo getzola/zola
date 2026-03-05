@@ -1,5 +1,5 @@
+use ahash::AHashMap as HashMap;
 use percent_encoding::percent_decode;
-use std::collections::HashMap;
 
 use errors::{Result, anyhow};
 
@@ -44,7 +44,7 @@ pub fn resolve_internal_link(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use super::*;
 
     use super::resolve_internal_link;
 
