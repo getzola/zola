@@ -2,16 +2,12 @@ use std::cmp::Ordering;
 use std::path::PathBuf;
 
 use serde::Serialize;
+use tera::Value;
 
 use ahash::AHashMap;
 use config::{Config, TaxonomyConfig};
-use errors::{Context as ErrorContext, Result};
-use tera::{Context, Tera};
 use utils::slugs::slugify_paths;
-use utils::templates::{check_template_fallbacks, render_template};
 
-use crate::library::Library;
-use crate::ser::SerializingPage;
 use crate::{Page, SortBy};
 
 use crate::sorting::sort_pages;
@@ -22,27 +18,20 @@ pub struct SerializedTaxonomyTerm<'a> {
     slug: &'a str,
     path: &'a str,
     permalink: &'a str,
-    pages: Vec<SerializingPage<'a>>,
+    pages: Vec<Value>,
     page_count: usize,
 }
 
 impl<'a> SerializedTaxonomyTerm<'a> {
-    pub fn from_item(item: &'a TaxonomyTerm, library: &'a Library, include_pages: bool) -> Self {
-        let mut pages = vec![];
-
-        if include_pages {
-            for p in &item.pages {
-                pages.push(SerializingPage::new(&library.pages[p], Some(library), false));
-            }
-        }
-
+    /// Build from pre-cached page Values (used by RenderCache)
+    pub fn from_item_with_pages(item: &'a TaxonomyTerm, pages: Vec<Value>) -> Self {
         SerializedTaxonomyTerm {
             name: &item.name,
             slug: &item.slug,
             path: &item.path,
             permalink: &item.permalink,
-            pages,
             page_count: item.pages.len(),
+            pages,
         }
     }
 }
@@ -61,24 +50,12 @@ impl TaxonomyTerm {
     pub fn new(
         name: &str,
         lang: &str,
-        taxo_slug: &str,
+        taxo: &TaxonomyConfig,
         taxo_pages: &[&Page],
         config: &Config,
     ) -> Self {
-        let item_slug = slugify_paths(name, config.slugify.taxonomies);
-        let path = if lang != config.default_language {
-            if let Some(ref taxonomy_root) = config.taxonomy_root {
-                format!("/{}/{}/{}/{}/", lang, taxonomy_root, taxo_slug, item_slug)
-            } else {
-                format!("/{}/{}/{}/", lang, taxo_slug, item_slug)
-            }
-        } else {
-            if let Some(ref taxonomy_root) = config.taxonomy_root {
-                format!("/{}/{}/{}/", taxonomy_root, taxo_slug, item_slug)
-            } else {
-                format!("/{}/{}/", taxo_slug, item_slug)
-            }
-        };
+        let slug = slugify_paths(name, config.slugify.taxonomies);
+        let path = config.get_taxonomy_term_path(lang, taxo, &slug);
         let permalink = config.make_permalink(&path);
 
         // Taxonomy are almost always used for blogs so we filter by dates
@@ -87,18 +64,7 @@ impl TaxonomyTerm {
         let (mut pages, ignored_pages) = sort_pages(taxo_pages, SortBy::Date);
         // We still append pages without dates at the end
         pages.extend(ignored_pages);
-        TaxonomyTerm { name: name.to_string(), permalink, path, slug: item_slug, pages }
-    }
-
-    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializedTaxonomyTerm<'a> {
-        SerializedTaxonomyTerm::from_item(self, library, true)
-    }
-
-    pub fn serialize_without_pages<'a>(
-        &'a self,
-        library: &'a Library,
-    ) -> SerializedTaxonomyTerm<'a> {
-        SerializedTaxonomyTerm::from_item(self, library, false)
+        TaxonomyTerm { name: name.to_string(), permalink, path, slug, pages }
     }
 
     pub fn merge(&mut self, other: Self) {
@@ -123,17 +89,16 @@ pub struct SerializedTaxonomy<'a> {
 }
 
 impl<'a> SerializedTaxonomy<'a> {
-    pub fn from_taxonomy(taxonomy: &'a Taxonomy, library: &'a Library) -> Self {
-        let items: Vec<SerializedTaxonomyTerm> = taxonomy
-            .items
-            .iter()
-            .map(|i| SerializedTaxonomyTerm::from_item(i, library, true))
-            .collect();
+    /// Build from pre-built terms (used by RenderCache)
+    pub fn from_taxonomy_with_terms(
+        taxonomy: &'a Taxonomy,
+        terms: Vec<SerializedTaxonomyTerm<'a>>,
+    ) -> Self {
         SerializedTaxonomy {
             kind: &taxonomy.kind,
             lang: &taxonomy.lang,
             permalink: &taxonomy.permalink,
-            items,
+            items: terms,
         }
     }
 }
@@ -154,7 +119,13 @@ impl Taxonomy {
         let mut sorted_items = vec![];
         let slug = tax_found.slug;
         for (name, pages) in tax_found.terms {
-            sorted_items.push(TaxonomyTerm::new(name, tax_found.lang, &slug, &pages, config));
+            sorted_items.push(TaxonomyTerm::new(
+                name,
+                tax_found.lang,
+                tax_found.config,
+                &pages,
+                config,
+            ));
         }
 
         sorted_items.sort_by(|a, b| match a.slug.cmp(&b.slug) {
@@ -173,19 +144,7 @@ impl Taxonomy {
                 false
             }
         });
-        let path = if tax_found.lang != config.default_language {
-            if let Some(ref taxonomy_root) = config.taxonomy_root {
-                format!("/{}/{}/{}/", tax_found.lang, taxonomy_root, slug)
-            } else {
-                format!("/{}/{}/", tax_found.lang, slug)
-            }
-        } else {
-            if let Some(ref taxonomy_root) = config.taxonomy_root {
-                format!("/{}/{}/", taxonomy_root, slug)
-            } else {
-                format!("/{}/", slug)
-            }
-        };
+        let path = config.get_taxonomy_path(tax_found.lang, tax_found.config);
         let permalink = config.make_permalink(&path);
 
         Taxonomy {
@@ -196,72 +155,6 @@ impl Taxonomy {
             permalink,
             items: sorted_items,
         }
-    }
-
-    pub fn render_term(
-        &self,
-        item: &TaxonomyTerm,
-        tera: &Tera,
-        config: &Config,
-        library: &Library,
-    ) -> Result<String> {
-        let context = self.build_term_context(item, config, library);
-
-        // Check for taxon-specific template, or use generic as fallback.
-        let specific_template = format!("{}/single.html", self.kind.name);
-        let template = check_template_fallbacks(&specific_template, tera, &config.theme)
-            .unwrap_or("taxonomy_single.html");
-
-        render_template(template, tera, context, &config.theme)
-            .with_context(|| format!("Failed to render single term {} page.", self.kind.name))
-    }
-
-    fn build_term_context(
-        &self,
-        item: &TaxonomyTerm,
-        config: &Config,
-        library: &Library,
-    ) -> Context {
-        let mut context = Context::new();
-        context.insert("config", &config.serialize(&self.lang));
-        context.insert("lang", &self.lang);
-        context.insert("term", &SerializedTaxonomyTerm::from_item(item, library, true));
-        context.insert("taxonomy", &self.kind);
-        context.insert("current_url", &item.permalink);
-        context.insert("current_path", &item.path);
-        context
-    }
-
-    pub fn render_all_terms(
-        &self,
-        tera: &Tera,
-        config: &Config,
-        library: &Library,
-    ) -> Result<String> {
-        let mut context = Context::new();
-        context.insert("config", &config.serialize(&self.lang));
-        let terms: Vec<SerializedTaxonomyTerm> = self
-            .items
-            .iter()
-            .map(|i| SerializedTaxonomyTerm::from_item(i, library, true))
-            .collect();
-        context.insert("terms", &terms);
-        context.insert("lang", &self.lang);
-        context.insert("taxonomy", &self.kind);
-        context.insert("current_url", &self.permalink);
-        context.insert("current_path", &self.path);
-
-        // Check for taxon-specific template, or use generic as fallback.
-        let specific_template = format!("{}/list.html", self.kind.name);
-        let template = check_template_fallbacks(&specific_template, tera, &config.theme)
-            .unwrap_or("taxonomy_list.html");
-
-        render_template(template, tera, context, &config.theme)
-            .with_context(|| format!("Failed to render a list of {} page.", self.kind.name))
-    }
-
-    pub fn to_serialized<'a>(&'a self, library: &'a Library) -> SerializedTaxonomy<'a> {
-        SerializedTaxonomy::from_taxonomy(self, library)
     }
 
     pub fn len(&self) -> usize {
@@ -292,37 +185,20 @@ impl<'a> TaxonomyFound<'a> {
 mod tests {
     use config::{Config, TaxonomyConfig};
 
-    use crate::{Library, Taxonomy, TaxonomyTerm};
+    use crate::{Taxonomy, TaxonomyTerm};
 
     use super::TaxonomyFound;
-
-    #[test]
-    fn can_build_term_context() {
-        let conf = Config::default_for_test();
-        let tax_conf = TaxonomyConfig::default();
-        let tax_found = TaxonomyFound::new("tag".into(), &conf.default_language, &tax_conf);
-        let tax = Taxonomy::new(tax_found, &conf);
-        let pages = &[];
-        let term = TaxonomyTerm::new("rust", &conf.default_language, "tags", pages, &conf);
-        let lib = Library::default();
-
-        let ctx = tax.build_term_context(&term, &conf, &lib);
-
-        assert_eq!(ctx.get("current_path").and_then(|x| x.as_str()), Some("/tags/rust/"));
-
-        let path = format!("{}{}", conf.base_url, "/tags/rust/");
-        assert_eq!(ctx.get("current_url").and_then(|x| x.as_str()), Some(path.as_str()));
-    }
 
     #[test]
     fn taxonomy_path_with_taxonomy_root() {
         let mut conf = Config::default_for_test();
         conf.taxonomy_root = Some("blog".to_string());
-        let tax_conf = TaxonomyConfig::default();
+        let mut tax_conf = TaxonomyConfig::default();
+        tax_conf.slug = "tags".to_string();
         let tax_found = TaxonomyFound::new("tags".into(), &conf.default_language, &tax_conf);
         let tax = Taxonomy::new(tax_found, &conf);
         let pages = &[];
-        let term = TaxonomyTerm::new("rust", &conf.default_language, "tags", pages, &conf);
+        let term = TaxonomyTerm::new("rust", &conf.default_language, &tax_conf, pages, &conf);
 
         // Verify taxonomy list path
         assert_eq!(tax.path, "/blog/tags/");
@@ -336,11 +212,12 @@ mod tests {
     #[test]
     fn taxonomy_path_without_taxonomy_root() {
         let conf = Config::default_for_test();
-        let tax_conf = TaxonomyConfig::default();
+        let mut tax_conf = TaxonomyConfig::default();
+        tax_conf.slug = "tags".to_string();
         let tax_found = TaxonomyFound::new("tags".into(), &conf.default_language, &tax_conf);
         let tax = Taxonomy::new(tax_found, &conf);
         let pages = &[];
-        let term = TaxonomyTerm::new("rust", &conf.default_language, "tags", pages, &conf);
+        let term = TaxonomyTerm::new("rust", &conf.default_language, &tax_conf, pages, &conf);
 
         // Verify taxonomy list path
         assert_eq!(tax.path, "/tags/");

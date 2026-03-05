@@ -6,8 +6,10 @@ use time::format_description::well_known::Rfc3339;
 use time::macros::{format_description, time};
 use time::{Date, OffsetDateTime, PrimitiveDateTime};
 
+use super::datetime::from_unknown_datetime;
 use errors::{Result, bail};
-use utils::de::{fix_toml_dates, from_unknown_datetime};
+
+use super::extra::{default_extra, deserialize_extra};
 
 use crate::front_matter::split::RawFrontMatter;
 
@@ -67,7 +69,8 @@ pub struct PageFrontMatter {
     #[serde(skip_serializing)]
     pub in_search_index: bool,
     /// Any extra parameter present in the front matter
-    pub extra: Map<String, Value>,
+    #[serde(default = "default_extra", deserialize_with = "deserialize_extra")]
+    pub extra: Value,
 }
 
 /// Parse a string for a datetime coming from one of the supported TOML format
@@ -102,11 +105,6 @@ impl PageFrontMatter {
         {
             bail!("`path` can't be empty if present")
         }
-
-        f.extra = match fix_toml_dates(f.extra) {
-            Value::Object(o) => o,
-            _ => unreachable!("Got something other than a table in page extra"),
-        };
 
         f.date_to_datetime();
 
@@ -164,7 +162,7 @@ impl Default for PageFrontMatter {
             authors: Vec::new(),
             aliases: Vec::new(),
             template: None,
-            extra: Map::new(),
+            extra: Value::from(Map::new()),
         }
     }
 }
@@ -173,7 +171,7 @@ impl Default for PageFrontMatter {
 mod tests {
     use crate::front_matter::page::PageFrontMatter;
     use crate::front_matter::split::RawFrontMatter;
-    use tera::to_value;
+    use tera::Value;
     use test_case::test_case;
     use time::macros::datetime;
 
@@ -444,7 +442,10 @@ extra:
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap().extra["some-date"], to_value("2002-11-01").unwrap());
+        assert_eq!(
+            res.unwrap().extra.as_map().unwrap().get(&"some-date".into()).unwrap(),
+            &Value::from("2002-11-01")
+        );
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -466,7 +467,19 @@ extra:
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap().extra["something"]["some-date"], to_value("2002-11-01").unwrap());
+        assert_eq!(
+            res.unwrap()
+                .extra
+                .as_map()
+                .unwrap()
+                .get(&"something".into())
+                .unwrap()
+                .as_map()
+                .unwrap()
+                .get(&"some-date".into())
+                .unwrap(),
+            &Value::from("2002-11-01")
+        );
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -493,7 +506,21 @@ extra:
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_ok());
-        assert_eq!(res.unwrap().extra["questions"][0]["date"], to_value("2020-05-03").unwrap());
+        assert_eq!(
+            res.unwrap()
+                .extra
+                .as_map()
+                .unwrap()
+                .get(&"questions".into())
+                .unwrap()
+                .as_vec()
+                .unwrap()[0]
+                .as_map()
+                .unwrap()
+                .get(&"date".into())
+                .unwrap(),
+            &Value::from("2020-05-03")
+        );
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"

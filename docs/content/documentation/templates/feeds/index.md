@@ -66,21 +66,25 @@ As an example this is how it looks like using [Firefox](https://en.wikipedia.org
 ![RSS feed autodiscovery example.](rss_feed.png)
 
 You can enable posts autodiscovery modifying your blog `base.html` template adding the following code in between the `<head>` tags.
-```html
+```jinja
+{% raw -%}
 {% block rss %}
-  <link rel="alternate" type="application/rss+xml" title="RSS" href="{{/* get_url(path="rss.xml", trailing_slash=false) */}}">
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ get_url(path="rss.xml", trailing_slash=false) }}">
 {% endblock %}
+{%- endraw -%}
 ```
 You can as well use an Atom feed using `type="application/atom+xml"` and `path="atom.xml"`.
 
 All pages on your site will refer to your post feed.
 
 In order to enable the tag feeds as well, you can overload the `block rss` using the following code in your `tags/single.html` template.
-```html
+```jinja
+{% raw -%}
 {% block rss %}
   {% set rss_path = "tags/" ~ term.name ~ "/rss.xml" %}
-  <link rel="alternate" type="application/rss+xml" title="RSS" href="{{/* get_url(path=rss_path, trailing_slash=false) */}}">
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ get_url(path=rss_path, trailing_slash=false) }}">
 {% endblock rss %}
+{%- endraw -%}
 ```
 Each tag page will refer to it's dedicated feed.
 

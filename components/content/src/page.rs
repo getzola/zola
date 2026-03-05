@@ -1,23 +1,16 @@
 /// A page, can be a blog post or a basic page
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use once_cell::sync::Lazy;
 use regex::Regex;
-use tera::{Context as TeraContext, Tera};
+use std::sync::LazyLock;
 
 use config::Config;
-use errors::{Context, Result};
-use markdown::{RenderContext, render_content};
+use errors::Result;
 use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
-use utils::templates::{ShortcodeDefinition, render_template};
-use utils::types::InsertAnchor;
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{PageFrontMatter, split_page_content};
-use crate::library::Library;
-use crate::ser::SerializingPage;
 use crate::utils::get_reading_analytics;
 use crate::utils::{find_related_assets, has_anchor};
 use utils::anchors::has_anchor_id;
@@ -25,7 +18,7 @@ use utils::fs::read_file;
 
 // Based on https://regex101.com/r/H2n38Z/1/tests
 // A regex parsing RFC3339 date followed by {_,-} and some characters
-static RFC3339_DATE: Lazy<Regex> = Lazy::new(|| {
+static RFC3339_DATE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
         r"^(?P<datetime>(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(Z|(\+|-)([01][0-9]|2[0-3]):([0-5][0-9])))?)(\s?(_|-)(?P<slug>.+$))?"
     ).unwrap()
@@ -124,11 +117,8 @@ impl Page {
         };
 
         if let Some(ref caps) = RFC3339_DATE.captures(&file_path_for_slug) {
-            if caps.name("slug").is_some() {
-                if !config.slugify.paths_keep_dates {
-                    slug_from_dated_filename =
-                        Some(caps.name("slug").unwrap().as_str().to_string());
-                }
+            if caps.name("slug").is_some() && !config.slugify.paths_keep_dates {
+                slug_from_dated_filename = Some(caps.name("slug").unwrap().as_str().to_string());
             }
             if page.meta.date.is_none() {
                 page.meta.date = Some(caps.name("datetime").unwrap().as_str().to_string());
@@ -183,8 +173,6 @@ impl Page {
         Ok(page)
     }
 
-    pub fn find_language(&mut self) {}
-
     /// Read and parse a .md file into a Page struct
     pub fn from_file<P: AsRef<Path>>(path: P, config: &Config, base_path: &Path) -> Result<Page> {
         let path = path.as_ref();
@@ -202,59 +190,6 @@ impl Page {
         Ok(page)
     }
 
-    /// We need access to all pages url to render links relative to content
-    /// so that can't happen at the same time as parsing
-    pub fn render_markdown(
-        &mut self,
-        permalinks: &HashMap<String, String>,
-        tera: &Tera,
-        config: &Config,
-        anchor_insert: InsertAnchor,
-        shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
-    ) -> Result<()> {
-        let mut context = RenderContext::new(
-            tera,
-            config,
-            &self.lang,
-            &self.permalink,
-            permalinks,
-            anchor_insert,
-        );
-        context.set_shortcode_definitions(shortcode_definitions);
-        context.set_current_page_path(&self.file.relative);
-        context.tera_context.insert("page", &SerializingPage::new(self, None, false));
-
-        let res = render_content(&self.raw_content, &context)
-            .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
-
-        self.summary = res.summary;
-        self.content = res.body;
-        self.toc = res.toc;
-        self.external_links = res.external_links;
-        self.internal_links = res.internal_links;
-
-        Ok(())
-    }
-
-    /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
-        let tpl_name = match self.meta.template {
-            Some(ref l) => l,
-            None => "page.html",
-        };
-
-        let mut context = TeraContext::new();
-        context.insert("config", &config.serialize(&self.lang));
-        context.insert("current_url", &self.permalink);
-        context.insert("current_path", &self.path);
-        context.insert("zola_version", env!("CARGO_PKG_VERSION"));
-        context.insert("page", &self.serialize(library));
-        context.insert("lang", &self.lang);
-
-        render_template(tpl_name, tera, context, &config.theme)
-            .with_context(|| format!("Failed to render page '{}'", self.file.path.display()))
-    }
-
     /// Creates a vectors of asset URLs.
     fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
         self.assets
@@ -269,7 +204,7 @@ impl Page {
                 path.push(filename);
                 path = path
                     .strip_prefix(base_path.join("content"))
-                    .expect("Should be able to stripe prefix")
+                    .expect("Should be able to strip prefix")
                     .to_path_buf();
                 path
             })
@@ -284,31 +219,20 @@ impl Page {
     pub fn has_anchor_id(&self, id: &str) -> bool {
         has_anchor_id(&self.content, id)
     }
-
-    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
-        SerializingPage::new(self, Some(library), true)
-    }
-
-    pub fn serialize_without_siblings<'a>(&'a self, library: &'a Library) -> SerializingPage<'a> {
-        SerializingPage::new(self, Some(library), false)
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use std::fs::{File, create_dir};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
+    use fs_err as fs;
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
-    use templates::ZOLA_TERA;
 
     use crate::Page;
     use config::{Config, LanguageOptions};
     use utils::slugs::SlugifyStrategy;
-    use utils::types::InsertAnchor;
 
     #[test]
     fn can_parse_a_valid_page() {
@@ -322,20 +246,11 @@ slug = "hello-world"
 Hello world"#;
         let res = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
-        let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
+        let page = res.unwrap();
 
         assert_eq!(page.meta.title.unwrap(), "Hello".to_string());
         assert_eq!(page.meta.slug.unwrap(), "hello-world".to_string());
-        assert_eq!(page.raw_content, "Hello world".to_string());
-        assert_eq!(page.content, "<p>Hello world</p>\n".to_string());
+        assert_eq!(page.raw_content, "Hello world");
     }
 
     #[test]
@@ -350,15 +265,7 @@ authors = ["person@example.com (A. Person)"]
 Hello world"#;
         let res = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new());
         assert!(res.is_ok());
-        let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
+        let page = res.unwrap();
 
         assert_eq!(1, page.meta.authors.len());
         assert_eq!("person@example.com (A. Person)", page.meta.authors.get(0).unwrap());
@@ -510,133 +417,18 @@ Hello world"#;
     }
 
     #[test]
-    fn can_specify_summary() {
-        let config = Config::default_for_test();
-        let content = r#"
-+++
-+++
-Hello world
-<!-- more -->"#
-            .to_string();
-        let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
-        assert!(res.is_ok());
-        let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
-        assert_eq!(page.summary, Some("<p>Hello world</p>".to_string()));
-    }
-
-    #[test]
-    fn strips_footnotes_in_summary() {
-        let mut config = Config::default_for_test();
-        let content = r#"
-+++
-+++
-This page use <sup>1.5</sup> and has footnotes, here's one. [^1]
-
-Here's another. [^2]
-
-<!-- more -->
-
-And here's another. [^3]
-
-[^1]: This is the first footnote.
-
-[^2]: This is the second footnote.
-
-[^3]: This is the third footnote."#
-            .to_string();
-        let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
-        assert!(res.is_ok());
-        let mut page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
-        assert_eq!(
-            page.summary,
-            Some("<p>This page use <sup>1.5</sup> and has footnotes, here\'s one. </p>\n<p>Here's another. </p>".to_string())
-        );
-        assert_eq!(
-            page.content,
-            r##"<p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference"><a href="#1">1</a></sup></p>
-<p>Here's another. <sup class="footnote-reference"><a href="#2">2</a></sup></p>
-<span id="continue-reading"></span>
-<p>And here's another. <sup class="footnote-reference"><a href="#3">3</a></sup></p>
-<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
-<p>This is the first footnote.</p>
-</div>
-<div class="footnote-definition" id="2"><sup class="footnote-definition-label">2</sup>
-<p>This is the second footnote.</p>
-</div>
-<div class="footnote-definition" id="3"><sup class="footnote-definition-label">3</sup>
-<p>This is the third footnote.</p>
-</div>
-"##
-        );
-
-        let res = Page::parse(Path::new("hello.md"), &content, &config, &PathBuf::new());
-        assert!(res.is_ok());
-        config.markdown.bottom_footnotes = true;
-        page = res.unwrap();
-        page.render_markdown(
-            &HashMap::default(),
-            &ZOLA_TERA,
-            &config,
-            InsertAnchor::None,
-            &HashMap::new(),
-        )
-        .unwrap();
-        assert_eq!(
-            page.summary,
-            Some("<p>This page use <sup>1.5</sup> and has footnotes, here's one. </p>\n<p>Here's another. </p>".to_string())
-        );
-        assert_eq!(
-            page.content,
-            r##"<p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">1</a></sup></p>
-<p>Here's another. <sup class="footnote-reference" id="fr-2-1"><a href="#fn-2">2</a></sup></p>
-<span id="continue-reading"></span>
-<p>And here's another. <sup class="footnote-reference" id="fr-3-1"><a href="#fn-3">3</a></sup></p>
-<section class="footnotes">
-<ol class="footnotes-list">
-<li id="fn-1">
-<p>This is the first footnote. <a href="#fr-1-1">↩</a></p>
-</li>
-<li id="fn-2">
-<p>This is the second footnote. <a href="#fr-2-1">↩</a></p>
-</li>
-<li id="fn-3">
-<p>This is the third footnote. <a href="#fr-3-1">↩</a></p>
-</li>
-</ol>
-</section>
-"##
-        );
-    }
-
-    #[test]
     fn page_with_assets_gets_right_info() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
@@ -652,15 +444,15 @@ And here's another. [^3]
     fn page_with_assets_and_slug_overrides_path() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
@@ -676,15 +468,15 @@ And here's another. [^3]
     fn page_with_assets_uses_filepath_for_assets() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with_assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
@@ -702,15 +494,15 @@ And here's another. [^3]
     fn page_with_assets_and_date_in_folder_name() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("2013-06-02_with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\n\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Page::from_file(nested_path.join("index.md").as_path(), &Config::default(), path);
         assert!(res.is_ok());
@@ -726,15 +518,15 @@ And here's another. [^3]
     fn page_with_ignored_assets_filters_out_correct_files() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("index.md")).unwrap();
         f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let mut gsb = GlobSetBuilder::new();
         gsb.add(Glob::new("*.{js,png}").unwrap());
@@ -754,15 +546,15 @@ And here's another. [^3]
     fn colocated_page_with_slug_and_date_in_path() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
         let articles_path = path.join("content").join("articles");
-        create_dir(&articles_path).expect("create posts temp dir");
+        fs::create_dir(&articles_path).expect("create posts temp dir");
 
         let config = Config::default();
 
         // first a non-colocated one
         let file_path = articles_path.join("2021-07-29-sample-article-1.md");
-        let mut f = File::create(&file_path).unwrap();
+        let mut f = fs::File::create(&file_path).unwrap();
         f.write_all(b"+++\nslug=\"hey\"\n+++\n").unwrap();
         let res = Page::from_file(&file_path, &config, path);
         assert!(res.is_ok());
@@ -771,8 +563,8 @@ And here's another. [^3]
 
         // then a colocated one, it should still work
         let dir_path = articles_path.join("2021-07-29-sample-article-2.md");
-        create_dir(&dir_path).expect("create posts temp dir");
-        let mut f = File::create(&dir_path.join("index.md")).unwrap();
+        fs::create_dir(&dir_path).expect("create posts temp dir");
+        let mut f = fs::File::create(&dir_path.join("index.md")).unwrap();
         f.write_all(b"+++\nslug=\"ho\"\n+++\n").unwrap();
         let res = Page::from_file(&dir_path.join("index.md"), &config, path);
         assert!(res.is_ok());

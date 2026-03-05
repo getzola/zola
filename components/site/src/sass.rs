@@ -1,4 +1,4 @@
-use std::fs::create_dir_all;
+use fs_err as fs;
 use std::path::{Path, PathBuf};
 
 use globset::Glob;
@@ -30,7 +30,7 @@ pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
         let css_output_path = output_path.join(path_inside_sass).with_extension("css");
 
         if parent_inside_sass.is_some() {
-            create_dir_all(css_output_path.parent().unwrap())?;
+            fs::create_dir_all(css_output_path.parent().unwrap())?;
         }
 
         create_file(&css_output_path, &css)?;
