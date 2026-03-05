@@ -5,6 +5,7 @@ use std::path::Path;
 
 pub use crate::config::{
     Config,
+    image_compression::{ImageCompression, ImageFormat},
     languages::LanguageOptions,
     link_checker::LinkChecker,
     link_checker::LinkCheckerLevel,

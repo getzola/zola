@@ -29,6 +29,9 @@ content = { workspace = true }
 render = { workspace = true }
 markdown = { workspace = true }
 memchr = { workspace = true }
+perceptual-image = { version = "0.1.0", features = ["jpeg", "avif", "webp"] }
+image.workspace = true
+aho-corasick = "1.1.4"
 
 [dev-dependencies]
 tempfile = "3"
