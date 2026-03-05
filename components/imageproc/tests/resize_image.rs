@@ -459,7 +459,9 @@ fn read_image_metadata_jpg() {
             width: 300,
             height: 380,
             format: Some("jpg"),
-            mime: Some("image/jpeg")
+            mime: Some("image/jpeg"),
+            description: Some("Description for jpg.jpg".to_string()),
+            created: Some("2025:01:15 12:34:56".to_string()),
         }
     );
 }
@@ -468,7 +470,14 @@ fn read_image_metadata_jpg() {
 fn read_image_metadata_png() {
     assert_eq!(
         image_meta_test("png.png"),
-        ImageMetaResponse { width: 300, height: 380, format: Some("png"), mime: Some("image/png") }
+        ImageMetaResponse {
+            width: 300,
+            height: 380,
+            format: Some("png"),
+            mime: Some("image/png"),
+            description: None,
+            created: None,
+        }
     );
 }
 
@@ -480,7 +489,9 @@ fn read_image_metadata_svg() {
             width: 300,
             height: 300,
             format: Some("svg"),
-            mime: Some("text/svg+xml")
+            mime: Some("text/svg+xml"),
+            description: None,
+            created: None,
         }
     );
 }
@@ -493,7 +504,9 @@ fn read_image_metadata_webp() {
             width: 300,
             height: 380,
             format: Some("webp"),
-            mime: Some("image/webp")
+            mime: Some("image/webp"),
+            description: None,
+            created: None,
         }
     );
 }
@@ -506,7 +519,9 @@ fn read_image_metadata_avif() {
             width: 300,
             height: 380,
             format: Some("avif"),
-            mime: Some("image/avif")
+            mime: Some("image/avif"),
+            description: None,
+            created: None,
         }
     );
 }
@@ -515,11 +530,15 @@ fn read_image_metadata_avif() {
 fn get_rotated_size_test() {
     fn is_landscape(img_name: &str) -> bool {
         let path = TEST_IMGS.join(img_name);
+        let path = &*path;
         let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
         let (mut w, mut h) = decoder.dimensions();
         w += 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
-        let metadata = decoder.exif_metadata().unwrap();
-        (w, h) = get_rotated_size(w, h, metadata).unwrap_or((w, h));
+        let metadata = decoder
+            .exif_metadata()
+            .unwrap()
+            .and_then(|raw_metadata| exif::Reader::new().read_raw(raw_metadata).ok());
+        (w, h) = get_rotated_size(w, h, metadata.as_ref()).unwrap_or(None).unwrap_or((w, h));
         w > h
     }
     assert!(is_landscape("exif_0.jpg"));
@@ -537,10 +556,14 @@ fn get_rotated_size_test() {
 fn fix_orientation_test() {
     fn load_img_and_fix_orientation(img_name: &str) -> DynamicImage {
         let path = TEST_IMGS.join(img_name);
+        let path = &*path;
         let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
-        let metadata = decoder.exif_metadata().unwrap();
+        let metadata = decoder
+            .exif_metadata()
+            .unwrap()
+            .and_then(|raw_metadata| exif::Reader::new().read_raw(raw_metadata).ok());
         let img = DynamicImage::from_decoder(decoder).unwrap();
-        fix_orientation(&img, metadata).unwrap_or(img)
+        fix_orientation(&img, metadata.as_ref()).unwrap_or(None).unwrap_or(img)
     }
 
     let img = image::open(TEST_IMGS.join("exif_1.jpg")).unwrap();
