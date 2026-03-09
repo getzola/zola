@@ -3,14 +3,14 @@
 title = "xuan"
 description = "Modern, pretty, and clean theme"
 template = "theme.html"
-date = 2025-12-14T15:52:42+08:00
+date = 2026-02-25T00:58:14+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-12-14T15:52:42+08:00
-updated = 2025-12-14T15:52:42+08:00
+created = 2026-02-25T00:58:14+08:00
+updated = 2026-02-25T00:58:14+08:00
 repository = "https://github.com/jhq223/xuan.git"
 homepage = "https://github.com/jhq223/xuan"
 minimum_version = "0.21.0"
