@@ -34,7 +34,10 @@ pub fn render_feeds(
     base_path: Option<&PathBuf>,
     additional_context_fn: impl Fn(Context) -> Context,
 ) -> Result<Option<Vec<String>>> {
-    let mut pages = all_pages.into_iter().filter(|p| p.meta.date.is_some()).collect::<Vec<_>>();
+    let mut pages = all_pages
+        .into_iter()
+        .filter(|p| p.meta.date.is_some() && p.meta.generate_feeds)
+        .collect::<Vec<_>>();
 
     pages.par_sort_unstable_by(|a, b| {
         let ord = b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap());
