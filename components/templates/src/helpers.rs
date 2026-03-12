@@ -14,14 +14,13 @@ use utils::fs::is_path_in_directory;
 ///
 /// A path starting with @/ will replace it with `content/` and a path starting with `/` will have
 /// it removed.
-/// It also returns the unified path so it can be used as unique hash for a given file.
 /// It will error if the file is not contained in the Zola directory.
 pub fn search_for_file(
     base_path: &Path,
     path: &str,
     theme: &Option<String>,
     output_path: &Path,
-) -> Result<Option<(PathBuf, String)>> {
+) -> Result<Option<PathBuf>> {
     let mut search_paths =
         vec![base_path.join("static"), base_path.join("content"), base_path.join(output_path)];
     if let Some(t) = theme {
@@ -52,5 +51,5 @@ pub fn search_for_file(
         }
     }
 
-    if file_exists { Ok(Some((file_path, actual_path.into_owned()))) } else { Ok(None) }
+    if file_exists { Ok(Some(file_path)) } else { Ok(None) }
 }

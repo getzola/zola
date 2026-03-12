@@ -49,9 +49,9 @@ Zola performs image processing during the build process and places the resized i
 static/processed_images/
 ```
 
-The filename of each resized image is a hash of the function arguments,
+The filename of each resized image is a hash of the input file contents and the other `resize_image` arguments,
 which means that once an image is resized in a certain way, it will be stored in the above directory and will not
-need to be resized again during subsequent builds (unless the image itself, the dimensions, or other arguments have changed).
+need to be resized again during subsequent builds (unless the input file contents or other `resize_image` arguments have changed).
 
 The function returns an object with the following schema:
 
