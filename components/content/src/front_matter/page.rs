@@ -66,6 +66,10 @@ pub struct PageFrontMatter {
     /// Defaults to `true` but is only used if search if explicitly enabled in the config.
     #[serde(skip_serializing)]
     pub in_search_index: bool,
+    /// Whether the page is included in feeds (RSS/Atom)
+    /// Defaults to `true`
+    #[serde(skip_serializing)]
+    pub generate_feeds: bool,
     /// Any extra parameter present in the front matter
     pub extra: Map<String, Value>,
 }
@@ -147,6 +151,7 @@ impl Default for PageFrontMatter {
     fn default() -> PageFrontMatter {
         PageFrontMatter {
             in_search_index: true,
+            generate_feeds: true,
             title: None,
             description: None,
             updated: None,
@@ -183,6 +188,26 @@ mod tests {
         let res = PageFrontMatter::parse(content);
         println!("{:?}", res);
         assert!(res.is_ok());
+    }
+
+    #[test]
+    fn generate_feeds_defaults_to_true() {
+        let content = &RawFrontMatter::Toml(r#"title = "Hello""#);
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(res.generate_feeds);
+    }
+
+    #[test_case(&RawFrontMatter::Toml(r#"
+title = "Hello"
+generate_feeds = false
+"#); "toml")]
+    #[test_case(&RawFrontMatter::Yaml(r#"
+title: Hello
+generate_feeds: false
+"#); "yaml")]
+    fn can_disable_generate_feeds(content: &RawFrontMatter) {
+        let res = PageFrontMatter::parse(content).unwrap();
+        assert!(!res.generate_feeds);
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
