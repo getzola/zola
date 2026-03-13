@@ -3,23 +3,23 @@
 title = "Bear"
 description = "Bear blog theme"
 template = "theme.html"
-date = 2025-10-18T20:31:47+02:00
+date = 2026-02-24T15:58:49+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-10-18T20:31:47+02:00
-updated = 2025-10-18T20:31:47+02:00
+created = 2026-02-24T15:58:49+01:00
+updated = 2026-02-24T15:58:49+01:00
 repository = "https://codeberg.org/alanpearce/zola-bearblog.git"
-homepage = "https://codeberg.org/alanpearce/zola-bearblog"
+homepage = "https://codeberg.org/alinnow/zola-bearblog"
 minimum_version = "0.4.0"
 license = "MIT"
-demo = "https://zola-bearblog.alanpearce.eu/"
+demo = "https://zola-bearblog.alin.ovh/"
 
 [extra.author]
-name = "Alan Pearce"
-homepage = "https://alanpearce.eu"
+name = "Alin"
+homepage = "https://alin.ovh"
 +++        
 
 # Zola ʕ•ᴥ•ʔ Bear Blog

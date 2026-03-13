@@ -3,14 +3,14 @@
 title = "tabi"
 description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2026-02-03T17:31:00+01:00
+date = 2026-03-09T01:44:49+09:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-02-03T17:31:00+01:00
-updated = 2026-02-03T17:31:00+01:00
+created = 2026-03-09T01:44:49+09:00
+updated = 2026-03-09T01:44:49+09:00
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -146,9 +146,9 @@ title = "Your Site Title"
 4. Configure code block highlighting in your `config.toml`:
 
 ```toml
-[markdown]
-highlight_code = true
-highlight_theme = "css"
+[markdown.highlighting]
+theme = "catppuccin-frappe"
+style = "class"
 ```
 
 5. Create a `content/_index.md` file. This file controls how your home page looks and behaves. Choose one of the following options:
@@ -244,6 +244,7 @@ git pull
 | [tzinm.me](https://tzinm.me/) | [Tzinm](https://github.com/tzinm) | Personal blog | [Source](https://codeberg.org/tzinm/blog) |
 | [b1n.io](https://b1n.io) | [b1nhack](https://github.com/b1nhack) | Linux kernel vulnerability researcher | [Source](https://github.com/b1nhack/blog) |
 | [posixlycorrect.com](https://posixlycorrect.com/) | [Fabian Montero](https://git.posixlycorrect.com/fabian) | Personal homepage | [Source](https://git.posixlycorrect.com/fabian/homepage) |
+| [Coded Chords](https://codedchords.dev/) | [yostos](https://github.com/yostos) | Personal tech blog | [Source](https://github.com/yostos/blog-yostos) |
 
 Using tabi? Feel free to create a PR and add your site to this list.
 

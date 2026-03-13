@@ -3,19 +3,19 @@
 title = "Zolarwind"
 description = "A GDPR-friendly Zola blog theme: no third-party requests, Tailwind CSS, KaTeX, Mermaid, localization"
 template = "theme.html"
-date = 2026-02-08T18:02:55+01:00
+date = 2026-03-03T13:22:37+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-02-08T18:02:55+01:00
-updated = 2026-02-08T18:02:55+01:00
+created = 2026-03-03T13:22:37+01:00
+updated = 2026-03-03T13:22:37+01:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
 minimum_version = "0.22.1"
 license = "MIT"
-demo = "https://pureandroid.com"
+demo = "https://weitzel.dev"
 
 [extra.author]
 name = "Thomas Weitzel"
@@ -46,13 +46,13 @@ Localization is built-in for a single-locale build.
 - **Localization Support**: Theme strings live in language files; pick the one you want.
   If your language isn't supported yet, just create the resource file with your translations.
 
-- **Dark/Light Mode**: Includes a dark/light toggle and persists the preference after a user toggle.
+- **Dark/Light Mode**: Includes a dark/light toggle and persists the preference for the session after a user toggle.
 
 - **Client-side Search**: Built-in search page powered by Zola's index and MiniSearch.
 
 - **Series Support**: Group posts into a series taxonomy with ordered navigation on series posts.
 
-- **Artalk Comments**: Optional integration with a self-hosted Artalk server. See [docs/artalk.md](docs/artalk.md).
+- **Artalk Comments**: Optional integration with a self-hosted Artalk server. See `docs/artalk.md`.
 
 ---
 
@@ -83,7 +83,6 @@ This theme is not compatible with Zola v0.21.0 and earlier.
   - Fields description
 - Series
 - Shortcodes
-- Light/Dark Images
 - Search
 - Localization
 - Integrating the theme folder
@@ -99,8 +98,8 @@ This theme is not compatible with Zola v0.21.0 and earlier.
 
 ## Demo Website
 
-You can see the theme on the [demo website](https://pureandroid.com).
-The site uses the German language.
+You can see the theme on the [demo website](https://weitzel.dev).
+Additionally, there is a [demo in German](https://pureandroid.com).
 
 ---
 
@@ -183,9 +182,10 @@ Configuration settings used by this theme:
 
 - **light_theme** and **dark_theme**: The themes used for code highlighting in light and dark mode.
   Zola writes `giallo-light.css` and `giallo-dark.css` into `static/`.
-  The base template loads both files and switches them based on the selected theme.
+  Templates load both files and switch them based on the selected theme.
   If you want the same style in both modes, set both to the same theme.
-  Zolarwind expects both values to be set, because the template loads both highlight files.
+  Zolarwind expects both values to be set, because the highlight files are loaded on templates that render Markdown content (posts/pages).
+  If you add code blocks directly in other templates, include the highlight files there as well.
   Note: If you change `light_theme` or `dark_theme`, delete `static/giallo-light.css` and `static/giallo-dark.css` and run `zola build` to regenerate them; Zola does not overwrite existing giallo files.
 
 - **error_on_missing_language**: If the language to be highlighted is not found, how should Zola handle this? Set to `true` so missing languages cause a build error.
@@ -237,6 +237,15 @@ The `[extra]` section is where you can place any custom variables you want to be
 - **social_links**: Optional.
   An array of social media links.
   Each link has a name, a boolean indicating if it's enabled, a URL, and an SVG icon.
+
+- **toc**: Optional.
+  Default toggle for the in-page table of contents when a page does not set `extra.toc` in front matter.
+  Defaults to `false` when omitted.
+
+- **toc_levels**: Optional.
+  Default heading level range for the in-page table of contents.
+  Defaults to `{ min = 2, max = 3 }` when omitted.
+  Valid range is `1..6` and `min` must be `<= max` (values are clamped to this range).
 
 - **displaymode.sun** and **displaymode.moon**: Optional.
   Inline SVG icons used by the dark/light mode toggle.
@@ -332,6 +341,16 @@ image = "banner.jpg"
   If set to `true`, the post will be rendered with Mermaid support for displaying diagrams
   by using the `diagram()` shortcode.
 
+- **extra.toc**: either `false` (default) or `true`.
+  Enables the in-page table of contents for this post/page.
+  If omitted, the global `extra.toc` default is used.
+  For a consistent TOC, start content headings at `##` and then nest only in ascending order (`##` → `###` → `####` → `#####` → `######`).
+
+- **extra.toc_levels**: Optional.
+  Per-page override for the heading level range used by the table of contents.
+  When omitted, the global `extra.toc_levels` default is used.
+  Values outside `1..6` are clamped.
+
 - **extra.image**: an optional image for the post.
   If omitted, a default image is used instead.
   The image is displayed on the blog's main page and on the post's detail page.
@@ -367,25 +386,13 @@ Note: If no posts use the `series` taxonomy, Zola does not generate `/series/`, 
 ## Shortcodes
 
 Zolarwind provides some shortcodes. Use them when you want the feature, not as formatting helpers.
+Full documentation with parameters and examples: `docs/shortcodes.md`.
 
-- **katex**: render math without Markdown interfering with characters like `*` or backslashes.
-  Use this when you want safe math and do not include `$`/`$$` delimiters inside the shortcode body.
-
-- **diagram**: render Mermaid diagrams. Use this when `extra.diagram = true` on the post.
-
----
-
-## Light/Dark Images
-
-If you want images that switch with the theme, wrap two images in a container using class `light-dark-image`.
-The first image is shown in light mode, the second in dark mode:
-
-```html
-<div class="light-dark-image">
-  <img src="example-light.webp" alt="Example image" />
-  <img src="example-dark.webp" alt="Example image" />
-</div>
-```
+- **katex**: render KaTeX safely when Markdown would interfere with math syntax.
+- **diagram**: render Mermaid diagrams from fenced text blocks.
+- **image**: render local images with captions and optional light/dark variants.
+- **audio_simple**: native `<audio>` player in a themed card.
+- **audio**: custom audio player using the bundled JS controls.
 
 ---
 
@@ -526,7 +533,7 @@ It will stay in its original location.
 Zola always serves the site’s `static/` directory, even when a theme is used.
 This file is generated from the file `css/main.css`, which is the input for the CSS generation.
 
-The `giallo-dark.css` and `giallo-light.css` files also stay in the root `static/` directory, because the base template loads them from there.
+The `giallo-dark.css` and `giallo-light.css` files also stay in the root `static/` directory, because templates load them from there.
 
 The generation process can be triggered with a script in the `package.json` file.
 You **only** need to adjust and run the script in `package.json` if you make changes to the theme's template files or use new Tailwind CSS classes directly in your content files.
@@ -594,7 +601,7 @@ script (`npm run css:watch`). The browser reloads with updated CSS when files ar
 
 ## Privacy
 
-This theme sets no cookies and does not load resources from third-party sites. The dark/light mode preference is stored in `localStorage` only after a user explicitly toggles the theme.
+This theme sets no cookies and does not load resources from third-party sites. The dark/light mode preference is stored in `sessionStorage` only after a user explicitly toggles the theme.
 
 KaTeX, Mermaid, and MiniSearch are bundled in `static/` so they can be served from your own domain and remain pinned to known versions.
 If you instead load them from a Content Delivery Network (CDN), consider the following GDPR implications:

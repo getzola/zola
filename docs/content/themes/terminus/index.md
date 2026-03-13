@@ -3,17 +3,17 @@
 title = "terminus"
 description = "A dark duotone retro theme for Zola"
 template = "theme.html"
-date = 2025-12-28T23:40:32-05:00
+date = 2026-03-07T15:47:17+01:00
 
 [taxonomies]
 theme-tags = ['dark', 'blog', 'minimal', 'personal', 'responsive', 'seo']
 
 [extra]
-created = 2025-12-28T23:40:32-05:00
-updated = 2025-12-28T23:40:32-05:00
+created = 2026-03-07T15:47:17+01:00
+updated = 2026-03-07T15:47:17+01:00
 repository = "https://github.com/ebkalderon/terminus.git"
 homepage = "https://github.com/ebkalderon/terminus"
-minimum_version = "0.20.0"
+minimum_version = "0.22.0"
 license = "MIT"
 demo = "https://ebkalderon.github.io/terminus/"
 

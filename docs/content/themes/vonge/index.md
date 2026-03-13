@@ -3,14 +3,14 @@
 title = "Vonge"
 description = "Vonge is a Personal portfolio/blog site template"
 template = "theme.html"
-date = 2025-09-22T10:26:09+01:00
+date = 2026-02-17T21:06:42+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-09-22T10:26:09+01:00
-updated = 2025-09-22T10:26:09+01:00
+created = 2026-02-17T21:06:42+01:00
+updated = 2026-02-17T21:06:42+01:00
 repository = "https://github.com/paberr/vonge-zola-theme"
 homepage = "https://github.com/paberr/vonge-zola-theme/"
 minimum_version = "0.4.0"
@@ -88,6 +88,10 @@ content_blocks = [
 ```
 
 You can create your own custom blocks or extend existing ones by editing the theme's templates and SCSS.
+
+## 📖 Documentation
+
+For a full reference of all configuration options, content blocks, and page variables, see [DOCUMENTATION.md](DOCUMENTATION.md).
 
 ## 🙏 Acknowledgements
 

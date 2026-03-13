@@ -3,14 +3,14 @@
 title = "Portio-Zola"
 description = "Portio-Zola is a minimal, well-formatted and extremely flexible theme"
 template = "theme.html"
-date = 2026-01-17T14:28:54+01:00
+date = 2026-02-18T21:50:30+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-17T14:28:54+01:00
-updated = 2026-01-17T14:28:54+01:00
+created = 2026-02-18T21:50:30+01:00
+updated = 2026-02-18T21:50:30+01:00
 repository = "https://github.com/quentin-rodriguez/portio-zola.git"
 homepage = "https://github.com/quentin-rodriguez/portio-zola.git"
 minimum_version = "0.21.0"
@@ -73,7 +73,7 @@ git submodule add https://github.com/quentin-rodriguez/portio-zola.git themes/po
 git clone https://github.com/quentin-rodriguez/portio-zola.git themes/portio-zola
 ```
 
-4. Copy the theme's `config.toml` file into your project
+4. Copy the theme's `config.toml` file into your project root
 
 ```sh
 cp themes/portio-zola/config.toml .
@@ -85,11 +85,14 @@ cp themes/portio-zola/config.toml .
 theme = "portio-zola"
 ```
 
-6. Copy the theme `content` folder directly into the project
+6. Copy the theme `content` and `static` folders directly into your project root
 
 ```sh
 cp -r themes/portio-zola/content/ content/
+cp -r themes/portio-zola/static/ static/
 ```
+
+7. (Optional) Depending on the language set as `default_language`, the `_index.md` files must correspond to the appropriate language.
 
 ## 📥 Deployment
 
