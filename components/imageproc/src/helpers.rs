@@ -9,12 +9,14 @@ use exif::Exif;
 use image::DynamicImage;
 
 #[derive(Debug)]
+pub struct ExifNoSuchFieldError {
+    tag: exif::Tag,
+    ifd_num: exif::In,
+}
+
+#[derive(Debug)]
 pub enum ExifError<'a> {
-    MissingMetadata,
-    NoSuchField {
-        tag: exif::Tag,
-        ifd_num: exif::In,
-    },
+    NoSuchField(ExifNoSuchFieldError),
     UnexpectedFieldType {
         tag: exif::Tag,
         ifd_num: exif::In,
@@ -27,13 +29,16 @@ pub enum ExifError<'a> {
     },
 }
 
+impl<'a> std::fmt::Display for ExifNoSuchFieldError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Found no field for tag {} and ifd_num {}.", self.tag, self.ifd_num)
+    }
+}
+
 impl<'a> std::fmt::Display for ExifError<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ExifError::MissingMetadata => f.write_str("Could not read exif metadata."),
-            ExifError::NoSuchField { tag, ifd_num } => {
-                write!(f, "Found no field for tag {} and ifd_num {}.", tag, ifd_num)
-            }
+            ExifError::NoSuchField(e) => e.fmt(f),
             ExifError::UnexpectedFieldType { tag, ifd_num, expected, actual } => write!(
                 f,
                 "Expected field for tag {} and ifd_num {} to have type {}, but found {:?}.",
@@ -48,11 +53,17 @@ impl<'a> std::fmt::Display for ExifError<'a> {
     }
 }
 
+impl<'a> std::convert::From<ExifNoSuchFieldError> for ExifError<'a> {
+    fn from(value: ExifNoSuchFieldError) -> Self {
+        Self::NoSuchField(value)
+    }
+}
+
 /// Apply image rotation based on EXIF data
 /// Returns `None` if no transformation is needed
 pub fn fix_orientation<'a>(
     img: &DynamicImage,
-    metadata: Option<&'a Exif>,
+    metadata: &'a Exif,
 ) -> Result<Option<DynamicImage>, ExifError<'a>> {
     Ok(match get_orientation(metadata)? {
         // Values are taken from the page 30 of
@@ -71,34 +82,26 @@ pub fn fix_orientation<'a>(
 }
 
 /// Adjusts the width and height of an image based on EXIF rotation data.
-/// Returns `None` if no transformation is needed.
-pub fn get_rotated_size(
-    w: u32,
-    h: u32,
-    metadata: Option<&Exif>,
-) -> Result<Option<(u32, u32)>, ExifError<'_>> {
+pub fn get_rotated_size(w: u32, h: u32, metadata: &Exif) -> Result<(u32, u32), ExifError<'_>> {
     // See fix_orientation for the meaning of these values.
     Ok(match get_orientation(metadata)? {
-        5..=8 => Some((h, w)),
-        _ => None,
+        5..=8 => (h, w),
+        _ => (w, h),
     })
 }
 
 fn get_field_value(
-    metadata: Option<&Exif>,
+    metadata: &Exif,
     tag: exif::Tag,
     ifd_num: exif::In,
-) -> Result<&exif::Value, ExifError<'_>> {
-    let Some(metadata) = metadata else {
-        return Err(ExifError::MissingMetadata);
-    };
+) -> Result<&exif::Value, ExifNoSuchFieldError> {
     let Some(field) = metadata.get_field(tag, ifd_num) else {
-        return Err(ExifError::NoSuchField { tag, ifd_num });
+        return Err(ExifNoSuchFieldError { tag, ifd_num });
     };
     Ok(&field.value)
 }
 
-fn get_orientation(metadata: Option<&Exif>) -> Result<u32, ExifError<'_>> {
+fn get_orientation(metadata: &Exif) -> Result<u32, ExifError<'_>> {
     let tag = exif::Tag::Orientation;
     let ifd_num = exif::In::PRIMARY;
 
@@ -110,7 +113,7 @@ fn get_orientation(metadata: Option<&Exif>) -> Result<u32, ExifError<'_>> {
 }
 
 fn get_string_field(
-    metadata: Option<&Exif>,
+    metadata: &Exif,
     tag: exif::Tag,
     ifd_num: exif::In,
 ) -> Result<String, ExifError<'_>> {
@@ -133,11 +136,11 @@ fn get_string_field(
     Ok(s)
 }
 
-pub fn get_description(metadata: Option<&Exif>) -> Result<String, ExifError<'_>> {
+pub fn get_description(metadata: &Exif) -> Result<String, ExifError<'_>> {
     get_string_field(metadata, exif::Tag::ImageDescription, exif::In::PRIMARY)
 }
 
-pub fn get_created_datetime(metadata: Option<&Exif>) -> Result<String, ExifError<'_>> {
+pub fn get_created_datetime(metadata: &Exif) -> Result<String, ExifError<'_>> {
     get_string_field(metadata, exif::Tag::DateTimeOriginal, exif::In::PRIMARY)
 }
 
