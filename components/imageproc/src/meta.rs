@@ -10,7 +10,7 @@ use std::path::Path;
 use svg_metadata::Metadata as SvgMetadata;
 
 use crate::get_rotated_size;
-use crate::helpers::{get_created_datetime, get_description};
+use crate::helpers::{ExifError, get_created_datetime, get_description};
 
 /// Size and format read cheaply with `image`'s `Reader`.
 #[derive(Debug)]
@@ -27,29 +27,42 @@ impl ImageMeta {
         let reader = ImageReader::open(path).and_then(ImageReader::with_guessed_format)?;
         let format = reader.format();
         let mut decoder = reader.into_decoder()?;
-        let mut size = decoder.dimensions();
-        let metadata = decoder.exif_metadata()?.and_then(|raw_metadata| {
-            exif::Reader::new()
-                .read_raw(raw_metadata)
-                .inspect_err(|e| eprintln!("Failed to parse exif for {}: {}", path.display(), e))
-                .ok()
+        let size = decoder.dimensions();
+        let Some(metadata) = decoder.exif_metadata()? else {
+            // No raw EXIF data present for this file
+            return Ok(Self { size, format, description: None, created: None });
+        };
+        let metadata = match exif::Reader::new().read_raw(metadata) {
+            Ok(metadata) => metadata,
+            Err(e) => {
+                eprintln!("Failed to parse exif for {}: {}", path.display(), e);
+                return Ok(Self { size, format, description: None, created: None });
+            }
+        };
+
+        let size = get_rotated_size(size.0, size.1, &metadata).unwrap_or_else(|e| {
+            eprintln!("Failed to get rotation from exif for {}: {}", path.display(), e);
+            size
         });
-        let metadata = metadata.as_ref();
 
-        if let Ok(Some((w, h))) = get_rotated_size(size.0, size.1, metadata).inspect_err(|e| {
-            eprintln!("Failed to get rotated size from exif for {}: {}", path.display(), e);
-        }) {
-            size = (w, h)
-        }
-
-        let description = get_description(metadata)
+        let description = get_description(&metadata)
             .inspect_err(|e| {
-                eprintln!("Failed to get description from exif for {}: {}", path.display(), e);
+                match e {
+                    // Missing description field in the EXIF metadata is normal; don't log.
+                    ExifError::NoSuchField(_) => (),
+                    _ => eprintln!(
+                        "Failed to get description from exif for {}: {}",
+                        path.display(),
+                        e
+                    ),
+                }
             })
             .ok();
-        let created = get_created_datetime(metadata)
+
+        let created = get_created_datetime(&metadata)
             .inspect_err(|e| {
-                eprintln!("Failed to get created datetime from exif for {}: {}", path.display(), e);
+                // Created Datetime should ~always be present, so log if it's missing.
+                eprintln!("Failed to get created datetime from exif for {}: {}", path.display(), e)
             })
             .ok();
 

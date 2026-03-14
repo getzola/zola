@@ -538,7 +538,12 @@ fn get_rotated_size_test() {
             .exif_metadata()
             .unwrap()
             .and_then(|raw_metadata| exif::Reader::new().read_raw(raw_metadata).ok());
-        (w, h) = get_rotated_size(w, h, metadata.as_ref()).unwrap_or(None).unwrap_or((w, h));
+
+        (w, h) = if let Some(metadata) = metadata.as_ref() {
+            get_rotated_size(w, h, metadata).unwrap_or((w, h))
+        } else {
+            (w, h)
+        };
         w > h
     }
     assert!(is_landscape("exif_0.jpg"));
@@ -563,7 +568,11 @@ fn fix_orientation_test() {
             .unwrap()
             .and_then(|raw_metadata| exif::Reader::new().read_raw(raw_metadata).ok());
         let img = DynamicImage::from_decoder(decoder).unwrap();
-        fix_orientation(&img, metadata.as_ref()).unwrap_or(None).unwrap_or(img)
+        if let Some(metadata) = metadata.as_ref() {
+            fix_orientation(&img, metadata).unwrap_or(None).unwrap_or(img)
+        } else {
+            img
+        }
     }
 
     let img = image::open(TEST_IMGS.join("exif_1.jpg")).unwrap();
