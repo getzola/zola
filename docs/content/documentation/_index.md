@@ -7,7 +7,7 @@ Getting started
  - Installation
  - CLI usage
  - Directory structure
- - config.toml
+ - zola.toml
  
 Content
  - Organisation

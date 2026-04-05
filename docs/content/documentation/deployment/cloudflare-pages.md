@@ -23,7 +23,7 @@ You may find documentation and guides like [Getting started with Cloudflare Page
 
 ## Handling preview deployments
 
-When working with Cloudflare Pages, you'll often use preview deployments for testing changes before merging to your main branch. By default, these preview deployments use different URLs (like `https://your-branch-name.your-project.pages.dev`), which can cause issues with asset loading if your `base_url` is hardcoded in your `config.toml`.
+When working with Cloudflare Pages, you'll often use preview deployments for testing changes before merging to your main branch. By default, these preview deployments use different URLs (like `https://your-branch-name.your-project.pages.dev`), which can cause issues with asset loading if your `base_url` is hardcoded in your `zola.toml`.
 
 To fix this, modify your build command in the Cloudflare Pages configuration to dynamically set the base URL depending on the environment:
 
@@ -33,7 +33,7 @@ if [ "$CF_PAGES_BRANCH" = "main" ]; then zola build; else zola build --base-url 
 
 This command:
 
-- Uses your `config.toml` `base_url` when building from the main branch
+- Uses your `zola.toml` `base_url` when building from the main branch
 - Uses the preview deployment URL (automatically provided by Cloudflare Pages as `$CF_PAGES_URL`) for all other branches
 
 ## Troubleshooting

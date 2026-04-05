@@ -39,7 +39,7 @@ You will be asked a few questions.
  For our blog, let's accept the default values (i.e., press Enter for each question). We now have a `myblog` directory with the following structure:
 
 ```
-├── config.toml
+├── zola.toml
 ├── content
 ├── sass
 ├── static
@@ -50,7 +50,7 @@ You will be asked a few questions.
 For reference, by the **end** of this overview, our `myblog` directory will have the following structure:
 
 ```
-├── config.toml
+├── zola.toml
 ├── content/
 │   └── blog/
 │       ├── _index.md
@@ -165,7 +165,7 @@ Done in 13ms.
 
 Web server is available at http://127.0.0.1:1111
 
-Listening for changes in .../myblog/{config.toml,content,sass,static,templates}
+Listening for changes in .../myblog/{zola.toml,content,sass,static,templates}
 Press Ctrl+C to stop
 ```
 

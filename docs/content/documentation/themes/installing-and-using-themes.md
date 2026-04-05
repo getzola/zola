@@ -56,7 +56,7 @@ Some custom data
 Most themes will also provide some variables that are meant to be overridden. This happens in the `extra` section
 of the [configuration file](@/documentation/getting-started/configuration.md).
 Let's say a theme uses a `show_twitter` variable and sets it to `false` by default. If you want to set it to `true`,
-you can update your `config.toml` like so:
+you can update your `zola.toml` like so:
 
 ```toml
 [extra]
