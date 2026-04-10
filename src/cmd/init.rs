@@ -25,6 +25,201 @@ theme = "catppuccin-mocha"
 # Put all your custom variables here
 "#;
 
+const GITIGNORE: &str = r#"public/
+.DS_Store
+"#;
+
+const README: &str = r#"# My Zola Site
+
+This site is built with [Zola](https://www.getzola.org/).
+
+## Getting Started
+
+```bash
+# Serve the site locally
+zola serve
+
+# Build for production
+zola build
+```
+
+## Documentation
+
+Visit [https://www.getzola.org/documentation](https://www.getzola.org/documentation) for full documentation.
+"#;
+
+const INDEX_CONTENT: &str = r#"+++
+title = "Home"
++++
+
+Welcome to your new Zola site!
+"#;
+
+const BASE_TEMPLATE: &str = r#"<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ config.title }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ get_url(path="style.css") }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="{{ get_url(path="/") }}">Home</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>Powered by <a href="https://www.getzola.org/">Zola</a></p>
+    </footer>
+</body>
+</html>
+"#;
+
+const INDEX_TEMPLATE: &str = r#"{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ section.title }}</h1>
+{{ section.content | safe }}
+{% endblock %}
+"#;
+
+const PAGE_TEMPLATE: &str = r#"{% extends "base.html" %}
+
+{% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
+
+{% block content %}
+<article>
+    <h1>{{ page.title }}</h1>
+    {{ page.content | safe }}
+</article>
+{% endblock %}
+"#;
+
+const SECTION_TEMPLATE: &str = r#"{% extends "base.html" %}
+
+{% block title %}{{ section.title }} | {{ config.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ section.title }}</h1>
+{{ section.content | safe }}
+
+{% if section.pages %}
+<ul>
+    {% for page in section.pages %}
+    <li><a href="{{ page.permalink }}">{{ page.title }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
+"#;
+
+const STYLE_CSS: &str = r#"/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: #fff;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+
+p {
+    margin-bottom: 1rem;
+}
+
+/* Links */
+a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Header */
+header {
+    margin-bottom: 3rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+nav a {
+    margin-right: 1rem;
+}
+
+/* Main content */
+main {
+    min-height: 60vh;
+}
+
+article {
+    margin-bottom: 2rem;
+}
+
+/* Lists */
+ul, ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+li {
+    margin-bottom: 0.25rem;
+}
+
+/* Footer */
+footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #ddd;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Code */
+code {
+    background: #f4f4f4;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+pre {
+    background: #f4f4f4;
+    padding: 1rem;
+    border-radius: 3px;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+}
+"#;
+
 // canonicalize(path) function on windows system returns a path with UNC.
 // Example: \\?\C:\Users\VssAdministrator\AppData\Local\Temp\new_project
 // More details on Universal Naming Convention (UNC):
@@ -112,11 +307,25 @@ fn populate(path: &Path, compile_sass: bool, config: &str) -> Result<()> {
     if !path.exists() {
         fs::create_dir(path)?;
     }
+    
     create_file(&path.join("zola.toml"), config)?;
+    create_file(&path.join(".gitignore"), GITIGNORE)?;
+    create_file(&path.join("README.md"), README)?;
+    
     fs::create_dir(path.join("content"))?;
+    create_file(&path.join("content/_index.md"), INDEX_CONTENT)?;
+    
     fs::create_dir(path.join("templates"))?;
+    create_file(&path.join("templates/base.html"), BASE_TEMPLATE)?;
+    create_file(&path.join("templates/index.html"), INDEX_TEMPLATE)?;
+    create_file(&path.join("templates/page.html"), PAGE_TEMPLATE)?;
+    create_file(&path.join("templates/section.html"), SECTION_TEMPLATE)?;
+    
     fs::create_dir(path.join("static"))?;
+    create_file(&path.join("static/style.css"), STYLE_CSS)?;
+    
     fs::create_dir(path.join("themes"))?;
+    
     if compile_sass {
         fs::create_dir(path.join("sass"))?;
     }
@@ -192,9 +401,17 @@ mod tests {
         populate(&dir, true, "").expect("Could not populate zola directories");
 
         assert!(dir.join("zola.toml").exists());
+        assert!(dir.join(".gitignore").exists());
+        assert!(dir.join("README.md").exists());
         assert!(dir.join("content").exists());
+        assert!(dir.join("content/_index.md").exists());
         assert!(dir.join("templates").exists());
+        assert!(dir.join("templates/base.html").exists());
+        assert!(dir.join("templates/index.html").exists());
+        assert!(dir.join("templates/page.html").exists());
+        assert!(dir.join("templates/section.html").exists());
         assert!(dir.join("static").exists());
+        assert!(dir.join("static/style.css").exists());
         assert!(dir.join("themes").exists());
         assert!(dir.join("sass").exists());
 
@@ -212,9 +429,17 @@ mod tests {
 
         assert!(dir.exists());
         assert!(dir.join("zola.toml").exists());
+        assert!(dir.join(".gitignore").exists());
+        assert!(dir.join("README.md").exists());
         assert!(dir.join("content").exists());
+        assert!(dir.join("content/_index.md").exists());
         assert!(dir.join("templates").exists());
+        assert!(dir.join("templates/base.html").exists());
+        assert!(dir.join("templates/index.html").exists());
+        assert!(dir.join("templates/page.html").exists());
+        assert!(dir.join("templates/section.html").exists());
         assert!(dir.join("static").exists());
+        assert!(dir.join("static/style.css").exists());
         assert!(dir.join("themes").exists());
         assert!(dir.join("sass").exists());
 
