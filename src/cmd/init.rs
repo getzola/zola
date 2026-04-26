@@ -121,25 +121,25 @@ fn populate(path: &Path, compile_sass: bool, config: &str) -> Result<()> {
     if !path.exists() {
         fs::create_dir(path)?;
     }
-    
+
     create_file(&path.join("zola.toml"), config)?;
     create_file(&path.join(".gitignore"), GITIGNORE)?;
     create_file(&path.join("README.md"), README)?;
-    
+
     fs::create_dir(path.join("content"))?;
     create_file(&path.join("content/_index.md"), INDEX_CONTENT)?;
-    
+
     fs::create_dir(path.join("templates"))?;
     create_file(&path.join("templates/base.html"), BASE_TEMPLATE)?;
     create_file(&path.join("templates/index.html"), INDEX_TEMPLATE)?;
     create_file(&path.join("templates/page.html"), PAGE_TEMPLATE)?;
     create_file(&path.join("templates/section.html"), SECTION_TEMPLATE)?;
-    
+
     fs::create_dir(path.join("static"))?;
     create_file(&path.join("static/style.css"), STYLE_CSS)?;
-    
+
     fs::create_dir(path.join("themes"))?;
-    
+
     if compile_sass {
         fs::create_dir(path.join("sass"))?;
     }
