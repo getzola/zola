@@ -3,14 +3,14 @@
 title = "nivis"
 description = "A clean zola theme for bloggers"
 template = "theme.html"
-date = 2026-01-18T01:53:17+08:00
+date = 2026-04-24T04:36:56+08:00
 
 [taxonomies]
 theme-tags = ['Clean', 'Blog', 'Responsive']
 
 [extra]
-created = 2026-01-18T01:53:17+08:00
-updated = 2026-01-18T01:53:17+08:00
+created = 2026-04-24T04:36:56+08:00
+updated = 2026-04-24T04:36:56+08:00
 repository = "https://github.com/Resorie/zola-theme-nivis.git"
 homepage = "https://github.com/Resorie/zola-theme-nivis"
 minimum_version = "0.21.0"
@@ -53,6 +53,7 @@ theme = "nivis"
 Start your site by copying the example content into your site folder:
 ```bash
 cp -r themes/nivis/content content
+cp -r themes/nivis/data data
 ```
 
 Move on to the [example site](https://resorie.github.io/zola-theme-nivis/) for more info. Enjoy it! :kissing_heart:

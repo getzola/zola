@@ -3,16 +3,16 @@
 title = "Prism"
 description = "A modern Zola theme featuring glassmorphism design"
 template = "theme.html"
-date = 2026-03-09T09:27:07+05:00
+date = 2026-04-21T23:01:27+05:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-03-09T09:27:07+05:00
-updated = 2026-03-09T09:27:07+05:00
+created = 2026-04-21T23:01:27+05:00
+updated = 2026-04-21T23:01:27+05:00
 repository = "https://github.com/jahamars/zola-prism.git"
-homepage = "https://github.com/jahamars/zola-prism"
+homepage = "https://github.com/j4hongir/zola-prism"
 minimum_version = "0.19.0"
 license = "AGPL-3.0"
 demo = "https://xpltt.vercel.app/"

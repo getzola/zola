@@ -3,14 +3,14 @@
 title = "Zolarwind"
 description = "A GDPR-friendly Zola blog theme: no third-party requests, Tailwind CSS, KaTeX, Mermaid, localization"
 template = "theme.html"
-date = 2026-03-03T13:22:37+01:00
+date = 2026-04-12T12:18:43+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-03-03T13:22:37+01:00
-updated = 2026-03-03T13:22:37+01:00
+created = 2026-04-12T12:18:43+02:00
+updated = 2026-04-12T12:18:43+02:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
 minimum_version = "0.22.1"
