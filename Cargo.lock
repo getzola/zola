@@ -5168,6 +5168,7 @@ dependencies = [
  "tera",
  "tera-contrib",
  "toml",
+ "unic-langid",
  "url",
  "utils",
 ]

@@ -43,6 +43,8 @@ pub fn register_early_global_fns(site: &mut Site) {
         ),
     );
     site.tera.register_function("trans", functions::Trans::new(site.config.clone()));
+    site.tera
+        .register_function("text_direction", functions::TextDirection::new(site.config.clone()));
     site.tera.register_function(
         "get_hash",
         functions::GetHash::new(

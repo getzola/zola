@@ -29,6 +29,47 @@ impl Function<TeraResult<String>> for Trans {
     }
 }
 
+#[derive(Debug)]
+pub struct TextDirection {
+    config: Config,
+}
+
+impl TextDirection {
+    pub fn new(config: Config) -> Self {
+        Self { config }
+    }
+}
+
+impl Function<TeraResult<String>> for TextDirection {
+    fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<String> {
+        use unic_langid::{CharacterDirection, LanguageIdentifier};
+
+        let lang: String = kwargs
+            .get("lang")?
+            .or(state.get("lang")?)
+            .unwrap_or_else(|| self.config.default_language.clone());
+
+        let lang: LanguageIdentifier = lang
+            .parse()
+            .map_err(|_| {
+                Error::message(format!("`text_direction`: Language `{lang}` is not a valid Unicode Language Identifier (see http://unicode.org/reports/tr35/#Unicode_language_identifier)"))
+            })?;
+
+        let dir = match lang.character_direction() {
+            CharacterDirection::LTR => "ltr",
+            CharacterDirection::RTL => "rtl",
+            // String must be compatible with the [`dir=` global HTML attribute][dir], so we only deal
+            // with horizontal text directionality (only "ltr" or "rtl"). Traditional Mongolian is
+            // written top-to-buttom with lines progressing left-to-right. Therefore, report "ltr" here.
+            //
+            // [dir]: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/dir
+            CharacterDirection::TTB => "ltr",
+        };
+
+        Ok(dir.to_string())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -98,5 +139,53 @@ title = "A title" "#;
         let ctx = Context::new();
         let error = trans.call(kwargs, &State::new(&ctx)).unwrap_err();
         assert!(error.to_string().contains("Failed to retrieve term translation"));
+    }
+
+    #[test]
+    fn can_determine_text_direction() {
+        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let text_direction = TextDirection::new(config);
+
+        // Default lang (fr)
+        let kwargs = Kwargs::default();
+        let ctx = Context::new();
+        assert_eq!(text_direction.call(kwargs, &State::new(&ctx)).unwrap(), "ltr");
+
+        // Explicit lang in kwargs (en)
+        let kwargs = Kwargs::from([("lang", Value::from("en"))]);
+        let ctx = Context::new();
+        assert_eq!(text_direction.call(kwargs, &State::new(&ctx)).unwrap(), "ltr");
+
+        // Lang from context (ar)
+        let kwargs = Kwargs::from([("lang", Value::from("ar"))]);
+        let ctx = make_context_with_lang("ar");
+        assert_eq!(text_direction.call(kwargs, &State::new(&ctx)).unwrap(), "rtl");
+
+        // Explicit lang in kwargs overrides context
+        let kwargs = Kwargs::from([("lang", Value::from("ar"))]);
+        let ctx = make_context_with_lang("en");
+        assert_eq!(text_direction.call(kwargs, &State::new(&ctx)).unwrap(), "rtl");
+    }
+
+    #[test]
+    fn error_on_invalid_lang_identifier() {
+        let config = Config::parse(TRANS_CONFIG).unwrap();
+        let text_direction = TextDirection::new(config);
+
+        let kwargs = Kwargs::from([("lang", Value::from(123))]);
+        let ctx = Context::new();
+        let error = text_direction.call(kwargs, &State::new(&ctx)).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "`text_direction`: Language `123` is not a valid Unicode Language Identifier (see http://unicode.org/reports/tr35/#Unicode_language_identifier)",
+        );
+
+        let kwargs = Kwargs::from([("lang", Value::from("z"))]);
+        let ctx = Context::new();
+        let error = text_direction.call(kwargs, &State::new(&ctx)).unwrap_err();
+        assert_eq!(
+            error.to_string(),
+            "`text_direction`: Language `z` is not a valid Unicode Language Identifier (see http://unicode.org/reports/tr35/#Unicode_language_identifier)",
+        );
     }
 }

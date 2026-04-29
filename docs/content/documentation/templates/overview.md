@@ -583,6 +583,17 @@ URLs are cached based on the URL, and data files are cached based on the file mo
 The format is also taken into account when caching, so a request will be sent twice if it's loaded with two
 different formats.
 
+### `text_direction`
+Gets the horizontal text directionality for the `default_language`, the `lang`uage given or the active language:
+
+```jinja
+{{/* text_direction() */}}
+{{/* text_direction(lang="fr") */}}
+{{/* text_direction(lang=lang) */}}
+```
+
+Returns the string literal `ltr` or `rtl`, which may be passed directly into the [`dir` global HTML attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/dir).
+
 ### `trans`
 Gets the translation of the given `key`, for the `default_language`, the `lang`uage given or the active language:
 
