@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use tera::{Map, Value};
 
+use super::extra::{default_extra, deserialize_extra};
 use errors::Result;
-use utils::de::fix_toml_dates;
 use utils::types::InsertAnchor;
 
 use crate::SortBy;
@@ -71,27 +71,18 @@ pub struct SectionFrontMatter {
     #[serde(skip_serializing)]
     pub generate_feeds: bool,
     /// Any extra parameter present in the front matter
-    pub extra: Map<String, Value>,
+    #[serde(default = "default_extra", deserialize_with = "deserialize_extra")]
+    pub extra: Value,
 }
 
 impl SectionFrontMatter {
     pub fn parse(raw: &RawFrontMatter) -> Result<SectionFrontMatter> {
-        let mut f: SectionFrontMatter = raw.deserialize()?;
-
-        f.extra = match fix_toml_dates(f.extra) {
-            Value::Object(o) => o,
-            _ => unreachable!("Got something other than a table in section extra"),
-        };
-
-        Ok(f)
+        raw.deserialize()
     }
 
     /// Only applies to section, whether it is paginated or not.
     pub fn is_paginated(&self) -> bool {
-        match self.paginate_by {
-            Some(v) => v > 0,
-            None => false,
-        }
+        self.paginate_by.is_some_and(|v| v > 0)
     }
 }
 
@@ -114,7 +105,7 @@ impl Default for SectionFrontMatter {
             page_template: None,
             aliases: Vec::new(),
             generate_feeds: false,
-            extra: Map::new(),
+            extra: Value::from(Map::new()),
             draft: false,
         }
     }

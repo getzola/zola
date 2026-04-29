@@ -7,7 +7,7 @@ use serde::Serialize;
 use config::Config;
 use content::{Library, Taxonomy};
 use std::cmp::Ordering;
-use tera::{Map, Value};
+use tera::Value;
 
 /// The sitemap only needs links, potentially date and extra for pages in case of updates
 /// for examples so we trim down all entries to only that
@@ -15,7 +15,7 @@ use tera::{Map, Value};
 pub struct SitemapEntry<'a> {
     pub permalink: Cow<'a, str>,
     pub updated: &'a Option<String>,
-    pub extra: Option<&'a Map<String, Value>>,
+    pub extra: Option<Value>,
 }
 
 // Hash/Eq is not implemented for tera::Map but in our case we only care about the permalink
@@ -37,7 +37,7 @@ impl<'a> SitemapEntry<'a> {
         SitemapEntry { permalink, updated, extra: None }
     }
 
-    pub fn add_extra(&mut self, extra: &'a Map<String, Value>) {
+    pub fn add_extra(&mut self, extra: Value) {
         self.extra = Some(extra);
     }
 }
@@ -71,14 +71,14 @@ pub fn find_entries<'a>(
             Cow::Borrowed(&p.permalink),
             if p.meta.updated.is_some() { &p.meta.updated } else { &p.meta.date },
         );
-        entry.add_extra(&p.meta.extra);
+        entry.add_extra(p.meta.extra.clone());
         entries.insert(entry);
     }
 
     for s in library.sections.values() {
         if s.meta.render {
             let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), &None);
-            entry.add_extra(&s.meta.extra);
+            entry.add_extra(s.meta.extra.clone());
             entries.insert(entry);
         }
 

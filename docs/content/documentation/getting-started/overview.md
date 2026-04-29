@@ -5,11 +5,14 @@ weight = 5
 
 ## Zola at a Glance
 
-Zola is a static site generator (SSG), similar to [Hugo](https://gohugo.io/), [Pelican](https://blog.getpelican.com/), and [Jekyll](https://jekyllrb.com/) (for a comprehensive list of SSGs, please see [Jamstack](https://jamstack.org/generators)). It is written in [Rust](https://www.rust-lang.org/) and uses the [Tera](https://keats.github.io/tera/) template engine, which is similar to [Jinja2](https://jinja.palletsprojects.com/en/2.10.x/), [Django templates](https://docs.djangoproject.com/en/2.2/topics/templates/), [Liquid](https://shopify.github.io/liquid/), and [Twig](https://twig.symfony.com/).
+Zola is a static site generator (SSG), similar to [Hugo](https://gohugo.io/), [Pelican](https://blog.getpelican.com/), and [Jekyll](https://jekyllrb.com/) (for a comprehensive list of SSGs, please see [Jamstack](https://jamstack.org/generators)). 
+It is written in [Rust](https://www.rust-lang.org/) and uses the [Tera](https://keats.github.io/tera/) template engine, which is similar to [Jinja2](https://jinja.palletsprojects.com/en/2.10.x/), [Django templates](https://docs.djangoproject.com/en/2.2/topics/templates/), [Liquid](https://shopify.github.io/liquid/), and [Twig](https://twig.symfony.com/).
 
-Content is written in [CommonMark](https://commonmark.org/), a strongly defined, highly compatible specification of [Markdown](https://www.markdownguide.org/). Zola uses [pulldown-cmark](https://github.com/raphlinus/pulldown-cmark#pulldown-cmark) to parse markdown files. The goal of this library is 100% compliance with the CommonMark spec. It adds a few additional features such as parsing footnotes, Github flavored tables, Github flavored task lists and strikethrough.
+Content is written in [CommonMark](https://commonmark.org/), a strongly defined, highly compatible specification of [Markdown](https://www.markdownguide.org/). Zola uses [pulldown-cmark](https://github.com/raphlinus/pulldown-cmark#pulldown-cmark) to parse markdown files. 
+The goal of this library is 100% compliance with the CommonMark spec. It adds a few additional features such as parsing footnotes, Github flavored tables, Github flavored task lists and strikethrough.
 
-SSGs use dynamic templates to transform content into static HTML pages. Static sites are thus very fast and require no databases, making them easy to host. A comparison between static and dynamic sites, such as WordPress, Drupal, and Django, can be found [here](https://dev.to/ashenmaster/static-vs-dynamic-sites-61f).
+SSGs use dynamic templates to transform content into static HTML pages. Static sites are thus very fast and require no databases, making them easy to host. 
+A comparison between static and dynamic sites, such as WordPress, Drupal, and Django, can be found [here](https://dev.to/ashenmaster/static-vs-dynamic-sites-61f).
 
 To get a taste of Zola, please see the quick overview below.
 
@@ -76,7 +79,8 @@ We'll first create some templates to describe the structure of our site.
 
 Let's make a template for a home page. Create `templates/base.html` with the following content. This step will make more sense as we move through this overview.
 
-```html
+```jinja
+{% raw -%}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -94,11 +98,13 @@ Let's make a template for a home page. Create `templates/base.html` with the fol
 </body>
 
 </html>
+{%- endraw -%}
 ```  
 
 Now, let's create `templates/index.html` with the following content.
 
-```html
+```jinja
+{% raw -%}
 {% extends "base.html" %}
 
 {% block content %}
@@ -106,15 +112,17 @@ Now, let's create `templates/index.html` with the following content.
   This is my blog made with Zola.
 </h1>
 {% endblock content %}
+{%- endraw -%}
 ```  
 
-This tells Zola that `index.html` extends our `base.html` file and replaces the block called "content" with the text between the `{% block content %}` and `{% endblock content %}` tags.
+This tells Zola that `index.html` extends our `base.html` file and replaces the block called "content" with the text between the `{% raw %}{% block content %}{% endraw %}` and `{% raw %}{% endblock content %}{% endraw %}` tags.
 
 #### Blog Template
 
 To create a template for a page that lists all blog posts, create `templates/blog.html` with the following content.
 
-```html
+```jinja
+{% raw -%}
 {% extends "base.html" %}
 
 {% block content %}
@@ -129,15 +137,19 @@ To create a template for a page that lists all blog posts, create `templates/blo
   {% endfor %}
 </ul>
 {% endblock content %}
+{%- endraw -%}
 ```
 
-As done by `index.html`, `blog.html` extends `base.html`, but in this template we want to list the blog posts. Here we also see expressions such as `{{ section.[...] }}` and `{{ page.[...] }}` which will be replaced with values from our [content](#content) when zola combines content with this template to render a page. In the list below the header, we loop through all the pages in our section (`blog` directory; more on this when we create content) and output each page title and URL using `{{ page.title }}` and `{{ page.permalink | safe }}`, respectively. We use the `| safe` filter because the permalink doesn't need to be HTML escaped (escaping would cause `/` to render as `&#x2F;`).
+As done by `index.html`, `blog.html` extends `base.html`, but in this template we want to list the blog posts. Here we also see expressions such as `{% raw %}{{ section.[...] }}{% endraw %}` and `{% raw %}{{ page.[...] }}{% endraw %}` which will be replaced with values from our [content](#content) when zola combines content with this template to render a page. 
+In the list below the header, we loop through all the pages in our section (`blog` directory; more on this when we create content) and output each page title and URL using `{% raw %}{{ page.title }}{% endraw %}` and `{% raw %}{{ page.permalink | safe }}{% endraw %}`, respectively. 
+We use the `| safe` filter because the permalink doesn't need to be HTML escaped (escaping would cause `/` to render as `&#x2F;`).
 
 #### Blog Post Template
 
 We have templates describing our home page and a page that lists all blog posts. Let's now create a template for an individual blog post. Create `templates/blog-page.html` with the following content.
 
-```html
+```jinja
+{% raw -%}
 {% extends "base.html" %}
 
 {% block content %}
@@ -147,9 +159,10 @@ We have templates describing our home page and a page that lists all blog posts.
 <p class="subtitle"><strong>{{ page.date }}</strong></p>
 {{ page.content | safe }}
 {% endblock content %}
+{%- endraw -%}
 ```
 
-> Note the `| safe` filter for `{{ page.content }}`.
+> Note the `| safe` filter for `{% raw %}{{ page.content }}{% endraw %}`.
 
 ### Zola Live Reloading
 
@@ -198,7 +211,7 @@ page_template = "blog-page.html"
 
 For a full list of section variables, please see the [section](@/documentation/content/section.md) documentation.
 
-The value of our `title` variable here is available to templates such as `blog.html` as `{{ section.title }}`.
+The value of our `title` variable here is available to templates such as `blog.html` as `{% raw %}{{ section.title }}{% endraw %}`.
 
 If you now go to <http://127.0.0.1:1111/blog/>, you will see an empty list of posts.
 
@@ -215,7 +228,7 @@ date = 2019-11-27
 This is my first blog post.
 ```
 
-The *title* and *date* will be available to us in the `blog-page.html` template as `{{ page.title }}` and `{{ page.date }}`, respectively. All text below the closing `+++` will be available to templates as `{{ page.content }}`.
+The *title* and *date* will be available to us in the `blog-page.html` template as `{% raw %}{{ page.title }}{% endraw %}` and `{% raw %}{{ page.date }}{% endraw %}`, respectively. All text below the closing `+++` will be available to templates as `{% raw %}{{ page.content }}{% endraw %}`.
 
 If you now go back to our blog list page at <http://127.0.0.1:1111/blog/>, you should see our lonely post. Let's add another. Create `content/blog/second.md` with the contents:
 
@@ -232,7 +245,8 @@ Back at <http://127.0.0.1:1111/blog/>, our second post shows up on top of the li
 
 As a final step, let's modify `templates/index.html` (our home page) to link to our list of blog posts:
 
-```html
+```jinja
+{% raw -%}
 {% extends "base.html" %}
 
 {% block content %}
@@ -241,6 +255,7 @@ As a final step, let's modify `templates/index.html` (our home page) to link to 
 </h1>
 <p><a href="{{/* get_url(path='@/blog/_index.md') */}}">Posts</a>.</p>
 {% endblock content %}
+{%- endraw -%}
 ```  
 
 This has been a quick overview of Zola. You can now dive into the rest of the documentation.

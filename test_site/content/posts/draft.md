@@ -5,6 +5,6 @@ date = 2016-03-01
 +++
 
 
-{{ theme_shortcode() }}
+{{ <theme_component /> }}
 
 Link to [root](@/hello.md).

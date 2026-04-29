@@ -12,7 +12,7 @@ pub fn build_ignore_glob_set(ignore: &Vec<String>, name: &str) -> Result<GlobSet
     for pat in ignore {
         let glob = match Glob::new(pat) {
             Ok(g) => g,
-            Err(e) => bail!("Invalid ignored_{} glob pattern: {}, error = {}", name, pat, e),
+            Err(e) => bail!("Invalid {name} glob pattern: {pat}, error = {e}"),
         };
         glob_set_builder.add(glob);
     }

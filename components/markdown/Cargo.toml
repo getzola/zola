@@ -1,14 +1,11 @@
 [package]
 name = "markdown"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
 include = ["src/**/*"]
 
 [dependencies]
-pest = "2"
-pest_derive = "2"
 gh-emoji = { workspace = true }
-once_cell = { workspace = true }
 pulldown-cmark = { workspace = true }
 pulldown-cmark-escape = { workspace = true }
 regex = { workspace = true }
@@ -19,8 +16,13 @@ log = { workspace = true }
 errors = { workspace = true }
 utils = { workspace = true }
 config = { workspace = true }
-console = { workspace = true }
+render = { workspace = true }
 
 [dev-dependencies]
 templates = { workspace = true }
-insta = "1.12.0"
+insta = { workspace = true }
+criterion = { version = "0.8", features = ["html_reports"] }
+
+[[bench]]
+name = "all"
+harness = false

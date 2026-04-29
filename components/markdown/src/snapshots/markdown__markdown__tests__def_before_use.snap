@@ -1,8 +1,8 @@
 ---
 source: components/markdown/src/markdown.rs
-expression: html
+expression: rendered.body
 ---
-<p>There is footnote definition?<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">1</a></sup></p>
+<p>There is footnote definition?<sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup></p>
 <section class="footnotes">
 <ol class="footnotes-list">
 <li id="fn-1">
