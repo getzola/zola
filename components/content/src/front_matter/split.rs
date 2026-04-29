@@ -9,13 +9,13 @@ use crate::front_matter::section::SectionFrontMatter;
 
 static TOML_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"^[[:space:]]*\+\+\+(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))",
+        r"^[[:space:]]*\+\+\+[[:space:]]*(\r?\n(?s).*?(?-s))\+\+\+[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))",
     )
     .unwrap()
 });
 
 static YAML_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^[[:space:]]*---(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))")
+    Regex::new(r"^[[:space:]]*---[[:space:]]*(\r?\n(?s).*?(?-s))---[[:space:]]*(?:$|(?:\r?\n((?s).*(?-s))$))")
         .unwrap()
 });
 
@@ -118,6 +118,22 @@ date: 2002-10-12
 ---
 Hello
 "#; "yaml")]
+    #[test_case(r#"
++++  
+title = "Title"
+description = "hey there"
+date = 2002-10-12
++++
+Hello
+"#; "toml with trailing whitespace")]
+    #[test_case(r#"
+---  
+title: Title
+description: hey there
+date: 2002-10-12
+---
+Hello
+"#; "yaml with trailing whitespace")]
     fn can_split_page_content_valid(content: &str) {
         let (front_matter, content) = split_page_content(Path::new(""), content).unwrap();
         assert_eq!(content, "Hello\n");
