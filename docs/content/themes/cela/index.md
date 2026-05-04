@@ -3,14 +3,14 @@
 title = "Cela"
 description = "A minimalist documentation/blog theme."
 template = "theme.html"
-date = 2026-04-25T04:31:48+08:00
+date = 2026-04-29T20:50:36+08:00
 
 [taxonomies]
 theme-tags = ['blog', 'documentation', 'lightweight', 'minimal', 'responsive', 'search']
 
 [extra]
-created = 2026-04-25T04:31:48+08:00
-updated = 2026-04-25T04:31:48+08:00
+created = 2026-04-29T20:50:36+08:00
+updated = 2026-04-29T20:50:36+08:00
 repository = "https://github.com/edwardzcn-decade/cela.git"
 homepage = "https://github.com/edwardzcn-decade/cela"
 minimum_version = "0.22.1"
@@ -47,7 +47,7 @@ If you like it, please give it a 🌟 on GitHub. Thanks!
 + [x] Full-text search
 + [x] Robot tools
 + [x] Home page archive grouping (group by year)
-+ [ ] Internationalization (i18n)
++ [x] Internationalization (i18n, first-class `en` / `zh`)
 
 ### Tags, Categories, and Taxonomies
 
