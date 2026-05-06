@@ -428,8 +428,7 @@ mod tests {
 
         // Regression for https://github.com/getzola/zola/issues/2829: a term
         // whose name gets slugified must be retrievable via the slug.
-        let kwargs =
-            Kwargs::from([("kind", Value::from("tags")), ("term", Value::from("accion"))]);
+        let kwargs = Kwargs::from([("kind", Value::from("tags")), ("term", Value::from("accion"))]);
         let ctx = Context::new();
         let res = get_taxonomy_term.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
