@@ -355,13 +355,18 @@ mod tests {
         let tag =
             TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config);
         let tag_fr = TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config);
+        // Regression for https://github.com/getzola/zola/issues/2829: terms
+        // whose names get slugified (accents, spaces, etc.) must be
+        // retrievable via the slug.
+        let tag_accent =
+            TaxonomyTerm::new("acción", &config.default_language, &taxo_config, &[], &config);
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
             slug: "tags".to_string(),
             path: "/tags/".to_string(),
             permalink: "https://vincent.is/tags/".to_string(),
-            items: vec![tag],
+            items: vec![tag, tag_accent],
         };
         let tags_fr = Taxonomy {
             kind: taxo_config_fr,
@@ -420,5 +425,15 @@ mod tests {
             Kwargs::from([("kind", Value::from("tags")), ("term", Value::from("something-else"))]);
         let ctx = Context::new();
         assert!(get_taxonomy_term.call(kwargs, &State::new(&ctx)).is_err());
+
+        // Regression for https://github.com/getzola/zola/issues/2829: a term
+        // whose name gets slugified must be retrievable via the slug.
+        let kwargs =
+            Kwargs::from([("kind", Value::from("tags")), ("term", Value::from("accion"))]);
+        let ctx = Context::new();
+        let res = get_taxonomy_term.call(kwargs, &State::new(&ctx)).unwrap();
+        let res_obj = res.as_map().unwrap();
+        assert_eq!(res_obj.get(&"name".into()).unwrap().as_str().unwrap(), "acción");
+        assert_eq!(res_obj.get(&"slug".into()).unwrap().as_str().unwrap(), "accion");
     }
 }
