@@ -105,7 +105,8 @@ pub fn filter_events(
         // Since we debounce things, some files might already not exist anymore by the
         // time we get to them. Of course, if this was a removal event, the path won't
         // exist, but we do want to consider it meaningful.
-        if let Some(SimpleFileSystemEventKind::Remove) = simple_kind { } else {
+        if let Some(SimpleFileSystemEventKind::Remove) = simple_kind {
+        } else {
             if !path.exists() {
                 log::debug!(target: "file_change", "skipping file change event because path does not exist");
                 continue;
