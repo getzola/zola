@@ -3,19 +3,19 @@
 title = "EasyDocs"
 description = "An easy way to create docs for your project"
 template = "theme.html"
-date = 2026-03-05T13:34:03+01:00
+date = 2026-05-10T17:29:49+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-03-05T13:34:03+01:00
-updated = 2026-03-05T13:34:03+01:00
+created = 2026-05-10T17:29:49+02:00
+updated = 2026-05-10T17:29:49+02:00
 repository = "https://github.com/codeandmedia/zola_easydocs_theme.git"
 homepage = "https://github.com/codeandmedia/zola_easydocs_theme"
 minimum_version = "0.21.0"
 license = "MIT"
-demo = "https://easydocs.codeandmedia.com"
+demo = "https://zola-easydocs-theme.pages.dev"
 
 [extra.author]
 name = "Roman Soldatenkov"
@@ -24,7 +24,7 @@ homepage = "https://codeandmedia.com"
 
 ## An easy way to create a document library for your project
 
-Demo: [https://easydocs.codeandmedia.com/](https://easydocs.codeandmedia.com/)
+Demo: [https://zola-easydocs-theme.pages.dev/](https://zola-easydocs-theme.pages.dev/)
 
 This theme for [Zola](https://getzola.org) (static site engine) helps you build and publish your project docs easily and fast. Zola is just one binary that outputs html-pages and additional static assets after building your docs written in Markdown. Thus, you can take the theme, your md-files, Zola and gain flexible and simple website for documentation. 
 

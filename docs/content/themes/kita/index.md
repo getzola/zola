@@ -3,14 +3,14 @@
 title = "Kita"
 description = "Kita is a clean, elegant and simple blog theme for Zola."
 template = "theme.html"
-date = 2025-10-02T20:07:02+08:00
+date = 2026-05-10T01:04:33+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-10-02T20:07:02+08:00
-updated = 2025-10-02T20:07:02+08:00
+created = 2026-05-10T01:04:33+08:00
+updated = 2026-05-10T01:04:33+08:00
 repository = "https://github.com/st1020/kita.git"
 homepage = "https://github.com/st1020/kita"
 minimum_version = "0.17.0"
@@ -35,7 +35,7 @@ This theme is based on Hugo theme [hugo-paper](https://github.com/nanxiaobei/hug
 ## Features
 
 - Easy to use and modify
-- No preset limits (This theme does not limit your content directory structure, taxonomy names, etc. It's applicable to all zola sites.)
+- No preset limits[^1]
 - Inject support
 - Dark mode
 - Responsive design
@@ -49,6 +49,8 @@ This theme is based on Hugo theme [hugo-paper](https://github.com/nanxiaobei/hug
 - Comments using [Giscus](https://giscus.app/)
 - Mathematical notations using [KaTeX](https://katex.org/)
 - Diagrams and charts using [Mermaid](https://mermaid.js.org/)
+
+[^1]: This theme does not limit your content directory structure, taxonomy names, etc. It's applicable to all zola sites.
 
 ## Installation
 
