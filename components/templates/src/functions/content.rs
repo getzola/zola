@@ -35,28 +35,43 @@ impl Function<TeraResult<Value>> for GetPage {
             .or_else(|| state.get::<String>("lang").ok().flatten())
             .unwrap_or_else(|| self.default_lang.clone());
 
+        let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or_else(|| false);
+
         let full_path = self.base_path.join(&path);
 
-        let cached = self
-            .cache
-            .pages
-            .get(&full_path)
-            .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))?;
+        let res = (|| {
+            let cached = self
+                .cache
+                .pages
+                .get(&full_path)
+                .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))?;
 
-        let file_path = self
-            .cache
-            .pages_by_canonical
-            .get(&cached.canonical)
-            .and_then(|by_lang| by_lang.get(&lang))
-            .ok_or_else(|| {
-                Error::message(format!("Page `{}` not found for language `{}`.", path, lang))
-            })?;
+            let file_path = self
+                .cache
+                .pages_by_canonical
+                .get(&cached.canonical)
+                .and_then(|by_lang| by_lang.get(&lang))
+                .ok_or_else(|| {
+                    Error::message(format!("Page `{}` not found for language `{}`.", path, lang))
+                })?;
 
-        self.cache
-            .pages
-            .get(file_path)
-            .map(|c| c.value.clone())
-            .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))
+            self.cache
+                .pages
+                .get(file_path)
+                .map(|c| c.value.clone())
+                .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))
+        })();
+
+        match res {
+            Ok(v) => Ok(v),
+            Err(err) => {
+                if allow_missing {
+                    Ok(Value::none())
+                } else {
+                    Err(err)
+                }
+            }
+        }
     }
 }
 
@@ -91,28 +106,43 @@ impl Function<TeraResult<Value>> for GetSection {
             .or_else(|| state.get::<String>("lang").ok().flatten())
             .unwrap_or_else(|| self.default_lang.clone());
 
+        let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or_else(|| false);
+
         let full_path = self.base_path.join(&path);
 
-        let cached = self
-            .cache
-            .sections
-            .get(&full_path)
-            .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))?;
+        let res = (|| {
+            let cached = self
+                .cache
+                .sections
+                .get(&full_path)
+                .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))?;
 
-        let file_path = self
-            .cache
-            .sections_by_canonical
-            .get(&cached.canonical)
-            .and_then(|by_lang| by_lang.get(&lang))
-            .ok_or_else(|| {
-                Error::message(format!("Section `{}` not found for language `{}`.", path, lang))
-            })?;
+            let file_path = self
+                .cache
+                .sections_by_canonical
+                .get(&cached.canonical)
+                .and_then(|by_lang| by_lang.get(&lang))
+                .ok_or_else(|| {
+                    Error::message(format!("Section `{}` not found for language `{}`.", path, lang))
+                })?;
 
-        self.cache
-            .sections
-            .get(file_path)
-            .map(|c| c.value.clone())
-            .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))
+            self.cache
+                .sections
+                .get(file_path)
+                .map(|c| c.value.clone())
+                .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))
+        })();
+
+        match res {
+            Ok(v) => Ok(v),
+            Err(err) => {
+                if allow_missing {
+                    Ok(Value::none())
+                } else {
+                    Err(err)
+                }
+            }
+        }
     }
 }
 
@@ -212,6 +242,16 @@ mod tests {
         let res = get_page.call(kwargs, &State::new(&ctx));
         assert!(res.is_err());
         assert!(res.unwrap_err().to_string().contains("not found for language `fr`"));
+
+        // None: non-existent path with allow_missing true
+        let kwargs = Kwargs::from([
+            ("path", Value::from("nonexistent.md")),
+            ("allow_missing", Value::from(true)),
+        ]);
+        let ctx = Context::new();
+        let res = get_page.call(kwargs, &State::new(&ctx));
+        assert!(res.is_ok());
+        assert!(res.unwrap() == Value::none());
     }
 
     fn create_section(title: &str, file_path: &str, lang: &str) -> Section {
@@ -301,5 +341,15 @@ mod tests {
         let res = get_section.call(kwargs, &State::new(&ctx));
         assert!(res.is_err());
         assert!(res.unwrap_err().to_string().contains("not found for language `fr`"));
+
+        // Error: non-existent path
+        let kwargs = Kwargs::from([
+            ("path", Value::from("nonexistent/_index.md")),
+            ("allow_missing", Value::from(true)),
+        ]);
+        let ctx = Context::new();
+        let res = get_section.call(kwargs, &State::new(&ctx));
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), Value::none());
     }
 }

@@ -162,6 +162,21 @@ If selecting a specific language for the page, you can pass `lang` with the lang
 
 ```
 
+If you want to ignore a missing page instead of raising an error, like in the case where you have a link to a draft page you want to handle yourself, you can pass `allow_missing=true` to the function:
+
+```jinja
+{% raw -%}
+{% set linked_page = get_page(path='blog/path-to-draft.md', allow_missing=true) %}
+{% if linked_page %}
+<a href="{{get_url(path='@/blog/page-in-draft.md')}}">
+    {{linked_page.title}}
+</a>
+{% else %}
+<span></span>
+{% endif %}
+
+```
+
 ### `get_section`
 Takes a path to an `_index.md` file and returns the associated section. The base path is the `content` directory.
 
@@ -188,6 +203,21 @@ If selecting a specific language for the section, you can pass `lang` with the l
 {# If "fr" is the default language, this is equivalent to #}
 {% set section = get_section(path="blog/_index.md") %}
 {%- endraw -%}
+```
+
+If you want to ignore a missing section instead of raising an error, like in the case where you have a link to a draft section you want to handle yourself, you can pass `allow_missing=true` to the function:
+
+```jinja
+{% raw -%}
+{% set linked_section = get_section(path='blog/path-to-draft.md', allow_missing=true) %}
+{% if linked_section %}
+<a href="{{get_url(path='@/blog/section-in-draft.md')}}">
+    {{linked_section.title}}
+</a>
+{% else %}
+<span></span>
+{% endif %}
+
 ```
 
 ### `get_taxonomy_url`
