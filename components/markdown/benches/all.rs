@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use config::{Config, HighlightConfig, Highlighting};
+use config::{Config, Highlighting};
 use criterion::{Criterion, criterion_group, criterion_main};
 use markdown::{MarkdownContext, render_content};
 use std::hint::black_box;
@@ -99,7 +99,9 @@ fn bench_with_highlighting(c: &mut Criterion) {
     let mut highlighting = Highlighting {
         error_on_missing_language: false,
         style: Default::default(),
-        theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+        theme: Some("github-dark".to_string()),
+        light_theme: None,
+        dark_theme: None,
         extra_grammars: vec![],
         extra_themes: vec![],
         registry: Default::default(),

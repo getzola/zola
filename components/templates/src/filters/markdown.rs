@@ -81,7 +81,7 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
 mod tests {
     use std::collections::HashMap;
 
-    use config::{Config, HighlightConfig, HighlightStyle, Highlighting, Registry};
+    use config::{Config, HighlightStyle, Highlighting, Registry};
     use giallo::DataAttrPosition;
     use tera::{Context, Filter, Kwargs, State, Value};
 
@@ -148,7 +148,9 @@ mod tests {
         config.markdown.highlighting = Some(Highlighting {
             error_on_missing_language: false,
             style: HighlightStyle::Inline,
-            theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+            theme: Some("github-dark".to_string()),
+            light_theme: None,
+            dark_theme: None,
             extra_grammars: vec![],
             extra_themes: vec![],
             data_attr_position: DataAttrPosition::default(),

@@ -1,7 +1,7 @@
 //! Benchmarking loading/markdown of generated sites of various sizes
 use std::env;
 
-use config::{HighlightConfig, Highlighting};
+use config::Highlighting;
 use criterion::{Criterion, criterion_group, criterion_main};
 use site::Site;
 
@@ -25,7 +25,9 @@ fn bench_loading_small_blog_with_syntax_highlighting(c: &mut Criterion) {
     let mut highlighting = Highlighting {
         error_on_missing_language: false,
         style: Default::default(),
-        theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+        theme: Some("github-dark".to_string()),
+        light_theme: None,
+        dark_theme: None,
         extra_grammars: vec![],
         extra_themes: vec![],
         registry: Default::default(),
@@ -59,7 +61,9 @@ fn bench_loading_small_kb_with_syntax_highlighting(c: &mut Criterion) {
     let mut highlighting = Highlighting {
         error_on_missing_language: false,
         style: Default::default(),
-        theme: HighlightConfig::Single { theme: "github-dark".to_string() },
+        theme: Some("github-dark".to_string()),
+        light_theme: None,
+        dark_theme: None,
         extra_grammars: vec![],
         extra_themes: vec![],
         registry: Default::default(),
