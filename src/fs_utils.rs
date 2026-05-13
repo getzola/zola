@@ -36,27 +36,37 @@ pub type MeaningfulEvent = (PathBuf, PathBuf, SimpleFileSystemEventKind);
 /// return our internal simplified representation. For events we don't care about,
 /// return `None`.
 fn get_relevant_event_kind(event_kind: &EventKind) -> Option<SimpleFileSystemEventKind> {
+    // Prefer having match arms for all specific event types, so that on a notify crate upgrade, we're forced to
+    // evaluate any changes and decide what corresponding mapping changes should happen.
     match event_kind {
-        // Nova on macOS reports this as it's final event on change
+        // Nova on macOS reports this as its final event on change
         EventKind::Modify(ModifyKind::Name(RenameMode::Any)) => {
             Some(SimpleFileSystemEventKind::Modify)
         }
-        EventKind::Create(CreateKind::File) | EventKind::Create(CreateKind::Folder) => {
+        // Windows only reports `Any`. Some filesystems also report `Other` in some situations.
+        EventKind::Create(CreateKind::Any | CreateKind::File | CreateKind::Folder | CreateKind::Other) => {
             Some(SimpleFileSystemEventKind::Create)
         }
-        EventKind::Modify(ModifyKind::Data(_))
-        // Windows 10 only reports modify events at the `Any` granularity.
+        EventKind::Modify(ModifyKind::Data(DataChange::Any | DataChange::Size | DataChange::Content | DataChange::Other))
+        // Windows only reports modify events at the `Any` granularity.
         | EventKind::Modify(ModifyKind::Any)
         // Intellij modifies file metadata on edit.
         // https://github.com/passcod/notify/issues/150#issuecomment-494912080
-        | EventKind::Modify(ModifyKind::Metadata(MetadataKind::WriteTime))
-        | EventKind::Modify(ModifyKind::Metadata(MetadataKind::Permissions))
-        | EventKind::Modify(ModifyKind::Metadata(MetadataKind::Ownership))
+        | EventKind::Modify(ModifyKind::Metadata(MetadataKind::WriteTime | MetadataKind::Permissions | MetadataKind::Ownership))
         | EventKind::Modify(ModifyKind::Name(RenameMode::To)) => Some(SimpleFileSystemEventKind::Modify),
-        EventKind::Remove(RemoveKind::File) | EventKind::Remove(RemoveKind::Folder) => {
+        // Windows only reports remove events at the `Any` granularity.
+        // `Other` sometimes represents unmount events in some filesystems.
+        EventKind::Remove(RemoveKind::Any | RemoveKind::File | RemoveKind::Folder | RemoveKind::Other) => {
             Some(SimpleFileSystemEventKind::Remove)
         }
-        _ => None,
+        EventKind::Any |
+        // `Access` events according to docs are non-mutating, so it's safe to catch-all ignore them.
+        EventKind::Access(_) |
+        EventKind::Modify(
+            ModifyKind::Name(RenameMode::From | RenameMode::Both | RenameMode::Other) |
+            ModifyKind::Metadata(MetadataKind::Any | MetadataKind::AccessTime | MetadataKind::Extended | MetadataKind::Other) |
+            ModifyKind::Other) |
+        EventKind::Other => None,
     }
 }
 
@@ -75,6 +85,8 @@ pub fn filter_events(
         HashMap::default();
 
     for event in events.iter() {
+        log::debug!(target: "file_change", "file change event: {:?}", event);
+
         let simple_kind = get_relevant_event_kind(&event.event.kind);
         if simple_kind.is_none() {
             continue;
@@ -91,31 +103,41 @@ pub fn filter_events(
         let path = event.event.paths[0].clone();
 
         // Since we debounce things, some files might already not exist anymore by the
-        // time we get to them
-        if !path.exists() {
-            continue;
+        // time we get to them. Of course, if this was a removal event, the path won't
+        // exist, but we do want to consider it meaningful.
+        if let Some(SimpleFileSystemEventKind::Remove) = simple_kind {
+        } else {
+            if !path.exists() {
+                log::debug!(target: "file_change", "skipping file change event because path does not exist");
+                continue;
+            }
         }
 
         if is_ignored_file(ignored_content_globset, &path) {
+            log::debug!(target: "file_change", "skipping file change event because it is ignored by content globset {:?}", ignored_content_globset);
             continue;
         }
 
         if is_temp_file(&path) {
+            log::debug!(target: "file_change", "skipping file change event because it is a temp file");
             continue;
         }
 
         // We only care about changes in non-empty folders
         if path.is_dir() && is_folder_empty(&path) {
+            log::debug!(target: "file_change", "skipping file change event because it is an empty dir");
             continue;
         }
 
         // Ignore ordinary files peer to config.toml. This assumes all other files we care
         // about are nested more deeply than config.toml or are directories peer to config.toml.
         if path != config_path && path.is_file() && path.parent() == config_path.parent() {
+            log::debug!(target: "file_change", "skipping file change event because it is a peer to config.toml");
             continue;
         }
 
         let (change_k, partial_p) = detect_change_kind(root_dir, &path, config_path);
+        log::debug!(target: "file_change", "tracking meaningful file change event: path {:?}, partial_p {:?}, simple_kind {:?}, change_k {:?}", path, partial_p, simple_kind.as_ref().unwrap(), change_k);
         meaningful_events.insert(path, (partial_p, simple_kind.unwrap(), change_k));
     }
 
@@ -184,8 +206,10 @@ mod tests {
     #[test]
     fn test_get_relative_event_kind() {
         let cases = [
+            (EventKind::Create(CreateKind::Any), Some(SimpleFileSystemEventKind::Create)),
             (EventKind::Create(CreateKind::File), Some(SimpleFileSystemEventKind::Create)),
             (EventKind::Create(CreateKind::Folder), Some(SimpleFileSystemEventKind::Create)),
+            (EventKind::Create(CreateKind::Other), Some(SimpleFileSystemEventKind::Create)),
             (EventKind::Modify(ModifyKind::Any), Some(SimpleFileSystemEventKind::Modify)),
             (
                 EventKind::Modify(ModifyKind::Data(DataChange::Size)),
@@ -216,11 +240,17 @@ mod tests {
                 Some(SimpleFileSystemEventKind::Modify),
             ),
             (
+                EventKind::Modify(ModifyKind::Name(RenameMode::Any)),
+                Some(SimpleFileSystemEventKind::Modify),
+            ),
+            (
                 EventKind::Modify(ModifyKind::Name(RenameMode::To)),
                 Some(SimpleFileSystemEventKind::Modify),
             ),
+            (EventKind::Remove(RemoveKind::Any), Some(SimpleFileSystemEventKind::Remove)),
             (EventKind::Remove(RemoveKind::File), Some(SimpleFileSystemEventKind::Remove)),
             (EventKind::Remove(RemoveKind::Folder), Some(SimpleFileSystemEventKind::Remove)),
+            (EventKind::Remove(RemoveKind::Other), Some(SimpleFileSystemEventKind::Remove)),
         ];
         for (case, expected) in cases.iter() {
             let ek = get_relevant_event_kind(case);
