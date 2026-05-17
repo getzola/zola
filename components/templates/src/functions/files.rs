@@ -114,7 +114,7 @@ impl Function<TeraResult<String>> for GetUrl {
                     &self.output_path,
                 )
                 .map_err(|e| Error::message(format!("`get_url`: {}", e)))?
-                .and_then(|(p, _)| fs::File::open(p).ok())
+                .and_then(|p| fs::File::open(p).ok())
                 .and_then(|mut f| {
                     let mut contents = Vec::new();
                     f.read_to_end(&mut contents).ok()?;
@@ -176,7 +176,7 @@ impl Function<TeraResult<String>> for GetHash {
                     match search_for_file(&self.base_path, &path_v, &self.theme, &self.output_path)
                         .map_err(|e| Error::message(format!("`get_hash`: {}", e)))?
                     {
-                        Some((f, _)) => f,
+                        Some(f) => f,
                         None => {
                             return Err(Error::message(format!(
                                 "`get_hash`: Cannot find file: {}",

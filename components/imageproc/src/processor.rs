@@ -190,7 +190,6 @@ impl Processor {
     pub fn enqueue(
         &mut self,
         op: ResizeOperation,
-        input_src: String,
         input_path: PathBuf,
         format: &str,
         quality: Option<u8>,
@@ -207,7 +206,7 @@ impl Processor {
         // We get the output format
         let format = Format::from_args(meta.is_lossy(), format, quality, speed)?;
         // Now we have all the data we need to generate the output filename and the response
-        let filename = get_processed_filename(&input_path, &input_src, &op, &format);
+        let filename = get_processed_filename(&input_path, &op, &format)?;
         let url = format!("{}{}", self.base_url, filename);
         let static_path = Path::new("static").join(RESIZED_SUBDIR).join(&filename);
         let output_path = self.output_dir.join(&filename);
