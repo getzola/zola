@@ -10,6 +10,7 @@ use std::path::Path;
 use svg_metadata::Metadata as SvgMetadata;
 
 use crate::get_rotated_size;
+use crate::helpers::{ExifError, get_created_datetime, get_description};
 
 /// Size and format read cheaply with `image`'s `Reader`.
 #[derive(Debug)]
@@ -17,6 +18,8 @@ pub struct ImageMeta {
     /// (w, h)
     pub size: (u32, u32),
     pub format: Option<ImageFormat>,
+    pub description: Option<String>,
+    pub created: Option<String>,
 }
 
 impl ImageMeta {
@@ -24,14 +27,46 @@ impl ImageMeta {
         let reader = ImageReader::open(path).and_then(ImageReader::with_guessed_format)?;
         let format = reader.format();
         let mut decoder = reader.into_decoder()?;
-        let mut size = decoder.dimensions();
-        let raw_metadata = decoder.exif_metadata()?;
+        let size = decoder.dimensions();
+        let Some(metadata) = decoder.exif_metadata()? else {
+            // No raw EXIF data present for this file
+            return Ok(Self { size, format, description: None, created: None });
+        };
+        let metadata = match exif::Reader::new().read_raw(metadata) {
+            Ok(metadata) => metadata,
+            Err(e) => {
+                eprintln!("Failed to parse exif for {}: {}", path.display(), e);
+                return Ok(Self { size, format, description: None, created: None });
+            }
+        };
 
-        if let Some((w, h)) = get_rotated_size(size.0, size.1, raw_metadata) {
-            size = (w, h);
-        }
+        let size = get_rotated_size(size.0, size.1, &metadata).unwrap_or_else(|e| {
+            eprintln!("Failed to get rotation from exif for {}: {}", path.display(), e);
+            size
+        });
 
-        Ok(Self { size, format })
+        let description = get_description(&metadata)
+            .inspect_err(|e| {
+                match e {
+                    // Missing description field in the EXIF metadata is normal; don't log.
+                    ExifError::NoSuchField(_) => (),
+                    _ => eprintln!(
+                        "Failed to get description from exif for {}: {}",
+                        path.display(),
+                        e
+                    ),
+                }
+            })
+            .ok();
+
+        let created = get_created_datetime(&metadata)
+            .inspect_err(|e| {
+                // Created Datetime should ~always be present, so log if it's missing.
+                eprintln!("Failed to get created datetime from exif for {}: {}", path.display(), e)
+            })
+            .ok();
+
+        Ok(Self { size, format, description, created })
     }
 
     pub fn is_lossy(&self) -> bool {
@@ -49,15 +84,41 @@ pub struct ImageMetaResponse {
     pub height: u32,
     pub format: Option<&'static str>,
     pub mime: Option<&'static str>,
+    pub description: Option<String>,
+    pub created: Option<String>,
 }
 
 impl ImageMetaResponse {
-    pub fn new_svg(width: u32, height: u32) -> Self {
-        Self { width, height, format: Some("svg"), mime: Some("text/svg+xml") }
+    fn new_svg(path: &Path) -> Result<Self> {
+        let img = SvgMetadata::parse_file(path)?;
+        let (w, h) = match (img.width(), img.height(), img.view_box()) {
+            (Some(w), Some(h), _) => Ok((w, h)),
+            (_, _, Some(view_box)) => Ok((view_box.width, view_box.height)),
+            _ => Err(anyhow!("Invalid dimensions: SVG width/height and viewbox not set.")),
+        }?;
+        Ok(Self {
+            width: w as u32,
+            height: h as u32,
+            format: Some("svg"),
+            mime: Some("text/svg+xml"),
+            // SVG files have these fields, but we'd need a more comprehensive parser to read them.
+            description: None,
+            created: None,
+        })
     }
 
-    pub fn new_avif(width: u32, height: u32) -> Self {
-        Self { width, height, format: Some("avif"), mime: Some("image/avif") }
+    fn new_avif(path: &Path) -> Result<Self> {
+        let avif_data = read_avif(&mut BufReader::new(fs::File::open(path)?))?;
+        let meta = avif_data.primary_item_metadata()?;
+        Ok(Self {
+            width: meta.max_frame_width.get(),
+            height: meta.max_frame_height.get(),
+            format: Some("avif"),
+            mime: Some("image/avif"),
+            // AVIF files have exif metadata to read these fields from, but we'd  need to enable image's avif-native feature to support decoding it.
+            description: None,
+            created: None,
+        })
     }
 }
 
@@ -68,6 +129,8 @@ impl From<ImageMeta> for ImageMetaResponse {
             height: im.size.1,
             format: im.format.and_then(|f| f.extensions_str().first()).copied(),
             mime: im.format.map(|f| f.to_mime_type()),
+            description: im.description,
+            created: im.created,
         }
     }
 }
@@ -77,25 +140,18 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
     let path = path.as_ref();
     let ext = path.extension().and_then(OsStr::to_str).unwrap_or("").to_lowercase();
 
-    let err_context = || format!("Failed to read image: {}", path.display());
+    let err_context = || {
+        format!(
+            "Failed to read image (ext: {}) metadata: {}",
+            if ext.is_empty() { "?" } else { ext.as_str() },
+            path.display()
+        )
+    };
 
     match ext.as_str() {
-        "svg" => {
-            let img = SvgMetadata::parse_file(path).with_context(err_context)?;
-            match (img.height(), img.width(), img.view_box()) {
-                (Some(h), Some(w), _) => Ok((h, w)),
-                (_, _, Some(view_box)) => Ok((view_box.height, view_box.width)),
-                _ => Err(anyhow!("Invalid dimensions: SVG width/height and viewbox not set.")),
-            }
-            // this is not a typo, this returns the correct values for width and height.
-            .map(|(h, w)| ImageMetaResponse::new_svg(w as u32, h as u32))
-        }
-        "avif" => {
-            let avif_data =
-                read_avif(&mut BufReader::new(fs::File::open(path)?)).with_context(err_context)?;
-            let meta = avif_data.primary_item_metadata()?;
-            Ok(ImageMetaResponse::new_avif(meta.max_frame_width.get(), meta.max_frame_height.get()))
-        }
-        _ => ImageMeta::read(path).map(ImageMetaResponse::from).with_context(err_context),
+        "svg" => ImageMetaResponse::new_svg(path),
+        "avif" => ImageMetaResponse::new_avif(path),
+        _ => ImageMeta::read(path).map(ImageMetaResponse::from).map_err(Into::into),
     }
+    .with_context(err_context)
 }
