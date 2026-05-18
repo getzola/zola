@@ -3,14 +3,14 @@
 title = "zolanight"
 description = "ZolaNight is a dark theme inspired by the Tokyo Night color palette"
 template = "theme.html"
-date = 2026-02-09T23:01:22+08:00
+date = 2026-05-15T05:25:00+08:00
 
 [taxonomies]
 theme-tags = ['dark', 'blog', 'responsive', 'syntax-highlighting', 'tokyo-night']
 
 [extra]
-created = 2026-02-09T23:01:22+08:00
-updated = 2026-02-09T23:01:22+08:00
+created = 2026-05-15T05:25:00+08:00
+updated = 2026-05-15T05:25:00+08:00
 repository = "https://github.com/mxaddict/zolanight"
 homepage = "https://github.com/mxaddict/zolanight"
 minimum_version = "0.18.0"
