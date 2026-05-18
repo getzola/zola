@@ -3,14 +3,14 @@
 title = "Prism"
 description = "A modern Zola theme featuring glassmorphism design"
 template = "theme.html"
-date = 2026-05-08T19:11:57+05:00
+date = 2026-05-17T22:24:02+05:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-05-08T19:11:57+05:00
-updated = 2026-05-08T19:11:57+05:00
+created = 2026-05-17T22:24:02+05:00
+updated = 2026-05-17T22:24:02+05:00
 repository = "https://github.com/jahamars/zola-prism.git"
 homepage = "https://github.com/j4hongir/zola-prism"
 minimum_version = "0.19.0"
@@ -46,13 +46,18 @@ theme = "prism"
 ```toml
 
 # CORE ZOLA SETTINGS
-base_url = "https://your-site.com/"          # Your site URL
+base_url = "https://your-site.com/"           # Your site URL
 title = "Your Site Title"                     # Site title (shown in header)
 description = "Your site description"         # Meta description for SEO
 default_language = "en"                       # Site language code (en, ru, etc)
 
 compile_sass = true                           # Compile Sass to CSS
 minify_html = true                            # Minify HTML output for performance
+
+
+generate_feeds = true                         # RSS/Atom feed
+feed_filenames = ["atom.xml", "rss.xml"]      
+
 
 # TAXONOMIES - Categories, tags, authors
 taxonomies = [
