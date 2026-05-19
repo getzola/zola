@@ -35,7 +35,7 @@ impl Function<TeraResult<Value>> for GetPage {
             .or_else(|| state.get::<String>("lang").ok().flatten())
             .unwrap_or_else(|| self.default_lang.clone());
 
-        let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or_else(|| false);
+        let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or(false);
 
         let full_path = self.base_path.join(&path);
 
@@ -106,7 +106,7 @@ impl Function<TeraResult<Value>> for GetSection {
             .or_else(|| state.get::<String>("lang").ok().flatten())
             .unwrap_or_else(|| self.default_lang.clone());
 
-        let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or_else(|| false);
+        let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or(false);
 
         let full_path = self.base_path.join(&path);
 
