@@ -140,6 +140,10 @@ authors = []
 # hasn't set `in_search_index` to "false" in its front matter.
 in_search_index = true
 
+# When set to "false", the page will be excluded from all feeds (site, section, and taxonomy).
+# Defaults to "true".
+include_in_feeds = true
+
 # Template to use to render this page.
 template = "page.html"
 
