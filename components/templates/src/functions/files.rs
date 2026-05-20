@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Write as _;
 use std::io::Read;
 use std::path::PathBuf;
 
@@ -15,16 +16,21 @@ use crate::helpers::search_for_file;
 
 fn compute_hash<D>(data: &[u8], as_base64: bool) -> String
 where
-    D: std::io::Write,
     D: digest::Digest,
-    digest::Output<D>: core::fmt::LowerHex,
+    digest::Output<D>: AsRef<[u8]>,
 {
     let mut hasher = D::new();
     hasher.update(data);
+    let result = hasher.finalize();
+    let bytes = result.as_ref();
     if as_base64 {
-        standard_b64.encode(hasher.finalize())
+        standard_b64.encode(bytes)
     } else {
-        format!("{:x}", hasher.finalize())
+        let mut hex = String::with_capacity(bytes.len() * 2);
+        for b in bytes {
+            write!(hex, "{:02x}", b).unwrap();
+        }
+        hex
     }
 }
 
