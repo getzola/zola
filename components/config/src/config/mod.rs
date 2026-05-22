@@ -537,6 +537,22 @@ base_url = "https://replace-this-with-your-url.com"
     }
 
     #[test]
+    fn errors_when_unknown_highlighting_field() {
+        let config = r#"
+title = "My site"
+base_url = "https://replace-this-with-your-url.com"
+
+[markdown.highlighting]
+theme = "base16-ocean-dark"
+extra_grammar = ["static/grammar/pillar.json"]
+        "#;
+
+        let config = Config::parse(config);
+        assert!(config.is_err());
+        assert!(config.unwrap_err().to_string().contains("extra_grammar"));
+    }
+
+    #[test]
     fn errors_when_missing_required_field() {
         // base_url is required
         let config = r#"

@@ -26,6 +26,7 @@ pub enum HighlightConfig {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Highlighting {
     /// Emit an error for missing highlight languages. Defaults to false
     #[serde(default)]
