@@ -160,6 +160,7 @@ impl Section {
             self.meta.insert_anchor_links.unwrap_or(config.markdown.insert_anchor_links),
         );
         context.set_shortcode_definitions(shortcode_definitions);
+        context.set_colocated_path(self.permalink.clone());
         context.set_current_page_path(&self.file.relative);
         context
             .tera_context
@@ -237,6 +238,50 @@ impl Section {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn colocated_base_uses_section_permalink() {
+        use std::collections::HashMap;
+
+        use config::Config;
+        use tera::Tera;
+
+        let config = Config::default();
+        let mut section = super::Section::default();
+        section.lang = config.default_language.clone();
+        section.permalink = "https://example.com/posts/".to_string();
+        section.raw_content = "[asset](image.png)".to_string();
+
+        let permalinks = HashMap::new();
+        let tera = Tera::default();
+        let shortcode_definitions = HashMap::new();
+
+        section.render_markdown(&permalinks, &tera, &config, &shortcode_definitions).unwrap();
+
+        assert!(section.content.contains("posts/image.png"));
+    }
+
+    #[test]
+    fn colocated_base_does_not_rewrite_absolute_links() {
+        use std::collections::HashMap;
+
+        use config::Config;
+        use tera::Tera;
+
+        let config = Config::default();
+        let mut section = super::Section::default();
+        section.lang = config.default_language.clone();
+        section.permalink = "https://example.com/posts/".to_string();
+        section.raw_content = "[ext](https://other.com/image.png)".to_string();
+
+        let permalinks = HashMap::new();
+        let tera = Tera::default();
+        let shortcode_definitions = HashMap::new();
+
+        section.render_markdown(&permalinks, &tera, &config, &shortcode_definitions).unwrap();
+
+        assert!(section.content.contains("https://other.com/image.png"));
+    }
+
     use std::fs::{File, create_dir, create_dir_all};
     use std::io::Write;
     use std::path::{Path, PathBuf};
