@@ -10,7 +10,7 @@ use std::path::Path;
 use svg_metadata::Metadata as SvgMetadata;
 
 use crate::get_rotated_size;
-use crate::helpers::{ExifError, get_created_datetime, get_description};
+use crate::helpers::{get_created_datetime, get_description};
 
 /// Size and format read cheaply with `image`'s `Reader`.
 #[derive(Debug)]
@@ -40,32 +40,9 @@ impl ImageMeta {
             }
         };
 
-        let size = get_rotated_size(size.0, size.1, &metadata).unwrap_or_else(|e| {
-            eprintln!("Failed to get rotation from exif for {}: {}", path.display(), e);
-            size
-        });
-
-        let description = get_description(&metadata)
-            .inspect_err(|e| {
-                match e {
-                    // Missing description field in the EXIF metadata is normal; don't log.
-                    ExifError::NoSuchField(_) => (),
-                    _ => eprintln!(
-                        "Failed to get description from exif for {}: {}",
-                        path.display(),
-                        e
-                    ),
-                }
-            })
-            .ok();
-
-        let created = get_created_datetime(&metadata)
-            .inspect_err(|e| {
-                // Created Datetime should ~always be present, so log if it's missing.
-                eprintln!("Failed to get created datetime from exif for {}: {}", path.display(), e)
-            })
-            .ok();
-
+        let size = get_rotated_size(size.0, size.1, &metadata).unwrap_or(size);
+        let description = get_description(&metadata).ok();
+        let created = get_created_datetime(&metadata).ok();
         Ok(Self { size, format, description, created })
     }
 
