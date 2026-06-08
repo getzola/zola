@@ -3,14 +3,14 @@
 title = "Kita"
 description = "Kita is a clean, elegant and simple blog theme for Zola."
 template = "theme.html"
-date = 2026-05-10T01:04:33+08:00
+date = 2026-05-26T08:16:11+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-05-10T01:04:33+08:00
-updated = 2026-05-10T01:04:33+08:00
+created = 2026-05-26T08:16:11+02:00
+updated = 2026-05-26T08:16:11+02:00
 repository = "https://github.com/st1020/kita.git"
 homepage = "https://github.com/st1020/kita"
 minimum_version = "0.17.0"
@@ -74,7 +74,7 @@ theme = "kita"
 
 ## Configuration
 
-See the `extra` section in [config.toml](https://github.com/st1020/kita/blob/main/config.toml) as a example.
+See the `extra` section in [zola.toml](https://github.com/st1020/kita/blob/main/zola.toml) as a example.
 
 ## Inject support
 
