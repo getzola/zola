@@ -160,6 +160,11 @@ fn can_build_site_without_live_reload() {
     assert!(file_exists!(public, "an-old-url/old-page/index.html"));
     assert!(file_contains!(public, "an-old-url/old-page/index.html", "something-else"));
     assert!(file_contains!(public, "another-old-url/index.html", "posts/"));
+    assert!(file_contains!(
+        public,
+        "posts/something-else/index.html",
+        "Page aliases: /an-old-url/old-page,/an-old-url/an-old-alias.html"
+    ));
 
     // html aliases work
     assert!(file_exists!(public, "an-old-url/an-old-alias.html"));

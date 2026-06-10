@@ -56,6 +56,7 @@ pub struct SerializingPage<'a> {
     day: Option<u8>,
     taxonomies: &'a HashMap<String, Vec<String>>,
     authors: &'a [String],
+    aliases: &'a [String],
     extra: &'a Map<String, Value>,
     path: &'a str,
     components: &'a [String],
@@ -121,6 +122,7 @@ impl<'a> SerializingPage<'a> {
             day,
             taxonomies: &page.meta.taxonomies,
             authors: &page.meta.authors,
+            aliases: &page.meta.aliases,
             path: &page.path,
             components: &page.components,
             summary: &page.summary,
@@ -135,6 +137,26 @@ impl<'a> SerializingPage<'a> {
             translations,
             backlinks,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SerializingPage;
+    use crate::Page;
+    use tera::to_value;
+
+    #[test]
+    fn page_serialization_includes_aliases() {
+        let mut page = Page::default();
+        page.meta.aliases = vec!["/old-url/".to_owned(), "/legacy.html".to_owned()];
+
+        let serialized = to_value(SerializingPage::new(&page, None, false)).unwrap();
+
+        assert_eq!(
+            serialized.get("aliases").unwrap(),
+            &to_value(["/old-url/", "/legacy.html"]).unwrap()
+        );
     }
 }
 
