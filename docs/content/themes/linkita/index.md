@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2026-01-11T22:53:30+02:00
+date = 2026-01-25T23:12:04+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2026-01-11T22:53:30+02:00
-updated = 2026-01-11T22:53:30+02:00
+created = 2026-01-25T23:12:04+02:00
+updated = 2026-01-25T23:12:04+02:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://codeberg.org/salif/linkita"
 minimum_version = "0.19.0"
@@ -43,10 +43,10 @@ and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual a
 - Dark mode
 - Responsive design
 - Social icons
-- Taxonomies support
+- Taxonomy support
 - Projects page
 - Archive page
-- Table of Content
+- Table of Contents
 - Admonition shortcode
 - SEO friendly
 - Comments using [Giscus](https://giscus.app/)
@@ -89,9 +89,9 @@ If you don't want to use git submodules, you can clone the repository instead:
 git clone -b v4 https://codeberg.org/salif/linkita.git themes/linkita
 ```
 
-2. Enable the theme in your `config.toml` file:
+2. Enable the theme in your `zola.toml` or `config.toml` file:
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 theme = "linkita"
 ```
 
@@ -227,7 +227,7 @@ Summary <!-- more -->
 #### Pages
 
 The default page template `page.html` is for blog posts.
-For pages that are not blog posts you can use the `pages.html` template.
+For pages that are not blog posts, you can use the `pages.html` template.
 
 In the `content` directory, create a subdirectory named `pages` and
 create a `content/pages/_index.md` file:
@@ -259,7 +259,7 @@ Choose one of the following options or skip if you don't know what you're doing:
 
 #### Option A: Using `page.authors` and `config.author`
 
-The default author for posts is set using the `author` variable in the `config.toml` file.
+The default author for posts is set using the `author` variable in the `zola.toml` file.
 
 You don't need to set `authors` in the front matter if the default author is the only author of the post.
 Otherwise, set `authors`:
@@ -308,11 +308,11 @@ For example, you can add JavaScript files and CSS stylesheets in the `templates/
 
 ## Configuration
 
-Copy and paste the examples into your `config.toml` file
+Copy and paste the examples into your `zola.toml` file
 and comment out the variables you don't use instead of setting empty values.
 All variables are optional.
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 # The URL the site will be built for.
 base_url = "https://example.com"
 
@@ -351,7 +351,7 @@ feed_filenames = ["atom.xml"]
 Zola has built-in support for taxonomies.
 Linkita has special support for taxonomies named `tags`, `categories`, and `authors`.
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [[taxonomies]]
 name = "categories"
 feed = true
@@ -370,7 +370,7 @@ paginate_by = 4
 
 You can add more languages by replacing `fr` from the following example with the language code:
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [languages.fr]
 title = "Site title in French"
 description = "Site description in French"
@@ -385,7 +385,7 @@ taxonomies = [
 By default, taxonomy pages are sorted in descending order by the number of posts.
 You can customize this behavior using the `extra.taxonomy_sorting` variable:
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [extra.taxonomy_sorting]
 # "ascending_frequency", "descending_frequency" or "name"
 # Default value: "descending_frequency"
@@ -396,7 +396,7 @@ authors = "name"
 
 ### General config
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [extra]
 # Enable KaTeX math formula support globally.
 # Default value: false
@@ -435,7 +435,7 @@ disable_javascript = false
 use_cdn = false
 
 # Use relative URLs.
-# It doesn't apply for content yet.
+# It doesn't apply to content yet.
 # Default value: false
 relative_urls = false
 
@@ -444,7 +444,7 @@ relative_urls = false
 # Default value: false
 ugly_urls = false
 
-# Prioritize summary over description.
+# Prioritize the summary over the description.
 # Default value: false
 page_summary_on_paginator = false
 
@@ -459,14 +459,14 @@ invert_page_navigation = false
 # Can be set to an empty array.
 # header_buttons = ["site_title", "theme_select", "search_button", "translations_select"]
 
-# What info is shown on post pages.
+# Information shown on post pages.
 # Valid "when" values:
 #  "date", "date_updated", "reading_time", "word_count", "authors", "tags", "".
 # The "prepend" and "append" are used when the value of "when" is defined for the page.
 # e.g. [{when="", prepend="Page Info: "},{when="date",prepend="Published on "},{when="authors",prepend="By "}]
 # page_info = [{ when="date" }, { when="date_updated", prepend="(", append=")" }, { when="reading_time" }]
 
-# What info is shown for posts on paginators.
+# Information shown for posts on paginators.
 # page_info_on_paginator = [{ when="date" }, { when="reading_time" }]
 
 # Enable table of contents on all pages.
@@ -478,7 +478,7 @@ invert_page_navigation = false
 
 ### Style config
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [extra.style]
 # The custom background color.
 bg_color = "#f4f4f5"
@@ -498,7 +498,7 @@ header_dark_color = "#27272a"
 
 ### Menus
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [extra.menus]
 menu_name = [
   { url = "$BASE_URL/blog/", name = "Archive" },
@@ -520,7 +520,7 @@ multilingual_menu_name = [
 
 To use a menu, set `extra.header_menu_name`.
 
-`$BASE_URL` in `url` will be automatically replaced with the language specific base url.
+`$BASE_URL` in `url` will be automatically replaced with the language specific base URL.
 You can use [Internal links](https://www.getzola.org/documentation/content/linking/#internal-links)
 instead of `$BASE_URL`.
 
@@ -531,7 +531,7 @@ If your site is multilingual, you can choose one of the following options or com
 
 ### Profiles
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 # Replace "your_username" with your username.
 [extra.profiles.your_username]
 
@@ -571,7 +571,7 @@ social = [
 
 Skip if your site is not multilingual.
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 # For French. Replace "your_username" with your username.
 [extra.profiles.your_username.languages.fr]
 
@@ -593,7 +593,7 @@ social = []
 
 See [the Open Graph protocol](https://ogp.me/).
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 # Replace "your_username" with your username.
 [extra.profiles.your_username.open_graph]
 
@@ -626,13 +626,13 @@ fediverse_creator = { handle = "", domain = "" }
 ```
 
 `image` and `image_alt` of the default author's profile will be used
-as a fallback open graph image for all pages.
+as a fallback Open Graph image for all pages.
 
 #### Open Graph translations
 
 Skip if your site is not multilingual.
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 # For French. Replace "your_username" with your username.
 [extra.profiles.your_username.open_graph.languages.fr]
 # A description of what is in the social image.
@@ -641,7 +641,7 @@ image_alt = ""
 
 ### The page footer
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [extra.footer]
 # Replace with the correct year.
 # Default value: the current year
@@ -674,7 +674,7 @@ The `copyright` variable supports Markdown,
 
 For date format, see [chrono docs](https://docs.rs/chrono/0.4/chrono/format/strftime/index.html).
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 # For English
 [extra.languages.en]
 
@@ -718,7 +718,7 @@ tags = "Browse articles related to $NAME. Start exploring!"
 authors = "Browse articles written by $NAME. Start exploring!"
 ```
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 # For French
 [extra.languages.fr]
 locale = "fr_FR"
@@ -731,7 +731,7 @@ date_format = "%x"
 
 Set only if you use [GoatCounter](https://www.goatcounter.com/).
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [extra.goatcounter]
 # No default value.
 endpoint = "https://MYCODE.goatcounter.com/count"
@@ -746,7 +746,7 @@ endpoint = "https://MYCODE.goatcounter.com/count"
 
 Set only if you use [Vercel Web Analytics](https://vercel.com/docs/analytics).
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [extra.vercel_analytics]
 # No default value.
 src = "/_vercel/insights/script.js"
@@ -763,7 +763,7 @@ For example, open <http://127.0.0.1:1111/#disable-analytics>.
 See [giscus.app](https://giscus.app/).
 Only available when `extra.comment` in the front matter or `extra.comment` in the config is set to `true`.
 
-```toml ,name=config.toml
+```toml ,name=zola.toml
 [extra.giscus]
 # No default value.
 repo = ""

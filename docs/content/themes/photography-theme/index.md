@@ -3,14 +3,14 @@
 title = "photography theme"
 description = "a photography portfolio theme with many features, including an AI blocker"
 template = "theme.html"
-date = 2026-01-10T19:55:04+01:00
+date = 2026-02-01T20:53:02+01:00
 
 [taxonomies]
 theme-tags = ['Blog', 'portfolio', 'photography', 'SEO']
 
 [extra]
-created = 2026-01-10T19:55:04+01:00
-updated = 2026-01-10T19:55:04+01:00
+created = 2026-02-01T20:53:02+01:00
+updated = 2026-02-01T20:53:02+01:00
 repository = "https://codeberg.org/arbs09/photography-theme.git"
 homepage = "https://arbs09.dev/projects/photography-theme/"
 minimum_version = "0.19.2"
@@ -23,11 +23,9 @@ homepage = "https://arbs09.dev"
 +++        
 
 # photography website theme
-
 ![screenshot](screenshot.png)
 
 ## Installation
-
 Initialise git:
 
 ```bash
@@ -48,7 +46,6 @@ theme = "photography"
 ```
 
 ## Updating
-
 Just run:
 
 ```bash
@@ -76,7 +73,6 @@ footer_links = [
 ```
 
 #### Copyright
-
 For editing the copyright in the footer just use this:
 
 ```toml
@@ -87,10 +83,16 @@ copyright = "Example"
 #### Ai opt-out
 
 If you want to opt out of (some) Ai Bots crawling your site you can add the following to your config.toml.
-
 ```toml
 [extra]
 no_ai = true
 ```
 
+#### Tracking
+If you want to intigrate Tracking via javascript in the html head you can add configure it like this in the config.toml.
+
+```toml
+[extra]
+tracking_js = "<your js part>
+```
         

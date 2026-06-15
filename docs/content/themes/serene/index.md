@@ -1,19 +1,19 @@
 
 +++
 title = "serene"
-description = "A spiffy blog theme for zola"
+description = "A minimal blog theme for zola, well crafted"
 template = "theme.html"
-date = 2025-10-18T22:45:32+08:00
+date = 2026-02-01T01:30:40+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-10-18T22:45:32+08:00
-updated = 2025-10-18T22:45:32+08:00
+created = 2026-02-01T01:30:40+08:00
+updated = 2026-02-01T01:30:40+08:00
 repository = "https://github.com/isunjn/serene.git"
 homepage = "https://github.com/isunjn/serene"
-minimum_version = "0.20.0"
+minimum_version = "0.22.1"
 license = "MIT"
 demo = "https://serene-demo.pages.dev"
 

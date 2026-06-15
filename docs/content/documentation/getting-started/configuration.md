@@ -195,6 +195,7 @@ dark_theme = ""
 extra_grammars = []
 
 # A list of files for additional JSON TextMate themes
+# Get themes from https://textmate-grammars-themes.netlify.app/
 extra_themes = []
 
 # Configuration of the link checker.
