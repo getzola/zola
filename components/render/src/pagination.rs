@@ -86,7 +86,7 @@ impl<'a> Paginator<'a> {
         let paginate_by = taxonomy.kind.paginate_by.unwrap();
         // Check for taxon-specific template, or use generic as fallback.
         let specific_template = format!("{}/single.html", taxonomy.kind.name);
-        let template = if tera.get_template(&specific_template).is_some() {
+        let template = if tera.contains_template(&specific_template) {
             specific_template
         } else {
             "taxonomy_single.html".to_string()

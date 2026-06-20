@@ -24,7 +24,7 @@ macro_rules! render_default_tpl {
 
 pub(crate) fn render_template(name: &str, tera: &Tera, context: Context) -> Result<String> {
     // First check if the template exists
-    if tera.get_template(name).is_none() {
+    if !tera.contains_template(name) {
         // Template not found - use fallback for known types
         return match name {
             "index.html" | "section.html" => render_default_tpl!(

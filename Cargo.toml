@@ -109,7 +109,7 @@ serde_yaml = "0.9"
 sha2 = "0.11"
 slug = "0.1"
 svg_metadata = "0.6"
-tera = {version = "2.0.0-alpha.6", features = ["fast", "glob_fs"] }
+tera = {version = "2.0.0-alpha.9", features = ["fast", "glob_fs"] }
 time = "0.3"
 toml = "0.9"
 unic-langid = "0.9"
@@ -117,7 +117,7 @@ unicode-segmentation = "1.2"
 url = "2"
 walkdir = "2"
 webp = "0.3"
-giallo = {version = "0.3", features = ["dump"]}
+giallo = {version = "0.4", features = ["dump"]}
 insta = "1"
 jiff = "0.2"
 memchr = "2.7.6"

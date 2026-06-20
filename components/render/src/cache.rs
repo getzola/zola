@@ -154,8 +154,8 @@ impl RenderCache {
                 let single_tpl = format!("{}/single.html", t.kind.name);
                 let list_tpl = format!("{}/list.html", t.kind.name);
                 let single_template =
-                    tera.get_template(&single_tpl).is_some().then_some(single_tpl);
-                let list_template = tera.get_template(&list_tpl).is_some().then_some(list_tpl);
+                    tera.contains_template(&single_tpl).then_some(single_tpl);
+                let list_template = tera.contains_template(&list_tpl).then_some(list_tpl);
 
                 // Serialize all terms using cached page values
                 let mut terms = AHashMap::with_capacity(t.items.len());

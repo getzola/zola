@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
 use gh_emoji::Replacer as EmojiReplacer;
-use giallo::{HtmlRenderer, ParsedFence, parse_markdown_fence};
+use giallo::{ExtraHtmlContent, HtmlRenderer, ParsedFence, parse_markdown_fence};
 use pulldown_cmark::{CodeBlockKind, CowStr, Event, LinkType, Parser, Tag, TagEnd};
 use pulldown_cmark_escape::{escape_href, escape_html};
 use regex::{Regex, RegexBuilder};
@@ -150,6 +150,7 @@ impl CodeBlock {
                     .as_ref()
                     .map(|x| x.data_attr_position.clone())
                     .unwrap_or_default(),
+                extra_html_content: ExtraHtmlContent::default(),
             };
             let out =
                 match hl.registry.highlight(&self.content, &hl.highlight_options(&self.fence.lang))
