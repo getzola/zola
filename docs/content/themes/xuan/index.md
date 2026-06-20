@@ -3,17 +3,17 @@
 title = "xuan"
 description = "Modern, pretty, and clean theme"
 template = "theme.html"
-date = 2026-02-25T00:58:14+08:00
+date = 2026-06-10T20:46:05+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-02-25T00:58:14+08:00
-updated = 2026-02-25T00:58:14+08:00
+created = 2026-06-10T20:46:05+08:00
+updated = 2026-06-10T20:46:05+08:00
 repository = "https://github.com/jhq223/xuan.git"
 homepage = "https://github.com/jhq223/xuan"
-minimum_version = "0.21.0"
+minimum_version = "0.22.1"
 license = "MIT"
 demo = "https://xuan-theme.jhq223.workers.dev"
 
@@ -33,13 +33,12 @@ homepage = "https://blog.guiio.com"
 相较于原版 Duckquill，Xuan 做了以下改进：
 
 - **🎨 视觉风格**：
-  - 代码高亮主题统一为 **One Dark Pro**。
   - 修改了分割线样式。
   - 移除原版所有用于定制的 "mods" 样式。
 - **🧩 调整**：
   - 移除博客列表页的“按标签筛选”功能，界面更清爽。
   - 移除文章页移动端顶部的按钮列表，改为**右下角悬浮操作按钮**（返回顶部、主页等）。
-  - 移除了alert和vimeo短代码。
+  - 移除了 alert 和 vimeo 短代码。
 - **🚀 功能增强**：
   - **新增归档页面**：按时间线查看所有文章。
   - **新增友情链接页面**：方便展示友链。
