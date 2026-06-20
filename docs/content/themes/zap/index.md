@@ -3,17 +3,17 @@
 title = "Zap"
 description = "A fast, ultra-minimal Zola theme"
 template = "theme.html"
-date = 2025-12-08T18:11:59Z
+date = 2026-04-14T12:29:18+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-12-08T18:11:59Z
-updated = 2025-12-08T18:11:59Z
+created = 2026-04-14T12:29:18+01:00
+updated = 2026-04-14T12:29:18+01:00
 repository = "https://github.com/jimmyff/zola-zap.git"
 homepage = "https://github.com/jimmyff/zola-zap"
-minimum_version = "0.17.0"
+minimum_version = "0.22.0"
 license = "MIT"
 demo = "https://www.jimmyff.co.uk/zola-zap/"
 
@@ -37,6 +37,7 @@ A fast, ultra-minimal Zola theme by [jimmyff](https://www.jimmyff.co.uk). Perfec
 - Click-to-enlarge lightbox
 - Responsive images with srcset
 - Light/dark mode toggle
+- Print-friendly styling
 - OpenGraph & Twitter Cards
 - Atom & RSS feeds
 - Fuse.js search

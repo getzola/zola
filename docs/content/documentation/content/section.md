@@ -169,9 +169,9 @@ The `sort_by` front-matter variable can have the following values:
 
 ### `date`
 This will sort all pages by their `date` field, from the most recent (at the
-top of the list) to the oldest (at the bottom of the list). Each page will
-get `page.lower` and `page.higher` variables that contain the pages with
-earlier and later dates, respectively.
+top of the list) to the oldest (at the bottom of the list). Each page will get
+`page.higher` and `page.lower` variables that contain the pages with earlier and
+later dates, respectively.
 
 ### `update_date`
 Same as `date` except it will take into account any `updated` date for the pages.

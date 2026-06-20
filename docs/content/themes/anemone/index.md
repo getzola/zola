@@ -3,14 +3,14 @@
 title = "anemone"
 description = "A minimalist Zola theme that prioritizes clean CSS and avoids heavy JavaScript. Enjoy a seamless user experience with lightning-fast load times. Let your content take center stage in a clutter-free, elegant design that enhances readability. Responsive and efficient, anemone brings focus to your ideas."
 template = "theme.html"
-date = 2025-07-21T00:15:08+01:00
+date = 2026-02-20T02:49:31+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-07-21T00:15:08+01:00
-updated = 2025-07-21T00:15:08+01:00
+created = 2026-02-20T02:49:31+01:00
+updated = 2026-02-20T02:49:31+01:00
 repository = "https://github.com/Speyll/anemone.git"
 homepage = "https://github.com/Speyll/anemone"
 minimum_version = "0.4.0"
@@ -27,7 +27,6 @@ homepage = "https://speyllsite.pages.dev/"
 Introducing "anemone," a minimalist [Zola](https://www.getzola.org) theme that prioritizes clean CSS and avoids heavy JavaScript. Enjoy a seamless user experience with lightning-fast load times. Let your content take center stage in a clutter-free, elegant design that enhances readability. Responsive and efficient, anemone brings focus to your ideas.
 
 You can browse the demo website [here](https://anemone.pages.dev/)
-I also use it on my own [website.](https://speyllsite.pages.dev/)
 
 Anemone is a versatile Zola theme that comes with both light and dark variants. You can easily switch between the light and dark themes to suit your preferences.
 

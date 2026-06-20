@@ -3,14 +3,14 @@
 title = "coast"
 description = "A simple theme for Zola that evokes the feel the sea breeze."
 template = "theme.html"
-date = 2025-11-29T04:11:34+09:00
+date = 2026-02-05T01:23:52+09:00
 
 [taxonomies]
 theme-tags = ['light', 'simple', 'mermaid', 'katex']
 
 [extra]
-created = 2025-11-29T04:11:34+09:00
-updated = 2025-11-29T04:11:34+09:00
+created = 2026-02-05T01:23:52+09:00
+updated = 2026-02-05T01:23:52+09:00
 repository = "https://github.com/Myxogastria0808/coast.git"
 homepage = "https://github.com/Myxogastria0808/coast/"
 minimum_version = "0.19.0"
@@ -144,11 +144,13 @@ taxonomies = [
     {name = "tags", feed = true},
 ]
 
-[markdown]
-# Whether to do syntax highlighting
-# Theme can be customized by setting the `highlight_theme` variable to a theme supported by Zola
-highlight_code = true
+[markdown.highlighting]
+# The syntax highlighting theme to use in light mode
+light_theme = "github-light"
+# The syntax highlighting theme to use in dark mode
+dark_theme = "github-dark"
 
+[markdown]
 # When set to "true", emoji aliases translated to their corresponding
 # Unicode emoji equivalent in the rendered Markdown files. (e.g.: :smile: => 😄)
 render_emoji = true

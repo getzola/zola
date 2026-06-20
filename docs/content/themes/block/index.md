@@ -3,14 +3,14 @@
 title = "Block"
 description = "Blog/Black theme for Zola"
 template = "theme.html"
-date = 2026-01-03T22:02:37+05:30
+date = 2026-01-28T12:43:48+05:30
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-03T22:02:37+05:30
-updated = 2026-01-03T22:02:37+05:30
+created = 2026-01-28T12:43:48+05:30
+updated = 2026-01-28T12:43:48+05:30
 repository = "https://github.com/ssiyad/block"
 homepage = "https://github.com/ssiyad/block"
 minimum_version = "0.21.0"

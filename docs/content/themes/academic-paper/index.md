@@ -3,14 +3,14 @@
 title = "Academic Paper"
 description = "A Zola theme for a blog-post-style website to facilitate scientific communication of your academic paper"
 template = "theme.html"
-date = 2025-10-21T20:33:42-04:00
+date = 2026-04-17T18:32:43-04:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-10-21T20:33:42-04:00
-updated = 2025-10-21T20:33:42-04:00
+created = 2026-04-17T18:32:43-04:00
+updated = 2026-04-17T18:32:43-04:00
 repository = "https://github.com/aterenin/academic-paper.git"
 homepage = "https://github.com/aterenin/academic-paper"
 minimum_version = "0.18.0"
@@ -57,8 +57,9 @@ generate_feed = false # not used by the theme
 minify_html = true # to ensure correct rendering due to minification of whitespace, should be set to true, unless there is a reason to override it
 
 [markdown]
-highlight_code = true # should be set to true unless the page has no code to highlight
-highlight_theme = "css" # this theme includes its own CSS-based styling of highlighting, so this should be set to CSS
+bottom_footnotes = true # should be set to true to ensure correct footnote formatting
+highlighting.light_theme = "github-light" # this changes the syntax highlighting theme in light mode
+highlighting.dark_theme = "github-dark" # this changes the syntax highlighting theme in dark mode
 # other Markdown options - as described in the Zola documentation - go here, and set according to user preference
 
 [extra]

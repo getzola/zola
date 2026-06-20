@@ -22,7 +22,11 @@ Zola uses [Giallo](https://github.com/getzola/giallo), a library that uses VSCod
 
 You can see a full list of supported languages and themes in the README: <https://github.com/getzola/giallo?tab=readme-ov-file#built-in>
 
-You will need to add the following CSS to your site CSS for things to display correctly:
+If a theme or a language you want to highlight is not supported, you can find the JSON grammar files and JSON theme files, copy them somewhere in your site
+and load them from the configurations with `extra_grammars` and `extra_themes` in the `[markdown.highlighting]` section.
+You can see the list of supported themes at https://textmate-grammars-themes.netlify.app/
+
+In any cases, you will need to add the following CSS to your site CSS for things to display correctly:
 
 ```css
 .giallo-l {

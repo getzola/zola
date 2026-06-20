@@ -10,7 +10,7 @@ Follow the [official documentation](https://learn.microsoft.com/en-us/azure/stat
 
 Instead, for the`Build Details` section, set the App location as `./public` since that is where `zola build` will write the site content to by default. Leave the other boxes empty.
 
-After creating the web app, make note of the domain automatically created by Azure and update `base_url` in your repo's `config.toml` to that URL.
+After creating the web app, make note of the domain automatically created by Azure and update `base_url` in your repo's `zola.toml` to that URL.
 
 
 ### Configuring GitHub Actions

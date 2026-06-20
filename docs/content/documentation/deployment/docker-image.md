@@ -11,7 +11,7 @@ Here is an example that builds the current folder, and put the result in a docke
 Of course, you may want to replace the second stage with another static web server like Nginx or Apache.
 
 ```Dockerfile
-FROM ghcr.io/getzola/zola:v0.17.1 as zola
+FROM ghcr.io/getzola/zola:v0.22.1 AS zola
 
 COPY . /project
 WORKDIR /project

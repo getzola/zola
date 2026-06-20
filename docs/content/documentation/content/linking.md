@@ -34,7 +34,7 @@ links working.
 It is possible to have Zola automatically insert anchor links next to the heading, as you can see on this documentation
 if you hover a title or covering the full heading text.
 
-This option is set in the global [`config.toml`](@/documentation/getting-started/configuration.md)'s `[markdown]` section and can be overridden at the section level with the `insert_anchor_links` variable on the
+This option is set in the global [`zola.toml`](@/documentation/getting-started/configuration.md)'s `[markdown]` section and can be overridden at the section level with the `insert_anchor_links` variable on the
 [section front matter page](@/documentation/content/section.md#front-matter).
 
 The default template is very basic and will need CSS tweaks in your project to look decent.
@@ -58,4 +58,4 @@ to link to. The path to the file starts from the `content` directory.
 For example, linking to a file located at `content/pages/about.md` would be `[my link](@/pages/about.md)`.
 You can still link to an anchor directly; `[my link](@/pages/about.md#example)` will work as expected.
 
-By default, broken internal links are treated as errors.  To treat them as warnings instead, visit the `[link_checker]` section of `config.toml` and set `internal_level = "warn"`.  Note: treating broken links as warnings allows the site to be built with broken links intact, so a link such as `[my link](@/pages/whoops.md)` will be rendered to HTML as `<a href="@/pages/whoops.md">`.
+By default, broken internal links are treated as errors.  To treat them as warnings instead, visit the `[link_checker]` section of `zola.toml` and set `internal_level = "warn"`.  Note: treating broken links as warnings allows the site to be built with broken links intact, so a link such as `[my link](@/pages/whoops.md)` will be rendered to HTML as `<a href="@/pages/whoops.md">`.

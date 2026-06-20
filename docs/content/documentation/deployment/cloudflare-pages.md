@@ -23,7 +23,7 @@ You may find documentation and guides like [Getting started with Cloudflare Page
 
 ## Handling preview deployments
 
-When working with Cloudflare Pages, you'll often use preview deployments for testing changes before merging to your main branch. By default, these preview deployments use different URLs (like `https://your-branch-name.your-project.pages.dev`), which can cause issues with asset loading if your `base_url` is hardcoded in your `config.toml`.
+When working with Cloudflare Pages, you'll often use preview deployments for testing changes before merging to your main branch. By default, these preview deployments use different URLs (like `https://your-branch-name.your-project.pages.dev`), which can cause issues with asset loading if your `base_url` is hardcoded in your `zola.toml`.
 
 To fix this, modify your build command in the Cloudflare Pages configuration to dynamically set the base URL depending on the environment:
 
@@ -33,43 +33,5 @@ if [ "$CF_PAGES_BRANCH" = "main" ]; then zola build; else zola build --base-url 
 
 This command:
 
-- Uses your `config.toml` `base_url` when building from the main branch
+- Uses your `zola.toml` `base_url` when building from the main branch
 - Uses the preview deployment URL (automatically provided by Cloudflare Pages as `$CF_PAGES_URL`) for all other branches
-
-## Troubleshooting
-
-Some tips to help troubleshoot issues getting started with Cloudflare Pages.
-
-### `zola: not found`
-
-If you see build output that resembles something like this:
-
-```sh
-23:03:54.609	> build
-23:03:54.609	> zola build $BUILD_OPTS && npx tailwindcss -i ./public/input.css -o ./public/style.css -m
-23:03:54.609
-23:03:54.621	sh: 1: zola: not found
-23:03:54.635	Failed: Error while executing user command. Exited with error code: 127
-23:03:54.644	Failed: build command exited with code: 1
-23:03:55.699	Failed: error occurred while running build command
-```
-
-Then it might be due to an [outstanding issue](https://github.com/cloudflare/pages-build-image/issues/3#issuecomment-1646873666). There are currently two recommended workarounds:
-
-#### Change the **build system version** to `v1`
-
-From within the workers & pages dash, go to the following:
-<Your Project> Settings > Builds & deployments > Build system version > Configure build system
-
-Then select `v1` and save.
-
-#### Or use `UNSTABLE_PRE_BUILD` environment variable + `asdf`
-
-From within the workers & pages dash, do the following:
-<Your Project> Settings > Environment variables > Edit variables
-
-And add an environment variable `UNSTABLE_PRE_BUILD`, with the following value and save.
-
-```sh
-asdf plugin add zola https://github.com/salasrod/asdf-zola && asdf install zola latest && asdf global zola latest
-```

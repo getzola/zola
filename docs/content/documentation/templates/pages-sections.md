@@ -35,9 +35,9 @@ toc: Array<Header>,
 word_count: Number;
 // Estimated reading time in minutes, using per-language silent-reading rates
 reading_time: Number;
-// earlier / lighter
+// later / lighter
 lower: Page?;
-// later / heavier
+// earlier / heavier
 higher: Page?;
 // Year/month/day is only set if the page has a date and month/day are 1-indexed
 year: Number?;

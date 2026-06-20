@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2026-01-14T04:26:00+08:00
+date = 2026-01-21T18:04:10+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-14T04:26:00+08:00
-updated = 2026-01-14T04:26:00+08:00
+created = 2026-01-21T18:04:10+08:00
+updated = 2026-01-21T18:04:10+08:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.19.1"

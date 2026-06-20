@@ -8,7 +8,7 @@ After running `zola init`, you should see the following structure in your direct
 
 ```bash
 .
-├── config.toml
+├── zola.toml
 ├── content
 ├── sass
 ├── static
@@ -20,9 +20,9 @@ After running `zola init`, you should see the following structure in your direct
 
 You might also see a `public` directory if you are running the default `zola build/serve` commands which contains some output for the site: the full site for `zola build` and only the static assets for `zola serve`. This folder will be deleted/created automatically by `zola serve`.
 
-Here's a high-level overview of each of these directories and `config.toml`.
+Here's a high-level overview of each of these directories and `zola.toml`.
 
-## `config.toml`
+## `zola.toml`
 A mandatory Zola configuration file in TOML format.
 This file is explained in detail in the [configuration documentation](@/documentation/getting-started/configuration.md).
 
