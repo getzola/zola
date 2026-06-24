@@ -4,6 +4,7 @@
     {{ page.title | safe }}
     {{ page.content | safe }}
     {{ page.relative_path | safe }}
+    {% if page.aliases %}Page aliases: {{ page.aliases | join(sep=",") | safe }}{% endif %}
     {{ page.toc }}
 
     {% if page.earlier %}Previous article: {{ page.earlier.permalink }}{% endif %}
