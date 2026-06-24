@@ -107,7 +107,7 @@ Format a number into its string representation.
 {%- endraw -%}
 ```
 
-By default this will format the number using the locale set by `config.default_language` in config.toml.
+By default this will format the number using the locale set by `config.default_language` in zola.toml.
 
 To format a number for a specific locale, you can use the `locale` argument and pass the name of the desired locale:
 
@@ -127,7 +127,7 @@ to make it easier to develop complex sites.
 For functions that are searching for a file on disk other than through `get_page` and `get_section`, the following
 logic applies.
 
-1. The base directory is the Zola root directory, where the `config.toml` is
+1. The base directory is the Zola root directory, where the `zola.toml` is
 2. For the given path: if it starts with `@/`, replace that with `content/` instead and trim any leading `/`
 3. Search in the following locations in this order, returning the first where the file exists:
    1. `$base_directory` + `$path`
@@ -202,7 +202,7 @@ Gets the permalink for the taxonomy item found.
 `term` will almost always come from a variable but in case you want to do it manually,
 the value should be the same as the one in the front matter, not the slugified version.
 
-`lang` (optional) default to `config.default_language` in config.toml
+`lang` (optional) default to `config.default_language` in zola.toml
 
 `required` (optional) if a taxonomy is defined but there isn't any content that uses it then throw an error. Defaults to true.
 
@@ -224,7 +224,7 @@ lang: String;
 permalink: String;
 ```
 
-`lang` (optional) default to `config.default_language` in config.toml
+`lang` (optional) default to `config.default_language` in zola.toml
 
 `required` (optional) if a taxonomy is defined but there isn't any content that uses it then throw an error. Defaults to true.
 
@@ -241,7 +241,7 @@ Gets a single term from a taxonomy of a specific kind.
 
 The type of the output is a single `TaxonomyTerm` item.
 
-`lang` (optional) default to `config.default_language` in config.toml
+`lang` (optional) default to `config.default_language` in zola.toml
 
 `include_pages` (optional) default to true. If false, the `pages` item in the `TaxonomyTerm` will be empty, regardless of what pages may actually exist for this term. `page_count` will correctly reflect the number of pages for this term in both cases.
 

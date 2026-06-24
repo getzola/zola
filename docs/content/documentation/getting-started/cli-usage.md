@@ -11,7 +11,7 @@ that for a specific command by running `zola <cmd> --help`.
 ## init
 
 Creates the directory structure used by Zola at the given directory after asking a few basic configuration questions.
-Any choices made during these prompts can be easily changed by modifying `config.toml`.
+Any choices made during these prompts can be easily changed by modifying `zola.toml`.
 
 ```bash
 $ zola init my_site
@@ -52,7 +52,7 @@ You can override the default output directory `public` by passing another value 
 $ zola build --output-dir $DOCUMENT_ROOT
 ```
 
-You can point to a config file other than `config.toml` like so (note that the position of the `config` option is important):
+You can point to a config file other than `zola.toml` like so (note that the position of the `config` option is important):
 
 ```bash
 $ zola --config config.staging.toml build
@@ -107,7 +107,7 @@ flag.
 You may use `-d1` to (virtually) disable it altogether: for technical reasons
 (and keeping things simple), a "debounce" of 0 is not supported.
 
-You can also point to a config file other than `config.toml` like so (note that the position of the `config` option is important):
+You can also point to a config file other than `zola.toml` like so (note that the position of the `config` option is important):
 
 ```bash
 $ zola --config config.staging.toml serve

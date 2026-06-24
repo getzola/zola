@@ -25,7 +25,7 @@ You can now run `fly launch`. It will detect the `Dockerfile` and mostly auto-co
 
 Take note of the hostname assigned to your app.
 
-If you already have a Zola site you must now ensure that `base_url` in `config.toml` is set correctly using the hostname from your app (or whatever domain you have pointing to the app):
+If you already have a Zola site you must now ensure that `base_url` in `zola.toml` is set correctly using the hostname from your app (or whatever domain you have pointing to the app):
 
     base_url = "https://white-snow-9922.fly.dev"
 

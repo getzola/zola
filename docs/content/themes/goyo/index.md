@@ -3,14 +3,14 @@
 title = "Goyo"
 description = "A simplicity and clean documentation theme"
 template = "theme.html"
-date = 2026-01-18T00:40:47+09:00
+date = 2026-02-27T18:48:22+09:00
 
 [taxonomies]
 theme-tags = ['documentation', 'Multilingual', 'Responsive', 'minimal']
 
 [extra]
-created = 2026-01-18T00:40:47+09:00
-updated = 2026-01-18T00:40:47+09:00
+created = 2026-02-27T18:48:22+09:00
+updated = 2026-02-27T18:48:22+09:00
 repository = "https://github.com/hahwul/goyo"
 homepage = "https://github.com/hahwul/goyo"
 minimum_version = "0.17.0"
@@ -154,6 +154,8 @@ brightness = "normal"       # Common brightness: "darker", "normal", "lighter"
 # dark_brightness = "darker"  # Override brightness for dark theme (optional)
 # light_brightness = "normal" # Override brightness for light theme (optional)
 disable_toggle = false      # Hide theme toggle button
+default_theme_dark = "goyo-dark" # Default dark theme (e.g., "goyo-dark", "dracula", "abyss")
+default_theme_light = "goyo-light" # Default light theme (e.g., "goyo-light", "cupcake", "retro")
 
 # Legacy theme configuration (still supported for backward compatibility)
 # default_colorset = "dark"
@@ -207,5 +209,11 @@ zola serve
 
 # and open http://localhost:1111 in your browser.
 ```
+
+## Contributing
+
+Goyo is an open-source project made with ❤️. If you would like to contribute, please check [CONTRIBUTING.md](CONTRIBUTING.md) and submit a Pull Request.
+
+![](static/images/CONTRIBUTORS.svg)
 
         

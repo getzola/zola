@@ -3,19 +3,19 @@
 title = "EasyDocs"
 description = "An easy way to create docs for your project"
 template = "theme.html"
-date = 2026-01-08T19:22:48+01:00
+date = 2026-05-10T17:29:49+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-08T19:22:48+01:00
-updated = 2026-01-08T19:22:48+01:00
+created = 2026-05-10T17:29:49+02:00
+updated = 2026-05-10T17:29:49+02:00
 repository = "https://github.com/codeandmedia/zola_easydocs_theme.git"
 homepage = "https://github.com/codeandmedia/zola_easydocs_theme"
 minimum_version = "0.21.0"
 license = "MIT"
-demo = "https://easydocs.codeandmedia.com"
+demo = "https://zola-easydocs-theme.pages.dev"
 
 [extra.author]
 name = "Roman Soldatenkov"
@@ -24,7 +24,7 @@ homepage = "https://codeandmedia.com"
 
 ## An easy way to create a document library for your project
 
-Demo: [https://easydocs.codeandmedia.com/](https://easydocs.codeandmedia.com/)
+Demo: [https://zola-easydocs-theme.pages.dev/](https://zola-easydocs-theme.pages.dev/)
 
 This theme for [Zola](https://getzola.org) (static site engine) helps you build and publish your project docs easily and fast. Zola is just one binary that outputs html-pages and additional static assets after building your docs written in Markdown. Thus, you can take the theme, your md-files, Zola and gain flexible and simple website for documentation. 
 
@@ -36,6 +36,30 @@ As you may have heard Zola is quite flexible :) So, the scenario below is one of
 2. Inside `config.toml` change URL and title on your own. In extra section you can specify path to your GitHub API for version below the logo on nav, favicon and logo itself. Or just remove the lines if you don't need it. Also, you can configure or turn on some additional settings related to Zola. [Specification is here](https://www.getzola.org/documentation/getting-started/configuration/).
 3. In sass/_variables.scss you may change font, color or background if you want.
 4. Almost done. Now, you should decide how you want to build and where will be hosted your website. You can build it locally and upload to somewhere. Or build in GitHub Actions and host on GitHub Pages / Netlify / CloudFlare Pages / AnyS3CloudStorage. [Howto for GitHub Pages](https://www.getzola.org/documentation/deployment/github-pages/). [My example](https://github.com/o365hq/o365hq.com/blob/main/.github/workflows/main.yml) of GitHub workflow with 2-steps build (the first checks for links and spelling errors, the second uploads to Azure). [Dockerfile](https://github.com/codeandmedia/zola_docsascode_theme/blob/master/Dockerfile) to make Docker image.
+
+## Zola v0.22 update
+
+It seems like for Zola 0.22 config.toml got updated and some fields lost backward compatibility
+
+before: 
+
+```
+[markdown]
+highlight_code = true
+highlight_theme = "base16-ocean-light"
+
+```
+
+now 
+
+```
+[markdown]
+
+[markdown.highlighting]
+theme = "github-light"   
+```
+
+Please, take a look to a version you're using and pick up the proper one config. 
 
 ## Provided configurations options
 

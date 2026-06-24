@@ -53,9 +53,9 @@ pub struct Page {
     /// When <!-- more --> is found in the text, will take the content up to that part
     /// as summary
     pub summary: Option<String>,
-    /// The previous page when sorting: earlier/earlier_updated/lighter/prev
+    /// The previous page when sorting: later/later_updated/lighter/prev
     pub lower: Option<PathBuf>,
-    /// The next page when sorting: later/later_updated/heavier/next
+    /// The next page when sorting: earlier/earlier_updated/heavier/next
     pub higher: Option<PathBuf>,
     /// Toc made from the headings of the markdown file
     pub toc: Vec<Heading>,

@@ -73,7 +73,7 @@ For example the default would be `page/1`.
 - `lang`: only set this if you are making a multilingual site and want to indicate which language this taxonomy is for
 - `render`: if set to `false`, pages will not be rendered for the taxonomy or for individual terms.
 
-Insert into the configuration file (`config.toml`):
+Insert into the configuration file (`zola.toml`):
 
 ⚠️ Place the taxonomies key in the main section and not in the `[extra]` section
 

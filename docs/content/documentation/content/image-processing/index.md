@@ -15,7 +15,7 @@ resize_image(path, width, height, op, format, quality, speed)
 ### Arguments
 
 - `path`: The path to the source image. The following directories will be searched, in this order:
-    - `/` (the root of the project; that is, the directory with your `config.toml`)
+    - `/` (the root of the project; that is, the directory with your `zola.toml`)
     - `/static`
     - `/content`
     - `/public`

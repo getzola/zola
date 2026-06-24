@@ -3,14 +3,14 @@
 title = "Lekhz"
 description = "A text focussed and minimal personal portfolio theme with dark mode."
 template = "theme.html"
-date = 2025-06-25T23:58:28-07:00
+date = 2026-02-09T23:49:29-05:00
 
 [taxonomies]
 theme-tags = ['minimal', 'clean', 'blog', 'responsive', 'personal', 'simple', 'minimalist', 'portfolio', 'text-focussed', 'dark', 'dark-mode', 'rss']
 
 [extra]
-created = 2025-06-25T23:58:28-07:00
-updated = 2025-06-25T23:58:28-07:00
+created = 2026-02-09T23:49:29-05:00
+updated = 2026-02-09T23:49:29-05:00
 repository = "https://github.com/ba11b0y/lekhz.git"
 homepage = "https://github.com/ba11b0y/lekhz"
 minimum_version = "0.38"

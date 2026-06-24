@@ -7,7 +7,7 @@ Zola supports having a site in multiple languages.
 
 ## Configuration
 To get started, you will need to add the languages you want to support
-to your `config.toml`. For example:
+to your `zola.toml`. For example:
 
 ```toml
 [languages.fr]

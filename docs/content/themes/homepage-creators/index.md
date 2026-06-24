@@ -3,14 +3,14 @@
 title = "homepage-creators"
 description = "A fast and beautiful personal homepage for creators, used by https://jiaxiang.wang, a port of HeoWeb."
 template = "theme.html"
-date = 2025-07-17T10:58:57+08:00
+date = 2026-03-01T23:52:49+08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-07-17T10:58:57+08:00
-updated = 2025-07-17T10:58:57+08:00
+created = 2026-03-01T23:52:49+08:00
+updated = 2026-03-01T23:52:49+08:00
 repository = "https://github.com/iWangJiaxiang/Homepage-Creators.git"
 homepage = "https://github.com/iWangJiaxiang/homepage-for-creators"
 minimum_version = "0.19.2"
@@ -64,6 +64,8 @@ homepage = "https://blog.jiaxiang.wang"
   - [x] AVIF / WebP自适应
   - [x] 动态更新底部年份
   - [x] 访问量统计（Umami 或自定义）
+  - [x] 多语言支持（i18n）
+  - [x] 浏览器语言检测提示
 - [x] 内容板块
   - [x] 导航菜单
   - [x] 首屏板块
@@ -177,6 +179,10 @@ homepage = "https://blog.jiaxiang.wang"
 3. 运行`zola serve`命令，本地预览主页，支持实时刷新
 
 要进行主页定制，你需要对 Zola 框架具有基本的了解，例如[理解项目结构](https://www.getzola.org/documentation/getting-started/directory-structure/)和[配置文件](https://www.getzola.org/documentation/getting-started/configuration/)，这些内容十分简单，只需要通读一遍即可。
+
+> **V2 新版说明**：内容配置现在支持两种方式：
+> 1. **`config.toml`**（传统方式）：将所有板块写在 `config.toml` 中，**仍然完全兼容**
+> 2. **`content/_index.md`**（推荐方式）：将板块和导航配置写在 `content/_index.md` 的 front-matter `[extra]` 中，支持多语言
 
 ### 基础配置
 
@@ -377,6 +383,43 @@ button = "访问"
 
 ![产品列表截图](./docs/product-list.png)
 
+#### 模块化组件板块：推荐文章
+
+支持多栏分组，用于推荐多个维度的精彩文章。文章**列表超过 3 条时还会自动向上循环滚动**。
+
+配置代码
+
+```toml
+[[extra.index.widgets]]
+# 重要，不要修改
+type = "featured-posts"
+[extra.index.widgets.value]
+# 左侧大标题与简介
+title = "推荐文章"
+bio = "精选好文，值得一读"
+# 背景样式设置，可为 CSS 背景属性（如渐变色）
+style = "background: linear-gradient(180deg, #f5f7fa 0%, #c3cfe2 100%);"
+# 每组文章占用单独一栏（桌面端最多一行3栏）
+[[extra.index.widgets.value.columns]]
+title = "🔧 科技"
+[[extra.index.widgets.value.columns.items]]
+title = "Pangolin：基于零信任理念的反向代理"
+url = "https://blog.jiaxiang.wang/articles/pangolin-a-reverse-proxy-for-zero-trust-network/"
+[[extra.index.widgets.value.columns.items]]
+title = "GitHub Action：让静态网站实现定时发布"
+url = "https://blog.jiaxiang.wang/articles/github-action-makes-static-site-publish-on-schedule/"
+# 第二栏
+[[extra.index.widgets.value.columns]]
+title = "🎵 音乐"
+[[extra.index.widgets.value.columns.items]]
+title = "前无古人唱超算，《超算为家国天下》"
+url = "https://blog.jiaxiang.wang/articles/sc-song/"
+```
+
+截图（仅展示比较美观的效果，可能和配置代码内容无关）
+
+![推荐文章截图](./docs/featured-posts.png)
+
 #### 模块化组件板块：重要事件
 
 展示重要活动、大事件等
@@ -402,6 +445,46 @@ img = "/img/blog-event.avif"
 截图（仅展示比较美观的效果，可能和配置代码内容无关）
 
 ![产品列表截图](./docs/event.png)
+
+## 🌐 多语言
+
+本主题支持多语言，默认包含中文和英文。
+
+### 工作原理
+
+每种语言的内容（板块、导航、UI字符串）存放在对应的 `content/_index.[lang].md` 文件的 `[extra]` front-matter 中：
+
+```
+content/
+  _index.md        ← 中文（默认语言）
+  _index.en.md     ← 英文
+```
+
+`config.toml` 仅保存通用配置（logo、备案号等）和语言检测提示字典。
+
+### 添加新语言
+
+以添加日语为例：
+
+1. 在 `config.toml` 注册语言：
+   ```toml
+   [languages.ja]
+   title = "ホームページ"
+   ```
+
+2. 添加语言检测提示（`config.toml`）：
+   ```toml
+   [extra.i18n_detect.ja]
+   message = "このページは日本語でもご覧いただけます"
+   action = "切替"
+   url = "/ja/"
+   ```
+
+3. 创建 `content/_index.ja.md`，从 `_index.en.md` 复制结构并翻译内容
+
+### 向前兼容
+
+如果你仍然在 `config.toml` 中配置板块内容（旧方式），默认语言页面会优先使用 `config.toml` 中的内容，确保升级主题后无需任何改动。
 
 ## 💬 讨论
 

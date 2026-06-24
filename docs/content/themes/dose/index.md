@@ -3,14 +3,14 @@
 title = "dose"
 description = "a small blog theme"
 template = "theme.html"
-date = 2023-05-07T12:14:01+02:00
+date = 2026-03-21T12:17:36+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2023-05-07T12:14:01+02:00
-updated = 2023-05-07T12:14:01+02:00
+created = 2026-03-21T12:17:36+01:00
+updated = 2026-03-21T12:17:36+01:00
 repository = "https://github.com/oltdaniel/dose.git"
 homepage = "https://github.com/oltdaniel/dose"
 minimum_version = "0.14.0"
@@ -25,6 +25,9 @@ homepage = "https://oltdaniel.eu"
 # dose
 
 ![](screenshot.png?raw=true)
+
+> [!IMPORTANT]
+> This project is in maintenance mode and will be archived. Only critical updates will be applied.
 
 ## Installation
 
@@ -89,7 +92,7 @@ This theme uses no special font, just the browsers default monospace font. Yes, 
 
 #### Darkmode
 
-This theme supports dark and light mode. Currently this will be only switched based on the users preffered system theme. But a manual switch will follow in the future in the footer (see the todo).
+This theme supports dark and light mode. Currently this will be only switched based on the users preferred system theme. But a manual switch will follow in the future in the footer (see the todo).
 
 | light | dark |
 |-|-|
@@ -107,7 +110,13 @@ Which results in a total loading size of `3kB + 3kB + 17kB + 2kB = 25kB`.
 
 #### Syntax Highlighting
 
-As I didn't want to invest any time in creating an own syntax color schema for this theme, I suggest to use `visual-studio-dark`, which is the same one used in the demo page.
+As I didn't want to invest any time in creating an own syntax color schema for this theme, I suggest to use some of thge default themes. For the demo page I used:
+
+```toml
+[markdown.highlighting]
+light_theme = "github-light"
+dark_theme = "github-dark"
+```
 
 #### Customization
 
@@ -130,5 +139,5 @@ $separator-decoration: "//////";
 
 ![GitHub](https://img.shields.io/github/license/oltdaniel/dose)
 
-This project was created by [Daniel Oltmanns](https://github.com/oltdaniel) and has been imporved by these [contributors](https://github.com/oltdaniel/dose/graphs/contributors).
+This project was created by [Daniel Oltmanns](https://github.com/oltdaniel) and has been improved by these [contributors](https://github.com/oltdaniel/dose/graphs/contributors).
         

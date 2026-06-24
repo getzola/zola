@@ -56,7 +56,7 @@ See the [taxonomies page](@/documentation/templates/taxonomies.md) for a detaile
 
 It is preferable to not include paginated pages in sitemap since they are non-canonical pages.
 To exclude paginated pages in sitemap, set the
-`exclude_paginated_pages_in_sitemap` as `all` in `config.toml`.
+`exclude_paginated_pages_in_sitemap` as `all` in `zola.toml`.
 
 ## Example
 
