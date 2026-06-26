@@ -28,7 +28,7 @@ pub fn fix_toml_dates(table: Map) -> Value {
     for (key, value) in table {
         if value.is_map() {
             new.insert(key, convert_toml_date(value.into_map().unwrap()));
-        } else if let Some(arr) = value.as_vec() {
+        } else if let Some(arr) = value.as_array() {
             let new_arr: Vec<Value> =
                 arr.iter()
                     .map(|v| {

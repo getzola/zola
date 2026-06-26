@@ -513,7 +513,7 @@ extra:
                 .unwrap()
                 .get(&"questions".into())
                 .unwrap()
-                .as_vec()
+                .as_array()
                 .unwrap()[0]
                 .as_map()
                 .unwrap()

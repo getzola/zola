@@ -354,7 +354,7 @@ mod tests {
             &Value::from("https://vincent.is/posts/page/2/")
         );
         assert_eq!(context.get(&"current_index".into()).unwrap(), &Value::from(1));
-        assert_eq!(context.get(&"pages".into()).unwrap().as_vec().unwrap().len(), 2);
+        assert_eq!(context.get(&"pages".into()).unwrap().as_array().unwrap().len(), 2);
 
         let context = paginator.build_context(&paginator.pagers[1], &cache);
         let context = context.as_map().unwrap();
@@ -374,7 +374,7 @@ mod tests {
         );
         assert_eq!(context.get(&"current_index".into()).unwrap(), &Value::from(2));
         assert_eq!(context.get(&"total_pages".into()).unwrap(), &Value::from(3));
-        assert_eq!(context.get(&"pages".into()).unwrap().as_vec().unwrap().len(), 1);
+        assert_eq!(context.get(&"pages".into()).unwrap().as_array().unwrap().len(), 1);
     }
 
     #[test]

@@ -223,7 +223,7 @@ mod tests {
         let ctx = Context::new();
         let res = get_taxonomy.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        let items = res_obj.get(&"items".into()).unwrap().as_vec().unwrap();
+        let items = res_obj.get(&"items".into()).unwrap().as_array().unwrap();
         assert_eq!(items.len(), 1);
         let item = items[0].as_map().unwrap();
         assert_eq!(item.get(&"name".into()).unwrap().as_str().unwrap(), "Programming");
@@ -234,7 +234,7 @@ mod tests {
         let ctx = make_context_with_lang("fr");
         let res = get_taxonomy.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        let items = res_obj.get(&"items".into()).unwrap().as_vec().unwrap();
+        let items = res_obj.get(&"items".into()).unwrap().as_array().unwrap();
         assert_eq!(items.len(), 1);
         let item = items[0].as_map().unwrap();
         assert_eq!(item.get(&"name".into()).unwrap().as_str().unwrap(), "Programmation");
@@ -244,7 +244,7 @@ mod tests {
         let ctx = make_context_with_lang("fr");
         let res = get_taxonomy.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        let items = res_obj.get(&"items".into()).unwrap().as_vec().unwrap();
+        let items = res_obj.get(&"items".into()).unwrap().as_array().unwrap();
         assert_eq!(items.len(), 1);
         let item = items[0].as_map().unwrap();
         assert_eq!(item.get(&"name".into()).unwrap().as_str().unwrap(), "Programming");

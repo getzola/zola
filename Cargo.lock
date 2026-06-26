@@ -5246,9 +5246,9 @@ dependencies = [
 
 [[package]]
 name = "tera-contrib"
-version = "0.2.0-alpha.7"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73a65f50250c6ae192ba93f1d0142737c80f0f149d4b53c5f985c3a703f3168d"
+checksum = "a3792553c620406661d510095e5885bfb77b2296db30369bcc8308329a6fe78c"
 dependencies = [
  "base64",
  "formatx",
