@@ -617,9 +617,11 @@ different formats.
 Gets the horizontal text directionality for the `default_language`, the `lang`uage given or the active language:
 
 ```jinja
-{{/* text_direction() */}}
-{{/* text_direction(lang="fr") */}}
-{{/* text_direction(lang=lang) */}}
+{% raw -%}
+{{ text_direction() }}
+{{ text_direction(lang="fr") }}
+{{ text_direction(lang=lang) }}
+{%- endraw -%}
 ```
 
 Returns the string literal `ltr` or `rtl`, which may be passed directly into the [`dir` global HTML attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/dir).

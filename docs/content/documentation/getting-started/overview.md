@@ -253,7 +253,7 @@ As a final step, let's modify `templates/index.html` (our home page) to link to 
 <h1 class="title">
   This is my blog made with Zola.
 </h1>
-<p><a href="{{/* get_url(path='@/blog/_index.md') */}}">Posts</a>.</p>
+<p><a href="{{ get_url(path='@/blog/_index.md') }}">Posts</a>.</p>
 {% endblock content %}
 {%- endraw -%}
 ```  
