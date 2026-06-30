@@ -47,11 +47,6 @@ jobs:
       - name: Cargo fmt
         run: cargo fmt --check
 
-      - name: Cargo build (Native TLS)
-        run: |
-          cargo build --all --no-default-features --features=native-tls
-          cargo clean
-
       - name: Cargo build (Rust TLS)
         run: cargo build --all
 

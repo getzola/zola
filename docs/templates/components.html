@@ -1,0 +1,31 @@
+{% component gallery(page) -%}
+<div>
+{% for asset in page.assets -%}
+  {%- if asset is matching(pat="[.](jpg|png)$") -%}
+    {% set image = resize_image(path=asset, width=240, height=180) %}
+    <a href="{{ get_url(path=asset) }}" target="_blank">
+      <img src="{{ image.url }}" />
+    </a>
+  {%- endif %}
+{%- endfor %}
+</div>
+{%- endcomponent %}
+
+{% component high_res_image(path: string) -%}
+{% set mdata = get_image_metadata(path=path) %}
+{% set w = (mdata.width / 2) | round %}
+{% set h = (mdata.height / 2) | round %}
+{% set image = resize_image(path=path, width=w, height=h, op="fit_width") %}
+<img src="{{ image.url }}" srcset="/{{path}} 2x"/>
+{%- endcomponent %}
+
+{% component resize_image(path: string, width: integer, height: integer, op: string) -%}
+{% set image = resize_image(path=path, width=width, height=height, op=op) %}
+<img src="{{ image.url }}" />
+{%- endcomponent %}
+
+{% component resize_image_relative(path: string, scale: float) -%}
+{% set mdata = get_image_metadata(path=path) %}
+{% set image = resize_image(path=path, width=(mdata.width * scale)|int, op="fit_width") %}
+<img src="{{ image.url }}" />
+{%- endcomponent %}

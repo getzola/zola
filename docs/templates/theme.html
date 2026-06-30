@@ -27,7 +27,7 @@
               <p>Tags:</p>
               <ul style="list-style-type: none;">
               {% for termname in page.taxonomies["theme-tags"] %}
-                {% set termurl = get_taxonomy_url(kind="theme-tags", name=termname, required=false) %}
+                {% set termurl = get_taxonomy_url(kind="theme-tags", term=termname, required=false) %}
                 {% if termurl %}
                   <li><a href="{{ termurl }}">{{ termname }}</a></li>
                 {% endif %}

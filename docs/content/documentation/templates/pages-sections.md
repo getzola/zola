@@ -31,9 +31,9 @@ summary: String?;
 taxonomies: HashMap<String, Array<String>>;
 extra: HashMap<String, Any>;
 toc: Array<Header>,
-// Naive word count, will not work for languages without whitespace
+// Word count via unicode_words; for `zh` and `ja` this is a character count
 word_count: Number;
-// Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
+// Estimated reading time in minutes, using per-language silent-reading rates
 reading_time: Number;
 // later / lighter
 lower: Page?;
@@ -47,7 +47,7 @@ day: Number?;
 assets: Array<String>;
 // The relative paths of the parent sections until the index one, for use with the `get_section` Tera function
 // The first item is the index section and the last one is the parent section
-// This is filled after rendering a page content so it will be empty in shortcodes
+// This is filled after rendering a page content so it will be empty when rendering markdown content
 ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;
@@ -90,15 +90,15 @@ pages: Array<Page>;
 // the actual section object if you need it
 subsections: Array<String>;
 toc: Array<Header>,
-// Unicode word count
+// Word count via unicode_words; for `zh` and `ja` this is a character count
 word_count: Number;
-// Based on https://help.medium.com/hc/en-us/articles/214991667-Read-time
+// Estimated reading time in minutes, using per-language silent-reading rates
 reading_time: Number;
 // Paths of colocated assets, relative to the content directory
 assets: Array<String>;
 // The relative paths of the parent sections until the index one, for use with the `get_section` Tera function
 // The first item is the index section and the last one is the parent section
-// This is filled after rendering a page content so it will be empty in shortcodes
+// This is filled after rendering a page content so it will be empty when rendering markdown content
 ancestors: Array<String>;
 // The relative path from the `content` directory to the markdown file
 relative_path: String;

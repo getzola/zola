@@ -13,7 +13,6 @@ Content
  - Organisation
  - Sections
  - Pages
- - Shortcodes
  - Internal links & deep linking
  - Table of contents
  - Syntax highlighting

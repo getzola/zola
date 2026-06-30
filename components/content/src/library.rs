@@ -1,12 +1,13 @@
+use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
-
-use ahash::{AHashMap, AHashSet};
-use config::Config;
 
 use crate::ser::TranslatedContent;
 use crate::sorting::sort_pages;
 use crate::taxonomies::{Taxonomy, TaxonomyFound};
 use crate::{Page, Section, SortBy};
+use ahash::{AHashMap, AHashSet};
+use config::{Config, TaxonomyConfig};
+use utils::slugs::slugify_paths;
 
 macro_rules! set {
     ($($key:expr,)+) => (set!($($key),+));
@@ -22,7 +23,30 @@ macro_rules! set {
     };
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone)]
+pub enum PathCollision<'a> {
+    Content { path: &'a str, files: &'a AHashSet<PathBuf> },
+    Taxonomy { path: String, taxonomy: &'a str, files: &'a AHashSet<PathBuf> },
+    TaxonomyTerm { path: String, taxonomy: &'a str, term: &'a str, files: &'a AHashSet<PathBuf> },
+}
+
+impl<'a> Display for PathCollision<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PathCollision::Content { path, files } => {
+                write!(f, "`{path}` from files {files:?}")
+            }
+            PathCollision::Taxonomy { path, taxonomy, files } => {
+                write!(f, "`{path}` with taxonomy {taxonomy} and files {files:?}")
+            }
+            PathCollision::TaxonomyTerm { path, taxonomy, term, files } => {
+                write!(f, "`{path}` with taxonomy {taxonomy} and term {term} and files {files:?}")
+            }
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default)]
 pub struct Library {
     pub pages: AHashMap<PathBuf, Page>,
     pub sections: AHashMap<PathBuf, Section>,
@@ -32,7 +56,7 @@ pub struct Library {
     pub backlinks: AHashMap<String, AHashSet<PathBuf>>,
     // A mapping of {lang -> <slug, {term -> vec<paths>}>>}
     taxonomies_def: AHashMap<String, AHashMap<String, AHashMap<String, Vec<PathBuf>>>>,
-    // All the taxonomies from config.toml in their slugifiedv ersion
+    // All the taxonomies from config.toml in their slugified version
     // So we don't need to pass the Config when adding a page to know how to slugify and we only
     // slugify once
     taxo_name_to_slug: AHashMap<String, String>,
@@ -64,20 +88,51 @@ impl Library {
         }
     }
 
-    /// This will check every section/page paths + the aliases and ensure none of them
-    /// are colliding.
-    /// Returns Vec<(path colliding, [list of files causing that collision])>
-    pub fn find_path_collisions(&self) -> Vec<(String, Vec<PathBuf>)> {
-        self.reverse_aliases
-            .iter()
-            .filter_map(|(alias, files)| {
-                if files.len() > 1 {
-                    Some((alias.clone(), files.clone().into_iter().collect::<Vec<_>>()))
-                } else {
-                    None
+    /// This will check every section/page paths + the aliases + taxonomies and their terms
+    /// and ensure none of them are colliding.
+    pub fn find_path_collisions<'a>(&'a self, config: &'a Config) -> Vec<PathCollision<'a>> {
+        let mut collisions = Vec::new();
+
+        for (path, files) in &self.reverse_aliases {
+            if files.len() > 1 {
+                collisions.push(PathCollision::Content { path: path.as_str(), files });
+            }
+        }
+
+        for (lang, lang_options) in &config.languages {
+            for tax_def in &lang_options.taxonomies {
+                if !tax_def.render {
+                    continue;
                 }
-            })
-            .collect()
+
+                let taxo_path = config.get_taxonomy_path(lang, tax_def);
+                if let Some(files) = self.reverse_aliases.get(&taxo_path) {
+                    collisions.push(PathCollision::Taxonomy {
+                        path: taxo_path,
+                        taxonomy: tax_def.name.as_str(),
+                        files,
+                    });
+                }
+
+                if let Some(lang_taxonomies) = self.taxonomies_def.get(lang)
+                    && let Some(terms) = lang_taxonomies.get(&tax_def.slug)
+                {
+                    for term_name in terms.keys() {
+                        let term_slug = slugify_paths(term_name, config.slugify.taxonomies);
+                        let term_path = config.get_taxonomy_term_path(lang, tax_def, &term_slug);
+                        if let Some(files) = self.reverse_aliases.get(&term_path) {
+                            collisions.push(PathCollision::TaxonomyTerm {
+                                path: term_path,
+                                taxonomy: tax_def.name.as_str(),
+                                term: term_name.as_str(),
+                                files,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        collisions
     }
 
     pub fn insert_page(&mut self, page: Page) {
@@ -86,23 +141,20 @@ impl Library {
             let mut entries = vec![page.path.clone()];
             entries.extend(page.meta.aliases.to_vec());
             self.insert_reverse_aliases(&file_path, entries);
-        }
 
-        for (taxa_name, terms) in &page.meta.taxonomies {
-            for term in terms {
-                // Safe unwraps as we create all lang/taxa and we validated that they are correct
-                // before getting there
-                let taxa_def = self
-                    .taxonomies_def
-                    .get_mut(&page.lang)
-                    .expect("lang not found")
-                    .get_mut(&self.taxo_name_to_slug[taxa_name])
-                    .expect("taxa not found");
+            for (taxa_name, terms) in &page.meta.taxonomies {
+                for term in terms {
+                    // Safe unwraps as we create all lang/taxa and we validated that they are correct
+                    // before getting there
+                    let taxa_def = self
+                        .taxonomies_def
+                        .get_mut(&page.lang)
+                        .expect("lang not found")
+                        .get_mut(&self.taxo_name_to_slug[taxa_name])
+                        .expect("taxa not found");
 
-                if !taxa_def.contains_key(term) {
-                    taxa_def.insert(term.to_string(), Vec::new());
+                    taxa_def.entry(term.to_string()).or_default().push(page.file.path.clone());
                 }
-                taxa_def.get_mut(term).unwrap().push(page.file.path.clone());
             }
         }
 
@@ -150,12 +202,18 @@ impl Library {
     pub fn find_taxonomies(&self, config: &Config) -> Vec<Taxonomy> {
         let mut taxonomies = Vec::new();
 
+        let taxo_configs: AHashMap<(&str, &str), &TaxonomyConfig> = config
+            .languages
+            .iter()
+            .flat_map(|(lang, lang_config)| {
+                lang_config.taxonomies.iter().map(move |t| ((lang.as_str(), t.slug.as_str()), t))
+            })
+            .collect();
+
         for (lang, taxonomies_data) in &self.taxonomies_def {
             for (taxa_slug, terms_pages) in taxonomies_data {
-                let taxo_config = &config.languages[lang]
-                    .taxonomies
-                    .iter()
-                    .find(|t| &t.slug == taxa_slug)
+                let taxo_config = taxo_configs
+                    .get(&(lang.as_str(), taxa_slug.as_str()))
                     .expect("taxo should exist");
                 let mut taxo_found = TaxonomyFound::new(taxa_slug.to_string(), lang, taxo_config);
                 for (term, page_path) in terms_pages {
@@ -351,8 +409,7 @@ impl Library {
         if let Some(paths) = self.translations.get(canonical_path) {
             for path in paths {
                 let (lang, permalink, title, path) = {
-                    if self.sections.contains_key(path) {
-                        let s = &self.sections[path];
+                    if let Some(s) = self.sections.get(path) {
                         (&s.lang, &s.permalink, &s.meta.title, &s.file.path)
                     } else {
                         let s = &self.pages[path];
@@ -385,6 +442,7 @@ mod tests {
 
     #[test]
     fn can_find_collisions_with_paths() {
+        let config = Config::default_for_test();
         let mut library = Library::default();
         let mut section = Section { path: "hello".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("hello.md");
@@ -393,15 +451,20 @@ mod tests {
         section2.file.path = PathBuf::from("bonjour.md");
         library.insert_section(section2.clone());
 
-        let collisions = library.find_path_collisions();
+        let collisions = library.find_path_collisions(&config);
         assert_eq!(collisions.len(), 1);
-        assert_eq!(collisions[0].0, "hello");
-        assert!(collisions[0].1.contains(&section.file.path));
-        assert!(collisions[0].1.contains(&section2.file.path));
+        if let PathCollision::Content { path, files } = collisions[0] {
+            assert_eq!(path, "hello");
+            assert!(files.contains(&section.file.path));
+            assert!(files.contains(&section2.file.path));
+        } else {
+            assert!(false);
+        }
     }
 
     #[test]
     fn can_find_collisions_with_aliases() {
+        let config = Config::default_for_test();
         let mut library = Library::default();
         let mut section = Section { path: "hello".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("hello.md");
@@ -418,11 +481,73 @@ mod tests {
         section3.meta.aliases = vec!["hola".to_owned()];
         library.insert_section(section3);
 
-        let collisions = library.find_path_collisions();
+        let collisions = library.find_path_collisions(&config);
         assert_eq!(collisions.len(), 1);
-        assert_eq!(collisions[0].0, "hello");
-        assert!(collisions[0].1.contains(&section.file.path));
-        assert!(collisions[0].1.contains(&section2.file.path));
+        if let PathCollision::Content { path, files } = collisions[0] {
+            assert_eq!(path, "hello");
+            assert!(files.contains(&section.file.path));
+            assert!(files.contains(&section2.file.path));
+        } else {
+            assert!(false);
+        }
+    }
+
+    // https://github.com/getzola/zola/issues/3096
+    #[test]
+    fn can_find_collisions_with_taxonomy() {
+        let mut config = Config::default_for_test();
+        config.languages.get_mut("en").unwrap().taxonomies =
+            vec![TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() }];
+        config.slugify_taxonomies();
+
+        let mut library = Library::new(&config);
+
+        // Create a section that conflicts with the "tags" taxonomy path
+        let mut section = Section { path: "/tags/".to_owned(), ..Default::default() };
+        section.file.path = PathBuf::from("content/tags/_index.md");
+        library.insert_section(section.clone());
+
+        let collisions = library.find_path_collisions(&config);
+        assert_eq!(collisions.len(), 1);
+        if let PathCollision::Taxonomy { path, taxonomy, files } = &collisions[0] {
+            assert_eq!(path, "/tags/");
+            assert_eq!(*taxonomy, "tags");
+            assert!(files.contains(&section.file.path));
+        } else {
+            assert!(false);
+        }
+    }
+
+    // https://github.com/getzola/zola/issues/3096
+    #[test]
+    fn can_find_collisions_with_taxonomy_term() {
+        let mut config = Config::default_for_test();
+        config.languages.get_mut("en").unwrap().taxonomies =
+            vec![TaxonomyConfig { name: "tags".to_string(), ..TaxonomyConfig::default() }];
+        config.slugify_taxonomies();
+
+        let mut library = Library::new(&config);
+
+        // Create a page with a "rust" tag to populate the taxonomy terms
+        let page = create_page_w_taxa("a.md", "en", vec![("tags", vec!["rust"])]);
+        library.insert_page(page);
+
+        // Create a section that conflicts with the "tags/rust" term path
+        let mut section = Section { path: "/tags/rust/".to_owned(), ..Default::default() };
+        section.file.path = PathBuf::from("content/tags/rust/_index.md");
+        library.insert_section(section.clone());
+
+        let collisions = library.find_path_collisions(&config);
+        assert_eq!(collisions.len(), 1);
+
+        if let PathCollision::TaxonomyTerm { path, taxonomy, term, files } = &collisions[0] {
+            assert_eq!(path, "/tags/rust/");
+            assert_eq!(*taxonomy, "tags");
+            assert_eq!(*term, "rust");
+            assert!(files.contains(&section.file.path));
+        } else {
+            assert!(false);
+        }
     }
 
     #[derive(Debug, Clone)]

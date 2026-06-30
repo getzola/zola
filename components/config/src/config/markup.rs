@@ -1,4 +1,4 @@
-use giallo::{HighlightOptions, Registry, ThemeVariant};
+use giallo::{DataAttrPosition, HighlightOptions, Registry, ThemeVariant};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -7,37 +7,33 @@ use utils::types::InsertAnchor;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum HighlightStyle {
+    #[default]
     Inline,
     Class,
 }
 
-impl Default for HighlightStyle {
-    fn default() -> HighlightStyle {
-        HighlightStyle::Inline
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum HighlightConfig {
-    Single { theme: String },
-    Dual { light_theme: String, dark_theme: String },
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Highlighting {
     /// Emit an error for missing highlight languages. Defaults to false
     #[serde(default)]
     pub error_on_missing_language: bool,
     #[serde(default)]
     pub style: HighlightStyle,
-    #[serde(flatten)]
-    pub theme: HighlightConfig,
+    /// Single theme name. Mutually exclusive with light_theme/dark_theme.
+    pub theme: Option<String>,
+    /// Light theme for dual-theme mode.
+    pub light_theme: Option<String>,
+    /// Dark theme for dual-theme mode.
+    pub dark_theme: Option<String>,
     #[serde(default)]
     pub extra_grammars: Vec<String>,
     #[serde(default)]
     pub extra_themes: Vec<String>,
+    #[serde(default)]
+    pub data_attr_position: DataAttrPosition,
     #[serde(skip, default)]
     pub registry: Registry,
 }
@@ -56,20 +52,29 @@ impl Highlighting {
 
         registry.link_grammars();
 
-        match &self.theme {
-            HighlightConfig::Single { theme } => {
-                if !registry.contains_theme(&theme) {
+        match (&self.theme, &self.light_theme, &self.dark_theme) {
+            (Some(theme), None, None) => {
+                if !registry.contains_theme(theme) {
                     bail!("Theme `{theme}` does not exist");
                 }
             }
-            HighlightConfig::Dual { light_theme, dark_theme } => {
-                if !registry.contains_theme(&light_theme) {
+            (None, Some(light_theme), Some(dark_theme)) => {
+                if !registry.contains_theme(light_theme) {
                     bail!("Theme `{light_theme}` does not exist");
                 }
-
-                if !registry.contains_theme(&dark_theme) {
+                if !registry.contains_theme(dark_theme) {
                     bail!("Theme `{dark_theme}` does not exist");
                 }
+            }
+            (None, None, None) => {
+                bail!(
+                    "No theme specified in [markdown.highlighting]. Set either `theme` or both `light_theme` and `dark_theme`"
+                );
+            }
+            _ => {
+                bail!(
+                    "Invalid theme configuration: set either `theme` alone, or both `light_theme` and `dark_theme`"
+                );
             }
         }
 
@@ -89,38 +94,34 @@ impl Highlighting {
             return out;
         }
 
-        // we know themes are present so unwrap
-        match &self.theme {
-            HighlightConfig::Single { theme } => {
-                out.push((
-                    "giallo.css",
-                    self.registry.generate_css(theme, "z-").expect("theme to be present"),
-                ));
-            }
-            HighlightConfig::Dual { light_theme, dark_theme } => {
-                out.push((
-                    "giallo-light.css",
-                    self.registry.generate_css(light_theme, "z-").expect("theme to be present"),
-                ));
-                out.push((
-                    "giallo-dark.css",
-                    self.registry.generate_css(dark_theme, "z-").expect("theme to be present"),
-                ));
-            }
+        if let Some(theme) = &self.theme {
+            out.push((
+                "giallo.css",
+                self.registry.generate_css(theme, "z-").expect("theme to be present"),
+            ));
+        } else if let (Some(light_theme), Some(dark_theme)) = (&self.light_theme, &self.dark_theme)
+        {
+            out.push((
+                "giallo-light.css",
+                self.registry.generate_css(light_theme, "z-").expect("theme to be present"),
+            ));
+            out.push((
+                "giallo-dark.css",
+                self.registry.generate_css(dark_theme, "z-").expect("theme to be present"),
+            ));
         }
 
         out
     }
 
     pub fn highlight_options<'a>(&'a self, lang: &'a str) -> HighlightOptions {
-        let mut opt = match &self.theme {
-            HighlightConfig::Single { theme } => {
-                HighlightOptions::new(lang, ThemeVariant::Single(theme))
-            }
-            HighlightConfig::Dual { light_theme, dark_theme } => HighlightOptions::new(
-                lang,
-                ThemeVariant::Dual { light: light_theme, dark: dark_theme },
-            ),
+        let mut opt = if let Some(theme) = &self.theme {
+            HighlightOptions::new(lang, ThemeVariant::Single(theme))
+        } else {
+            // Validated in init(): light_theme and dark_theme are both present
+            let light = self.light_theme.as_deref().unwrap();
+            let dark = self.dark_theme.as_deref().unwrap();
+            HighlightOptions::new(lang, ThemeVariant::Dual { light, dark })
         };
 
         if !self.error_on_missing_language {

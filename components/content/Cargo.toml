@@ -1,14 +1,13 @@
 [package]
 name = "content"
 version.workspace = true
-edition = "2024"
+edition.workspace = true
 
 [dependencies]
 serde = { workspace = true }
-time = { workspace = true }
+time = { workspace = true, features = ["parsing", "formatting", "macros"] }
 ahash = { workspace = true }
 lexical-sort = { workspace = true }
-once_cell = { workspace = true }
 rayon = { workspace = true }
 regex = { workspace = true }
 serde_yaml = { workspace = true }
@@ -21,11 +20,9 @@ errors = { workspace = true }
 utils = { workspace = true }
 config = { workspace = true }
 
-# TODO: remove it?
-markdown = { workspace = true }
-
 [dev-dependencies]
 # TODO: can we solve that usecase in src/page.rs in a simpler way? A custom macro_rules! maybe
+fs-err = { workspace = true }
 test-case = "3"
 globset = { workspace = true }
 tempfile = "3.3.0"
