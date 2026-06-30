@@ -1,5 +1,6 @@
 .dockerignore
 .git*
+Containerfile
 Dockerfile
 
 # From .gitignore
