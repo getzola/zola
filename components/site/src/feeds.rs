@@ -36,8 +36,11 @@ pub fn prepare_feed(
     feed_limit: Option<usize>,
     cache: &RenderCache,
 ) -> FeedData {
-    let mut pages: Vec<_> =
-        all_pages.iter().copied().filter(|p| p.meta.date.is_some() && p.meta.render).collect();
+    let mut pages: Vec<_> = all_pages
+        .iter()
+        .copied()
+        .filter(|p| p.meta.date.is_some() && p.meta.include_in_feeds)
+        .collect();
 
     pages.par_sort_unstable_by(|a, b| {
         let ord = b.meta.datetime.unwrap().cmp(&a.meta.datetime.unwrap());
