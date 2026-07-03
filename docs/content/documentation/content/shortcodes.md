@@ -123,7 +123,7 @@ Let's imagine that we have the following shortcode `quote.html` template:
 ```jinja
 <blockquote>
     {{ body }} <br>
-    -- {{ author}}
+    -- {{ author }}
 </blockquote>
 ```
 
