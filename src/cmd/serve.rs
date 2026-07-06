@@ -56,7 +56,9 @@ use site::sass::compile_sass;
 use site::{BuildMode, SITE_CONTENT, Site};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
-use crate::fs_utils::{ChangeKind, SimpleFileSystemEventKind, filter_events};
+use crate::fs_utils::{
+    ChangeKind, SimpleFileSystemEventKind, filter_events, template_change_requires_full_rebuild,
+};
 use crate::messages;
 
 #[derive(Debug, PartialEq)]
@@ -827,8 +829,20 @@ pub fn serve(
                                 .join(", ");
                             log::info!("-> Template file(s) changed {combined_paths}");
 
-                            log::info!("Reloading only template");
-                            reload_templates(&mut site)
+                            // Templates consumed during Markdown rendering (e.g.
+                            // anchor-link.html for heading anchors) are baked into
+                            // the already-rendered page HTML, so reloading the
+                            // template registry alone leaves the live pages stale.
+                            // Rebuild the whole site in that case. See #2940.
+                            if full_paths.iter().any(|p| template_change_requires_full_rebuild(p)) {
+                                log::info!("Rebuilding the site");
+                                if let Some(s) = recreate_site() {
+                                    site = s;
+                                }
+                            } else {
+                                log::info!("Reloading only template");
+                                reload_templates(&mut site)
+                            }
                         }
                         ChangeKind::StaticFiles => {
                             for (partial_path, full_path, _) in change_group.iter() {

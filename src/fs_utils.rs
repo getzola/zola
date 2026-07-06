@@ -190,6 +190,16 @@ fn detect_change_kind(pwd: &Path, path: &Path, config_path: &Path) -> (ChangeKin
     (change_kind, partial_path)
 }
 
+/// Some templates are consumed while rendering Markdown (e.g. `anchor-link.html`
+/// for heading anchors) rather than while rendering a Tera page. Reloading the
+/// template registry is not enough for those: the affected pages have already
+/// been rendered to HTML, so `zola serve` has to rebuild the whole site for the
+/// change to show up. Returns whether a changed template path is one of them.
+/// See #2940.
+pub fn template_change_requires_full_rebuild(path: &Path) -> bool {
+    matches!(path.file_name().and_then(|name| name.to_str()), Some("anchor-link.html"))
+}
+
 #[cfg(test)]
 mod tests {
     use notify_debouncer_full::notify::event::*;
@@ -197,7 +207,7 @@ mod tests {
 
     use super::{
         ChangeKind, SimpleFileSystemEventKind, detect_change_kind, get_relevant_event_kind,
-        is_temp_file,
+        is_temp_file, template_change_requires_full_rebuild,
     };
 
     // This test makes sure we at least have code coverage on the `notify` event kinds we care
@@ -348,5 +358,17 @@ mod tests {
         let path = Path::new("templates/hello.html");
         let config_filename = Path::new("config.toml");
         assert_eq!(expected, detect_change_kind(pwd, path, config_filename));
+    }
+
+    #[test]
+    fn anchor_link_template_requires_full_rebuild() {
+        // anchor-link.html is applied during Markdown rendering, so a change to
+        // it needs a full rebuild, not just a template reload. Ordinary
+        // templates only need the registry reloaded. See #2940.
+        assert!(template_change_requires_full_rebuild(Path::new(
+            "/site/templates/anchor-link.html"
+        )));
+        assert!(!template_change_requires_full_rebuild(Path::new("/site/templates/index.html")));
+        assert!(!template_change_requires_full_rebuild(Path::new("/site/templates/page.html")));
     }
 }
