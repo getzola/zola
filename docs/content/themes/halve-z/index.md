@@ -3,14 +3,14 @@
 title = "halve-z"
 description = "Retro two-column theme"
 template = "theme.html"
-date = 2026-04-09T11:18:32-04:00
+date = 2026-07-05T16:58:18-04:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-04-09T11:18:32-04:00
-updated = 2026-04-09T11:18:32-04:00
+created = 2026-07-05T16:58:18-04:00
+updated = 2026-07-05T16:58:18-04:00
 repository = "https://github.com/charlesrocket/halve-z.git"
 homepage = "https://github.com/charlesrocket/halvez"
 minimum_version = "0.21.0"
@@ -27,7 +27,7 @@ homepage = "https://failsafe.monster/"
 
 A two-column theme for **Zola**.
 
-![logo](https://raw.githubusercontent.com/charlesrocket/halve-z/trunk/static/favicon-32x32.png)
+![logo](https://codeberg.org/charlesrocket/halve-z/raw/branch/trunk/static/favicon-32x32.png)
 
 ## Features
 
@@ -40,6 +40,7 @@ This is a _retro_ port of [Halve](https://github.com/TaylanTatli/Halve) (**Jekyl
 * auto color schemes
 * ToC
 * pagination
+* series
 * media shortcodes
 * SEO
 * CSP
@@ -52,7 +53,7 @@ This is a _retro_ port of [Halve](https://github.com/TaylanTatli/Halve) (**Jekyl
 Add theme submodule using `git`:
 
 ```sh
-git submodule add https://github.com/charlesrocket/halve-z themes/halve-z
+git submodule add https://codeberg.org/charlesrocket/halve-z themes/halve-z
 ```
 
 ### Updates
@@ -65,7 +66,7 @@ git submodule update --recursive --remote
 
 ## Configuration
 
-1. Copy theme's [config.toml](https://github.com/charlesrocket/halve-z/blob/trunk/config.toml) into your project's root directory. Set variables as required and add `theme = "halve-z"` at the **top** of the config file.
+1. Copy theme's [config.toml](https://codeberg.org/charlesrocket/halve-z/src/branch/trunk/config.toml) into your project's root directory. Set variables as required and add `theme = "halve-z"` at the **top** of the config file.
 2. Copy the content to get started:
 
 ```
@@ -75,5 +76,9 @@ cp -R -f themes/halve-z/content/ content/
 ## Usage
 
 See demo [posts](https://halve-z.netlify.app/posts/).
+
+## Contributing
+
+Patches are accepted via [Codeberg](https://codeberg.org/charlesrocket/halve-z) or e-mail.
 
         
