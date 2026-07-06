@@ -148,7 +148,19 @@ impl Page {
                     page.slug.clone()
                 }
             } else {
-                format!("{}/{}", page.file.components.join("/"), page.slug)
+                // Ancestor directory names must be slugified the same way as the
+                // slug itself. Otherwise a non-index page keeps its raw parent
+                // directory name (e.g. `chim_climbing/changelog`) while the sibling
+                // `index.md`, whose directory becomes the slug, is slugified
+                // (`chim-climbing`). See #3114.
+                let components = page
+                    .file
+                    .components
+                    .iter()
+                    .map(|c| slugify_paths(c, config.slugify.paths))
+                    .collect::<Vec<_>>()
+                    .join("/");
+                format!("{}/{}", components, page.slug)
             };
 
             if page.lang != config.default_language {
@@ -287,6 +299,29 @@ Hello world"#;
         assert_eq!(page.path, "/posts/intro/hello-world/");
         assert_eq!(page.components, vec!["posts", "intro", "hello-world"]);
         assert_eq!(page.permalink, "http://hello.com/posts/intro/hello-world/");
+    }
+
+    #[test]
+    fn can_slugify_ancestor_directories_in_path() {
+        // A non-index page in a directory whose name is not slug-safe must have
+        // that ancestor directory slugified, matching how the sibling `index.md`
+        // (whose directory becomes the slug) is already handled. See #3114.
+        let content = r#"
+    +++
+    +++
+    Hello world"#;
+        let mut config = Config::default();
+        config.slugify.paths = SlugifyStrategy::On;
+        let res = Page::parse(
+            Path::new("content/chim_climbing/changelog.md"),
+            content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.path, "/chim-climbing/changelog/");
+        assert_eq!(page.components, vec!["chim-climbing", "changelog"]);
     }
 
     #[test]
