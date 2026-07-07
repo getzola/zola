@@ -627,8 +627,16 @@ impl Site {
     /// Inject live reload script tag if in live reload mode
     fn inject_livereload(&self, mut html: String) -> String {
         if let Some(port) = self.live_reload {
-            let script =
-                format!(r#"<script src="/livereload.js?port={}&amp;mindelay=10"></script>"#, port,);
+            // Set the websocket host explicitly from the page's own hostname
+            // instead of letting livereload.js derive it. Its default
+            // derivation produces `ws://undefined:<port>` when the site is
+            // served on an IPv6 loopback, and a bare IPv6 literal (`::1`) is
+            // not a valid `ws://` authority — it has to be bracketed as
+            // `[::1]`. `location.hostname` returns the address unbracketed for
+            // IPv6, so wrap it when it contains a colon. See #2979.
+            let script = format!(
+                r#"<script>(function(){{var h=window.location.hostname;if(h.indexOf(":")>=0){{h="["+h+"]";}}window.LiveReloadOptions={{host:h,port:{port},mindelay:10}};}})();</script><script src="/livereload.js"></script>"#,
+            );
             if let Some(index) = html.rfind("</body>") {
                 html.insert_str(index, &script);
             } else {

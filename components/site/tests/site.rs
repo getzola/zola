@@ -213,7 +213,7 @@ fn can_build_site_without_live_reload() {
     assert!(!file_exists!(public, "secret_section/page.html"));
     assert!(!file_exists!(public, "secret_section/secret_sub_section/hello.html"));
     // no live reload code
-    assert!(!file_contains!(public, "index.html", "/livereload.js?port=1112&amp;mindelay=10"),);
+    assert!(!file_contains!(public, "index.html", "/livereload.js"),);
 
     // Both pages and sections are in the sitemap
     assert!(file_contains!(
@@ -282,8 +282,12 @@ fn can_build_site_with_live_reload_and_drafts() {
     // But no tags
     assert!(!file_exists!(public, "tags/index.html"));
 
-    // no live reload code
+    // live reload code, with the websocket host set explicitly from the page's
+    // own hostname (bracketing IPv6 literals) so it works on an IPv6 loopback
+    // instead of connecting to `ws://undefined:<port>`. See #2979.
     assert!(file_contains!(public, "index.html", "/livereload.js"));
+    assert!(file_contains!(public, "index.html", "window.LiveReloadOptions"));
+    assert!(file_contains!(public, "index.html", r#"h.indexOf(":")"#));
 
     // the summary target has been created
     assert!(file_contains!(
