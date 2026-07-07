@@ -1,3 +1,17 @@
+function escapeHTML(str) {
+  if (!str) return "";
+  return str.replace(/[&<>"']/g, function(match) {
+    const escapeMap = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;'
+    };
+    return escapeMap[match];
+  });
+}
+
 function debounce(func, wait) {
   var timeout;
 
@@ -122,8 +136,11 @@ function makeTeaser(body, terms) {
 }
 
 function formatSearchResultItem(item, terms) {
+  // Facciamo l'escape del titolo per prevenire attacchi DOMXSS
+  var safeTitle = escapeHTML(item.doc.title);
+  
   return '<div class="search-results__item">'
-  + `<a href="${item.ref}">${item.doc.title}</a>`
+  + `<a href="${item.ref}">${safeTitle}</a>`
   + `<div>${makeTeaser(item.doc.body, terms)}</div>`
   + '</div>';
 }
