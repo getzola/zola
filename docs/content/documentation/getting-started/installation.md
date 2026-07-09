@@ -232,8 +232,10 @@ Zola does not work in PowerShell ISE.
 
 ## From source
 
-To build Zola from source, you will need to have [Rust and Cargo](https://www.rust-lang.org/)
-installed.
+To build Zola from source, you will need: 
+
+- [Rust and Cargo](https://www.rust-lang.org/)
+- Any C compiler
 
 From a terminal, you can now run the following commands:
 
