@@ -1,6 +1,6 @@
 +++
 title = "zola-quiet"
-description = "A quiet, three-skin Zola theme: Minima-flavoured typography, monospace terminal, and a TUI/ncurses look with ASCII article frame. Every skin ships with matched light and dark modes plus a runtime toggle. Docs-style on-page TOC, addendum convention, iframe theme-sync protocol baked in."
+description = "A quiet, two-skin Zola theme: Minima-flavoured typography and a TUI/ncurses look with ASCII article frame. Both skins ship with matched light and dark modes plus a runtime toggle. Docs-style on-page TOC, addendum convention, iframe theme-sync protocol baked in."
 template = "theme.html"
 date = 2026-07-10T00:00:00+05:30
 
@@ -23,17 +23,16 @@ homepage = "https://johnnybravo.xyz"
 
 # zola-quiet
 
-A quiet, three-skin Zola theme. Three stylesheets ship together — a
-Minima-flavoured typographic skin, a monospace terminal skin, and a
-TUI/ncurses skin with an ASCII-drawn article frame. Each ships with
-a matched light and dark mode, and two runtime toggles in the
-top-right flip between them (skin cycle + light/dark). Both choices
-persist to `localStorage`. Posts with headings get a docs-style "on
-this page" TOC pinned under the sidebar on the terminal + tui skins,
-with scroll-spy for the active section.
+A quiet, two-skin Zola theme. Two stylesheets ship together — a
+Minima-flavoured typographic skin and a TUI/ncurses skin with an
+ASCII-drawn article frame. Both ship with matched light and dark
+modes, and two runtime toggles in the top-right flip between them
+(skin + light/dark). Both choices persist to `localStorage`. Posts
+with headings get a docs-style "on this page" TOC pinned under the
+sidebar on the TUI skin, with scroll-spy for the active section.
 
 No frameworks, no fonts hot-linked from a CDN, no analytics, no
-search, no comments. Static HTML out of Zola, three CSS files, two
+search, no comments. Static HTML out of Zola, two CSS files, two
 tiny inline scripts.
 
 ## Install
