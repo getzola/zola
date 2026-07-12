@@ -33,6 +33,7 @@ If you have Tera syntax in your content, you will need to wrap it in `{% raw %}.
 - Add `data_attr_position` to the markdown highlighting config to handle where all the data attributes should be passed
 - Syntax highlighting CSS themes are now generated in the output directory, not in `static`
 - Use language-specific reading speeds for reading_time
+- Fix LiveReload with IPv6 loopback
 
 ## 0.22.1 (2026-01-22)
 
