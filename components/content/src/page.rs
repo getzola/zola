@@ -148,11 +148,7 @@ impl Page {
                     page.slug.clone()
                 }
             } else {
-                // Ancestor directory names must be slugified the same way as the
-                // slug itself. Otherwise a non-index page keeps its raw parent
-                // directory name (e.g. `chim_climbing/changelog`) while the sibling
-                // `index.md`, whose directory becomes the slug, is slugified
-                // (`chim-climbing`). See #3114.
+                // Slugify ancestor directory components too, like the index.md slug. See #3114.
                 let components = page
                     .file
                     .components
@@ -303,9 +299,7 @@ Hello world"#;
 
     #[test]
     fn can_slugify_ancestor_directories_in_path() {
-        // A non-index page in a directory whose name is not slug-safe must have
-        // that ancestor directory slugified, matching how the sibling `index.md`
-        // (whose directory becomes the slug) is already handled. See #3114.
+        // See #3114.
         let content = r#"
     +++
     +++
