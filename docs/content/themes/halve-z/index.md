@@ -3,17 +3,17 @@
 title = "halve-z"
 description = "Retro two-column theme"
 template = "theme.html"
-date = 2026-07-05T16:58:18-04:00
+date = 2026-07-06T17:50:27-04:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-07-05T16:58:18-04:00
-updated = 2026-07-05T16:58:18-04:00
+created = 2026-07-06T17:50:27-04:00
+updated = 2026-07-06T17:50:27-04:00
 repository = "https://github.com/charlesrocket/halve-z.git"
 homepage = "https://github.com/charlesrocket/halvez"
-minimum_version = "0.21.0"
+minimum_version = "0.22.1"
 license = "MIT"
 demo = "https://halve-z.netlify.app/"
 
