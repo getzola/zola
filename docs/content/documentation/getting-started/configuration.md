@@ -81,9 +81,9 @@ feed_filenames = ["atom.xml"]
 # this limit is not set (the default).
 # feed_limit = 20
 
-# When set to "true", files in the `static` directory are hard-linked. Useful for large
-# static files. Note that for this to work, both `static` and the
-# output directory need to be on the same filesystem. Note that the theme's `static`
+# When set to "true", files in the `static` directory and colocated page/section assets are
+# hard-linked instead of copied. Useful for large static files. Note that for this to work, the
+# source and output directory need to be on the same filesystem. Note that the theme's `static`
 # files are always copied, regardless of this setting.
 hard_link_static = false
 
