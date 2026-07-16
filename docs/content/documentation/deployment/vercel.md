@@ -94,13 +94,15 @@ Vercel to not get use of `ZOLA_VERSION` variable anymore automatically.
 Then, set "Install Command" to:
 
 ```bash
-echo "${ZOLA_VERSION:-"latest"}" | sed '/^latest$/!s/\(.*\)/tags\/v\1/' | xargs -I% curl -fsSL "https://api.github.com/repos/getzola/zola/releases/%" | grep -oP "\"browser_download_url\": ?\"\\K(.+linux-${ZOLA_LIBC:-"musl"}\\.tar\\.gz)" | xargs curl -fsSL | tar -xz
+v=${ZOLA_VERSION:+tags/v$ZOLA_VERSION};curl -fsSL https://api.github.com/repos/getzola/zola/releases/${v:-latest}|grep -o '"browser_download_url": *"[^"]*x86_64-unknown-linux-'${ZOLA_LIBC:-musl}'\.tar\.gz"'|cut -d'"' -f4|xargs curl -fsSL|tar -xz
 ```
 
 This command will download Zola from the file URL obtained from GitHub API and extract it.
 This way we can continue using same `ZOLA_VERSION` environment variable name to pin to a
-specific Zola version (same as how Vercel does) - or set it to `latest` to always pull the
-latest version whenever an deployment is initiated on Vercel.
+specific Zola version (same as how Vercel does) - or leave it unset to always pull the
+latest version whenever an deployment is initiated on Vercel. The command is restricted to
+`x86_64` binaries, since that's what Vercel's build images run, and some Zola releases
+publish both `x86_64` and `aarch64` builds for a given libc.
 
 We also pull `musl` binaries by default in the command, so we no longer have to worry
 about Vercel's build images. But if you would like to use older versions (below of
@@ -117,7 +119,7 @@ If you prefer to use `vercel.json` instead,
 ```json
 {
     "framework": null,
-    "installCommand": "echo \"${ZOLA_VERSION:-\"latest\"}\" | sed '/^latest$/!s/\\(.*\\)/tags\\/v\\1/' | xargs -I% curl -fsSL \"https://api.github.com/repos/getzola/zola/releases/%\" | grep -oP \"\\\"browser_download_url\\\": ?\\\"\\K(.+linux-${ZOLA_LIBC:-\"musl\"}\\\\.tar\\\\.gz)\" | xargs curl -fsSL | tar -xz",
+    "installCommand": "v=${ZOLA_VERSION:+tags/v$ZOLA_VERSION};curl -fsSL https://api.github.com/repos/getzola/zola/releases/${v:-latest}|grep -o '\"browser_download_url\": *\"[^\"]*x86_64-unknown-linux-'${ZOLA_LIBC:-musl}'\\.tar\\.gz\"'|cut -d'\"' -f4|xargs curl -fsSL|tar -xz",
     "buildCommand": "./zola build",
     "outputDirectory": "public"
 }
