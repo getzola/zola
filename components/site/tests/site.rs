@@ -723,9 +723,7 @@ fn can_build_feeds() {
     assert!(file_exists!(public, "atom.xml"));
     // latest article is posts/extra-syntax.md
     assert!(file_contains!(public, "atom.xml", "Extra Syntax"));
-    /* Next is posts/simple.md
     assert!(file_contains!(public, "atom.xml", "Simple article with shortcodes"));
-    */
 
     // Test section feeds
     assert!(file_exists!(public, "posts/tutorials/programming/atom.xml"));

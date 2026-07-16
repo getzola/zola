@@ -1,8 +1,0 @@
----
-source: components/rendering/tests/shortcodes.rs
-assertion_line: 140
-expression: body
-
----
-    no highlight
-    or there

@@ -27,27 +27,6 @@ And some content after
     insta::assert_snapshot!(body);
 }
 
-/* https://zola.discourse.group/t/zola-12-issue-with-continue-reading/590/7
-#[test]
-fn summary_with_shortcodes() {
-    let body = get_summary(
-        r#"
-{{ a() }} {{ a() }}
-{% render_md() %}
-# Hello world
-{% end %}
-```
-some code;
-```
-<!-- more -->
-
-And some content after
-    "#,
-    );
-    insta::assert_snapshot!(body);
-}
-*/
-
 #[test]
 fn truncated_summary() {
     let body = get_summary(

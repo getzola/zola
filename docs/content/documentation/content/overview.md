@@ -36,6 +36,18 @@ one page (`something.md`), the `landing` section has no pages and the `blog` sec
 
 Sections can be nested indefinitely.
 
+## Templating your content
+
+Every page/section of your site is also a [Tera](https://keats.github.io/tera/) template.
+This means you can use any features of Tera in your content (even functions like `resize_image`), not just the shortcode band-aid from before 0.23.
+
+See the [Tera migration guide](https://github.com/Keats/tera/blob/master/MIGRATION.md) if you're updating to 0.23 or higher.
+
+### Migrating from shortcodes
+
+Shortcodes have been removed in 0.23. The closest feature available now is [Tera components](https://keats.github.io/tera/#components).
+These components can be used in your content but also in your templates, unlike shortcodes.
+
 ## Asset colocation
 
 The `content` directory is not limited to markup files. It's natural to want to co-locate a page and some related
