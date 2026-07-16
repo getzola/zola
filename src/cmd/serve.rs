@@ -56,9 +56,7 @@ use site::sass::compile_sass;
 use site::{BuildMode, SITE_CONTENT, Site};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
-use crate::fs_utils::{
-    ChangeKind, SimpleFileSystemEventKind, filter_events, template_change_requires_full_rebuild,
-};
+use crate::fs_utils::{ChangeKind, SimpleFileSystemEventKind, filter_events};
 use crate::messages;
 
 #[derive(Debug, PartialEq)]
@@ -829,12 +827,16 @@ pub fn serve(
                                 .join(", ");
                             log::info!("-> Template file(s) changed {combined_paths}");
 
-                            // Templates consumed during Markdown rendering (e.g.
-                            // anchor-link.html for heading anchors) are baked into
-                            // the already-rendered page HTML, so reloading the
-                            // template registry alone leaves the live pages stale.
-                            // Rebuild the whole site in that case. See #2940.
-                            if full_paths.iter().any(|p| template_change_requires_full_rebuild(p)) {
+                            // These are used while rendering Markdown, so a
+                            // registry reload isn't enough - the pages are
+                            // already rendered and need a full rebuild. See #2940.
+                            const ALWAYS_FULL_REBUILD: &[&str] = &["anchor-link.html"];
+                            let needs_full_rebuild = full_paths.iter().any(|p| {
+                                p.file_name()
+                                    .and_then(|n| n.to_str())
+                                    .is_some_and(|n| ALWAYS_FULL_REBUILD.contains(&n))
+                            });
+                            if needs_full_rebuild {
                                 log::info!("Rebuilding the site");
                                 if let Some(s) = recreate_site() {
                                     site = s;
