@@ -151,6 +151,13 @@ impl CodeBlock {
                     .map(|x| x.data_attr_position.clone())
                     .unwrap_or_default(),
                 extra_html_content: ExtraHtmlContent::default(),
+                add_color_scheme: ctx
+                    .config
+                    .markdown
+                    .highlighting
+                    .as_ref()
+                    .map(|x| x.add_color_scheme.unwrap_or(true))
+                    .unwrap_or(true),
             };
             let out =
                 match hl.registry.highlight(&self.content, &hl.highlight_options(&self.fence.lang))

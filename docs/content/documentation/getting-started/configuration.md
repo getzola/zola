@@ -204,6 +204,10 @@ extra_themes = []
 # Other options are: "pre", "both" and "none"
 data_attr_position = "code"
 
+# Whether the generated CSS should set color-scheme when using a dual theme
+# Defaults to `true`
+add_color_scheme = true
+
 # Configuration of the link checker.
 [link_checker]
 # Skip link checking for external URLs that start with these prefixes

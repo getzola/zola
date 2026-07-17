@@ -28,6 +28,9 @@ pub struct Highlighting {
     pub light_theme: Option<String>,
     /// Dark theme for dual-theme mode.
     pub dark_theme: Option<String>,
+    /// If css output should set color-scheme when using a dual theme.
+    /// Defaults to true.
+    pub add_color_scheme: Option<bool>,
     #[serde(default)]
     pub extra_grammars: Vec<String>,
     #[serde(default)]
