@@ -155,6 +155,7 @@ mod tests {
             extra_themes: vec![],
             data_attr_position: DataAttrPosition::default(),
             registry: get_test_registry(),
+            add_color_scheme: None,
         });
         config.markdown.smart_punctuation = true;
         config.markdown.render_emoji = true;
