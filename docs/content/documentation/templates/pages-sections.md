@@ -54,6 +54,8 @@ relative_path: String;
 // The relative path from the `content` directory to the directory of a colocated index.md markdown file
 // Null if the file is not colocated.
 colocated_path: String?;
+// Whether this page is included in feeds. Default to true
+include_in_feeds: Bool;
 // The language for the page if there is one. Default to the config `default_language`
 lang: String;
 // Information about all the available languages for that content, including the current page

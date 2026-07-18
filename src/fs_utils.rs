@@ -77,7 +77,7 @@ pub fn filter_events(
     ignored_content_globset: &Option<GlobSet>,
 ) -> HashMap<ChangeKind, Vec<MeaningfulEvent>> {
     // Arrange events from oldest to newest.
-    events.sort_by(|e1, e2| e1.time.cmp(&e2.time));
+    events.sort_by_key(|e1| e1.time);
 
     // Use a map to keep only the last event that occurred for a particular path.
     // Map `full_path -> (partial_path, simple_event_kind, change_kind)`.

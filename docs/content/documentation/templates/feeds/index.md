@@ -21,7 +21,7 @@ and place it in the `templates/` directory with the appropriate name. You can
 check the documentation for the specifications for Atom 1.0 and RSS 2.0 in
 [W3C Feed Validation Service](https://validator.w3.org/feed/docs/).
 
-**Only pages with a date will be available.**
+**Only pages with a date and `include_in_feeds = true` (the default) will be available.**
 
 The author in the feed is set as
 - The first author in `authors` set in the 
