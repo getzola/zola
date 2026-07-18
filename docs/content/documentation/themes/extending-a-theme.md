@@ -13,8 +13,7 @@ Such a conflict results in the theme's template being ignored in favor of the te
 
 ## Overriding a block
 
-If you don't want to replace a whole template, but override parts of it, you can [extend the template](https://keats.github.io/tera/docs/#inheritance) and redefine some specific blocks. 
-For example, if you want to override the `title` block in your theme's page.html, you can create a page.html file in your site templates with the following content:
+If you don't want to replace a whole template, but override parts of it, you can [extend the template](https://keats.github.io/tera/#inheritance) and redefine some specific blocks. For example, if you want to override the `title` block in your theme's page.html, you can create a page.html file in your site templates with the following content:
 
 ```jinja
 {% raw -%}

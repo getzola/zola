@@ -3,14 +3,14 @@
 title = "neovim"
 description = "A only keyboard theme with tabs and file browser"
 template = "theme.html"
-date = 2026-02-18T20:41:23+01:00
+date = 2026-06-23T14:21:48+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-02-18T20:41:23+01:00
-updated = 2026-02-18T20:41:23+01:00
+created = 2026-06-23T14:21:48+02:00
+updated = 2026-06-23T14:21:48+02:00
 repository = "https://github.com/Super-Botman/neovim-theme.git"
 homepage = "https://github.com/super-botman/zola-theme"
 minimum_version = "0.4"
@@ -22,15 +22,14 @@ name = "0xb0tm4n"
 homepage = "https://super-botman.github.io"
 +++        
 
-# Neovim like theme 
+# Neovim like theme
 
-Neovim theme is a neovim like theme for zola.
+![image](./screenshot.png)
 
-![image](https://github.com/user-attachments/assets/0317c951-4975-4150-ac43-7faf4c57aa8b)
-
-exemple: [https://super-botman.github.io](https://super-botman.github.io)
+Live demo: [https://0xb0tm4n.org](https://0xb0tm4n.org)
 
 ## Installation
+
 ```bash
 cd themes
 git clone https://github.com/Super-Botman/neovim-theme.git
@@ -57,9 +56,6 @@ blog_name = "name"
 #####################
 # Optional settings #
 #####################
-
-# set the background image u want
-background_image = "/assets/background.jpg"
 
 # this parameter allow you to configure specific init functions/shortcuts and commands
 # the value has to be the path of you're config.js file

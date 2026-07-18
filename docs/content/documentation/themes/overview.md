@@ -3,7 +3,7 @@ title = "Overview"
 weight = 10
 +++
 
-Themes are collections of layouts and styles used to facilitate the creation and management of Zola projects. As such, themes are Zola projects which provide their own templates, content and even static assets. 
+Themes are collections of layouts and styles used to facilitate the creation and management of Zola projects. As such, themes are Zola projects which provide their own templates and static assets. 
 
 Zola has built-in support for themes which makes it easy to customise and update them. 
 
