@@ -7,6 +7,7 @@ use crate::ResizeOperation;
 use crate::format::Format;
 use exif::Exif;
 use image::DynamicImage;
+use image::imageops::FilterType;
 
 #[derive(Debug)]
 pub struct ExifNoSuchFieldError {
@@ -152,11 +153,16 @@ pub fn get_processed_filename(
     input_src: &str,
     op: &ResizeOperation,
     format: &Format,
+    filter: FilterType,
 ) -> String {
     let mut hasher = DefaultHasher::new();
     hasher.write(input_src.as_ref());
     op.hash(&mut hasher);
     format.hash(&mut hasher);
+    // Only hash the filter if it's not the default.
+    if filter != FilterType::Lanczos3 {
+        filter.hash(&mut hasher);
+    }
     let hash = hasher.finish();
     let filename = input_path
         .file_stem()

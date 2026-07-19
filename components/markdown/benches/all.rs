@@ -106,6 +106,7 @@ fn bench_with_highlighting(c: &mut Criterion) {
         extra_themes: vec![],
         registry: Default::default(),
         data_attr_position: Default::default(),
+        add_color_scheme: Default::default(),
     };
     highlighting.init(std::path::Path::new(".")).unwrap();
     config.markdown.highlighting = Some(highlighting);

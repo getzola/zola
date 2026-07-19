@@ -32,6 +32,7 @@ fn bench_loading_small_blog_with_syntax_highlighting(c: &mut Criterion) {
         extra_themes: vec![],
         registry: Default::default(),
         data_attr_position: Default::default(),
+        add_color_scheme: Default::default(),
     };
     highlighting.init(std::path::Path::new(".")).unwrap();
     site.config.markdown.highlighting = Some(highlighting);
@@ -68,6 +69,7 @@ fn bench_loading_small_kb_with_syntax_highlighting(c: &mut Criterion) {
         extra_themes: vec![],
         registry: Default::default(),
         data_attr_position: Default::default(),
+        add_color_scheme: Default::default(),
     };
     highlighting.init(std::path::Path::new(".")).unwrap();
     site.config.markdown.highlighting = Some(highlighting);
