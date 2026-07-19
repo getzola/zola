@@ -110,6 +110,16 @@ impl FileInfo {
         };
         let grand_parent = parent.parent().map(|p| p.to_path_buf());
 
+        // If the section has a folder with assets, expose its colocated path like pages do
+        let mut colocated_path = None;
+        if !components.is_empty() && name.split('.').next().unwrap() == "_index" {
+            colocated_path = Some({
+                let mut val = components.join("/");
+                val.push('/');
+                val
+            });
+        }
+
         FileInfo {
             filename: file_path.file_name().unwrap().to_string_lossy().to_string(),
             path: file_path,
@@ -119,7 +129,7 @@ impl FileInfo {
             name,
             components,
             relative,
-            colocated_path: None,
+            colocated_path,
         }
     }
 
@@ -188,6 +198,26 @@ mod tests {
         );
         assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
         assert_eq!(file.colocated_path, Some("posts/tutorials/python/".to_string()));
+    }
+
+    #[test]
+    fn can_find_colocated_path_in_section_with_assets() {
+        let file = FileInfo::new_section(
+            Path::new("/home/vincent/code/site/content/posts/tutorials/_index.md"),
+            &PathBuf::new(),
+        );
+        assert_eq!(file.components, ["posts".to_string(), "tutorials".to_string()]);
+        assert_eq!(file.colocated_path, Some("posts/tutorials/".to_string()));
+        assert_eq!(file.relative, "posts/tutorials/_index.md".to_string());
+    }
+
+    #[test]
+    fn section_colocated_path_with_language() {
+        let file = FileInfo::new_section(
+            Path::new("/home/vincent/code/site/content/posts/tutorials/_index.fr.md"),
+            &PathBuf::new(),
+        );
+        assert_eq!(file.colocated_path, Some("posts/tutorials/".to_string()));
     }
 
     #[test]

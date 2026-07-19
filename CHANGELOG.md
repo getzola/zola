@@ -36,6 +36,7 @@ If you have Tera syntax in your content, you will need to wrap it in `{% raw %}.
 - Use language-specific reading speeds for reading_time
 - Fix LiveReload with IPv6 loopback
 - Sections now also have `higher`/`lower` for their subsections, like pages do.
+- `get_url` can now resolve `@/` internal links pointing at colocated assets like `get_url(path="@/blog/article/img.png")`
 
 ## 0.22.1 (2026-01-22)
 

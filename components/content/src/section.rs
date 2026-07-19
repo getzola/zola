@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+use ahash::AHashMap;
 use config::Config;
 use errors::Result;
 use utils::fs::read_file;
@@ -7,7 +8,7 @@ use utils::table_of_contents::Heading;
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{SectionFrontMatter, split_section_content};
-use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
+use crate::utils::{find_related_assets, get_colocated_assets, get_reading_analytics, has_anchor};
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -60,6 +61,8 @@ pub struct Section {
     pub internal_links: Vec<(String, Option<String>)>,
     /// The list of all links to external webpages. They can be validated by the `link_checker`.
     pub external_links: Vec<String>,
+    /// For each asset: (asset path -> (language-less md path, relative path from md file)
+    pub colocated_assets: AHashMap<String, (String, String)>,
 }
 
 impl Section {
@@ -124,6 +127,16 @@ impl Section {
         let parent_dir = path.parent().unwrap();
         section.assets = find_related_assets(parent_dir, config, false);
         section.serialized_assets = section.serialize_assets();
+        if let Some(colocated_path) = section.file.colocated_path.as_ref()
+            && !section.assets.is_empty()
+        {
+            section.colocated_assets = get_colocated_assets(
+                &section.assets,
+                section.file.path.parent().unwrap(),
+                &colocated_path,
+                &format!("{}_index.md", colocated_path),
+            );
+        }
 
         Ok(section)
     }

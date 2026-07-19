@@ -5206,6 +5206,7 @@ dependencies = [
 name = "templates"
 version = "0.23.0"
 dependencies = [
+ "ahash 0.8.12",
  "base64",
  "config",
  "content",

@@ -1,18 +1,18 @@
 /// A page, can be a blog post or a basic page
 use std::path::{Path, PathBuf};
-
-use regex::Regex;
 use std::sync::LazyLock;
 
+use ahash::AHashMap;
 use config::Config;
 use errors::Result;
+use regex::Regex;
 use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{PageFrontMatter, split_page_content};
 use crate::utils::get_reading_analytics;
-use crate::utils::{find_related_assets, has_anchor};
+use crate::utils::{find_related_assets, get_colocated_assets, has_anchor};
 use utils::anchors::has_anchor_id;
 use utils::fs::read_file;
 
@@ -75,6 +75,8 @@ pub struct Page {
     pub internal_links: Vec<(String, Option<String>)>,
     /// The list of all links to external webpages. They can be validated by the `link_checker`.
     pub external_links: Vec<String>,
+    /// For each asset: (asset path -> (language-less md path, relative path from md file)
+    pub colocated_assets: AHashMap<String, (String, String)>,
 }
 
 impl Page {
@@ -183,6 +185,16 @@ impl Page {
             let parent_dir = path.parent().unwrap();
             page.assets = find_related_assets(parent_dir, config, true);
             page.serialized_assets = page.serialize_assets(base_path);
+            if let Some(colocated_path) = page.file.colocated_path.as_ref()
+                && !page.assets.is_empty()
+            {
+                page.colocated_assets = get_colocated_assets(
+                    &page.assets,
+                    page.file.path.parent().unwrap(),
+                    &colocated_path,
+                    &format!("{}index.md", colocated_path),
+                );
+            }
         } else {
             page.assets = vec![];
         }
