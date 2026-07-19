@@ -26,6 +26,10 @@ pub struct Section {
     pub raw_content: String,
     /// The HTML rendered of the page
     pub content: String,
+    /// The previous section when sorting: earlier/earlier_updated/lighter/prev
+    pub lower: Option<PathBuf>,
+    /// The next section when sorting: later/later_updated/heavier/next
+    pub higher: Option<PathBuf>,
     /// All the non-md files we found next to the .md file
     pub assets: Vec<PathBuf>,
     /// All the non-md files we found next to the .md file as string
@@ -34,6 +38,8 @@ pub struct Section {
     pub pages: Vec<PathBuf>,
     /// All pages that cannot be sorted in this section
     pub ignored_pages: Vec<PathBuf>,
+    /// All subsections that cannot be sorted in this section
+    pub ignored_subsections: Vec<PathBuf>,
     /// The list of parent sections relative paths
     pub ancestors: Vec<String>,
     /// All direct subsections

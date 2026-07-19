@@ -121,7 +121,7 @@ impl<'a> SerializingPage<'a> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingSection<'a> {
     relative_path: &'a str,
     colocated_path: &'a Option<String>,
@@ -141,6 +141,8 @@ pub struct SerializingSection<'a> {
     assets: &'a [String],
     pages: Vec<Value>,
     subsections: Vec<&'a str>,
+    lower: Option<Value>,
+    higher: Option<Value>,
     translations: Vec<TranslatedContent<'a>>,
     backlinks: Vec<BackLink<'a>>,
     generate_feeds: bool,
@@ -180,6 +182,8 @@ impl<'a> SerializingSection<'a> {
             transparent: section.meta.transparent,
             pages,
             subsections,
+            lower: None,
+            higher: None,
             translations,
             backlinks,
             paginate_by: &section.meta.paginate_by,
