@@ -35,6 +35,7 @@ If you have Tera syntax in your content, you will need to wrap it in `{% raw %}.
 - Syntax highlighting CSS themes are now generated in the output directory, not in `static`
 - Use language-specific reading speeds for reading_time
 - Fix LiveReload with IPv6 loopback
+- Sections now also have `higher`/`lower` for their subsections, like pages do.
 
 ## 0.22.1 (2026-01-22)
 

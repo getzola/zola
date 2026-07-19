@@ -115,7 +115,7 @@ impl RenderCache {
             }
         }
 
-        let (sections, sections_by_canonical) = library.sections.iter().fold(
+        let (mut sections, sections_by_canonical) = library.sections.iter().fold(
             (
                 AHashMap::with_capacity(library.sections.len()),
                 AHashMap::<PathBuf, AHashMap<String, PathBuf>>::new(),
@@ -146,6 +146,42 @@ impl RenderCache {
                 (sections, sections_by_canonical)
             },
         );
+
+        // Second pass for sections: inject sibling subsection Values
+        let section_siblings: Vec<_> = library
+            .sections
+            .iter()
+            .filter_map(|(path, section)| {
+                let lower =
+                    section.lower.as_ref().and_then(|p| sections.get(p)).map(|c| c.value.clone());
+                let higher =
+                    section.higher.as_ref().and_then(|p| sections.get(p)).map(|c| c.value.clone());
+                if lower.is_some() || higher.is_some() {
+                    Some((path.clone(), lower, higher))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        for (path, lower, higher) in section_siblings {
+            if let Some(mut cached) = sections.remove(&path) {
+                let new_value = match cached.value.into_map() {
+                    Some(mut map) => {
+                        if let Some(lower_val) = lower {
+                            map.insert("lower".into(), lower_val);
+                        }
+                        if let Some(higher_val) = higher {
+                            map.insert("higher".into(), higher_val);
+                        }
+                        Value::from(map)
+                    }
+                    None => unreachable!("serialized section should always be a map"),
+                };
+                cached.value = new_value;
+                sections.insert(path, cached);
+            }
+        }
 
         let cached_taxonomies: Vec<(_, _, _)> = taxonomies
             .iter()
