@@ -35,7 +35,7 @@ impl ImageMeta {
         let metadata = match exif::Reader::new().read_raw(metadata) {
             Ok(metadata) => metadata,
             Err(e) => {
-                eprintln!("Failed to parse exif for {}: {}", path.display(), e);
+                log::warn!("Failed to parse exif for {}: {}", path.display(), e);
                 return Ok(Self { size, format, description: None, created: None });
             }
         };

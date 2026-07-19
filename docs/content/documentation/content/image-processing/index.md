@@ -9,7 +9,7 @@ which is available in all template code including content.
 The function usage is as follows:
 
 ```jinja
-resize_image(path, width, height, op, format, quality, speed)
+resize_image(path, width, height, op, format, quality, speed, filter)
 ```
 
 ### Arguments
@@ -40,6 +40,14 @@ resize_image(path, width, height, op, format, quality, speed)
   JPEG is chosen for JPEGs and other lossy formats, and PNG is chosen for PNGs and other lossless formats.
 - `quality` (_optional_): Quality of the resized image. Quality is only used when encoding JPEGs, WebPs or AVIFs. Quality for JPEG ranges from 1 to 100 and defaults to 75. Quality for WebP ranges from 0 to 100 and defaults to lossless encoding. Quality for AVIF ranges from 1 to 100 and defaults to 80.
 - `speed` (_optional_): Speed of encoding the resized image. Speed is only used when encoding AVIFs. Speed for AVIF ranges from 1 to 10 and defaults to 5. Speed 10 should process images the fastest, but may not produce the best compression; speed 1 is much slower but produces the best compression.
+- `filter` (_optional_): Resize filter. This can be one of:
+  - `"lanczos3"`
+  - `"nearest"`
+  - `"triangle"`
+  - `"catmullrom"`
+  - `"gaussian"`
+
+  The default is `"lanczos3"`, which produces smooth resizing generally free of visible artifacts. The filters are further detailed in a later section.
 
 ### Image processing and return value
 
@@ -93,6 +101,8 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
 ![zola](01-zola.png)
 
+These examples all use the default `"lanczos3"` resize filter.
+
 ### **`"scale"`**
   Simply scales the image to the specified dimensions (`width` & `height`) irrespective of the aspect ratio.
 
@@ -141,6 +151,17 @@ The source for all examples is this 300 pixel × 380 pixel image:
 
   {{ <resize_image path="documentation/content/image-processing/01-zola.png" width={150} height={150} op="fill" /> }}
 
+## Resize filters
+
+Depending on the image content, different filters may produce better results. 
+Below are all the filters applied to two images. 
+From left to right, the filters are `lanczos3`, `nearest`, `triangle`, `catmull_rom`, and `gaussian`. 
+It can be seen that `gaussian` and `triangle` filters tend to have softer results, whereas `lanczos3` and `catmull_rom` better preserve small details. 
+`nearest` is a good option for images of a pixel art style, as no interpolation is performed between neighboring pixels.
+
+{{ <filters path="documentation/content/image-processing/01-zola.png" /> }}
+
+{{ <filters path="documentation/content/image-processing/knight.png" /> }}
 
 ## Creating picture galleries
 

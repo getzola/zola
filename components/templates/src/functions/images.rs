@@ -42,6 +42,7 @@ impl Default for ResizeImage {
 
 const DEFAULT_OP: &str = "fill";
 const DEFAULT_FMT: &str = "auto";
+const DEFAULT_FILTER: &str = "lanczos3";
 
 impl Function<TeraResult<Value>> for ResizeImage {
     fn call(&self, kwargs: Kwargs, _state: &State) -> TeraResult<Value> {
@@ -52,6 +53,7 @@ impl Function<TeraResult<Value>> for ResizeImage {
         let format: String = kwargs.get("format")?.unwrap_or_else(|| DEFAULT_FMT.to_string());
         let quality: Option<u8> = kwargs.get("quality")?;
         let speed: Option<u8> = kwargs.get("speed")?;
+        let filter: String = kwargs.get("filter")?.unwrap_or_else(|| DEFAULT_FILTER.to_string());
 
         let resize_op = imageproc::ResizeOperation::from_args(&op, width, height)
             .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?;
@@ -71,7 +73,7 @@ impl Function<TeraResult<Value>> for ResizeImage {
             };
 
         let response = imageproc
-            .enqueue(resize_op, unified_path, file_path, &format, quality, speed)
+            .enqueue(resize_op, unified_path, file_path, &format, quality, speed, &filter)
             .map_err(|e| Error::message(format!("`resize_image`: {}", e)))?;
 
         Ok(Value::from_serializable(&response))

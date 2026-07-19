@@ -30,6 +30,7 @@ If you have Tera syntax in your content, you will need to wrap it in `{% raw %}.
 ### Other
 
 - `get_taxonomy_url` `name` parameter is deprecated. Use `term` to be consistent with the other functions
+- Add an optional `filter` argument to `resize_image` to choose the sampling filter
 - Add `data_attr_position` to the markdown highlighting config to handle where all the data attributes should be passed
 - Syntax highlighting CSS themes are now generated in the output directory, not in `static`
 - Use language-specific reading speeds for reading_time
