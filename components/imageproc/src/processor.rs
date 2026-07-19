@@ -53,7 +53,7 @@ impl ImageOp {
             exif::Reader::new()
                 .read_raw(raw_metadata)
                 .inspect_err(|e| {
-                    eprintln!("Failed to parse exif for {}: {}", self.input_path.display(), e)
+                    log::warn!("Failed to parse exif for {}: {}", self.input_path.display(), e)
                 })
                 .ok()
         });
@@ -64,8 +64,8 @@ impl ImageOp {
                 Ok(Some(fixed_img)) => fixed_img,
                 Ok(None) => img,
                 Err(e) => {
-                    eprintln!(
-                        "Using default orientation for {} because getting orientation data from exif metadata failed: {}",
+                    log::debug!(
+                        "Using default orientation for {}: could not read exif orientation: {}",
                         self.input_path.display(),
                         e
                     );
@@ -73,8 +73,8 @@ impl ImageOp {
                 }
             }
         } else {
-            eprintln!(
-                "Using default orientation for {} because getting its exif could not be parsed.",
+            log::debug!(
+                "No exif orientation data for {}, using default orientation",
                 self.input_path.display(),
             );
             img
