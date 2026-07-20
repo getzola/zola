@@ -3,6 +3,7 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 
+use ahash::AHashMap;
 use tera::Tera;
 
 use config::Config;
@@ -26,6 +27,7 @@ pub fn render_page(
     page: &mut Page,
     renderer: Renderer,
     permalinks: &HashMap<String, String>,
+    colocated_assets: &AHashMap<String, (String, String)>,
     tera: &Tera,
     config: &Config,
     insert_anchor: InsertAnchor,
@@ -45,6 +47,7 @@ pub fn render_page(
         tera,
         config,
         permalinks,
+        colocated_assets,
         lang: &page.lang,
         current_permalink: &page.permalink,
         current_path: &page.file.relative,
@@ -66,6 +69,7 @@ pub fn render_section(
     section: &mut Section,
     renderer: Renderer,
     permalinks: &HashMap<String, String>,
+    colocated_assets: &AHashMap<String, (String, String)>,
     tera: &Tera,
     config: &Config,
 ) -> Result<()> {
@@ -83,6 +87,7 @@ pub fn render_section(
         tera,
         config,
         permalinks,
+        colocated_assets,
         lang: &section.lang,
         current_permalink: &section.permalink,
         current_path: &section.file.relative,
@@ -112,6 +117,8 @@ mod tests {
     use std::collections::HashMap;
     use std::path::Path;
     use std::path::PathBuf;
+
+    use ahash::AHashMap;
 
     use config::Config;
     use content::{Library, Page};
@@ -148,6 +155,7 @@ Hello world
             &mut page,
             renderer,
             &HashMap::default(),
+            &AHashMap::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
@@ -186,6 +194,7 @@ And here's another. [^3]
             &mut page,
             renderer,
             &HashMap::default(),
+            &AHashMap::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
@@ -222,6 +231,7 @@ And here's another. [^3]
             &mut page,
             renderer,
             &HashMap::default(),
+            &AHashMap::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,

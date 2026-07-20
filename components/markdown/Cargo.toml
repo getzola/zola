@@ -5,6 +5,7 @@ edition.workspace = true
 include = ["src/**/*"]
 
 [dependencies]
+ahash = { workspace = true }
 gh-emoji = { workspace = true }
 pulldown-cmark = { workspace = true }
 pulldown-cmark-escape = { workspace = true }

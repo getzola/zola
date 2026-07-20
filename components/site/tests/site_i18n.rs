@@ -206,3 +206,30 @@ fn correct_translations_on_all_pages() {
         assert!(ensure_translations_in_output(&site, path, &link));
     }
 }
+
+#[test]
+fn can_resolve_colocated_assets_language_aware() {
+    let (_, _tmp_dir, public) = build_site("test_site_i18n");
+
+    assert!(file_contains!(
+        public,
+        "blog/with-assets/index.html",
+        "en asset: https://example.com/blog/with-assets/some.js"
+    ));
+    assert!(file_contains!(
+        public,
+        "fr/blog/with-assets/index.html",
+        "fr asset: https://example.com/fr/blog/with-assets/some.js"
+    ));
+
+    assert!(file_contains!(
+        public,
+        "blog/with-assets/index.html",
+        "src=\"https://example.com/blog/with-assets/some.js\""
+    ));
+    assert!(file_contains!(
+        public,
+        "fr/blog/with-assets/index.html",
+        "src=\"https://example.com/fr/blog/with-assets/some.js\""
+    ));
+}

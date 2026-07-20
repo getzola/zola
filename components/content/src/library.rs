@@ -54,6 +54,8 @@ pub struct Library {
     pub reverse_aliases: AHashMap<String, AHashSet<PathBuf>>,
     pub translations: AHashMap<PathBuf, AHashSet<PathBuf>>,
     pub backlinks: AHashMap<String, AHashSet<PathBuf>>,
+    // (internal path, (md path, asset path relative to owner)
+    pub colocated_assets: AHashMap<String, (String, String)>,
     // A mapping of {lang -> <slug, {term -> vec<paths>}>>}
     taxonomies_def: AHashMap<String, AHashMap<String, AHashMap<String, Vec<PathBuf>>>>,
     // All the taxonomies from config.toml in their slugified version
@@ -158,6 +160,7 @@ impl Library {
             }
         }
 
+        self.colocated_assets.extend(page.colocated_assets.clone());
         self.pages.insert(file_path, page);
     }
 
@@ -168,6 +171,7 @@ impl Library {
             entries.extend(section.meta.aliases.to_vec());
             self.insert_reverse_aliases(&file_path, entries);
         }
+        self.colocated_assets.extend(section.colocated_assets.clone());
         self.sections.insert(file_path, section);
     }
 

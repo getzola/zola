@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use ahash::AHashMap;
 use config::Config;
 use pulldown_cmark::Options;
 use tera::Tera;
@@ -10,6 +11,7 @@ pub struct MarkdownContext<'a> {
     pub tera: &'a Tera,
     pub config: &'a Config,
     pub permalinks: &'a HashMap<String, String>,
+    pub colocated_assets: &'a AHashMap<String, (String, String)>,
     pub lang: &'a str,
     pub current_permalink: &'a str,
     pub current_path: &'a str,

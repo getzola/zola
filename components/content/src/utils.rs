@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+use ahash::AHashMap;
 use unicode_segmentation::UnicodeSegmentation;
 use walkdir::WalkDir;
 
@@ -54,6 +55,39 @@ pub fn find_related_assets(path: &Path, config: &Config, recursive: bool) -> Vec
     assets.sort_by_cached_key(|a| a.to_str().unwrap().to_ascii_lowercase());
 
     assets
+}
+
+/// Creates a map of assets to their language-less markdown file and a relative path to them.
+/// Eg if there is the following tree:
+/// - content
+///   - gallery
+///     - index.md
+///     - knight.jpg
+///     - subdir
+///         - rook.jpg
+/// This will output the following map:
+/// - content/gallery/knight.jpg -> (content/gallery/index.md, knight.jpg)
+/// - content/gallery/subdir/rook.jpg -> (content/gallery/index.md, subdir/rook.jpg)
+pub fn get_colocated_assets(
+    assets: &[PathBuf],
+    source_folder: &Path,
+    colocated_path: &str,
+    owner_md: &str,
+) -> AHashMap<String, (String, String)> {
+    let mut map = AHashMap::new();
+    for asset in assets {
+        let Ok(relative) = asset.strip_prefix(source_folder) else {
+            continue;
+        };
+        let relative = relative
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy().to_string())
+            .collect::<Vec<_>>()
+            .join("/");
+
+        map.insert(format!("{colocated_path}{relative}"), (owner_md.to_string(), relative));
+    }
+    map
 }
 
 /// Get word count and estimated reading time.
@@ -120,6 +154,31 @@ mod tests {
     use config::Config;
     use fs_err as fs;
     use tempfile::tempdir;
+
+    #[test]
+    fn can_build_colocated_asset_map() {
+        let source_folder = Path::new("/site/content/gallery/");
+        let assets = vec![
+            source_folder.join("knight.jpg"),
+            source_folder.join("extensionless"),
+            source_folder.join("subdir").join("rook.jpg"),
+        ];
+        let map = get_colocated_assets(&assets, source_folder, "gallery/", "gallery/index.md");
+
+        assert_eq!(map.len(), 3);
+        assert_eq!(
+            map["gallery/knight.jpg"],
+            ("gallery/index.md".to_string(), "knight.jpg".to_string())
+        );
+        assert_eq!(
+            map["gallery/extensionless"],
+            ("gallery/index.md".to_string(), "extensionless".to_string())
+        );
+        assert_eq!(
+            map["gallery/subdir/rook.jpg"],
+            ("gallery/index.md".to_string(), "subdir/rook.jpg".to_string())
+        );
+    }
 
     #[test]
     fn can_find_related_assets_recursive() {

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use ahash::AHashMap;
 use config::{Config, Highlighting};
 use criterion::{Criterion, criterion_group, criterion_main};
 use markdown::{MarkdownContext, render_content};
@@ -75,10 +76,12 @@ fn bench_without_highlighting(c: &mut Criterion) {
     let permalinks = HashMap::new();
     let config = Config::default_for_test();
 
+    let colocated_assets = AHashMap::new();
     let context = MarkdownContext {
         tera: &tera,
         config: &config,
         permalinks: &permalinks,
+        colocated_assets: &colocated_assets,
         lang: &config.default_language,
         current_permalink: "https://www.example.com/bench/",
         current_path: "bench.md",
@@ -111,10 +114,12 @@ fn bench_with_highlighting(c: &mut Criterion) {
     highlighting.init(std::path::Path::new(".")).unwrap();
     config.markdown.highlighting = Some(highlighting);
 
+    let colocated_assets = AHashMap::new();
     let context = MarkdownContext {
         tera: &tera,
         config: &config,
         permalinks: &permalinks,
+        colocated_assets: &colocated_assets,
         lang: &config.default_language,
         current_permalink: "https://www.example.com/bench/",
         current_path: "bench.md",

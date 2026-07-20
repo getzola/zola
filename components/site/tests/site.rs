@@ -843,6 +843,26 @@ fn can_ignore_markdown_content() {
 }
 
 #[test]
+fn can_resolve_colocated_assets_with_internal_links() {
+    let (_, _tmp_dir, public) = build_site("test_site");
+    assert!(file_contains!(
+        public,
+        "posts/with-assets/index.html",
+        "href=\"https://replace-this-with-your-url.com/posts/with-assets/zola.png\""
+    ));
+    assert!(file_contains!(
+        public,
+        "posts/with-assets/index.html",
+        "src=\"https://replace-this-with-your-url.com/posts/with-assets/zola.png\""
+    ));
+    assert!(file_contains!(
+        public,
+        "posts/with-assets/index.html",
+        "get_url asset: https://replace-this-with-your-url.com/posts/with-assets/zola.png"
+    ));
+}
+
+#[test]
 fn can_cachebust_static_files() {
     let (_, _tmp_dir, public) = build_site("test_site");
     assert!(file_contains!(

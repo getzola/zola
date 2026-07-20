@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 
+use ahash::AHashMap;
 use config::Config;
 use errors::Result;
 use markdown::{MarkdownContext, Rendered, render_content};
@@ -20,12 +21,19 @@ fn configurable_render(
 
     tera.register_filter(
         "markdown",
-        templates::filters::MarkdownFilter::new(config.clone(), permalinks.clone(), tera.clone()),
+        templates::filters::MarkdownFilter::new(
+            config.clone(),
+            permalinks.clone(),
+            AHashMap::new(),
+            tera.clone(),
+        ),
     );
+    let colocated_assets = AHashMap::new();
     let context = MarkdownContext {
         tera: &tera,
         config: &config,
         permalinks: &permalinks,
+        colocated_assets: &colocated_assets,
         lang: &config.default_language,
         current_permalink: "https://www.getzola.org/test/",
         current_path: "my_page.md",

@@ -1,9 +1,9 @@
+use ahash::AHashMap;
+use fs_err as fs;
 use std::collections::HashMap;
 use std::fmt::Write as _;
 use std::io::Read;
 use std::path::PathBuf;
-
-use fs_err as fs;
 
 use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
 use sha2::{Sha256, Sha384, Sha512, digest};
@@ -40,6 +40,7 @@ pub struct GetUrl {
     config: Config,
     permalinks: HashMap<String, String>,
     output_path: PathBuf,
+    colocated_assets: AHashMap<String, (String, String)>,
 }
 
 impl GetUrl {
@@ -48,8 +49,9 @@ impl GetUrl {
         config: Config,
         permalinks: HashMap<String, String>,
         output_path: PathBuf,
+        colocated_assets: AHashMap<String, (String, String)>,
     ) -> Self {
-        Self { base_path, config, permalinks, output_path }
+        Self { base_path, config, permalinks, output_path, colocated_assets }
     }
 }
 
@@ -83,6 +85,20 @@ impl Function<TeraResult<String>> for GetUrl {
             let lang: String = explicit_lang
                 .or(state.get("lang")?)
                 .unwrap_or_else(|| self.config.default_language.clone());
+
+            // Check if it's a colocated asset first
+            if let Some((owner_md, rel)) = self.colocated_assets.get(&path[2..]) {
+                let owner_with_lang =
+                    make_path_with_lang(format!("@/{}", owner_md), &lang, &self.config)?;
+                return match resolve_internal_link(&owner_with_lang, &self.permalinks) {
+                    Ok(resolved) => Ok(format!("{}{}", resolved.permalink, rel)),
+                    Err(_) => Err(Error::message(format!(
+                        "`get_url`: could not resolve URL for asset `{}` not found.",
+                        path
+                    ))),
+                };
+            }
+
             let path_with_lang = make_path_with_lang(path, &lang, &self.config)?;
 
             match resolve_internal_link(&path_with_lang, &self.permalinks) {
@@ -223,10 +239,10 @@ impl Function<TeraResult<String>> for GetHash {
 mod tests {
     use super::{GetHash, GetUrl};
 
+    use ahash::AHashMap;
+    use fs_err as fs;
     use std::collections::HashMap;
     use std::path::PathBuf;
-
-    use fs_err as fs;
     use tempfile::{TempDir, tempdir};
     use tera::{Context, Function, Kwargs, State};
 
@@ -259,6 +275,7 @@ title = "A title"
             Config::default(),
             HashMap::new(),
             PathBuf::new(),
+            AHashMap::new(),
         );
 
         let kwargs = Kwargs::from([
@@ -292,6 +309,7 @@ title = "A title"
             Config::default(),
             HashMap::new(),
             PathBuf::new(),
+            AHashMap::new(),
         );
 
         let kwargs = Kwargs::from([
@@ -313,6 +331,7 @@ title = "A title"
             Config::default(),
             HashMap::new(),
             PathBuf::new(),
+            AHashMap::new(),
         );
 
         let kwargs = Kwargs::from([
@@ -335,6 +354,7 @@ title = "A title"
             Config::default(),
             HashMap::new(),
             PathBuf::new(),
+            AHashMap::new(),
         );
 
         let kwargs = Kwargs::from([("path", tera::Value::from("app.css"))]);
@@ -360,8 +380,13 @@ title = "A title"
         create_file(&public.join("style.css"), "// Hello world")
             .expect("Failed to create file in output directory");
 
-        let get_url =
-            GetUrl::new(dir.path().to_path_buf(), Config::default(), HashMap::new(), public);
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            Config::default(),
+            HashMap::new(),
+            public,
+            AHashMap::new(),
+        );
 
         let kwargs = Kwargs::from([("path", tera::Value::from("style.css"))]);
         let ctx = Context::new();
@@ -375,7 +400,13 @@ title = "A title"
     fn error_when_language_not_available() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let get_url = GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            HashMap::new(),
+            PathBuf::new(),
+            AHashMap::new(),
+        );
 
         let kwargs = Kwargs::from([
             ("path", tera::Value::from("@/a_section/a_page.md")),
@@ -404,6 +435,7 @@ title = "A title"
             config.clone(),
             permalinks.clone(),
             PathBuf::new(),
+            AHashMap::new(),
         );
 
         let kwargs = Kwargs::from([
@@ -430,7 +462,13 @@ title = "A title"
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
         let dir = create_temp_dir();
-        let get_url = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            permalinks,
+            PathBuf::new(),
+            AHashMap::new(),
+        );
 
         let kwargs = Kwargs::from([
             ("path", tera::Value::from("@/a_section/a_page.md")),
@@ -441,6 +479,56 @@ title = "A title"
             get_url.call(kwargs, &State::new(&ctx)).unwrap(),
             "https://remplace-par-ton-url.fr/en/a_section/a_page/"
         );
+    }
+
+    // Colocated assets resolve the owning page/section for the requested language and append the
+    // asset's relative path. fr/en use different slugs to prove the lang prefix isn't blindly added.
+    #[test]
+    fn can_get_colocated_asset_url() {
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let mut permalinks = HashMap::new();
+        permalinks.insert(
+            "a_section/an_article/index.md".to_string(),
+            "https://remplace-par-ton-url.fr/a_section/mon_article/".to_string(),
+        );
+        permalinks.insert(
+            "a_section/an_article/index.en.md".to_string(),
+            "https://remplace-par-ton-url.fr/en/a_section/the_article/".to_string(),
+        );
+        let mut colocated_assets = AHashMap::new();
+        colocated_assets.insert(
+            "a_section/an_article/graph.jpg".to_string(),
+            ("a_section/an_article/index.md".to_string(), "graph.jpg".to_string()),
+        );
+
+        let dir = create_temp_dir();
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            permalinks,
+            PathBuf::new(),
+            colocated_assets,
+        );
+        let resolve = |path: &str, lang: &str| {
+            let kwargs = Kwargs::from([
+                ("path", tera::Value::from(path)),
+                ("lang", tera::Value::from(lang)),
+            ]);
+            let ctx = Context::new();
+            get_url.call(kwargs, &State::new(&ctx))
+        };
+
+        // Default language, then another language following that page's own slug
+        assert_eq!(
+            resolve("@/a_section/an_article/graph.jpg", "fr").unwrap(),
+            "https://remplace-par-ton-url.fr/a_section/mon_article/graph.jpg"
+        );
+        assert_eq!(
+            resolve("@/a_section/an_article/graph.jpg", "en").unwrap(),
+            "https://remplace-par-ton-url.fr/en/a_section/the_article/graph.jpg"
+        );
+        // Unknown asset errors
+        assert!(resolve("@/a_section/my-article/missing.jpg", "fr").is_err());
     }
 
     #[test]
@@ -456,7 +544,13 @@ title = "A title"
             "https://remplace-par-ton-url.fr/en/a_section/a_page/".to_string(),
         );
         let dir = create_temp_dir();
-        let get_url = GetUrl::new(dir.path().to_path_buf(), config, permalinks, PathBuf::new());
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            permalinks,
+            PathBuf::new(),
+            AHashMap::new(),
+        );
 
         let kwargs = Kwargs::from([
             ("path", tera::Value::from("/en/a_section/a_page/")),
@@ -473,8 +567,13 @@ title = "A title"
     fn can_get_feed_urls_with_default_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let get_url =
-            GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            HashMap::new(),
+            PathBuf::new(),
+            AHashMap::new(),
+        );
 
         for feed_filename in &config.feed_filenames {
             let kwargs = Kwargs::from([
@@ -493,8 +592,13 @@ title = "A title"
     fn can_get_feed_urls_with_other_language() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let get_url =
-            GetUrl::new(dir.path().to_path_buf(), config.clone(), HashMap::new(), PathBuf::new());
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            config.clone(),
+            HashMap::new(),
+            PathBuf::new(),
+            AHashMap::new(),
+        );
 
         for feed_filename in &config.feed_filenames {
             let kwargs = Kwargs::from([
@@ -705,7 +809,13 @@ title = "A title"
     fn static_file_does_not_get_lang_prefix_from_context() {
         let config = Config::parse(CONFIG_DATA).unwrap();
         let dir = create_temp_dir();
-        let get_url = GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new());
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            HashMap::new(),
+            PathBuf::new(),
+            AHashMap::new(),
+        );
 
         // lang="en" (non-default) comes from template context, not from kwarg
         let kwargs = Kwargs::from([("path", tera::Value::from("app.css"))]);
