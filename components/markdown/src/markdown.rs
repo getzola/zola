@@ -58,9 +58,16 @@ fn is_colocated_asset_link(link: &str) -> bool {
 fn resolve_colocated_asset(link: &str, ctx: &MarkdownContext) -> Option<String> {
     let path = link.strip_prefix("@/")?;
     // `#` in an asset path is probably a mistake, ignore it
-    let path = path.split('#').next().unwrap_or(path);
+    let path = path.split('#').next().unwrap();
     let (owner_md, rel) = ctx.colocated_assets.get(path)?;
-    let owner = resolve_internal_link(owner_md.as_str(), ctx.permalinks).ok()?;
+    let owner = if ctx.lang != ctx.config.default_language
+        && let Some(stem) = owner_md.strip_suffix(".md")
+        && let Ok(owner) = resolve_internal_link(&format!("{stem}.{}.md", ctx.lang), ctx.permalinks)
+    {
+        owner
+    } else {
+        resolve_internal_link(owner_md.as_str(), ctx.permalinks).ok()?
+    };
     Some(format!("{}{rel}", owner.permalink))
 }
 
@@ -749,6 +756,30 @@ mod tests {
         for link in links {
             assert!(!is_colocated_asset_link(link));
         }
+    }
+
+    #[test]
+    fn colocated_asset_falls_back_to_default_language() {
+        let config = Config::default();
+        let tera = ZOLA_TERA.clone();
+        let mut permalinks = HashMap::new();
+        permalinks.insert(
+            "blog/english-only/index.md".to_string(),
+            "https://example.com/blog/english-only/".to_string(),
+        );
+        let mut colocated_assets = AHashMap::new();
+        colocated_assets.insert(
+            "blog/english-only/img.png".to_string(),
+            ("blog/english-only/index.md".to_string(), "img.png".to_string()),
+        );
+        let mut context = make_context(&config, &tera, &permalinks);
+        context.colocated_assets = &colocated_assets;
+        context.lang = "fr";
+
+        assert_eq!(
+            resolve_colocated_asset("@/blog/english-only/img.png", &context).unwrap(),
+            "https://example.com/blog/english-only/img.png"
+        );
     }
 
     #[test]

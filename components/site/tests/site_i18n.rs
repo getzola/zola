@@ -221,4 +221,15 @@ fn can_resolve_colocated_assets_language_aware() {
         "fr/blog/with-assets/index.html",
         "fr asset: https://example.com/fr/blog/with-assets/some.js"
     ));
+
+    assert!(file_contains!(
+        public,
+        "blog/with-assets/index.html",
+        "src=\"https://example.com/blog/with-assets/some.js\""
+    ));
+    assert!(file_contains!(
+        public,
+        "fr/blog/with-assets/index.html",
+        "src=\"https://example.com/fr/blog/with-assets/some.js\""
+    ));
 }
