@@ -35,3 +35,4 @@ render = { workspace = true }
 [dev-dependencies]
 mockito = "1.6"
 tempfile = "3"
+insta = { workspace = true }

@@ -459,6 +459,7 @@ impl Site {
         let permalinks = &self.permalinks;
         let tera = &self.tera;
         let config = &self.config;
+        let colocated_assets = self.library.colocated_assets.clone();
 
         // This is needed in the first place because of silly borrow checker
         let mut pages_insert_anchors = HashMap::new();
@@ -485,6 +486,7 @@ impl Site {
                     page,
                     renderer.clone(),
                     permalinks,
+                    &colocated_assets,
                     tera,
                     config,
                     insert_anchor,
@@ -498,7 +500,14 @@ impl Site {
             .collect::<Vec<_>>()
             .par_iter_mut()
             .map(|section| {
-                md_render::render_section(section, renderer.clone(), permalinks, tera, config)
+                md_render::render_section(
+                    section,
+                    renderer.clone(),
+                    permalinks,
+                    &colocated_assets,
+                    tera,
+                    config,
+                )
             })
             .collect::<Result<()>>()?;
 
@@ -526,6 +535,7 @@ impl Site {
                 &mut page,
                 self.renderer(),
                 &self.permalinks,
+                &self.library.colocated_assets,
                 &self.tera,
                 &self.config,
                 insert_anchor,
@@ -557,6 +567,7 @@ impl Site {
                 &mut section,
                 self.renderer(),
                 &self.permalinks,
+                &self.library.colocated_assets,
                 &self.tera,
                 &self.config,
             )?;

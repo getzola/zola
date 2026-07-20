@@ -85,7 +85,7 @@ pub fn get_colocated_assets(
             .collect::<Vec<_>>()
             .join("/");
 
-        map.insert(format!("{colocated_path}/{relative}"), (owner_md.to_string(), relative));
+        map.insert(format!("{colocated_path}{relative}"), (owner_md.to_string(), relative));
     }
     map
 }
@@ -163,10 +163,9 @@ mod tests {
             source_folder.join("extensionless"),
             source_folder.join("subdir").join("rook.jpg"),
         ];
-        let map = get_colocated_assets(&assets, source_folder, "gallery", "gallery/index.md");
+        let map = get_colocated_assets(&assets, source_folder, "gallery/", "gallery/index.md");
 
         assert_eq!(map.len(), 3);
-        println!("{map:?}");
         assert_eq!(
             map["gallery/knight.jpg"],
             ("gallery/index.md".to_string(), "knight.jpg".to_string())

@@ -21,7 +21,7 @@ pub fn resolve_internal_link(
     link: &str,
     permalinks: &HashMap<String, String>,
 ) -> Result<ResolvedInternalLink> {
-    // First we remove the ./ since that's zola specific
+    // First we remove the @/ since that's zola specific
     let clean_link = link.replacen("@/", "", 1);
     // Then we remove any potential anchor
     // parts[0] will be the file path and parts[1] the anchor if present

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use ahash::AHashMap;
 use config::Config;
 use markdown::{MarkdownContext, render_content};
 use templates::ZOLA_TERA;
@@ -110,10 +111,12 @@ fn can_customise_anchor_template() {
     tera.add_raw_template("anchor-link.html", " (in {{ lang }})").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
+    let colocated_assets = AHashMap::new();
     let context = MarkdownContext {
         tera: &tera,
         config: &config,
         permalinks: &permalinks_ctx,
+        colocated_assets: &colocated_assets,
         lang: &config.default_language,
         current_permalink: "",
         current_path: "",
@@ -129,10 +132,12 @@ fn can_customise_summary_template() {
     tera.add_raw_template("summary-cutoff.html", " (in {{ lang }})").unwrap();
     let permalinks_ctx = HashMap::new();
     let config = Config::default_for_test();
+    let colocated_assets = AHashMap::new();
     let context = MarkdownContext {
         tera: &tera,
         config: &config,
         permalinks: &permalinks_ctx,
+        colocated_assets: &colocated_assets,
         lang: &config.default_language,
         current_permalink: "",
         current_path: "",

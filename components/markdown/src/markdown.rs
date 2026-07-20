@@ -55,6 +55,15 @@ fn is_colocated_asset_link(link: &str) -> bool {
         && !STARTS_WITH_SCHEMA_RE.is_match(link)
 }
 
+fn resolve_colocated_asset(link: &str, ctx: &MarkdownContext) -> Option<String> {
+    let path = link.strip_prefix("@/")?;
+    // `#` in an asset path is probably a mistake, ignore it
+    let path = path.split('#').next().unwrap_or(path);
+    let (owner_md, rel) = ctx.colocated_assets.get(path)?;
+    let owner = resolve_internal_link(owner_md.as_str(), ctx.permalinks).ok()?;
+    Some(format!("{}{rel}", owner.permalink))
+}
+
 #[inline]
 fn escape_html_string(s: &str) -> String {
     let mut out = String::new();
@@ -401,18 +410,23 @@ impl<'a> State<'a> {
         }
 
         let result = if link.starts_with("@/") {
-            match resolve_internal_link(link, ctx.permalinks) {
-                Ok(resolved) => {
-                    self.internal_links.push((resolved.md_path, resolved.anchor));
-                    resolved.permalink
-                }
-                Err(_) => {
-                    let msg = format!("Broken relative link `{}` in {}", link, ctx.current_path,);
-                    match ctx.config.link_checker.internal_level {
-                        config::LinkCheckerLevel::Error => bail!(msg),
-                        config::LinkCheckerLevel::Warn => {
-                            log::warn!("{msg}");
-                            link.to_string()
+            if let Some(url) = resolve_colocated_asset(link, ctx) {
+                url
+            } else {
+                match resolve_internal_link(link, ctx.permalinks) {
+                    Ok(resolved) => {
+                        self.internal_links.push((resolved.md_path, resolved.anchor));
+                        resolved.permalink
+                    }
+                    Err(_) => {
+                        let msg =
+                            format!("Broken relative link `{}` in {}", link, ctx.current_path,);
+                        match ctx.config.link_checker.internal_level {
+                            config::LinkCheckerLevel::Error => bail!(msg),
+                            config::LinkCheckerLevel::Warn => {
+                                log::warn!("{msg}");
+                                link.to_string()
+                            }
                         }
                     }
                 }
@@ -530,11 +544,13 @@ impl<'a> State<'a> {
             }
 
             // Images
-            Event::Start(Tag::Image { dest_url, title, .. }) => {
-                let url = if is_colocated_asset_link(&dest_url) {
-                    format!("{}{}", ctx.current_permalink, dest_url)
-                } else {
-                    dest_url.to_string()
+            Event::Start(Tag::Image { link_type, dest_url, title, .. }) => {
+                let url = match self.fix_link(ctx, link_type, dest_url.as_ref()) {
+                    Ok(url) => url,
+                    Err(e) => {
+                        self.errors.push(e);
+                        dest_url.to_string()
+                    }
                 };
                 self.image = Some(ImageBuffer { url, title: title.to_string(), alt: Vec::new() });
             }
@@ -692,9 +708,15 @@ impl<'a> State<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::LazyLock;
+
+    use ahash::AHashMap;
     use config::Config;
     use insta::assert_snapshot;
     use templates::ZOLA_TERA;
+
+    static EMPTY_ASSETS: LazyLock<AHashMap<String, (String, String)>> =
+        LazyLock::new(AHashMap::new);
 
     fn make_context<'a>(
         config: &'a Config,
@@ -705,6 +727,7 @@ mod tests {
             tera,
             config,
             permalinks,
+            colocated_assets: &EMPTY_ASSETS,
             lang: &config.default_language,
             current_permalink: "",
             current_path: "",

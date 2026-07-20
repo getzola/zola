@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use ahash::AHashMap;
 use config::Config;
 use markdown::{MarkdownContext, render_content};
 use tera::{Error, Filter, Kwargs, State, TeraResult, Value};
@@ -9,12 +10,18 @@ use utils::types::InsertAnchor;
 pub struct MarkdownFilter {
     config: Config,
     permalinks: HashMap<String, String>,
+    colocated_assets: AHashMap<String, (String, String)>,
     tera: tera::Tera,
 }
 
 impl MarkdownFilter {
-    pub fn new(config: Config, permalinks: HashMap<String, String>, tera: tera::Tera) -> Self {
-        Self { config, permalinks, tera }
+    pub fn new(
+        config: Config,
+        permalinks: HashMap<String, String>,
+        colocated_assets: AHashMap<String, (String, String)>,
+        tera: tera::Tera,
+    ) -> Self {
+        Self { config, permalinks, colocated_assets, tera }
     }
 }
 
@@ -55,6 +62,7 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
             tera: &self.tera,
             config: &self.config,
             permalinks: &self.permalinks,
+            colocated_assets: &self.colocated_assets,
             lang: &lang,
             current_permalink: &current_permalink,
             current_path: &current_path,
@@ -81,8 +89,10 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
 mod tests {
     use std::collections::HashMap;
 
+    use ahash::AHashMap;
     use config::{Config, HighlightStyle, Highlighting, Registry};
     use giallo::DataAttrPosition;
+    use insta::assert_snapshot;
     use tera::{Context, Filter, Kwargs, State, Value};
 
     use super::MarkdownFilter;
@@ -99,8 +109,13 @@ mod tests {
         let state = State::new(&ctx);
         let kwargs = Kwargs::from([]);
 
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), tera::Tera::default())
-            .call("# Hey", kwargs, &state);
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            AHashMap::new(),
+            tera::Tera::default(),
+        )
+        .call("# Hey", kwargs, &state);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), "<h1 id=\"hey\">Hey</h1>\n");
     }
@@ -111,8 +126,13 @@ mod tests {
         let state = State::new(&ctx);
         let kwargs = Kwargs::from([("inline", Value::from(true))]);
 
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), tera::Tera::default())
-            .call("Using `map`, `filter`, and `fold` instead of `for`", kwargs, &state);
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            AHashMap::new(),
+            tera::Tera::default(),
+        )
+        .call("Using `map`, `filter`, and `fold` instead of `for`", kwargs, &state);
         assert!(result.is_ok());
         assert_eq!(
             result.unwrap(),
@@ -127,17 +147,22 @@ mod tests {
         let state = State::new(&ctx);
         let kwargs = Kwargs::from([("inline", Value::from(true))]);
 
-        let result = MarkdownFilter::new(Config::default(), HashMap::new(), tera::Tera::default())
-            .call(
-                r#"
+        let result = MarkdownFilter::new(
+            Config::default(),
+            HashMap::new(),
+            AHashMap::new(),
+            tera::Tera::default(),
+        )
+        .call(
+            r#"
 |id|author_id|       timestamp_created|title                 |content           |
 |-:|--------:|-----------------------:|:---------------------|:-----------------|
 | 1|        1|2018-09-05 08:03:43.141Z|How to train your ORM |Badly written blog|
 | 2|        1|2018-08-22 13:11:50.050Z|How to bake a nice pie|Badly written blog|
         "#,
-                kwargs,
-                &state,
-            );
+            kwargs,
+            &state,
+        );
         assert!(result.is_ok());
         assert!(result.unwrap().contains("<table>"));
     }
@@ -166,8 +191,13 @@ mod tests {
 
         let md = "Hello <https://google.com> :smile: ...";
         let kwargs = Kwargs::from([]);
-        let result = MarkdownFilter::new(config.clone(), HashMap::new(), tera::Tera::default())
-            .call(md, kwargs, &state);
+        let result = MarkdownFilter::new(
+            config.clone(),
+            HashMap::new(),
+            AHashMap::new(),
+            tera::Tera::default(),
+        )
+        .call(md, kwargs, &state);
         assert!(result.is_ok());
         assert_eq!(
             result.unwrap(),
@@ -176,8 +206,9 @@ mod tests {
 
         let md = "```py\ni=0\n```";
         let kwargs = Kwargs::from([]);
-        let result = MarkdownFilter::new(config, HashMap::new(), tera::Tera::default())
-            .call(md, kwargs, &state);
+        let result =
+            MarkdownFilter::new(config, HashMap::new(), AHashMap::new(), tera::Tera::default())
+                .call(md, kwargs, &state);
         assert!(result.is_ok());
         assert!(result.unwrap().contains("style"));
     }
@@ -185,16 +216,26 @@ mod tests {
     #[test]
     fn markdown_filter_can_use_internal_links() {
         let mut permalinks = HashMap::new();
-        permalinks.insert("blog/_index.md".to_string(), "/foo/blog".to_string());
+        permalinks.insert("blog/_index.md".to_string(), "/foo/blog/".to_string());
+        let mut colocated_assets = AHashMap::new();
+        colocated_assets.insert(
+            "blog/author.jpg".to_string(),
+            ("blog/_index.md".to_string(), "author.jpg".to_string()),
+        );
 
         let ctx = Context::new();
         let state = State::new(&ctx);
         let kwargs = Kwargs::from([]);
 
-        let md = "Hello. Check out [my blog](@/blog/_index.md)!";
-        let result = MarkdownFilter::new(Config::default(), permalinks, tera::Tera::default())
-            .call(md, kwargs, &state);
+        let md = "Hello. Check out [my blog](@/blog/_index.md) from ![author](@/blog/author.jpg)";
+        let result = MarkdownFilter::new(
+            Config::default(),
+            permalinks,
+            colocated_assets.clone(),
+            tera::Tera::default(),
+        )
+        .call(md, kwargs, &state);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), "<p>Hello. Check out <a href=\"/foo/blog\">my blog</a>!</p>\n");
+        assert_snapshot!(result.unwrap());
     }
 }

@@ -29,11 +29,11 @@ content = { workspace = true }
 render = { workspace = true }
 markdown = { workspace = true }
 memchr = { workspace = true }
+ahash = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
 path-slash = "0.2"
-ahash = { workspace = true }
 insta = { workspace = true }
 criterion = "0.8"
 
