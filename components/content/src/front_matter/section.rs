@@ -70,6 +70,10 @@ pub struct SectionFrontMatter {
     /// Whether to generate a feed for the current section
     #[serde(skip_serializing)]
     pub generate_feeds: bool,
+    /// Whether to hide this section and the subsections/pages everywhere but still render them
+    /// Pages and subsections can override it by setting their own `hidden` field
+    #[serde(skip_serializing)]
+    pub hidden: Option<bool>,
     /// Any extra parameter present in the front matter
     #[serde(default = "default_extra", deserialize_with = "deserialize_extra")]
     pub extra: Value,
@@ -105,6 +109,7 @@ impl Default for SectionFrontMatter {
             page_template: None,
             aliases: Vec::new(),
             generate_feeds: false,
+            hidden: None,
             extra: Value::from(Map::new()),
             draft: false,
         }

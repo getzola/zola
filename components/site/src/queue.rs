@@ -82,6 +82,12 @@ impl<'a> Queue<'a> {
                     self.jobs.push(Job::Page(page));
                 }
             }
+            for key in &section.hidden_pages {
+                let page = self.site.library.pages.get(key).unwrap();
+                if page.meta.render {
+                    self.jobs.push(Job::Page(page));
+                }
+            }
         }
 
         if section.meta.generate_feeds {

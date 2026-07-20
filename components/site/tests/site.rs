@@ -24,7 +24,7 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(site.library.pages.len(), 36);
+    assert_eq!(site.library.pages.len(), 41);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -37,7 +37,7 @@ fn can_parse_site() {
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(site.library.sections.len(), 13);
+    assert_eq!(site.library.sections.len(), 16);
 
     // And that the sections are correct
     let index_section = site.library.sections.get(&path.join("content").join("_index.md")).unwrap();
@@ -297,7 +297,7 @@ fn can_build_site_with_live_reload_and_drafts() {
     assert!(file_contains!(public, "sitemap.xml", "draft"));
 
     // drafted sections are included
-    assert_eq!(site.library.sections.len(), 15);
+    assert_eq!(site.library.sections.len(), 18);
 
     assert!(file_exists!(public, "secret_section/index.html"));
     assert!(file_exists!(public, "secret_section/draft-page/index.html"));
@@ -632,8 +632,8 @@ fn can_build_site_with_pagination_for_taxonomy() {
 
             let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
             for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
-                // Discard not rendered pages
-                if i % 2 == 0 && page.meta.render {
+                // Discard not rendered pages and hidden ones
+                if i % 2 == 0 && page.meta.render && !page.hidden {
                     nb_a_pages += 1;
                 }
                 page.meta.taxonomies = {
@@ -749,6 +749,47 @@ fn can_build_search_index() {
     assert!(Path::new(&public).exists());
     assert!(file_exists!(public, "elasticlunr.min.js"));
     assert!(file_exists!(public, "search_index.en.js"));
+}
+
+#[test]
+fn can_hide_pages_and_sections() {
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site", |mut site| {
+        site.config.build_search_index = true;
+        (site, true)
+    });
+
+    // Hidden content is still rendered at its URL
+    assert!(file_exists!(public, "hidden-section/index.html"));
+    assert!(file_exists!(public, "hidden-section/first/index.html"));
+    assert!(file_exists!(public, "hidden-section/inner/index.html"));
+    assert!(file_exists!(public, "hidden-section/inner/deep/index.html"));
+    assert!(file_exists!(public, "posts/hidden/index.html"));
+    assert!(file_exists!(public, "hidden-section/unhidden/index.html"));
+    assert!(file_exists!(public, "hidden-section/visible/index.html"));
+    assert!(file_exists!(public, "hidden-section/visible/shown/index.html"));
+    // But not in the sitemap
+    assert!(!file_contains!(public, "sitemap.xml", "hidden-section/</loc>"));
+    assert!(!file_contains!(public, "sitemap.xml", "hidden-section/first/</loc>"));
+    assert!(!file_contains!(public, "sitemap.xml", "hidden-section/inner/</loc>"));
+    assert!(!file_contains!(public, "sitemap.xml", "hidden-section/inner/deep/</loc>"));
+    assert!(!file_contains!(public, "sitemap.xml", "posts/hidden/</loc>"));
+    // Or the search
+    assert!(!file_contains!(public, "search_index.en.js", "First hidden page"));
+    assert!(!file_contains!(public, "search_index.en.js", "Deep hidden page"));
+    assert!(!file_contains!(public, "search_index.en.js", "Hidden post"));
+    // Or the feeds
+    assert!(!file_contains!(public, "atom.xml", "hidden-section/first/"));
+    assert!(!file_contains!(public, "atom.xml", "posts/hidden/"));
+    // A taxonomy term used only by hidden pages is not rendered
+    assert!(!file_exists!(public, "categories/hidden-category/index.html"));
+
+    // Things explicitly hidden = false behave normally
+    assert!(file_contains!(public, "sitemap.xml", "hidden-section/unhidden/</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "hidden-section/visible/</loc>"));
+    assert!(file_contains!(public, "sitemap.xml", "hidden-section/visible/shown/</loc>"));
+    assert!(file_contains!(public, "atom.xml", "hidden-section/unhidden/"));
+    assert!(file_contains!(public, "search_index.en.js", "Unhidden page"));
+    assert!(file_contains!(public, "search_index.en.js", "Shown page"));
 }
 
 #[test]

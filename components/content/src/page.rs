@@ -77,6 +77,8 @@ pub struct Page {
     pub external_links: Vec<String>,
     /// For each asset: (asset path -> (language-less md path, relative path from md file)
     pub colocated_assets: AHashMap<String, (String, String)>,
+    /// Computed visibility
+    pub hidden: bool,
 }
 
 impl Page {

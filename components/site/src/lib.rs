@@ -337,11 +337,13 @@ impl Site {
         }
 
         self.cache = Arc::new(RenderCache::new(&self.config));
+        // Sections need to be populated first to handle the `hidden` visibility so the `populate_taxonomies`
+        // call below can use it to exclude pages.
+        self.populate_sections();
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
         tpls::register_early_global_fns(self);
-        self.populate_sections();
         self.render_markdown()?;
         Arc::make_mut(&mut self.library).fill_backlinks();
         Arc::make_mut(&mut self.cache).build(&self.library, &self.taxonomies, &self.tera);
