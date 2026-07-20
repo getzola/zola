@@ -3,14 +3,14 @@
 title = "Academic Workshop"
 description = "A Zola theme for a website to list the schedule of your scientific workshop or seminar series"
 template = "theme.html"
-date = 2025-10-21T20:16:41-04:00
+date = 2026-07-16T23:53:08-04:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2025-10-21T20:16:41-04:00
-updated = 2025-10-21T20:16:41-04:00
+created = 2026-07-16T23:53:08-04:00
+updated = 2026-07-16T23:53:08-04:00
 repository = "https://github.com/aterenin/academic-workshop.git"
 homepage = "https://github.com/aterenin/academic-workshop"
 minimum_version = "0.18.0"
@@ -55,9 +55,6 @@ compile_sass = true # should be set to true
 build_search_index = false # not used by the theme
 generate_feed = false # not used by the theme
 minify_html = true # to ensure correct rendering due to minification of whitespace, should be set to true, unless there is a reason to override it
-
-[markdown]
-highlight_code = false # should be set to false unless the page has code to highlight
 
 [extra]
 footer_text = "This website is built using [Zola](https://www.getzola.org) and the [Academic Workshop](http://github.com/aterenin/academic-workshop/) theme, which is [designed to last](https://jeffhuang.com/designed_to_last/)." # by default this page adds a small and non-intrusive footer with some text linking to this repository - you can set this to false to remove the footer if you prefer

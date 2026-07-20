@@ -3,17 +3,17 @@
 title = "devlab-theme"
 description = "A Zola-native theme for documentation, release updates and developer sites."
 template = "theme.html"
-date = 2026-07-13T04:07:45+05:00
+date = 2026-07-18T17:54:52+05:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-07-13T04:07:45+05:00
-updated = 2026-07-13T04:07:45+05:00
+created = 2026-07-18T17:54:52+05:00
+updated = 2026-07-18T17:54:52+05:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
-minimum_version = "0.22.0"
+minimum_version = "0.22.1"
 license = "MIT"
 demo = "https://ripetitor.codeberg.page/devlab-theme/"
 
@@ -22,37 +22,40 @@ name = "RiPetitor"
 homepage = "https://codeberg.org/RiPetitor"
 +++        
 
-![Zola](https://img.shields.io/badge/Zola-0.22.0%2B-blue?style=flat-square)
-![Version](https://img.shields.io/badge/version-0.2.0-blue?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+[![Zola](https://img.shields.io/badge/Zola-0.22.1%2B-blue?style=flat-square)](https://www.getzola.org/)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue?style=flat-square)](https://codeberg.org/RiPetitor/devlab-theme/tags)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 # DevLab Theme
 
-DevLab is a Zola-native theme for documentation, release updates and developer sites. It combines a calm responsive interface with recursive Docs navigation, Blog-based updates and a small vanilla JavaScript runtime—without npm or a frontend build step.
+DevLab is a Zola-native theme for documentation, release updates and software projects. One content tree drives the Docs sidebar, mobile navigation, breadcrumbs and previous/next links, while Blog and Downloads provide optional release-facing layouts.
 
 ![DevLab Theme documentation](screenshot.png)
 
 [Live demo](https://ripetitor.codeberg.page/devlab-theme/) · [Documentation](https://ripetitor.codeberg.page/devlab-theme/docs/) · [Updates](https://ripetitor.codeberg.page/devlab-theme/blog/)
 
+The live Demo follows the development branch. Install a tagged release when the site must remain reproducible.
+
 ## Features
 
-- Full-height Docs sidebar, breadcrumbs, table of contents and server-rendered previous/next links
-- Nested documentation sections generated from the Zola content tree
+- Recursive Docs navigation with remembered groups, breadcrumbs, nested page TOC and server-rendered previous/next links
 - Paginated Blog/Updates with published, updated and release metadata
-- Accessible search, mobile drawer, skip navigation and Copy feedback
-- Light, dark and system color modes with reduced-motion support
-- Structured `extra.devlab` configuration with `0.1.x` compatibility
-- Template hooks for custom metadata, styles, scripts and body integrations
-- SEO metadata, Atom feed discovery, custom 404 and SVG favicon
-- Callout, card and icon shortcodes plus an optional Downloads layout
+- Generic pages and sections, a wide landing page and an optional Downloads layout
+- Search, one responsive mobile drawer, skip navigation, Copy feedback and reduced-motion support
+- Light, dark and system color modes with update-safe CSS tokens
+- Structured configuration, content shortcodes and template hooks without Node.js, npm or a frontend build step
 
 ## Install
 
-Clone the theme into an existing Zola site:
+For a standalone theme checkout, clone the latest stable release into an existing Zola site:
 
 ```sh
-git clone https://codeberg.org/RiPetitor/devlab-theme themes/devlab-theme
+git clone --branch v0.3.0 --depth 1 https://codeberg.org/RiPetitor/devlab-theme themes/devlab-theme
 ```
+
+Pinning the release tag keeps site builds reproducible. Change `v0.3.0` only when you intentionally upgrade the theme.
+
+If the site itself is stored in Git, use a submodule or a vendored copy instead of committing an embedded repository. See [Install and update](https://ripetitor.codeberg.page/devlab-theme/docs/getting-started/installation/) for every installation method and the tagged upgrade workflow.
 
 Enable it in `zola.toml`:
 
@@ -74,23 +77,33 @@ default_mode = "system"
 show_toggle = true
 ```
 
-Create `content/_index.md`, then run:
+Create `content/_index.md`:
+
+```md
++++
+title = "My project"
+description = "Documentation and release updates."
++++
+
+Project overview.
+```
+
+Then run:
 
 ```sh
 zola serve
 ```
 
-Docs, Blog and richer homepage sections are opt-in. The complete setup, structured configuration and migration aliases are maintained in the [live documentation](https://ripetitor.codeberg.page/devlab-theme/docs/).
+Docs, Blog, Downloads and richer homepage sections are opt-in. Continue with [Getting started](https://ripetitor.codeberg.page/devlab-theme/docs/getting-started/), the [Configuration reference](https://ripetitor.codeberg.page/devlab-theme/docs/reference/configuration/) and [Customization](https://ripetitor.codeberg.page/devlab-theme/docs/customization/).
 
 ## Compatibility
 
-- Zola `0.22.0` or newer
+- Zola `0.22.1` or newer
 - No Node.js, npm or external frontend runtime required
-- Flat `0.1.x` configuration fields remain supported in `0.2.0`
 
 ## Development
 
-This repository contains both the reusable theme and its Demo/Docs site. Blog serves as the human-readable release history.
+This repository contains both the reusable theme and its Demo/Docs site. The Blog is the human-readable release history.
 
 ```sh
 zola check
@@ -99,6 +112,6 @@ zola build
 
 ## License
 
-MIT
+[MIT](LICENSE)
 
         

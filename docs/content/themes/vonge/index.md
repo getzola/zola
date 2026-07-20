@@ -3,14 +3,14 @@
 title = "Vonge"
 description = "Vonge is a Personal portfolio/blog site template"
 template = "theme.html"
-date = 2026-02-17T21:06:42+01:00
+date = 2026-07-15T16:50:16+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-02-17T21:06:42+01:00
-updated = 2026-02-17T21:06:42+01:00
+created = 2026-07-15T16:50:16+01:00
+updated = 2026-07-15T16:50:16+01:00
 repository = "https://github.com/paberr/vonge-zola-theme"
 homepage = "https://github.com/paberr/vonge-zola-theme/"
 minimum_version = "0.4.0"

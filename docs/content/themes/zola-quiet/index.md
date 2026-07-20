@@ -3,14 +3,14 @@
 title = "zola-quiet"
 description = "A quiet, two-skin Zola theme: Minima-flavoured typography and a TUI/ncurses look with ASCII article frame. Both skins ship with matched light and dark modes plus a runtime toggle. Docs-style on-page TOC, addendum convention, iframe theme-sync protocol baked in."
 template = "theme.html"
-date = 2026-07-12T11:59:15+05:30
+date = 2026-07-12T11:48:17+05:30
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-07-12T11:59:15+05:30
-updated = 2026-07-12T11:59:15+05:30
+created = 2026-07-12T11:48:17+05:30
+updated = 2026-07-12T11:48:17+05:30
 repository = "https://github.com/johnnybravo-xyz/zola-quiet.git"
 homepage = "https://github.com/johnnybravo-xyz/zola-quiet"
 minimum_version = "0.19.0"

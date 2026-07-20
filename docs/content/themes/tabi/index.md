@@ -3,14 +3,14 @@
 title = "tabi"
 description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2026-06-26T11:50:37+02:00
+date = 2026-07-18T14:08:40+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-06-26T11:50:37+02:00
-updated = 2026-06-26T11:50:37+02:00
+created = 2026-07-18T14:08:40+02:00
+updated = 2026-07-18T14:08:40+02:00
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
