@@ -22,10 +22,16 @@ pub fn search_for_file(
     theme: &Option<String>,
     output_path: &Path,
 ) -> Result<Option<(PathBuf, String)>> {
-    let mut search_paths =
-        vec![base_path.join("static"), base_path.join("content"), base_path.join(output_path)];
+    let output_search_path = base_path.join(output_path);
+    let mut search_paths = vec![
+        (base_path.to_path_buf(), base_path.to_path_buf()),
+        (base_path.join("static"), base_path.to_path_buf()),
+        (base_path.join("content"), base_path.to_path_buf()),
+        (output_search_path.clone(), output_search_path),
+    ];
     if let Some(t) = theme {
-        search_paths.push(base_path.join("themes").join(t).join("static"));
+        search_paths
+            .push((base_path.join("themes").join(t).join("static"), base_path.to_path_buf()));
     }
     let actual_path = if path.starts_with("@/") {
         Cow::Owned(path.replace("@/", "content/"))
@@ -33,24 +39,65 @@ pub fn search_for_file(
         Cow::Borrowed(path.trim_start_matches('/'))
     };
 
-    let mut file_path = base_path.join(&*actual_path);
-    let mut file_exists = file_path.exists();
-
-    if file_exists && !is_path_in_directory(base_path, &file_path)? {
-        bail!("{:?} is not inside the base site directory {:?}", path, base_path);
-    }
-
-    if !file_exists {
-        // we need to search in all search folders now
-        for dir in &search_paths {
-            let p = dir.join(&*actual_path);
-            if p.exists() {
-                file_path = p;
-                file_exists = true;
-                break;
+    for (dir, allowed_root) in search_paths {
+        let file_path = dir.join(&*actual_path);
+        if file_path.exists() {
+            if !is_path_in_directory(&allowed_root, &file_path)? {
+                bail!("{:?} is not inside the base site directory {:?}", path, base_path);
             }
+            return Ok(Some((file_path, actual_path.into_owned())));
         }
     }
 
-    if file_exists { Ok(Some((file_path, actual_path.into_owned()))) } else { Ok(None) }
+    Ok(None)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::search_for_file;
+    use std::fs;
+
+    #[test]
+    fn rejects_escape_through_alternate_search_path() {
+        let temp = tempfile::tempdir().unwrap();
+        let base = temp.path().join("site");
+        fs::create_dir_all(base.join("static")).unwrap();
+        fs::write(temp.path().join("outside.txt"), "outside").unwrap();
+
+        let result = search_for_file(&base, "../../outside.txt", &None, &base.join("public"));
+
+        assert!(result.unwrap_err().to_string().contains("is not inside"));
+    }
+
+    #[test]
+    fn finds_file_in_static_directory() {
+        let temp = tempfile::tempdir().unwrap();
+        let base = temp.path().join("site");
+        let expected = base.join("static").join("asset.txt");
+        fs::create_dir_all(expected.parent().unwrap()).unwrap();
+        fs::write(&expected, "asset").unwrap();
+
+        let (resolved, unified) =
+            search_for_file(&base, "asset.txt", &None, &base.join("public")).unwrap().unwrap();
+
+        assert_eq!(resolved, expected);
+        assert_eq!(unified, "asset.txt");
+    }
+
+    #[test]
+    fn finds_file_in_external_output_directory() {
+        let temp = tempfile::tempdir().unwrap();
+        let base = temp.path().join("site");
+        let output = temp.path().join("output");
+        let expected = output.join("asset.txt");
+        fs::create_dir_all(&base).unwrap();
+        fs::create_dir_all(&output).unwrap();
+        fs::write(&expected, "asset").unwrap();
+
+        let (resolved, unified) =
+            search_for_file(&base, "asset.txt", &None, &output).unwrap().unwrap();
+
+        assert_eq!(resolved, expected);
+        assert_eq!(unified, "asset.txt");
+    }
 }
