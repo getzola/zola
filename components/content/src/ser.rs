@@ -71,6 +71,7 @@ pub struct SerializingPage<'a> {
     higher: Option<Value>,
     translations: Vec<TranslatedContent<'a>>,
     backlinks: Vec<BackLink<'a>>,
+    hidden: bool,
 }
 
 impl<'a> SerializingPage<'a> {
@@ -117,6 +118,7 @@ impl<'a> SerializingPage<'a> {
             higher: None,
             translations,
             backlinks,
+            hidden: page.hidden,
         }
     }
 }
@@ -149,6 +151,7 @@ pub struct SerializingSection<'a> {
     transparent: bool,
     paginate_by: &'a Option<usize>,
     paginate_reversed: bool,
+    hidden: bool,
 }
 
 impl<'a> SerializingSection<'a> {
@@ -188,6 +191,7 @@ impl<'a> SerializingSection<'a> {
             backlinks,
             paginate_by: &section.meta.paginate_by,
             paginate_reversed: section.meta.paginate_reversed,
+            hidden: section.hidden,
         }
     }
 }

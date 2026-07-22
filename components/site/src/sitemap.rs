@@ -64,9 +64,10 @@ pub fn find_entries<'a>(
     let mut entries = HashSet::new();
 
     for p in library.pages.values() {
-        if !p.meta.render {
+        if !p.meta.render || p.hidden {
             continue;
         }
+
         let mut entry = SitemapEntry::new(
             Cow::Borrowed(&p.permalink),
             if p.meta.updated.is_some() { &p.meta.updated } else { &p.meta.date },
@@ -76,6 +77,10 @@ pub fn find_entries<'a>(
     }
 
     for s in library.sections.values() {
+        if s.hidden {
+            continue;
+        }
+
         if s.meta.render {
             let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), &None);
             entry.add_extra(s.meta.extra.clone());

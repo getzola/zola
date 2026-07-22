@@ -39,7 +39,7 @@ pub fn prepare_feed(
     let mut pages: Vec<_> = all_pages
         .iter()
         .copied()
-        .filter(|p| p.meta.date.is_some() && p.meta.include_in_feeds && p.meta.render)
+        .filter(|p| p.meta.date.is_some() && p.meta.include_in_feeds && p.meta.render && !p.hidden)
         .collect();
 
     pages.par_sort_unstable_by(|a, b| {

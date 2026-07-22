@@ -221,9 +221,11 @@ impl Library {
                     .expect("taxo should exist");
                 let mut taxo_found = TaxonomyFound::new(taxa_slug.to_string(), lang, taxo_config);
                 for (term, page_path) in terms_pages {
-                    taxo_found
-                        .terms
-                        .insert(term, page_path.iter().map(|p| &self.pages[p]).collect());
+                    let pages: Vec<_> =
+                        page_path.iter().map(|p| &self.pages[p]).filter(|p| !p.hidden).collect();
+                    if !pages.is_empty() {
+                        taxo_found.terms.insert(term, pages);
+                    }
                 }
 
                 taxonomies.push(Taxonomy::new(taxo_found, config));
@@ -277,7 +279,12 @@ impl Library {
     pub fn sort_section_subsections(&mut self) {
         let mut updates = AHashMap::new();
         for (path, section) in &self.sections {
-            let sections: Vec<_> = section.subsections.iter().map(|p| &self.sections[p]).collect();
+            let sections: Vec<_> = section
+                .subsections
+                .iter()
+                .map(|p| &self.sections[p])
+                .filter(|s| !s.hidden)
+                .collect();
             let (sorted_sections, cannot_be_sorted_sections) =
                 sort_sections(&sections, section.meta.sort_by);
 
@@ -327,10 +334,12 @@ impl Library {
 
         let mut ancestors = AHashMap::new();
         let mut subsections = AHashMap::new();
+        let mut hidden_by_relative = AHashMap::new();
 
         // We iterate over the sections twice
         // The first time to build up the list of ancestors for each section
         for (path, section) in &self.sections {
+            hidden_by_relative.insert(section.file.relative.clone(), section.meta.hidden);
             if let Some(ref grand_parent) = section.file.grand_parent {
                 subsections
                     // Using the original filename to work for multi-lingual sections
@@ -369,6 +378,7 @@ impl Library {
             section.subsections.clear();
             section.ignored_subsections.clear();
             section.pages.clear();
+            section.hidden_pages.clear();
             section.ignored_pages.clear();
             section.ancestors.clear();
 
@@ -378,6 +388,18 @@ impl Library {
             if let Some(parents) = ancestors.get(path) {
                 section.ancestors = parents.clone();
             }
+
+            // We look at the closest ancestor that has it set to true
+            let mut hidden = section.meta.hidden;
+            if hidden.is_none() {
+                for ancestor in section.ancestors.iter().rev() {
+                    if let Some(val) = hidden_by_relative[ancestor] {
+                        hidden = Some(val);
+                        break;
+                    }
+                }
+            }
+            section.hidden = hidden.unwrap_or(false);
         }
 
         // We pre-build the index filename for each language
@@ -399,9 +421,20 @@ impl Library {
             add_translation(&page.file.canonical, path);
             let mut parent_section_path = page.file.parent.join(parent_filename);
 
+            // We've resolved the sections visibility before so we will just take the parent one
+            // if hidden is not explicitely set
+            page.hidden = page.meta.hidden.unwrap_or_else(|| {
+                self.sections.get(&parent_section_path).map(|s| s.hidden).unwrap_or(false)
+            });
+
             while let Some(parent_section) = self.sections.get_mut(&parent_section_path) {
                 let is_transparent = parent_section.meta.transparent;
-                parent_section.pages.push(path.clone());
+                if !page.hidden {
+                    parent_section.pages.push(path.clone());
+                } else {
+                    // We track hidden pages as well to render them
+                    parent_section.hidden_pages.push(path.clone());
+                }
                 page.ancestors = ancestors.get(&parent_section_path).cloned().unwrap_or_default();
                 // Don't forget to push the actual parent
                 page.ancestors.push(parent_section.file.relative.clone());
@@ -598,10 +631,11 @@ mod tests {
         Weight(usize),
     }
 
-    fn create_page(file_path: &str, lang: &str, page_sort: PageSort) -> Page {
+    fn create_page(file_path: &str, lang: &str, page_sort: PageSort, hidden: Option<bool>) -> Page {
         let mut page = Page::default();
         page.lang = lang.to_owned();
         page.file = FileInfo::new_page(Path::new(file_path), &PathBuf::new());
+        page.meta.hidden = hidden;
         match page_sort {
             PageSort::None => (),
             PageSort::Date(date) => {
@@ -625,6 +659,7 @@ mod tests {
         weight: usize,
         transparent: bool,
         sort_by: SortBy,
+        hidden: Option<bool>,
     ) -> Section {
         let mut section = Section::default();
         section.lang = lang.to_owned();
@@ -633,6 +668,7 @@ mod tests {
         section.meta.transparent = transparent;
         section.meta.sort_by = sort_by;
         section.meta.page_template = Some("new_page.html".to_owned());
+        section.meta.hidden = hidden;
         section.file.find_language("en", &["fr"]).unwrap();
         section
     }
@@ -643,48 +679,62 @@ mod tests {
         config.languages.insert("fr".to_owned(), LanguageOptions::default());
         let mut library = Library::default();
         let sections = vec![
-            ("content/_index.md", "en", 0, false, SortBy::None),
-            ("content/_index.fr.md", "fr", 0, false, SortBy::None),
-            ("content/blog/_index.md", "en", 0, false, SortBy::Date),
-            ("content/wiki/_index.md", "en", 0, false, SortBy::Weight),
-            ("content/wiki/_index.fr.md", "fr", 0, false, SortBy::Weight),
-            ("content/wiki/recipes/_index.md", "en", 1, true, SortBy::Weight),
-            ("content/wiki/recipes/_index.fr.md", "fr", 1, true, SortBy::Weight),
-            ("content/wiki/programming/_index.md", "en", 10, true, SortBy::Weight),
-            ("content/wiki/programming/_index.fr.md", "fr", 10, true, SortBy::Weight),
-            ("content/novels/_index.md", "en", 10, false, SortBy::Title),
-            ("content/novels/_index.fr.md", "fr", 10, false, SortBy::Title),
+            ("content/_index.md", "en", 0, false, SortBy::None, None),
+            ("content/_index.fr.md", "fr", 0, false, SortBy::None, None),
+            ("content/blog/_index.md", "en", 0, false, SortBy::Date, None),
+            ("content/wiki/_index.md", "en", 0, false, SortBy::Weight, None),
+            ("content/wiki/_index.fr.md", "fr", 0, false, SortBy::Weight, None),
+            ("content/wiki/recipes/_index.md", "en", 1, true, SortBy::Weight, None),
+            ("content/wiki/recipes/_index.fr.md", "fr", 1, true, SortBy::Weight, None),
+            ("content/wiki/programming/_index.md", "en", 10, true, SortBy::Weight, None),
+            ("content/wiki/programming/_index.fr.md", "fr", 10, true, SortBy::Weight, None),
+            ("content/novels/_index.md", "en", 10, false, SortBy::Title, None),
+            ("content/novels/_index.fr.md", "fr", 10, false, SortBy::Title, None),
+            ("content/secret/_index.md", "en", 20, false, SortBy::Weight, Some(true)),
+            ("content/secret/inner/_index.md", "en", 1, false, SortBy::Weight, None),
+            ("content/secret/visible/_index.md", "en", 2, false, SortBy::Weight, Some(false)),
         ];
-        for (p, l, w, t, s) in sections.clone() {
-            library.insert_section(create_section(p, l, w, t, s));
+        for (p, l, w, t, s, h) in sections.clone() {
+            library.insert_section(create_section(p, l, w, t, s, h));
         }
 
         let pages = vec![
-            ("content/about.md", "en", PageSort::None),
-            ("content/about.fr.md", "en", PageSort::None),
-            ("content/blog/rust.md", "en", PageSort::Date("2022-01-01")),
-            ("content/blog/python.md", "en", PageSort::Date("2022-03-03")),
-            ("content/blog/docker.md", "en", PageSort::Date("2022-02-02")),
-            ("content/wiki/recipes/chocolate-cake.md", "en", PageSort::Weight(100)),
-            ("content/wiki/recipes/chocolate-cake.fr.md", "fr", PageSort::Weight(100)),
-            ("content/wiki/recipes/rendang.md", "en", PageSort::Weight(5)),
-            ("content/wiki/recipes/rendang.fr.md", "fr", PageSort::Weight(5)),
-            ("content/wiki/programming/rust.md", "en", PageSort::Weight(1)),
-            ("content/wiki/programming/rust.fr.md", "fr", PageSort::Weight(1)),
-            ("content/wiki/programming/zola.md", "en", PageSort::Weight(10)),
-            ("content/wiki/programming/python.md", "en", PageSort::None),
-            ("content/novels/the-colour-of-magic.md", "en", PageSort::Title("The Colour of Magic")),
+            ("content/about.md", "en", PageSort::None, None),
+            ("content/about.fr.md", "en", PageSort::None, None),
+            ("content/blog/rust.md", "en", PageSort::Date("2022-01-01"), None),
+            ("content/blog/python.md", "en", PageSort::Date("2022-03-03"), None),
+            ("content/blog/docker.md", "en", PageSort::Date("2022-02-02"), None),
+            ("content/wiki/recipes/chocolate-cake.md", "en", PageSort::Weight(100), None),
+            ("content/wiki/recipes/chocolate-cake.fr.md", "fr", PageSort::Weight(100), None),
+            ("content/wiki/recipes/rendang.md", "en", PageSort::Weight(5), None),
+            ("content/wiki/recipes/rendang.fr.md", "fr", PageSort::Weight(5), None),
+            ("content/wiki/programming/rust.md", "en", PageSort::Weight(1), None),
+            ("content/wiki/programming/rust.fr.md", "fr", PageSort::Weight(1), None),
+            ("content/wiki/programming/zola.md", "en", PageSort::Weight(10), None),
+            ("content/wiki/programming/python.md", "en", PageSort::None, None),
+            (
+                "content/novels/the-colour-of-magic.md",
+                "en",
+                PageSort::Title("The Colour of Magic"),
+                None,
+            ),
             (
                 "content/novels/the-colour-of-magic.fr.md",
                 "en",
                 PageSort::Title("La Huitième Couleur"),
+                None,
             ),
-            ("content/novels/reaper.md", "en", PageSort::Title("Reaper")),
-            ("content/novels/reaper.fr.md", "fr", PageSort::Title("Reaper (fr)")),
-            ("content/random/hello.md", "en", PageSort::None),
+            ("content/novels/reaper.md", "en", PageSort::Title("Reaper"), None),
+            ("content/novels/reaper.fr.md", "fr", PageSort::Title("Reaper (fr)"), None),
+            ("content/random/hello.md", "en", PageSort::None, None),
+            ("content/blog/surprise.md", "en", PageSort::Date("2021-01-01"), Some(true)),
+            ("content/secret/first.md", "en", PageSort::Weight(1), None),
+            ("content/secret/unhidden.md", "en", PageSort::Weight(2), Some(false)),
+            ("content/secret/inner/deep.md", "en", PageSort::Weight(1), None),
+            ("content/secret/visible/shown.md", "en", PageSort::Weight(1), None),
         ];
-        for (p, l, s) in pages.clone() {
-            library.insert_page(create_page(p, l, s));
+        for (p, l, s, h) in pages.clone() {
+            library.insert_page(create_page(p, l, s, h));
         }
         library.populate_sections(&config, Path::new("content"));
         assert_eq!(library.sections.len(), sections.len());
@@ -778,6 +828,31 @@ mod tests {
         assert_eq!(translations.len(), 2);
         assert!(translations[0].title.is_some());
         assert!(translations[1].title.is_some());
+
+        // Visibility should be correct
+        let secret = &library.sections[&PathBuf::from("content/secret/_index.md")];
+        assert!(secret.hidden);
+        assert_eq!(secret.pages, vec![PathBuf::from("content/secret/unhidden.md")]);
+        // Hidden pages are kept out of `pages` but tracked so they can still be rendered
+        assert_eq!(secret.hidden_pages, vec![PathBuf::from("content/secret/first.md")]);
+        assert_eq!(
+            library.sections[&PathBuf::from("content/secret/inner/_index.md")].hidden_pages,
+            vec![PathBuf::from("content/secret/inner/deep.md")]
+        );
+        assert_eq!(
+            library.sections[&PathBuf::from("content/blog/_index.md")].hidden_pages,
+            vec![PathBuf::from("content/blog/surprise.md")]
+        );
+        assert_eq!(secret.subsections, vec![PathBuf::from("content/secret/visible/_index.md")]);
+        assert!(library.sections[&PathBuf::from("content/secret/inner/_index.md")].hidden);
+        let visible = &library.sections[&PathBuf::from("content/secret/visible/_index.md")];
+        assert!(!visible.hidden);
+        assert_eq!(visible.pages, vec![PathBuf::from("content/secret/visible/shown.md")]);
+        assert!(library.pages[&PathBuf::from("content/secret/first.md")].hidden);
+        assert!(!library.pages[&PathBuf::from("content/secret/unhidden.md")].hidden);
+        assert!(library.pages[&PathBuf::from("content/secret/inner/deep.md")].hidden);
+        assert!(!library.pages[&PathBuf::from("content/secret/visible/shown.md")].hidden);
+        assert!(library.pages[&PathBuf::from("content/blog/surprise.md")].hidden);
     }
 
     macro_rules! taxonomies {
@@ -930,11 +1005,11 @@ mod tests {
 
     #[test]
     fn can_fill_backlinks() {
-        let mut page1 = create_page("page1.md", "en", PageSort::None);
+        let mut page1 = create_page("page1.md", "en", PageSort::None, None);
         page1.internal_links.push(("page2.md".to_owned(), None));
-        let mut page2 = create_page("page2.md", "en", PageSort::None);
+        let mut page2 = create_page("page2.md", "en", PageSort::None, None);
         page2.internal_links.push(("_index.md".to_owned(), None));
-        let mut section1 = create_section("_index.md", "en", 10, false, SortBy::None);
+        let mut section1 = create_section("_index.md", "en", 10, false, SortBy::None, None);
         section1.internal_links.push(("page1.md".to_owned(), None));
         section1.internal_links.push(("page2.md".to_owned(), None));
         let mut library = Library::default();
@@ -968,7 +1043,7 @@ mod tests {
             ("content/wiki/programming/_index.md", "en", 2, false, SortBy::Weight),
         ];
         for (p, l, w, t, s) in sections.clone() {
-            library.insert_section(create_section(p, l, w, t, s));
+            library.insert_section(create_section(p, l, w, t, s, None));
         }
 
         library.populate_sections(&config, Path::new("content"));

@@ -37,6 +37,9 @@ pub struct Section {
     pub serialized_assets: Vec<String>,
     /// All direct pages of that section
     pub pages: Vec<PathBuf>,
+    /// All direct hidden pages of that section that are hidden
+    /// Not listed directly anywhere but we still render them in the queue
+    pub hidden_pages: Vec<PathBuf>,
     /// All pages that cannot be sorted in this section
     pub ignored_pages: Vec<PathBuf>,
     /// All subsections that cannot be sorted in this section
@@ -63,6 +66,8 @@ pub struct Section {
     pub external_links: Vec<String>,
     /// For each asset: (asset path -> (language-less md path, relative path from md file)
     pub colocated_assets: AHashMap<String, (String, String)>,
+    /// Computed visibility
+    pub hidden: bool,
 }
 
 impl Section {
@@ -181,6 +186,7 @@ impl Section {
             || self.meta.sort_by != old_meta.sort_by
             || self.meta.insert_anchor_links != old_meta.insert_anchor_links
             || self.meta.transparent != old_meta.transparent
+            || self.meta.hidden != old_meta.hidden
     }
 }
 

@@ -65,7 +65,7 @@ fn collect_index_items<'a>(lang: &str, library: &'a Library) -> Vec<IndexItem<'a
             continue;
         }
 
-        if section.meta.redirect_to.is_none() {
+        if section.meta.redirect_to.is_none() && !section.hidden {
             items.push(IndexItem {
                 url: &section.permalink,
                 title: &section.meta.title,
