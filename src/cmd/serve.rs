@@ -69,6 +69,9 @@ enum WatchMode {
 const METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
 const NOT_FOUND_TEXT: &[u8] = b"Not Found";
 
+// Templates used while rendering Markdown: reloading the registry isn't enough. See #2940.
+const ALWAYS_FULL_REBUILD: &[&str] = &["anchor-link.html"];
+
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
 
@@ -827,8 +830,20 @@ pub fn serve(
                                 .join(", ");
                             log::info!("-> Template file(s) changed {combined_paths}");
 
-                            log::info!("Reloading only template");
-                            reload_templates(&mut site)
+                            let needs_full_rebuild = full_paths.iter().any(|p| {
+                                p.file_name()
+                                    .and_then(|n| n.to_str())
+                                    .is_some_and(|n| ALWAYS_FULL_REBUILD.contains(&n))
+                            });
+                            if needs_full_rebuild {
+                                log::info!("Rebuilding the site");
+                                if let Some(s) = recreate_site() {
+                                    site = s;
+                                }
+                            } else {
+                                log::info!("Reloading only template");
+                                reload_templates(&mut site)
+                            }
                         }
                         ChangeKind::StaticFiles => {
                             for (partial_path, full_path, _) in change_group.iter() {
