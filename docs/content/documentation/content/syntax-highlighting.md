@@ -146,6 +146,33 @@ highlight(code);
 ```
 ````
 
+Zola adds the name to the generated `<code>` element as a `data-name`
+attribute. The example above produces HTML with the following structure
+(highlighting markup and styles are omitted):
+
+```html
+<pre class="giallo">
+  <code data-lang="rust" data-name="mod.rs">...</code>
+</pre>
+```
+
+Zola does not display the name by default. You can use CSS to present it, for
+example:
+
+```css
+pre > code[data-name]::before {
+  content: attr(data-name);
+  display: block;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid currentcolor;
+  font-family: sans-serif;
+  font-weight: bold;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+```
+
 Here's an example with all the options used: `scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7`.
 
 ```scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7
