@@ -3,14 +3,14 @@
 title = "devlab-theme"
 description = "A Zola-native theme for documentation, release updates and developer sites."
 template = "theme.html"
-date = 2026-07-18T17:54:52+05:00
+date = 2026-07-23T17:18:01+05:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-07-18T17:54:52+05:00
-updated = 2026-07-18T17:54:52+05:00
+created = 2026-07-23T17:18:01+05:00
+updated = 2026-07-23T17:18:01+05:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
 minimum_version = "0.22.1"
@@ -23,7 +23,7 @@ homepage = "https://codeberg.org/RiPetitor"
 +++        
 
 [![Zola](https://img.shields.io/badge/Zola-0.22.1%2B-blue?style=flat-square)](https://www.getzola.org/)
-[![Version](https://img.shields.io/badge/version-0.3.0-blue?style=flat-square)](https://codeberg.org/RiPetitor/devlab-theme/tags)
+[![Version](https://img.shields.io/badge/version-0.3.1-blue?style=flat-square)](https://codeberg.org/RiPetitor/devlab-theme/tags)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 # DevLab Theme
@@ -50,10 +50,10 @@ The live Demo follows the development branch. Install a tagged release when the 
 For a standalone theme checkout, clone the latest stable release into an existing Zola site:
 
 ```sh
-git clone --branch v0.3.0 --depth 1 https://codeberg.org/RiPetitor/devlab-theme themes/devlab-theme
+git clone --branch v0.3.1 --depth 1 https://codeberg.org/RiPetitor/devlab-theme themes/devlab-theme
 ```
 
-Pinning the release tag keeps site builds reproducible. Change `v0.3.0` only when you intentionally upgrade the theme.
+Pinning the release tag keeps site builds reproducible. Change `v0.3.1` only when you intentionally upgrade the theme.
 
 If the site itself is stored in Git, use a submodule or a vendored copy instead of committing an embedded repository. See [Install and update](https://ripetitor.codeberg.page/devlab-theme/docs/getting-started/installation/) for every installation method and the tagged upgrade workflow.
 
