@@ -38,7 +38,7 @@ name = "blog"
 compatibility_date = "2026-01-22"
 
 [build]
-command = "./build.sh"
+command = "bash ./build.sh"
 
 [assets]
 directory = "./public"
