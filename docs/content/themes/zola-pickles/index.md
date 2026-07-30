@@ -3,14 +3,14 @@
 title = "pickles"
 description = "A modern, simple, clean blog theme for Zola."
 template = "theme.html"
-date = 2026-05-16T07:05:58-06:00
+date = 2026-07-26T20:08:31Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-05-16T07:05:58-06:00
-updated = 2026-05-16T07:05:58-06:00
+created = 2026-07-26T20:08:31Z
+updated = 2026-07-26T20:08:31Z
 repository = "https://github.com/lukehsiao/zola-pickles.git"
 homepage = "https://github.com/lukehsiao/zola-pickles"
 minimum_version = "0.19.0"
@@ -97,6 +97,32 @@ This theme contains math formula support using [KaTeX](https://katex.org/), whic
 After enabling this extension, the `katex` short code can be used in documents:
 * `{%/* katex(block=true) */%}\KaTeX{%/* end */%}` to typeset a block of math formulas,
   similar to `$$...$$` in LaTeX
+
+#### Customizing math rendering
+
+The KaTeX assets are wrapped in a `katex` template block, so a site can replace the default setup without copying the whole base template.
+(To merely add scripts after it, use the `extra_head` block instead.)
+The theme's other templates extend `index.html` by its bare name, so one site-level override applies to every page.
+
+For example, to drop the `math/tex` script-tag renderer and use KaTeX's [auto-render extension](https://katex.org/docs/autorender.html), which typesets `$$...$$` in your markdown directly, create `templates/index.html` in your site containing:
+
+```html
+{%/* extends "zola-pickles/templates/index.html" */%}
+
+{%/* block katex */%}
+{%/* if config.extra.katex_enable */%}
+<link rel="stylesheet" href="{{/* get_url(path="css/katex.min.css") */}}">
+<script defer src="{{/* get_url(path="js/katex.min.js") */}}"></script>
+<script defer src="{{/* get_url(path="js/auto-render.min.js") */}}"
+    onload="renderMathInElement(document.body, {throwOnError: false});"></script>
+{%/* endif */%}
+{%/* endblock katex */%}
+```
+
+The theme ships `auto-render.min.js` version-locked to its bundled KaTeX, so there is nothing else to vendor.
+Note that raw TeX written in markdown passes through the markdown parser before KaTeX sees it: `\\` row separators and expressions like `$a*b$` get mangled on the way.
+The `katex` shortcode bypasses the markdown parser entirely, which makes it the robust choice for multiline environments like `align`, but it is rendered by `mathtex-script-type.min.js`.
+The recipe above drops that renderer, silently disabling the shortcode; keep its `<script>` line alongside auto-render if you want both.
 
 ### Figure Shortcode
 
