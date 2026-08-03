@@ -3,14 +3,14 @@
 title = "tabi"
 description = "tabi is an accessible Zola theme with search, multi-language support, optional JavaScript, a perfect Lighthouse score, and comprehensive documentation. Crafted for personal websites and blogs."
 template = "theme.html"
-date = 2026-07-25T23:58:29+02:00
+date = 2026-08-03T00:11:59+05:30
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-07-25T23:58:29+02:00
-updated = 2026-07-25T23:58:29+02:00
+created = 2026-08-03T00:11:59+05:30
+updated = 2026-08-03T00:11:59+05:30
 repository = "https://github.com/welpo/tabi.git"
 homepage = "https://github.com/welpo/tabi"
 minimum_version = "0.17.0"
@@ -245,6 +245,7 @@ git pull
 | [b1n.io](https://b1n.io) | [b1nhack](https://github.com/b1nhack) | Linux kernel vulnerability researcher | [Source](https://github.com/b1nhack/blog) |
 | [posixlycorrect.com](https://posixlycorrect.com/) | [Fabian Montero](https://git.posixlycorrect.com/fabian) | Personal homepage | [Source](https://git.posixlycorrect.com/fabian/homepage) |
 | [Coded Chords](https://codedchords.dev/) | [yostos](https://github.com/yostos) | Personal tech blog | [Source](https://github.com/yostos/blog-yostos) |
+| [soumendrak.com](https://www.soumendrak.com) | [Soumendra Kumar Sahoo](https://github.com/soumendrak) | Personal blog: AI observability, engineering, and weekly notes | &mdash; |
 
 Using tabi? Feel free to create a PR and add your site to this list.
 
