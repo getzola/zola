@@ -141,3 +141,9 @@ p code, li code:not(pre code) {
   font-size: 0.85rem;
   box-shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 1px rgba(0,0,0,.1), 0 2px 1px -1px rgba(0,0,0,.12);
 }
+
+pre > code[data-name]::before {
+  content: attr(data-name);
+  float: right;
+  color: #888;
+}

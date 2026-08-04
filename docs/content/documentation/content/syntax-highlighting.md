@@ -159,7 +159,7 @@ highlight(code);
 ```
 ````
 
-- `name` to specify a name the code block is associated with.
+- Any key value outside of those options will be added to the generated data-* attributes
   
 ````
 ```rust,name=mod.rs
@@ -169,9 +169,37 @@ highlight(code);
 ```
 ````
 
-Here's an example with all the options used: `scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7`.
+will output something like
 
-```scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7
+```html
+ <pre class="giallo">
+   <code data-lang="rust" data-name="mod.rs">...</code>
+ </pre>
+```
+
+By default the attributes will be added to the `code` tag but this can be controlled in the configuration file via the
+`data_attr_position` field in the `markdown.highlighting` subsection. It can be either:
+
+- `code`: the default
+- `pre`: on the `pre` tag
+- `both`: on both the `code` and `pre` tag
+- `none`: ignore them
+
+
+A minimal way to show the name from the above example could be:
+
+```css
+pre > code[data-name]::before {
+    content: attr(data-name);
+    float: right;
+    color: #888;
+}
+```
+
+
+Here's an example with all the options used: `scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7, name=mod.rs`.
+
+```scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7, name=mod.rs
 pre mark {
   // If you want your highlights to take the full width
   display: block;
