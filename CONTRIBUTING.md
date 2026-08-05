@@ -22,3 +22,13 @@ Easy issues are tagged with `help wanted` and/or `good first issue`
 ## Adding syntax highlighting languages, themes or aliases
 
 Open an issue on the [Giallo repository](https://github.com/getzola/giallo).
+
+## LLM usage
+
+It's ok to use LLMs to review/find issues and help you understand the codebase if you're not familiar with it.
+If you're using a LLM to write code, a human needs to review it, edit it, test it and stand by it.
+
+If it's slop, you're getting banned.
+If all the interactions feels like talking to a LLM, you're getting banned too.
+
+LLM usage is not accepted for the documentation, no one wants to read LLM generated documentation.

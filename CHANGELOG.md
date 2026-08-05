@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.23.x (unrelease)
+## 0.23.0 (2026-08-05)
 
 This is probably the most breaking version of Zola that will happen. 
 Depending on how you use it though, it might not be too long to migrate. It took about 20 minutes to upgrade the Zola docs
@@ -37,6 +37,8 @@ If you have Tera syntax in your content, you will need to wrap it in `{% raw %}.
 - Fix LiveReload with IPv6 loopback
 - Sections now also have `higher`/`lower` for their subsections, like pages do.
 - `@/` internal links can now resolve colocated assets, both in `get_url` (eg `get_url(path="@/blog/article/img.png")`) and in markdown content links/images (eg `![](@/blog/article/img.png)`)
+- Add `hidden` property to pages and section to avoid rendering them
+- Expose aliases in templates
 
 ## 0.22.1 (2026-01-22)
 
