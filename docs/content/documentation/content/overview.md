@@ -36,6 +36,18 @@ one page (`something.md`), the `landing` section has no pages and the `blog` sec
 
 Sections can be nested indefinitely.
 
+## Templating your content
+
+Every page/section of your site is also a [Tera](https://keats.github.io/tera/) template.
+This means you can use any features of Tera in your content (even functions like `resize_image`), not just the shortcode band-aid from before 0.23.
+
+See the [Tera migration guide](https://github.com/Keats/tera/blob/master/MIGRATION.md) if you're updating to 0.23 or higher.
+
+### Migrating from shortcodes
+
+Shortcodes have been removed in 0.23. The closest feature available now is [Tera components](https://keats.github.io/tera/#components).
+These components can be used in your content but also in your templates, unlike shortcodes.
+
 ## Asset colocation
 
 The `content` directory is not limited to markup files. It's natural to want to co-locate a page and some related
@@ -43,6 +55,12 @@ assets, such as images or spreadsheets. Zola supports this pattern out of the bo
 
 All non-Markdown files you add in a page/section directory will be copied alongside the generated page when the site is
 built, which allows us to use a relative path to access them.
+
+By default these files are copied, so an asset shared across several outputs (for example the same image in multiple
+localized versions of a page) ends up duplicated on disk. Setting `hard_link_static = true` in the
+[configuration](@/documentation/getting-started/configuration.md) hard-links colocated assets instead of copying them,
+avoiding that duplication. As with the `static` directory, this requires the content and output directories to be on the
+same filesystem.
 
 Pages with co-located assets should not be placed directly in their section directory (such as `latest-experiment.md`), but
 as an `index.md` file in a dedicated directory (`latest-experiment/index.md`), like so:

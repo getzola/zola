@@ -1,6 +1,0 @@
----
-source: components/markdown/tests/shortcodes.rs
-expression: body
----
-<p>{{ youtube(id="w7Ft2ymGmfc") }}</p>
-

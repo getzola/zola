@@ -45,6 +45,29 @@ In any case, you will need to add the following CSS to your site CSS for things 
 }
 ```
 
+## Adding extra grammars and themes
+
+You can easily add grammars and themes from VSCode in JSON format.
+
+Place the JSON files anywhere in your site and register them in `zola.toml`: paths are resolved from the directory containing the `zola.toml` file.
+
+```toml
+[markdown.highlighting]
+extra_grammars = ["extra/sylph_lang.json"]
+extra_themes = ["extra/custom_gruvbox.json"]
+```
+
+To use a grammar in a fenced code block, set the language tag to the value of the grammar's top-level `name` field (case-insensitive).
+For example, with a grammar which contains `"name": "sylph"`:
+
+````
+```sylph
+let x = 42;
+```
+````
+
+As for themes, the value to set in `zola.toml` is also the `name` field of the JSON theme file.
+
 ## Theme selection
 
 You can choose to use a single theme or light/dark themes.
@@ -136,7 +159,7 @@ highlight(code);
 ```
 ````
 
-- `name` to specify a name the code block is associated with.
+- Any key value outside of those options will be added to the generated data-* attributes
   
 ````
 ```rust,name=mod.rs
@@ -146,9 +169,37 @@ highlight(code);
 ```
 ````
 
-Here's an example with all the options used: `scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7`.
+will output something like
 
-```scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7
+```html
+ <pre class="giallo">
+   <code data-lang="rust" data-name="mod.rs">...</code>
+ </pre>
+```
+
+By default the attributes will be added to the `code` tag but this can be controlled in the configuration file via the
+`data_attr_position` field in the `markdown.highlighting` subsection. It can be either:
+
+- `code`: the default
+- `pre`: on the `pre` tag
+- `both`: on both the `code` and `pre` tag
+- `none`: ignore them
+
+
+A minimal way to show the name from the above example could be:
+
+```css
+pre > code[data-name]::before {
+    content: attr(data-name);
+    float: right;
+    color: #888;
+}
+```
+
+
+Here's an example with all the options used: `scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7, name=mod.rs`.
+
+```scss, linenos, linenostart=10, hl_lines=3-4 8-9, hide_lines=2 7, name=mod.rs
 pre mark {
   // If you want your highlights to take the full width
   display: block;

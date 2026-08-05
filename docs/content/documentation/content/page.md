@@ -140,8 +140,15 @@ authors = []
 # hasn't set `in_search_index` to "false" in its front matter.
 in_search_index = true
 
+# When set to "false", the page will be excluded from all feeds (site, section, and taxonomy).
+# Defaults to "true".
+include_in_feeds = true
+
 # Template to use to render this page.
 template = "page.html"
+
+# When set to `true`, the page will be rendered but will not be included in a section pages/sitemap/search/feeds/etc
+hidden = false
 
 # The taxonomies for this page. The keys need to be the same as the taxonomy
 # names configured in `zola.toml` and the values are an array of String objects. For example,
@@ -172,5 +179,7 @@ upon the summary before the cutoff.
 By default, it will show an ellipsis (…) regardless of the content of the summary, but you can use a different template if you want to only show an ellipsis if the summary does not end in any punctuation:
 
 ```jinja
+{% raw -%}
 {% if summary is matching("\PP$") %}&hellip;{% endif %}
+{%- endraw -%}
 ```

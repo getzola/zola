@@ -47,7 +47,6 @@ use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
 use tokio::sync::broadcast;
 
-use log;
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use relative_path::{RelativePath, RelativePathBuf};
 
@@ -69,6 +68,9 @@ enum WatchMode {
 
 const METHOD_NOT_ALLOWED_TEXT: &[u8] = b"Method Not Allowed";
 const NOT_FOUND_TEXT: &[u8] = b"Not Found";
+
+// Templates used while rendering Markdown: reloading the registry isn't enough. See #2940.
+const ALWAYS_FULL_REBUILD: &[&str] = &["anchor-link.html"];
 
 // This is dist/livereload.min.js from the LiveReload.js v3.2.4 release
 const LIVE_RELOAD: &str = include_str!("livereload.js");
@@ -819,8 +821,6 @@ pub fn serve(
                             }
                         }
                         ChangeKind::Templates => {
-                            let partial_paths: Vec<&PathBuf> =
-                                change_group.iter().map(|(p, _, _)| p).collect();
                             let full_paths: Vec<&PathBuf> =
                                 change_group.iter().map(|(_, p, _)| p).collect();
                             let combined_paths = full_paths
@@ -830,11 +830,13 @@ pub fn serve(
                                 .join(", ");
                             log::info!("-> Template file(s) changed {combined_paths}");
 
-                            let shortcodes_updated = partial_paths
-                                .iter()
-                                .any(|p| p.starts_with("/templates/shortcodes"));
-                            // Rebuild site if shortcodes change; otherwise, just update template.
-                            if shortcodes_updated {
+                            let needs_full_rebuild = full_paths.iter().any(|p| {
+                                p.file_name()
+                                    .and_then(|n| n.to_str())
+                                    .is_some_and(|n| ALWAYS_FULL_REBUILD.contains(&n))
+                            });
+                            if needs_full_rebuild {
+                                log::info!("Rebuilding the site");
                                 if let Some(s) = recreate_site() {
                                     site = s;
                                 }

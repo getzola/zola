@@ -1,5 +1,0 @@
----
-source: components/markdown/tests/shortcodes.rs
-expression: body
----
-<p>Here is <span>1</span> example.</p>

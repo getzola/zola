@@ -2,14 +2,14 @@ mod elasticlunr;
 mod fuse;
 
 use content::Library;
-use once_cell::sync::Lazy;
 use std::collections::{HashMap, HashSet};
+use std::sync::LazyLock;
 use time::OffsetDateTime;
 
 pub use elasticlunr::{ELASTICLUNR_JS, build_index as build_elasticlunr};
 pub use fuse::build_index as build_fuse;
 
-static AMMONIA: Lazy<ammonia::Builder<'static>> = Lazy::new(|| {
+static AMMONIA: LazyLock<ammonia::Builder<'static>> = LazyLock::new(|| {
     let mut clean_content = HashSet::new();
     clean_content.insert("script");
     clean_content.insert("style");
@@ -65,7 +65,7 @@ fn collect_index_items<'a>(lang: &str, library: &'a Library) -> Vec<IndexItem<'a
             continue;
         }
 
-        if section.meta.redirect_to.is_none() {
+        if section.meta.redirect_to.is_none() && !section.hidden {
             items.push(IndexItem {
                 url: &section.permalink,
                 title: &section.meta.title,

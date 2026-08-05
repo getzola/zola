@@ -29,3 +29,8 @@ shell.nix
 # vim temporary files
 **/.*.sw*
 .swp
+.envrc
+.direnv/
+/result
+flake.nix
+flake.lock

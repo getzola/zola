@@ -11,6 +11,7 @@ Sanity check:
 (Delete or ignore this section for documentation changes)
 
 * [ ] Are you doing the PR on the `next` branch?
+* [ ] Was a LLM used? If so, for what?
 
 If the change is a new feature or adding to/changing an existing one:
 

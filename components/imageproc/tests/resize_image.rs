@@ -4,7 +4,7 @@ use std::path::{MAIN_SEPARATOR as SLASH, PathBuf};
 use config::Config;
 use image::{self, DynamicImage, GenericImageView, ImageDecoder, ImageReader, Pixel};
 use imageproc::{ImageMetaResponse, Processor, ResizeOperation, fix_orientation, get_rotated_size};
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 
 /// Assert that `address` matches `prefix` + RESIZED_FILENAME regex + "." + `extension`,
 fn assert_processed_path_matches(path: &str, prefix: &str, extension: &str) {
@@ -23,10 +23,10 @@ compile_sass = false
 build_search_index = false
 "#;
 
-static TEST_IMGS: Lazy<PathBuf> =
-    Lazy::new(|| [env!("CARGO_MANIFEST_DIR"), "tests", "test_imgs"].iter().collect());
-static PROCESSED_PREFIX: Lazy<String> =
-    Lazy::new(|| format!("static{0}processed_images{0}", SLASH));
+static TEST_IMGS: LazyLock<PathBuf> =
+    LazyLock::new(|| [env!("CARGO_MANIFEST_DIR"), "tests", "test_imgs"].iter().collect());
+static PROCESSED_PREFIX: LazyLock<String> =
+    LazyLock::new(|| format!("static{0}processed_images{0}", SLASH));
 
 #[allow(clippy::too_many_arguments)]
 fn image_op_test(
@@ -42,6 +42,7 @@ fn image_op_test(
     expect_height: u32,
     orig_width: u32,
     orig_height: u32,
+    filter_name: &str,
 ) {
     let source_path = TEST_IMGS.join(source_img);
     let tmpdir = tempfile::tempdir().unwrap().keep();
@@ -49,8 +50,9 @@ fn image_op_test(
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args(op, width, height).unwrap();
 
-    let resp =
-        proc.enqueue(resize_op, source_img.into(), source_path, format, quality, speed).unwrap();
+    let resp = proc
+        .enqueue(resize_op, source_img.into(), source_path, format, quality, speed, filter_name)
+        .unwrap();
     assert_processed_path_matches(&resp.url, "https://example.com/processed_images/", expect_ext);
     assert_processed_path_matches(&resp.static_path, PROCESSED_PREFIX.as_str(), expect_ext);
     assert_eq!(resp.width, expect_width);
@@ -73,6 +75,27 @@ fn image_meta_test(source_img: &str) -> ImageMetaResponse {
 }
 
 #[test]
+fn resize_image_filter() {
+    for filter in &["nearest", "triangle", "catmull_rom", "gaussian", "lanczos3"] {
+        image_op_test(
+            "jpg.jpg",
+            "scale",
+            Some(150),
+            Some(150),
+            "auto",
+            None,
+            None,
+            "jpg",
+            150,
+            150,
+            300,
+            380,
+            filter,
+        );
+    }
+}
+
+#[test]
 fn resize_image_scale() {
     image_op_test(
         "jpg.jpg",
@@ -87,6 +110,7 @@ fn resize_image_scale() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -105,6 +129,7 @@ fn resize_image_fit_width() {
         190,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -123,6 +148,7 @@ fn resize_image_fit_height() {
         190,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -141,6 +167,7 @@ fn resize_image_fit1() {
         190,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -159,6 +186,7 @@ fn resize_image_fit2() {
         180,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -177,6 +205,7 @@ fn resize_image_fit3() {
         380,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -195,6 +224,7 @@ fn resize_image_fill1() {
         200,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -213,6 +243,7 @@ fn resize_image_fill2() {
         100,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -231,6 +262,7 @@ fn resize_image_png_png() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -249,6 +281,7 @@ fn resize_image_png_jpg() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -267,6 +300,7 @@ fn resize_image_png_webp() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -285,6 +319,7 @@ fn resize_image_png_avif() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -303,6 +338,7 @@ fn resize_image_webp_jpg() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -321,6 +357,7 @@ fn resize_image_png_jpg_min_quality() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -339,6 +376,7 @@ fn resize_image_png_jpg_max_quality() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -357,6 +395,7 @@ fn resize_image_png_webp_min_quality() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -375,6 +414,7 @@ fn resize_image_png_webp_max_quality() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -393,6 +433,7 @@ fn resize_image_png_avif_min_quality_min_speed() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -411,6 +452,7 @@ fn resize_image_png_avif_min_quality_max_speed() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -448,6 +490,7 @@ fn resize_image_png_avif_max_quality_max_speed() {
         150,
         300,
         380,
+        "lanczos3",
     );
 }
 
@@ -459,7 +502,9 @@ fn read_image_metadata_jpg() {
             width: 300,
             height: 380,
             format: Some("jpg"),
-            mime: Some("image/jpeg")
+            mime: Some("image/jpeg"),
+            description: Some("Description for jpg.jpg".to_string()),
+            created: Some("2025:01:15 12:34:56".to_string()),
         }
     );
 }
@@ -468,7 +513,14 @@ fn read_image_metadata_jpg() {
 fn read_image_metadata_png() {
     assert_eq!(
         image_meta_test("png.png"),
-        ImageMetaResponse { width: 300, height: 380, format: Some("png"), mime: Some("image/png") }
+        ImageMetaResponse {
+            width: 300,
+            height: 380,
+            format: Some("png"),
+            mime: Some("image/png"),
+            description: None,
+            created: None,
+        }
     );
 }
 
@@ -480,7 +532,9 @@ fn read_image_metadata_svg() {
             width: 300,
             height: 300,
             format: Some("svg"),
-            mime: Some("text/svg+xml")
+            mime: Some("text/svg+xml"),
+            description: None,
+            created: None,
         }
     );
 }
@@ -493,7 +547,9 @@ fn read_image_metadata_webp() {
             width: 300,
             height: 380,
             format: Some("webp"),
-            mime: Some("image/webp")
+            mime: Some("image/webp"),
+            description: None,
+            created: None,
         }
     );
 }
@@ -506,7 +562,9 @@ fn read_image_metadata_avif() {
             width: 300,
             height: 380,
             format: Some("avif"),
-            mime: Some("image/avif")
+            mime: Some("image/avif"),
+            description: None,
+            created: None,
         }
     );
 }
@@ -515,11 +573,20 @@ fn read_image_metadata_avif() {
 fn get_rotated_size_test() {
     fn is_landscape(img_name: &str) -> bool {
         let path = TEST_IMGS.join(img_name);
+        let path = &*path;
         let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
         let (mut w, mut h) = decoder.dimensions();
         w += 1; // Test images are square, add an offset so we can tell if the dimensions actually changed.
-        let metadata = decoder.exif_metadata().unwrap();
-        (w, h) = get_rotated_size(w, h, metadata).unwrap_or((w, h));
+        let metadata = decoder
+            .exif_metadata()
+            .unwrap()
+            .and_then(|raw_metadata| exif::Reader::new().read_raw(raw_metadata).ok());
+
+        (w, h) = if let Some(metadata) = metadata.as_ref() {
+            get_rotated_size(w, h, metadata).unwrap_or((w, h))
+        } else {
+            (w, h)
+        };
         w > h
     }
     assert!(is_landscape("exif_0.jpg"));
@@ -537,10 +604,18 @@ fn get_rotated_size_test() {
 fn fix_orientation_test() {
     fn load_img_and_fix_orientation(img_name: &str) -> DynamicImage {
         let path = TEST_IMGS.join(img_name);
+        let path = &*path;
         let mut decoder = ImageReader::open(path).unwrap().into_decoder().unwrap();
-        let metadata = decoder.exif_metadata().unwrap();
+        let metadata = decoder
+            .exif_metadata()
+            .unwrap()
+            .and_then(|raw_metadata| exif::Reader::new().read_raw(raw_metadata).ok());
         let img = DynamicImage::from_decoder(decoder).unwrap();
-        fix_orientation(&img, metadata).unwrap_or(img)
+        if let Some(metadata) = metadata.as_ref() {
+            fix_orientation(&img, metadata).unwrap_or(None).unwrap_or(img)
+        } else {
+            img
+        }
     }
 
     let img = image::open(TEST_IMGS.join("exif_1.jpg")).unwrap();
@@ -585,7 +660,9 @@ fn resize_and_check(source_img: &str) -> bool {
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::from_args("scale", Some(16), Some(16)).unwrap();
 
-    let resp = proc.enqueue(resize_op, source_img.into(), source_path, "jpg", None, None).unwrap();
+    let resp = proc
+        .enqueue(resize_op, source_img.into(), source_path, "jpg", None, None, "lanczos3")
+        .unwrap();
 
     proc.do_process().unwrap();
     let processed_path = PathBuf::from(&resp.static_path);
@@ -621,6 +698,7 @@ fn asymmetric_resize_with_exif_orientations() {
         32,
         16,
         16,
+        "lanczos3",
     );
     // 1: Horizontal (normal)
     image_op_test(
@@ -636,6 +714,7 @@ fn asymmetric_resize_with_exif_orientations() {
         32,
         16,
         16,
+        "lanczos3",
     );
     // 2: Mirror horizontal
     image_op_test(
@@ -651,6 +730,7 @@ fn asymmetric_resize_with_exif_orientations() {
         32,
         16,
         16,
+        "lanczos3",
     );
     // 3: Rotate 180
     image_op_test(
@@ -666,6 +746,7 @@ fn asymmetric_resize_with_exif_orientations() {
         32,
         16,
         16,
+        "lanczos3",
     );
     // 4: Mirror vertical
     image_op_test(
@@ -681,6 +762,7 @@ fn asymmetric_resize_with_exif_orientations() {
         32,
         16,
         16,
+        "lanczos3",
     );
     // 5: Mirror horizontal and rotate 270 CW
     image_op_test(
@@ -696,6 +778,7 @@ fn asymmetric_resize_with_exif_orientations() {
         32,
         16,
         16,
+        "lanczos3",
     );
     // 6: Rotate 90 CW
     image_op_test(
@@ -711,6 +794,7 @@ fn asymmetric_resize_with_exif_orientations() {
         32,
         16,
         16,
+        "lanczos3",
     );
     // 7: Mirror horizontal and rotate 90 CW
     image_op_test(
@@ -726,6 +810,7 @@ fn asymmetric_resize_with_exif_orientations() {
         32,
         16,
         16,
+        "lanczos3",
     );
     // 8: Rotate 270 CW
     image_op_test(
@@ -741,6 +826,7 @@ fn asymmetric_resize_with_exif_orientations() {
         32,
         16,
         16,
+        "lanczos3",
     );
 }
 
@@ -759,8 +845,9 @@ fn check_icc_data_preserved(source_img: &str, target_format: &str) {
     let mut proc = Processor::new(tmpdir.clone(), &config);
     let resize_op = ResizeOperation::Scale(original_width, original_height);
 
-    let resp =
-        proc.enqueue(resize_op, source_img.into(), source_path, target_format, None, None).unwrap();
+    let resp = proc
+        .enqueue(resize_op, source_img.into(), source_path, target_format, None, None, "lanczos3")
+        .unwrap();
     proc.do_process().unwrap();
 
     let processed_path = PathBuf::from(&resp.static_path);

@@ -5,7 +5,6 @@ use std::time::Instant;
 use cli::{Cli, Command};
 use env_logger::Env;
 use errors::anyhow;
-use log;
 use utils::net::{get_available_port, port_is_available};
 
 use clap::{CommandFactory, Parser};

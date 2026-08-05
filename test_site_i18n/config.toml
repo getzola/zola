@@ -16,6 +16,12 @@ taxonomies = [
     {name = "tags"},
 ]
 
+[search]
+include_title = true
+include_description = true
+include_path = true
+include_content = true
+
 [languages.fr]
 generate_feeds = true
 taxonomies = [

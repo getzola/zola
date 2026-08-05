@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::result;
 use std::sync::{Arc, RwLock};
 
-use once_cell::sync::Lazy;
 use reqwest::header::{ACCEPT, HeaderMap};
 use reqwest::{StatusCode, blocking::Client};
+use std::sync::LazyLock;
 
 use config::LinkChecker;
 use errors::anyhow;
@@ -22,16 +22,16 @@ pub fn is_valid(res: &Result) -> bool {
 
 pub fn message(res: &Result) -> String {
     match res {
-        Ok(code) => format!("{}", code),
+        Ok(code) => code.to_string(),
         Err(error) => error.clone(),
     }
 }
 
 // Keep history of link checks so a rebuild doesn't have to check again
-static LINKS: Lazy<Arc<RwLock<HashMap<String, Result>>>> =
-    Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
+static LINKS: LazyLock<Arc<RwLock<HashMap<String, Result>>>> =
+    LazyLock::new(|| Arc::new(RwLock::new(HashMap::new())));
 // Make sure to create only a single Client so that we can reuse the connections
-static CLIENT: Lazy<Client> = Lazy::new(|| {
+static CLIENT: LazyLock<Client> = LazyLock::new(|| {
     Client::builder()
         .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
         .build()

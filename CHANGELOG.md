@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.23.0 (2026-08-05)
+
+This is probably the most breaking version of Zola that will happen. 
+Depending on how you use it though, it might not be too long to migrate. It took about 20 minutes to upgrade the Zola docs
+and it was mostly because it contains a lot of Tera syntax (as we will see later).
+
+### Breaking
+
+- remove `native-tls` feature to build zola
+- `get_page` and `get_section` no longer work with paths containing language code, eg "content/some.fr.md". Use the canonical path + `lang` argument
+- Tera, the template engine, has been updated to v2. See its own migration guide: <https://github.com/Keats/tera/blob/master/MIGRATION.md>
+- shortcodes have been removed, see Migration section below for more details
+
+#### Migration
+
+As mentioned, shortcodes have been completely removed.
+Instead, you can now completely template the content of a page/section from the .md file, as well as use the new Tera
+components. No more weird separation of shortcode/macros, just use Tera, the same components you can use elsewhere in your site.
+This means you will need to rewrite your shortcodes into components most likely, see [Tera documentation](https://keats.github.io/tera/) for
+more details.
+If you use a theme, it will most likely need to be updated to work with Zola 0.23 before you can update.
+
+Follow the Tera migration guide (<https://github.com/Keats/tera/blob/master/MIGRATION.md>) for the changes in the template itself.
+
+If you have Tera syntax in your content, you will need to wrap it in `{% raw %}..{% endraw %}` to avoid errors.
+
+There is also a new config option, `skip_content_templating` to skip templating for some of the files.
+
+### Other
+
+- `get_taxonomy_url` `name` parameter is deprecated. Use `term` to be consistent with the other functions
+- Add an optional `filter` argument to `resize_image` to choose the sampling filter
+- Add `data_attr_position` to the markdown highlighting config to handle where all the data attributes should be passed
+- Syntax highlighting CSS themes are now generated in the output directory, not in `static`
+- Use language-specific reading speeds for reading_time
+- Fix LiveReload with IPv6 loopback
+- Sections now also have `higher`/`lower` for their subsections, like pages do.
+- `@/` internal links can now resolve colocated assets, both in `get_url` (eg `get_url(path="@/blog/article/img.png")`) and in markdown content links/images (eg `![](@/blog/article/img.png)`)
+- Add `hidden` property to pages and section to avoid including them in sections/subsections
+- Expose aliases in templates
+- Add `allow_missing` parameter for `get_page` and `get_section` to not error if the requested thing is missing
+- Add `text_direction` Tera function
+- Use language specific reading time for the `reading_time` attribute
+- Add more fields to the output of `get_image_metadata`: `description` and `created`.
+- Add `include_in_feeds` in the page front-matter to exclude them from feeds if needed
+
 ## 0.22.1 (2026-01-22)
 
 - Update deps to fix some JPEG decoding issue + highlighting speed

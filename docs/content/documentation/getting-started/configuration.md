@@ -61,6 +61,12 @@ minify_html = false
 #     ignored_content = ["*.{graphml,xlsx}", "temp.*", "**/build_folder"]
 ignored_content = []
 
+# A list of file glob patterns to skip templating in content. Defaults to none, which
+# means all content files are templated.
+# For example, Zola documentation uses it for the themes section as they sometimes contain
+# Tera content but not things we want to render.
+skip_content_templating = []
+
 # Similar to ignored_content, a list of glob patterns specifying asset files to
 # ignore when the static directory is processed. Defaults to none, which means
 # that all asset files are copied over to the `public` directory
@@ -81,9 +87,9 @@ feed_filenames = ["atom.xml"]
 # this limit is not set (the default).
 # feed_limit = 20
 
-# When set to "true", files in the `static` directory are hard-linked. Useful for large
-# static files. Note that for this to work, both `static` and the
-# output directory need to be on the same filesystem. Note that the theme's `static`
+# When set to "true", files in the `static` directory and colocated page/section assets are
+# hard-linked instead of copied. Useful for large static files. Note that for this to work, the
+# source and output directory need to be on the same filesystem. Note that the theme's `static`
 # files are always copied, regardless of this setting.
 hard_link_static = false
 
@@ -199,6 +205,14 @@ extra_grammars = []
 # A list of files for additional JSON TextMate themes
 # Get themes from https://textmate-grammars-themes.netlify.app/
 extra_themes = []
+
+# Where to insert the data attributes for codeblocks. Default to on the <code> element.
+# Other options are: "pre", "both" and "none"
+data_attr_position = "code"
+
+# Whether the generated CSS should set color-scheme when using a dual theme
+# Defaults to `true`
+add_color_scheme = true
 
 # Configuration of the link checker.
 [link_checker]

@@ -1,0 +1,5 @@
+---
+source: components/templates/src/filters/markdown.rs
+expression: result.unwrap()
+---
+<p>Hello. Check out <a href="/foo/blog/">my blog</a> from <img src="/foo/blog/author.jpg" alt="author" /></p>

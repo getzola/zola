@@ -118,6 +118,10 @@ aliases = []
 # not from any other sections, including sub-sections under that section.
 generate_feeds = false
 
+# When set to `true`, the section will be rendered but will not be included in the parent subsection/sitemap/feeds/search/etc
+# By default it applies to all children of this section but each of them can opt out by setting their own hidden property
+hidden = false
+
 # Your own data.
 [extra]
 ```
@@ -142,9 +146,11 @@ example: a `blog` directory with three files: `blog/Post_1.md`,
 create a list of links to the posts, a simple template might look like this:
 
 ```jinja
+{% raw -%}
 {% for post in section.pages %}
   <h1><a href="{{ post.permalink }}">{{ post.title }}</a></h1>
 {% endfor %}
+{%- endraw -%}
 ```
 
 This would iterate over the posts in the order specified
@@ -219,16 +225,12 @@ to newest (at the bottom).
 If the section is paginated the `paginate_reversed=true` in the front matter of the relevant section should be set instead of using the filter.
 
 ## Sorting subsections
-Sorting sections is a bit less flexible: sections can only be sorted by `weight`,
-and do not have variables that point to the heavier/lighter sections.
+Sorting sections is a bit less flexible: sections can only be sorted by `weight`, `title` and `permalink`. Similarly to pages, section have `section.lower` and `section.higher`
+variables, pointing to the heavier/lighter sections.
 
 By default, the lightest (lowest `weight`) subsections will be at
 the top of the list and the heaviest (highest `weight`) will be at the bottom;
 the `reverse` filter reverses this order.
 
-**Note**: Unlike pages, permalinks will **not** be used to break ties between
-equally weighted sections. Thus, if the `weight` variable for your section is not set (or if it
-is set in a way that produces ties), then your sections will be sorted in
-**random** order. Moreover, that order is determined at build time and will
-change with each site rebuild.  Thus, if there is any chance that you will
-iterate over your sections, you should always assign them distinct weights.
+**Note**: A section's "transparency" doesn't apply to subsections, so subsections
+will not be visible as direct children of the parent section.

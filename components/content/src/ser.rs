@@ -5,7 +5,7 @@ use serde::Serialize;
 
 use crate::library::Library;
 use crate::{Page, Section};
-use tera::{Map, Value};
+use tera::Value;
 use utils::table_of_contents::Heading;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -39,7 +39,7 @@ fn find_backlinks<'a>(relative_path: &str, library: &'a Library) -> Vec<BackLink
     backlinks
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingPage<'a> {
     relative_path: &'a str,
     colocated_path: &'a Option<String>,
@@ -56,7 +56,8 @@ pub struct SerializingPage<'a> {
     day: Option<u8>,
     taxonomies: &'a HashMap<String, Vec<String>>,
     authors: &'a [String],
-    extra: &'a Map<String, Value>,
+    aliases: &'a [String],
+    extra: &'a Value,
     path: &'a str,
     components: &'a [String],
     summary: &'a Option<String>,
@@ -66,14 +67,16 @@ pub struct SerializingPage<'a> {
     assets: &'a [String],
     draft: bool,
     lang: &'a str,
-    lower: Option<Box<SerializingPage<'a>>>,
-    higher: Option<Box<SerializingPage<'a>>>,
+    include_in_feeds: bool,
+    lower: Option<Value>,
+    higher: Option<Value>,
     translations: Vec<TranslatedContent<'a>>,
     backlinks: Vec<BackLink<'a>>,
+    hidden: bool,
 }
 
 impl<'a> SerializingPage<'a> {
-    pub fn new(page: &'a Page, library: Option<&'a Library>, include_siblings: bool) -> Self {
+    pub fn new(page: &'a Page, library: &'a Library) -> Self {
         let mut year = None;
         let mut month = None;
         let mut day = None;
@@ -82,27 +85,8 @@ impl<'a> SerializingPage<'a> {
             month = Some(d.1);
             day = Some(d.2);
         }
-        let mut lower = None;
-        let mut higher = None;
-        let mut translations = vec![];
-        let mut backlinks = vec![];
-
-        if let Some(lib) = library {
-            translations = lib.find_translations(&page.file.canonical);
-
-            if include_siblings {
-                lower = page
-                    .lower
-                    .as_ref()
-                    .map(|p| Box::new(Self::new(&lib.pages[p], Some(lib), false)));
-                higher = page
-                    .higher
-                    .as_ref()
-                    .map(|p| Box::new(Self::new(&lib.pages[p], Some(lib), false)));
-            }
-
-            backlinks = find_backlinks(&page.file.relative, lib);
-        }
+        let translations = library.find_translations(&page.file.canonical);
+        let backlinks = find_backlinks(&page.file.relative, library);
 
         Self {
             relative_path: &page.file.relative,
@@ -121,6 +105,7 @@ impl<'a> SerializingPage<'a> {
             day,
             taxonomies: &page.meta.taxonomies,
             authors: &page.meta.authors,
+            aliases: &page.meta.aliases,
             path: &page.path,
             components: &page.components,
             summary: &page.summary,
@@ -130,15 +115,17 @@ impl<'a> SerializingPage<'a> {
             assets: &page.serialized_assets,
             draft: page.meta.draft,
             lang: &page.lang,
-            lower,
-            higher,
+            include_in_feeds: page.meta.include_in_feeds,
+            lower: None,
+            higher: None,
             translations,
             backlinks,
+            hidden: page.hidden,
         }
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct SerializingSection<'a> {
     relative_path: &'a str,
     colocated_path: &'a Option<String>,
@@ -148,7 +135,7 @@ pub struct SerializingSection<'a> {
     ancestors: &'a [String],
     title: &'a Option<String>,
     description: &'a Option<String>,
-    extra: &'a Map<String, Value>,
+    extra: &'a Value,
     path: &'a str,
     components: &'a [String],
     toc: &'a [Heading],
@@ -156,54 +143,28 @@ pub struct SerializingSection<'a> {
     reading_time: Option<usize>,
     lang: &'a str,
     assets: &'a [String],
-    pages: Vec<SerializingPage<'a>>,
+    pages: Vec<Value>,
     subsections: Vec<&'a str>,
+    lower: Option<Value>,
+    higher: Option<Value>,
     translations: Vec<TranslatedContent<'a>>,
     backlinks: Vec<BackLink<'a>>,
     generate_feeds: bool,
     transparent: bool,
     paginate_by: &'a Option<usize>,
     paginate_reversed: bool,
-}
-
-#[derive(Debug)]
-pub enum SectionSerMode<'a> {
-    /// Just itself, no pages or subsections
-    /// TODO: I believe we can get rid of it?
-    ForMarkdown,
-    /// Fetches subsections/ancestors/translations but not the pages
-    MetadataOnly(&'a Library),
-    /// Fetches everything
-    Full(&'a Library),
+    hidden: bool,
 }
 
 impl<'a> SerializingSection<'a> {
-    pub fn new(section: &'a Section, mode: SectionSerMode<'a>) -> Self {
-        let mut pages = Vec::with_capacity(section.pages.len());
-        let mut subsections = Vec::with_capacity(section.subsections.len());
-        let mut translations = Vec::new();
-        let mut backlinks = Vec::new();
-
-        match mode {
-            SectionSerMode::ForMarkdown => {}
-            SectionSerMode::MetadataOnly(lib) | SectionSerMode::Full(lib) => {
-                translations = lib.find_translations(&section.file.canonical);
-                subsections = section
-                    .subsections
-                    .iter()
-                    .map(|p| lib.sections[p].file.relative.as_str())
-                    .collect();
-
-                // Fetching pages on top
-                if let SectionSerMode::Full(_) = mode {
-                    for p in &section.pages {
-                        pages.push(SerializingPage::new(&lib.pages[p], Some(lib), true));
-                    }
-                }
-
-                backlinks = find_backlinks(&section.file.relative, lib);
-            }
-        }
+    pub fn new(section: &'a Section, library: &'a Library, pages: Vec<Value>) -> Self {
+        let translations = library.find_translations(&section.file.canonical);
+        let subsections: Vec<&str> = section
+            .subsections
+            .iter()
+            .map(|p| library.sections[p].file.relative.as_str())
+            .collect();
+        let backlinks = find_backlinks(&section.file.relative, library);
 
         Self {
             relative_path: &section.file.relative,
@@ -226,10 +187,13 @@ impl<'a> SerializingSection<'a> {
             transparent: section.meta.transparent,
             pages,
             subsections,
+            lower: None,
+            higher: None,
             translations,
             backlinks,
             paginate_by: &section.meta.paginate_by,
             paginate_reversed: section.meta.paginate_reversed,
+            hidden: section.hidden,
         }
     }
 }

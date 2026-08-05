@@ -86,7 +86,7 @@ pub fn build_index(lang: &str, library: &Library, config: &Config) -> Result<Str
     let items = collect_index_items(lang, library);
 
     for item in items {
-        index.add_doc(item.url, fill_index(&config.search, item));
+        index.add_doc(item.url, fill_index(&language_options.search, item));
     }
 
     Ok(index.to_json())

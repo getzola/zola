@@ -1,21 +1,14 @@
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use tera::{Context as TeraContext, Tera};
-
+use ahash::AHashMap;
 use config::Config;
-use errors::{Context, Result};
-use markdown::{RenderContext, render_content};
+use errors::Result;
 use utils::fs::read_file;
-use utils::net::is_external_link;
 use utils::table_of_contents::Heading;
-use utils::templates::{ShortcodeDefinition, render_template};
 
 use crate::file_info::FileInfo;
 use crate::front_matter::{SectionFrontMatter, split_section_content};
-use crate::library::Library;
-use crate::ser::{SectionSerMode, SerializingSection};
-use crate::utils::{find_related_assets, get_reading_analytics, has_anchor};
+use crate::utils::{find_related_assets, get_colocated_assets, get_reading_analytics, has_anchor};
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -34,14 +27,23 @@ pub struct Section {
     pub raw_content: String,
     /// The HTML rendered of the page
     pub content: String,
+    /// The previous section when sorting: earlier/earlier_updated/lighter/prev
+    pub lower: Option<PathBuf>,
+    /// The next section when sorting: later/later_updated/heavier/next
+    pub higher: Option<PathBuf>,
     /// All the non-md files we found next to the .md file
     pub assets: Vec<PathBuf>,
     /// All the non-md files we found next to the .md file as string
     pub serialized_assets: Vec<String>,
     /// All direct pages of that section
     pub pages: Vec<PathBuf>,
+    /// All direct hidden pages of that section that are hidden
+    /// Not listed directly anywhere but we still render them in the queue
+    pub hidden_pages: Vec<PathBuf>,
     /// All pages that cannot be sorted in this section
     pub ignored_pages: Vec<PathBuf>,
+    /// All subsections that cannot be sorted in this section
+    pub ignored_subsections: Vec<PathBuf>,
     /// The list of parent sections relative paths
     pub ancestors: Vec<String>,
     /// All direct subsections
@@ -62,6 +64,10 @@ pub struct Section {
     pub internal_links: Vec<(String, Option<String>)>,
     /// The list of all links to external webpages. They can be validated by the `link_checker`.
     pub external_links: Vec<String>,
+    /// For each asset: (asset path -> (language-less md path, relative path from md file)
+    pub colocated_assets: AHashMap<String, (String, String)>,
+    /// Computed visibility
+    pub hidden: bool,
 }
 
 impl Section {
@@ -87,7 +93,7 @@ impl Section {
             .file
             .find_language(&config.default_language, &config.other_languages_codes())?;
         section.raw_content = content.to_string();
-        let (word_count, reading_time) = get_reading_analytics(&section.raw_content);
+        let (word_count, reading_time) = get_reading_analytics(&section.raw_content, &section.lang);
         section.word_count = Some(word_count);
         section.reading_time = Some(reading_time);
 
@@ -126,6 +132,16 @@ impl Section {
         let parent_dir = path.parent().unwrap();
         section.assets = find_related_assets(parent_dir, config, false);
         section.serialized_assets = section.serialize_assets();
+        if let Some(colocated_path) = section.file.colocated_path.as_ref()
+            && !section.assets.is_empty()
+        {
+            section.colocated_assets = get_colocated_assets(
+                &section.assets,
+                section.file.path.parent().unwrap(),
+                &colocated_path,
+                &format!("{}_index.md", colocated_path),
+            );
+        }
 
         Ok(section)
     }
@@ -140,61 +156,6 @@ impl Section {
                 "section.html"
             }
         }
-    }
-
-    /// We need access to all pages url to render links relative to content
-    /// so that can't happen at the same time as parsing
-    pub fn render_markdown(
-        &mut self,
-        permalinks: &HashMap<String, String>,
-        tera: &Tera,
-        config: &Config,
-        shortcode_definitions: &HashMap<String, ShortcodeDefinition>,
-    ) -> Result<()> {
-        let mut context = RenderContext::new(
-            tera,
-            config,
-            &self.lang,
-            &self.permalink,
-            permalinks,
-            self.meta.insert_anchor_links.unwrap_or(config.markdown.insert_anchor_links),
-        );
-        context.set_shortcode_definitions(shortcode_definitions);
-        context.set_current_page_path(&self.file.relative);
-        context
-            .tera_context
-            .insert("section", &SerializingSection::new(self, SectionSerMode::ForMarkdown));
-
-        let res = render_content(&self.raw_content, &context)
-            .with_context(|| format!("Failed to render content of {}", self.file.path.display()))?;
-        self.content = res.body;
-        self.toc = res.toc;
-
-        self.external_links = res.external_links;
-        if let Some(ref redirect_to) = self.meta.redirect_to
-            && is_external_link(redirect_to)
-        {
-            self.external_links.push(redirect_to.to_owned());
-        }
-
-        self.internal_links = res.internal_links;
-
-        Ok(())
-    }
-
-    /// Renders the page using the default layout, unless specified in front-matter
-    pub fn render_html(&self, tera: &Tera, config: &Config, library: &Library) -> Result<String> {
-        let tpl_name = self.get_template_name();
-
-        let mut context = TeraContext::new();
-        context.insert("config", &config.serialize(&self.lang));
-        context.insert("current_url", &self.permalink);
-        context.insert("current_path", &self.path);
-        context.insert("section", &SerializingSection::new(self, SectionSerMode::Full(library)));
-        context.insert("lang", &self.lang);
-
-        render_template(tpl_name, tera, context, &config.theme)
-            .with_context(|| format!("Failed to render section '{}'", self.file.path.display()))
     }
 
     /// Is this the index section?
@@ -217,30 +178,24 @@ impl Section {
     }
 
     pub fn paginate_by(&self) -> Option<usize> {
-        match self.meta.paginate_by {
-            None => None,
-            Some(x) => match x {
-                0 => None,
-                _ => Some(x),
-            },
-        }
+        self.meta.paginate_by.filter(|&x| x > 0)
     }
 
-    pub fn serialize<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
-        SerializingSection::new(self, SectionSerMode::Full(library))
-    }
-
-    pub fn serialize_basic<'a>(&'a self, library: &'a Library) -> SerializingSection<'a> {
-        SerializingSection::new(self, SectionSerMode::MetadataOnly(library))
+    pub fn needs_pages_render(&self, old_meta: &SectionFrontMatter) -> bool {
+        self.meta.page_template != old_meta.page_template
+            || self.meta.sort_by != old_meta.sort_by
+            || self.meta.insert_anchor_links != old_meta.insert_anchor_links
+            || self.meta.transparent != old_meta.transparent
+            || self.meta.hidden != old_meta.hidden
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{File, create_dir, create_dir_all};
     use std::io::Write;
     use std::path::{Path, PathBuf};
 
+    use fs_err as fs;
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
 
@@ -251,15 +206,15 @@ mod tests {
     fn section_with_assets_gets_right_info() {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
-        create_dir(&path.join("content")).expect("create content temp dir");
-        create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
         let nested_path = path.join("content").join("posts").join("with-assets");
-        create_dir(&nested_path).expect("create nested temp dir");
-        let mut f = File::create(nested_path.join("_index.md")).unwrap();
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("_index.md")).unwrap();
         f.write_all(b"+++\n+++\n").unwrap();
-        File::create(nested_path.join("example.js")).unwrap();
-        File::create(nested_path.join("graph.jpg")).unwrap();
-        File::create(nested_path.join("fail.png")).unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
 
         let res = Section::from_file(
             nested_path.join("_index.md").as_path(),
@@ -278,17 +233,17 @@ mod tests {
         let tmp_dir = tempdir().expect("create temp dir");
         let path = tmp_dir.path();
         let article_path = path.join("content/posts/with-assets");
-        create_dir_all(path.join(&article_path).join("foo/bar/baz/quux"))
+        fs::create_dir_all(path.join(&article_path).join("foo/bar/baz/quux"))
             .expect("create nested temp dir");
-        create_dir_all(path.join(&article_path).join("foo/baz/quux"))
+        fs::create_dir_all(path.join(&article_path).join("foo/baz/quux"))
             .expect("create nested temp dir");
-        let mut f = File::create(article_path.join("_index.md")).unwrap();
+        let mut f = fs::File::create(article_path.join("_index.md")).unwrap();
         f.write_all(b"+++\n+++\n").unwrap();
-        File::create(article_path.join("example.js")).unwrap();
-        File::create(article_path.join("graph.jpg")).unwrap();
-        File::create(article_path.join("fail.png")).unwrap();
-        File::create(article_path.join("foo/bar/baz/quux/quo.xlsx")).unwrap();
-        File::create(article_path.join("foo/bar/baz/quux/quo.docx")).unwrap();
+        fs::File::create(article_path.join("example.js")).unwrap();
+        fs::File::create(article_path.join("graph.jpg")).unwrap();
+        fs::File::create(article_path.join("fail.png")).unwrap();
+        fs::File::create(article_path.join("foo/bar/baz/quux/quo.xlsx")).unwrap();
+        fs::File::create(article_path.join("foo/bar/baz/quux/quo.docx")).unwrap();
 
         let mut gsb = GlobSetBuilder::new();
         gsb.add(Glob::new("*.{js,png}").unwrap());

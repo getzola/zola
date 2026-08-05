@@ -1,4 +1,4 @@
-use std::fs;
+use fs_err as fs;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 
@@ -30,6 +30,7 @@ pub struct ImageOp {
     output_path: PathBuf,
     instr: ResizeInstructions,
     format: Format,
+    filter: FilterType,
     /// Whether we actually want to perform that op.
     /// In practice we set it to true if the output file already
     /// exists and is not stale. We do need to keep the ImageOp around for pruning though.
@@ -48,17 +49,43 @@ impl ImageOp {
             ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
         let mut decoder = reader.into_decoder()?;
         let color_profile = decoder.icc_profile().ok().flatten();
-        let raw_metadata = decoder.exif_metadata()?;
+        let metadata = decoder.exif_metadata()?.and_then(|raw_metadata| {
+            exif::Reader::new()
+                .read_raw(raw_metadata)
+                .inspect_err(|e| {
+                    log::warn!("Failed to parse exif for {}: {}", self.input_path.display(), e)
+                })
+                .ok()
+        });
         let img = DynamicImage::from_decoder(decoder)?;
 
-        let mut img = fix_orientation(&img, raw_metadata).unwrap_or(img);
+        let mut img = if let Some(metadata) = metadata.as_ref() {
+            match fix_orientation(&img, metadata) {
+                Ok(Some(fixed_img)) => fixed_img,
+                Ok(None) => img,
+                Err(e) => {
+                    log::debug!(
+                        "Using default orientation for {}: could not read exif orientation: {}",
+                        self.input_path.display(),
+                        e
+                    );
+                    img
+                }
+            }
+        } else {
+            log::debug!(
+                "No exif orientation data for {}, using default orientation",
+                self.input_path.display(),
+            );
+            img
+        };
 
         let img = match self.instr.crop_instruction {
             Some((x, y, w, h)) => img.crop(x, y, w, h),
             None => img,
         };
         let img = match self.instr.resize_instruction {
-            Some((w, h)) => img.resize_exact(w, h, FilterType::Lanczos3),
+            Some((w, h)) => img.resize_exact(w, h, self.filter),
             None => img,
         };
 
@@ -187,6 +214,7 @@ impl Processor {
         self.img_ops.len()
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn enqueue(
         &mut self,
         op: ResizeOperation,
@@ -195,6 +223,7 @@ impl Processor {
         format: &str,
         quality: Option<u8>,
         speed: Option<u8>,
+        filter: &str,
     ) -> Result<EnqueueResponse> {
         // First we load metadata from the cache if possible, otherwise from the file itself
         if !self.meta_cache.contains_key(&input_path) {
@@ -206,8 +235,10 @@ impl Processor {
         let meta = &self.meta_cache[&input_path];
         // We get the output format
         let format = Format::from_args(meta.is_lossy(), format, quality, speed)?;
+        // and the resize filter
+        let filter = crate::filter::filter_type_from_name(filter)?;
         // Now we have all the data we need to generate the output filename and the response
-        let filename = get_processed_filename(&input_path, &input_src, &op, &format);
+        let filename = get_processed_filename(&input_path, &input_src, &op, &format, filter);
         let url = format!("{}{}", self.base_url, filename);
         let static_path = Path::new("static").join(RESIZED_SUBDIR).join(&filename);
         let output_path = self.output_dir.join(&filename);
@@ -219,6 +250,7 @@ impl Processor {
             output_path,
             instr,
             format,
+            filter,
         };
         self.img_ops.insert(img_op);
 
