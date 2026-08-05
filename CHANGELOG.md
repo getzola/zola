@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.23.x (unreleased)
+## 0.23.1 (unreleased)
+
+- Fix docker build
 
 ## 0.23.0 (2026-08-05)
 
