@@ -14,18 +14,19 @@ RUN cargo build --release && \
     cp target/release/zola zola && \
     ./zola --version
 
-FROM docker.io/alpine:3.21 AS musl-libs
+FROM docker.io/alpine:3.24 AS musl-libs
 RUN mkdir -p /out && \
     cp /lib/ld-musl-$(uname -m).so.1 /out/ && \
     cp /lib/libc.musl-$(uname -m).so.1 /out/
 
-FROM docker.io/alpine:3.23 AS alpine
+FROM docker.io/alpine:3.24 AS alpine
 COPY --from=builder /app/zola /bin/zola
 ENTRYPOINT ["/bin/zola"]
 
 FROM scratch AS distroless
 COPY --from=builder /app/zola /zola
 COPY --from=musl-libs /out/ /lib/
+COPY --from=musl-libs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENTRYPOINT ["/zola"]
 
 FROM docker.io/rust:slim-bookworm AS builder-gh
