@@ -104,14 +104,12 @@ impl Highlighting {
             ));
         } else if let (Some(light_theme), Some(dark_theme)) = (&self.light_theme, &self.dark_theme)
         {
-            out.push((
-                "giallo-light.css",
-                self.registry.generate_css(light_theme, "z-").expect("theme to be present"),
-            ));
-            out.push((
-                "giallo-dark.css",
-                self.registry.generate_css(dark_theme, "z-").expect("theme to be present"),
-            ));
+            let (light_css, dark_css) = self
+                .registry
+                .generate_dual_css(light_theme, dark_theme, "z-")
+                .expect("themes to be present");
+            out.push(("giallo-light.css", light_css));
+            out.push(("giallo-dark.css", dark_css));
         }
 
         out
