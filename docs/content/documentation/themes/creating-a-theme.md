@@ -4,7 +4,7 @@ weight = 30
 +++
 
 Creating a theme is exactly like creating a normal site with Zola, except you
-will want to use many [Tera blocks](https://keats.github.io/tera/docs#inheritance) to
+will want to use many [Tera blocks](https://keats.github.io/tera/#inheritance) to
 allow users to easily modify it.
 
 ## Getting started

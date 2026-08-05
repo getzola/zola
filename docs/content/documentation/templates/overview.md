@@ -6,8 +6,10 @@ weight = 10
 Zola uses the [Tera](https://keats.github.io/tera) template engine, which is very similar
 to Jinja2, Liquid and Twig.
 
+The current Zola version (0.22 and before) use Tera v1. The documentation for Tera v1 is available there: <https://github.com/Keats/tera/blob/v1/docs/content/docs/_index.md>
+
 As this documentation will only talk about how templates work in Zola, please read
-the [Tera template documentation](https://keats.github.io/tera/docs/#templates) if you want
+the [Tera template documentation](https://keats.github.io/tera/#templates) if you want
 to learn more about it first.
 
 All templates live in the `templates` directory.  If you are not sure what variables are available in a template,
@@ -64,7 +66,7 @@ Custom templates are not required to live at the root of your `templates` direct
 For example, `product_pages/with_pictures.html` is a valid template.
 
 ## Built-in filters
-Zola adds a few filters in addition to [those](https://keats.github.io/tera/docs/#filters) already present
+Zola adds a few filters in addition to [those](https://keats.github.io/tera/#filters) already present
 in Tera.
 
 ### markdown
@@ -120,7 +122,7 @@ To format a number for a specific locale, you can use the `locale` argument and 
 
 ## Built-in functions
 
-Zola adds a few Tera functions to [those built-in in Tera](https://keats.github.io/tera/docs#built-in-functions)
+Zola adds a few Tera functions to [those built-in in Tera](https://keats.github.io/tera/#built-in-functions)
 to make it easier to develop complex sites.
 
 ### File searching logic
