@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.23.1 (unreleased)
+## 0.23.1 (2026-08-05)
 
-- Fix docker build
+- Fix docker images missing certificates
 
 ## 0.23.0 (2026-08-05)
 
