@@ -183,9 +183,11 @@ impl<'a> TaxonomyFound<'a> {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use config::{Config, TaxonomyConfig};
 
-    use crate::{Taxonomy, TaxonomyTerm};
+    use crate::{Page, PageFrontMatter, Taxonomy, TaxonomyTerm};
 
     use super::TaxonomyFound;
 
@@ -226,5 +228,37 @@ mod tests {
         // Verify taxonomy term path
         assert_eq!(term.path, "/tags/rust/");
         assert_eq!(term.permalink, format!("{}/tags/rust/", conf.base_url));
+    }
+
+    // https://github.com/getzola/zola/issues/2494
+    #[test]
+    fn merges_terms_with_different_case() {
+        let conf = Config::default_for_test();
+        let mut tax_conf = TaxonomyConfig::default();
+        tax_conf.slug = "games".to_string();
+
+        fn create_page(name: &str) -> Page {
+            let front_matter =
+                PageFrontMatter { date: Some("2026-08-05".to_string()), ..Default::default() };
+            Page::new(format!("content/{name}.md"), front_matter, &PathBuf::new())
+        }
+        let pages: Vec<_> = ["a", "b"].into_iter().map(|x| {
+
+        }).collect();
+
+        let page1 = create_page("a");
+        let page2 = create_page("b");
+
+        let mut tax_found = TaxonomyFound::new("games".into(), &conf.default_language, &tax_conf);
+        // different capitalization of legends
+        tax_found.terms.insert("League of legends", vec![&page1]);
+        tax_found.terms.insert("League of Legends", vec![&page2]);
+
+        let tax = Taxonomy::new(tax_found, &conf);
+
+        // Only one item in the end, with the 2 pages
+        assert_eq!(tax.items.len(), 1);
+        assert_eq!(tax.items[0].slug, "league-of-legends");
+        assert_eq!(tax.items[0].pages.len(), 2);
     }
 }
