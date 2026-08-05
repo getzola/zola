@@ -10,7 +10,6 @@ and it was mostly because it contains a lot of Tera syntax (as we will see later
 
 - remove `native-tls` feature to build zola
 - `get_page` and `get_section` no longer work with paths containing language code, eg "content/some.fr.md". Use the canonical path + `lang` argument
-- `get_taxonomy_url` `name` param has been renamed to `term`
 - Tera, the template engine, has been updated to v2. See its own migration guide: <https://github.com/Keats/tera/blob/master/MIGRATION.md>
 - shortcodes have been removed, see Migration section below for more details
 
@@ -27,6 +26,8 @@ Follow the Tera migration guide (<https://github.com/Keats/tera/blob/master/MIGR
 
 If you have Tera syntax in your content, you will need to wrap it in `{% raw %}..{% endraw %}` to avoid errors.
 
+There is also a new config option, `skip_content_templating` to skip templating for some of the files.
+
 ### Other
 
 - `get_taxonomy_url` `name` parameter is deprecated. Use `term` to be consistent with the other functions
@@ -37,8 +38,13 @@ If you have Tera syntax in your content, you will need to wrap it in `{% raw %}.
 - Fix LiveReload with IPv6 loopback
 - Sections now also have `higher`/`lower` for their subsections, like pages do.
 - `@/` internal links can now resolve colocated assets, both in `get_url` (eg `get_url(path="@/blog/article/img.png")`) and in markdown content links/images (eg `![](@/blog/article/img.png)`)
-- Add `hidden` property to pages and section to avoid rendering them
+- Add `hidden` property to pages and section to avoid including them in sections/subsections
 - Expose aliases in templates
+- Add `allow_missing` parameter for `get_page` and `get_section` to not error if the requested thing is missing
+- Add `text_direction` Tera function
+- Use language specific reading time for the `reading_time` attribute
+- Add more fields to the output of `get_image_metadata`: `description` and `created`.
+- Add `include_in_feeds` in the page front-matter to exclude them from feeds if needed
 
 ## 0.22.1 (2026-01-22)
 

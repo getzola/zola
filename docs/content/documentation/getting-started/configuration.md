@@ -61,6 +61,12 @@ minify_html = false
 #     ignored_content = ["*.{graphml,xlsx}", "temp.*", "**/build_folder"]
 ignored_content = []
 
+# A list of file glob patterns to skip templating in content. Defaults to none, which
+# means all content files are templated.
+# For example, Zola documentation uses it for the themes section as they sometimes contain
+# Tera content but not things we want to render.
+skip_content_templating = []
+
 # Similar to ignored_content, a list of glob patterns specifying asset files to
 # ignore when the static directory is processed. Defaults to none, which means
 # that all asset files are copied over to the `public` directory

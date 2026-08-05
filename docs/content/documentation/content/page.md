@@ -147,6 +147,9 @@ include_in_feeds = true
 # Template to use to render this page.
 template = "page.html"
 
+# When set to `true`, the page will be rendered but will not be included in a section pages/sitemap/search/feeds/etc
+hidden = false
+
 # The taxonomies for this page. The keys need to be the same as the taxonomy
 # names configured in `zola.toml` and the values are an array of String objects. For example,
 # tags = ["rust", "web"].

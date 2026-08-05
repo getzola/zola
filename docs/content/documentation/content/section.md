@@ -118,6 +118,10 @@ aliases = []
 # not from any other sections, including sub-sections under that section.
 generate_feeds = false
 
+# When set to `true`, the section will be rendered but will not be included in the parent subsection/sitemap/feeds/search/etc
+# By default it applies to all children of this section but each of them can opt out by setting their own hidden property
+hidden = false
+
 # Your own data.
 [extra]
 ```
