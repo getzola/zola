@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.23.x (unreleased)
+
 ## 0.23.0 (2026-08-05)
 
 This is probably the most breaking version of Zola that will happen. 
