@@ -208,14 +208,11 @@ impl<'a> Queue<'a> {
             }
         }
 
-        // Whole site feed
-        if site.config.generate_feeds {
-            for (lang, lang_config) in &site.config.languages {
-                if !lang_config.generate_feeds {
-                    continue;
-                }
-                queue.jobs.push(Job::Feed(Feed::Site { lang }));
+        for (lang, lang_config) in &site.config.languages {
+            if !lang_config.generate_feeds {
+                continue;
             }
+            queue.jobs.push(Job::Feed(Feed::Site { lang }));
         }
 
         queue

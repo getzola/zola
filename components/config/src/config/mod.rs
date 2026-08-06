@@ -297,11 +297,6 @@ impl Config {
             if base_language_options == languages::LanguageOptions::default() {
                 return Ok(());
             }
-            log::warn!(
-                "config.toml contains both default language specific information at base and under section `[languages.{}]`, \
-                which may cause merge conflicts. Please use only one to specify language specific information",
-                self.default_language
-            );
             base_language_options.merge(section_language_options)?;
         }
         self.languages.insert(self.default_language.clone(), base_language_options);
