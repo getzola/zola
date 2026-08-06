@@ -294,7 +294,7 @@ index_format = "elasticlunr_javascript"
 #     [extra]
 #     author = "Famous author"
 #
-# author value will be available using {{ config.extra.author }} in templates
+# author value will be available using {% raw %}{{ config.extra.author }}{% endraw%} in templates
 #
 [extra]
 ```
