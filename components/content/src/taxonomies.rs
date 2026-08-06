@@ -242,10 +242,6 @@ mod tests {
                 PageFrontMatter { date: Some("2026-08-05".to_string()), ..Default::default() };
             Page::new(format!("content/{name}.md"), front_matter, &PathBuf::new())
         }
-        let pages: Vec<_> = ["a", "b"].into_iter().map(|x| {
-
-        }).collect();
-
         let page1 = create_page("a");
         let page2 = create_page("b");
 
