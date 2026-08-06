@@ -241,24 +241,24 @@ And here's another. [^3]
         <p>This page use <sup>1.5</sup> and has footnotes, here's one. </p>
         <p>Here's another. </p>
         "###);
-        insta::assert_snapshot!(page.content, @r###"
-        <p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference" id="fr-1-1"><a href="#fn-1">[1]</a></sup></p>
-        <p>Here's another. <sup class="footnote-reference" id="fr-2-1"><a href="#fn-2">[2]</a></sup></p>
+        insta::assert_snapshot!(page.content, @r#"
+        <p>This page use <sup>1.5</sup> and has footnotes, here's one. <sup class="footnote-reference" id="fr-1-1"><a href="http://a-website.com/hello/#fn-1">[1]</a></sup></p>
+        <p>Here's another. <sup class="footnote-reference" id="fr-2-1"><a href="http://a-website.com/hello/#fn-2">[2]</a></sup></p>
         <span id="continue-reading"></span>
-        <p>And here's another. <sup class="footnote-reference" id="fr-3-1"><a href="#fn-3">[3]</a></sup></p>
+        <p>And here's another. <sup class="footnote-reference" id="fr-3-1"><a href="http://a-website.com/hello/#fn-3">[3]</a></sup></p>
         <section class="footnotes">
         <ol class="footnotes-list">
         <li id="fn-1">
-        <p>This is the first footnote. <a href="#fr-1-1">↩</a></p>
+        <p>This is the first footnote. <a href="http://a-website.com/hello/#fr-1-1">↩</a></p>
         </li>
         <li id="fn-2">
-        <p>This is the second footnote. <a href="#fr-2-1">↩</a></p>
+        <p>This is the second footnote. <a href="http://a-website.com/hello/#fr-2-1">↩</a></p>
         </li>
         <li id="fn-3">
-        <p>This is the third footnote. <a href="#fr-3-1">↩</a></p>
+        <p>This is the third footnote. <a href="http://a-website.com/hello/#fr-3-1">↩</a></p>
         </li>
         </ol>
         </section>
-        "###);
+        "#);
     }
 }
