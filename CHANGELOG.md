@@ -2,6 +2,9 @@
 
 ## 0.23.2 (unreleased)
 
+- Fix dual class CSS generation
+- Fix `data_attr_position` values not being lowercased
+- Fix footnotes not being permalinked
 
 ## 0.23.1 (2026-08-05)
 

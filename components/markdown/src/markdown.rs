@@ -507,13 +507,14 @@ impl<'a> State<'a> {
         self.push_html(html);
     }
 
-    fn handle_footnote_ref(&mut self, name: CowStr<'a>) {
+    fn handle_footnote_ref(&mut self, name: CowStr<'a>, ctx: &MarkdownContext) {
         let name = name.to_string();
         let n = self.footnote_numbers.len() + 1;
         let (n, nr) = self.footnote_numbers.entry(name.clone()).or_insert((n, 0));
         *nr += 1;
         let reference = format!(
-            r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="#fn-{name}">[{n}]</a></sup>"##
+            r##"<sup class="footnote-reference" id="fr-{name}-{nr}"><a href="{}#fn-{name}">[{n}]</a></sup>"##,
+            ctx.current_permalink
         );
         self.push_html(reference);
     }
@@ -572,7 +573,7 @@ impl<'a> State<'a> {
                 self.complete_footnotes.push(f);
             }
             Event::FootnoteReference(name) if ctx.config.markdown.bottom_footnotes => {
-                self.handle_footnote_ref(name)
+                self.handle_footnote_ref(name, ctx)
             }
 
             // Replacing emojis when not in a code block
@@ -664,7 +665,10 @@ impl<'a> State<'a> {
             let backlinks: String = (1..=count)
                 .map(|u| {
                     let suffix = if u == 1 { String::new() } else { u.to_string() };
-                    format!(r##" <a href="#fr-{}-{u}">↩{suffix}</a>"##, f.name)
+                    format!(
+                        r##" <a href="{}#fr-{}-{u}">↩{suffix}</a>"##,
+                        ctx.current_permalink, f.name
+                    )
                 })
                 .collect();
 
@@ -828,7 +832,9 @@ mod tests {
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
         let permalinks = HashMap::new();
-        let context = make_context(&config, &tera, &permalinks);
+        let mut context = make_context(&config, &tera, &permalinks);
+        // https://github.com/getzola/zola/issues/2613
+        context.current_permalink = "https://example.com/post/";
 
         let content = "This text has a footnote[^1]\n [^1]:But it is meaningless.";
         let rendered = State::default().render(content, &context).unwrap();
