@@ -5,6 +5,7 @@
 - Fix dual class CSS generation
 - Fix `data_attr_position` values not being lowercased
 - Fix footnotes not being permalinked
+- Add back `get_env` function
 
 ## 0.23.1 (2026-08-05)
 

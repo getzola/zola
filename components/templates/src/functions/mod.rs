@@ -1,5 +1,6 @@
 mod build_info;
 mod content;
+mod env;
 mod files;
 mod i18n;
 mod images;
@@ -8,6 +9,7 @@ mod taxonomy;
 
 pub use build_info::Now;
 pub use content::{GetPage, GetSection};
+pub use env::get_env;
 pub use files::{GetHash, GetUrl};
 pub use i18n::{TextDirection, Trans};
 pub use images::{GetImageMetadata, ResizeImage};
