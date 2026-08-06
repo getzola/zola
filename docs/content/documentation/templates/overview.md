@@ -78,7 +78,7 @@ pass `true` to the inline argument:
 ```jinja
 {% raw -%}
 {{ some_text | markdown(inline=true) }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 You do not need to use this filter with `page.content` or `section.content`, the content is already rendered.
@@ -96,7 +96,7 @@ Replace text via regular expressions.
 {% raw -%}
 {{ "World Hello" | regex_replace(pattern=`(?P<subject>\w+), (?P<greeting>\w+)`, rep=`$greeting $subject`) }}
 <!-- Hello World -->
-{%- endraw -%}
+{%- endraw %}
 ```
 
 ### num_format
@@ -106,7 +106,7 @@ Format a number into its string representation.
 {% raw -%}
 {{ 1000000 | num_format }}
 <!-- 1,000,000 -->
-{%- endraw -%}
+{%- endraw %}
 ```
 
 By default this will format the number using the locale set by `config.default_language` in zola.toml.
@@ -117,7 +117,7 @@ To format a number for a specific locale, you can use the `locale` argument and 
 {% raw -%}
 {{ 1000000 | num_format(locale="en-IN") }}
 <!-- 10,00,000 -->
-{%- endraw -%}
+{%- endraw %}
 ```
 
 ## Built-in functions
@@ -149,7 +149,7 @@ Takes a path to an `.md` file and returns the associated page. The base path is 
 ```jinja
 {% raw -%}
 {% set page = get_page(path="blog/page2.md") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 If selecting a specific language for the page, you can pass `lang` with the language code to the function:
@@ -160,8 +160,7 @@ If selecting a specific language for the page, you can pass `lang` with the lang
 
 {# If "fr" is the default language, this is equivalent to #}
 {% set page = get_page(path="blog/page2.md") %}
-{%- endraw -%}
-
+{%- endraw %}
 ```
 
 If you want to ignore a missing page instead of raising an error, like in the case where you have a link to a draft page you want to handle yourself, you can pass `allow_missing=true` to the function:
@@ -176,7 +175,7 @@ If you want to ignore a missing page instead of raising an error, like in the ca
 {% else %}
 <span></span>
 {% endif %}
-
+{%- endraw %}
 ```
 
 ### `get_section`
@@ -185,7 +184,7 @@ Takes a path to an `_index.md` file and returns the associated section. The base
 ```jinja
 {% raw -%}
 {% set section = get_section(path="blog/_index.md") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 If you only need the metadata of the section, you can pass `metadata_only=true` to the function:
@@ -193,7 +192,7 @@ If you only need the metadata of the section, you can pass `metadata_only=true` 
 ```jinja
 {% raw -%}
 {% set section = get_section(path="blog/_index.md", metadata_only=true) %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 If selecting a specific language for the section, you can pass `lang` with the language code to the function:
@@ -204,7 +203,7 @@ If selecting a specific language for the section, you can pass `lang` with the l
 
 {# If "fr" is the default language, this is equivalent to #}
 {% set section = get_section(path="blog/_index.md") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 If you want to ignore a missing section instead of raising an error, like in the case where you have a link to a draft section you want to handle yourself, you can pass `allow_missing=true` to the function:
@@ -219,7 +218,7 @@ If you want to ignore a missing section instead of raising an error, like in the
 {% else %}
 <span></span>
 {% endif %}
-
+{%- endraw %}
 ```
 
 ### `get_taxonomy_url`
@@ -228,7 +227,7 @@ Gets the permalink for the taxonomy item found.
 ```jinja
 {% raw -%}
 {% set url = get_taxonomy_url(kind="categories", term=page.taxonomies.category, lang=page.lang) %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 `term` will almost always come from a variable but in case you want to do it manually,
@@ -244,7 +243,7 @@ Gets the whole taxonomy of a specific kind.
 ```jinja
 {% raw -%}
 {% set categories = get_taxonomy(kind="categories") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 The type of the output is:
@@ -268,7 +267,7 @@ Gets a single term from a taxonomy of a specific kind.
 ```jinja
 {% raw -%}
 {% set categories = get_taxonomy_term(kind="categories", term="term_name") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 The type of the output is a single `TaxonomyTerm` item.
@@ -290,7 +289,7 @@ a colocated asset,  starting from the root `content` directory as well as valida
 {% raw -%}
 {% set url = get_url(path="@/blog/_index.md") %}
 {% set asset = get_url(path="@/blog/my-article/graph.png", lang="fr") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 It accepts an optional parameter `lang` in order to compute a *language-aware URL* in multilingual websites. Assuming `config.base_url` is `"http://example.com"`, the following snippet will:
@@ -302,7 +301,7 @@ It accepts an optional parameter `lang` in order to compute a *language-aware UR
 ```jinja
 {% raw -%}
 {% set url = get_url(path="@/blog/_index.md", lang="en") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 This can also be used to get the permalink for a static file, for example if
@@ -311,7 +310,7 @@ you want to link to the file that is located at `static/css/app.css`:
 ```jinja
 {% raw -%}
 {{ get_url(path="css/app.css") }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 By default, the link will not have a trailing slash. You can force one by passing `trailing_slash=true` to the `get_url` function.
@@ -320,7 +319,7 @@ An example is:
 ```jinja
 {% raw -%}
 {{ get_url(path="css/app.css", trailing_slash=true) }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 In the case of a non-internal link, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
@@ -343,7 +342,7 @@ Either `path` or `literal` must be given.
 {% raw -%}
 {{ get_hash(literal="Hello World", sha_type=256) }}
 {{ get_hash(path="static/js/app.js", sha_type=256) }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 The function can also output a base64-encoded hash value when its `base64`
@@ -354,7 +353,7 @@ integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Int
 {% raw -%}
 <script src="{{ get_url(path="static/js/app.js") }}"
   integrity="sha384-{{ get_hash(path="static/js/app.js", sha_type=384, base64=true) | safe }}"></script>
-{%- endraw -%}
+{%- endraw %}
 ```
 
 Do note that subresource integrity is typically used when using external scripts, which `get_hash` does not support.
@@ -374,7 +373,7 @@ The method returns a map containing `width`, `height`, `format`, `mime`, `descri
 {% raw -%}
   {% set meta = get_image_metadata(path="...") %}
   Our image (.{{meta.format}}) has format is {{ meta.width }}x{{ meta.height }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 ### `load_data`
@@ -389,7 +388,7 @@ The `path` argument specifies the path to a local data file, according to the [F
 ```jinja
 {% raw -%}
 {% set data = load_data(path="content/blog/story/data.toml") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 Alternatively, the `url` argument specifies the location of a remote URL to load.
@@ -397,7 +396,7 @@ Alternatively, the `url` argument specifies the location of a remote URL to load
 ```jinja
 {% raw -%}
 {% set data = load_data(url="https://en.wikipedia.org/wiki/Commune_of_Paris") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 Alternatively, the `literal` argument specifies an object literal. Note: if the `format` argument is not specified, then plain text will be what is assumed.
@@ -406,7 +405,7 @@ Alternatively, the `literal` argument specifies an object literal. Note: if the 
 {% raw -%}
 {% set data = load_data(literal='{"name": "bob"}', format="json") %}
 {{ data["name"] }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 *Note: the `required` parameter has no effect when used in combination with the `literal` argument.*
@@ -419,7 +418,7 @@ The snippet below outputs the HTML from a Wikipedia page, or "No data found" if 
 {% raw -%}
 {% set data = load_data(url="https://en.wikipedia.org/wiki/Commune_of_Paris", required=false) %}
 {% if data %}{{ data | safe }}{% else %}No data found{% endif %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 The optional `format` argument allows you to specify and override which data type is contained within the specified file or URL.
@@ -430,7 +429,7 @@ path extension is used. In the case of a literal, `plain` is assumed if `format`
 ```jinja
 {% raw -%}
 {% set data = load_data(path="content/blog/story/data.txt", format="json") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 Use the `plain` format for when your file has a supported extension but you want to load it as plain text.
@@ -444,7 +443,7 @@ In the template:
 ```jinja
 {% raw -%}
 {% set data = load_data(path="content/blog/story/data.csv") %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 In the *content/blog/story/data.csv* file:
@@ -517,7 +516,7 @@ Finally, the bibtex data can be accessed from the template as follows:
 {% raw -%}
 {% set tags = data.bibliographies[0].tags %}
 This was generated using {{ tags.title }}, authored by {{ tags.author }}.
-{%- endraw -%}
+{%- endraw %}
 ```
 
 #### Remote content
@@ -529,7 +528,7 @@ to `load_data` rather than `path`.
 {% raw -%}
 {% set response = load_data(url="https://api.github.com/repos/getzola/zola") %}
 {{ response }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 By default, the response body will be returned with no parsing. This can be changed by using the `format` argument
@@ -540,7 +539,7 @@ as below.
 {% raw -%}
 {% set response = load_data(url="https://api.github.com/repos/getzola/zola", format="json") %}
 {{ response }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 When no other parameters are specified the URL will always be retrieved using a HTTP GET request.
@@ -564,7 +563,7 @@ This example will make a POST request to the kroki service to generate a SVG.
   'very easy!' [color = 'orange'];
 }")%}
 {{postdata|safe}}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 If you need additional handling for the HTTP headers, you can use the `headers` parameter.
@@ -578,7 +577,7 @@ This example will make a POST request to the GitHub markdown rendering service.
 {% raw -%}
 {% set postdata = load_data(url="https://api.github.com/markdown", format="plain", method="POST", content_type="application/json", headers=["accept=application/vnd.github.v3+json"], body='{"text":"headers support added in #1710, commit before it: b3918f124d13ec1bedad4860c15a060dd3751368","context":"getzola/zola","mode":"gfm"}')%}
 {{postdata|safe}}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 The following example shows how to send a GraphQL query to GitHub (requires authentication).
@@ -591,7 +590,7 @@ environment variable to the access token you have obtained.
 {% set token = get_env(name="GITHUB_TOKEN") %}
 {% set postdata = load_data(url="https://api.github.com/graphql", format="json", method="POST" ,content_type="application/json", headers=["accept=application/vnd.github.v4.idl", "authorization=Bearer " ~ token], body='{"query":"query { viewer { login }}"}')%}
 {{postdata|safe}}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 In case you need to specify multiple headers with the same name, you can specify them like this:
@@ -624,7 +623,7 @@ Gets the horizontal text directionality for the `default_language`, the `lang`ua
 {{ text_direction() }}
 {{ text_direction(lang="fr") }}
 {{ text_direction(lang=lang) }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 Returns the string literal `ltr` or `rtl`, which may be passed directly into the [`dir` global HTML attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/dir).
@@ -637,7 +636,7 @@ Gets the translation of the given `key`, for the `default_language`, the `lang`u
 {{ trans(key="title") }}
 {{ trans(key="title", lang="fr") }}
 {{ trans(key="title", lang=lang) }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 ### `resize_image`

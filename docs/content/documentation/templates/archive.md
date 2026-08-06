@@ -17,7 +17,7 @@ all post titles ordered by year). However, this can be accomplished directly in 
     {% endfor %}
     </ul>
 {% endfor %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 This snippet assumes that posts are sorted by date and that you want to display the archive
@@ -34,5 +34,5 @@ process the list of pages:
     {% set posts = posts_by_year[year] %}
     {# (same as the previous snippet) #}
 {% endfor %}
-{%- endraw -%}
+{%- endraw %}
 ```

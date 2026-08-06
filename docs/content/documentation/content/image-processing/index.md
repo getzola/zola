@@ -198,7 +198,7 @@ To call it from a Markdown file, simply do:
 ```jinja
 {% raw -%}
 {{ <gallery page /> }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 Here is the result:
@@ -230,7 +230,7 @@ It can be invoked from Markdown like this:
 ```jinja
 {% raw -%}
 {{ <resize_image_relative path="documentation/content/image-processing/01-zola.png" scale={0.5} /> }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 {{ <resize_image_relative path="documentation/content/image-processing/01-zola.png" scale={0.5} /> }}

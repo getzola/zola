@@ -85,5 +85,5 @@ Here is an example from a theme on how to use pagination on a page (`index.html`
         <a class="next" href="{{ paginator.next }}">Next ›</a>
     {% endif %}
 </nav>
-{%- endraw -%}
+{%- endraw %}
 ```

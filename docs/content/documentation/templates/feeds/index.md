@@ -71,7 +71,7 @@ You can enable posts autodiscovery modifying your blog `base.html` template addi
 {% block rss %}
   <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ get_url(path="rss.xml", trailing_slash=false) }}">
 {% endblock %}
-{%- endraw -%}
+{%- endraw %}
 ```
 You can as well use an Atom feed using `type="application/atom+xml"` and `path="atom.xml"`.
 
@@ -84,7 +84,7 @@ In order to enable the tag feeds as well, you can overload the `block rss` using
   {% set rss_path = "tags/" ~ term.name ~ "/rss.xml" %}
   <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ get_url(path=rss_path, trailing_slash=false) }}">
 {% endblock rss %}
-{%- endraw -%}
+{%- endraw %}
 ```
 Each tag page will refer to it's dedicated feed.
 
