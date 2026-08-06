@@ -176,6 +176,7 @@ For example, we can create a very simple html-only clickable
 picture gallery with the following component named `gallery`:
 
 ```jinja
+{% raw -%}
 {% component gallery(page) -%}
 <div>
 {% for asset in page.assets -%}
@@ -188,6 +189,7 @@ picture gallery with the following component named `gallery`:
 {%- endfor %}
 </div>
 {%- endcomponent %}
+{%- endraw %}
 ```
 
 As you can notice, we didn't specify an `op` argument, which means that it'll default to `"fill"`. Similarly,
@@ -218,11 +220,13 @@ Sometimes when building a gallery it is useful to know the dimensions of each as
 This can also be useful in combination with `resize_image()` to do relative resizing. We can create a component named `resize_image_relative`:
 
 ```jinja
+{% raw -%}
 {% component resize_image_relative(path: string, scale: float) -%}
 {% set mdata = get_image_metadata(path=path) %}
 {% set image = resize_image(path=path, width=(mdata.width * scale)|int, op="fit_width") %}
 <img src="{{ image.url }}" />
 {%- endcomponent %}
+{%- endraw %}
 ```
 
 It can be invoked from Markdown like this:
@@ -243,6 +247,7 @@ along with the proper HTML5 `srcset` for the original image to be displayed on h
 Consider the following component named `high_res_image`:
 
 ```jinja
+{% raw -%}
 {% component high_res_image(path: string) -%}
 {% set mdata = get_image_metadata(path=path) %}
 {% set w = (mdata.width / 2) | round %}
@@ -250,6 +255,7 @@ Consider the following component named `high_res_image`:
 {% set image = resize_image(path=path, width=w, height=h, op="fit_width") %}
 <img src="{{ image.url }}" srcset="/{{path}} 2x"/>
 {%- endcomponent %}
+{%- endraw %}
 ```
 
 {{ <high_res_image path="documentation/content/image-processing/08-example.jpg" /> }}
