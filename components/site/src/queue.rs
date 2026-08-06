@@ -208,11 +208,6 @@ impl<'a> Queue<'a> {
             }
         }
 
-        // Whole site feed: generate per-language based on each language's own
-        // `generate_feeds` option, which already merges the global value with any
-        // per-language override. The previous outer `if site.config.generate_feeds`
-        // gate meant feeds were skipped entirely when the option was set only in a
-        // `[languages.xx]` section but not globally. See issue #2360.
         for (lang, lang_config) in &site.config.languages {
             if !lang_config.generate_feeds {
                 continue;
