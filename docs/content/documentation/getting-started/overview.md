@@ -98,7 +98,7 @@ Let's make a template for a home page. Create `templates/base.html` with the fol
 </body>
 
 </html>
-{%- endraw -%}
+{%- endraw %}
 ```  
 
 Now, let's create `templates/index.html` with the following content.
@@ -112,7 +112,7 @@ Now, let's create `templates/index.html` with the following content.
   This is my blog made with Zola.
 </h1>
 {% endblock content %}
-{%- endraw -%}
+{%- endraw %}
 ```  
 
 This tells Zola that `index.html` extends our `base.html` file and replaces the block called "content" with the text between the `{% raw %}{% block content %}{% endraw %}` and `{% raw %}{% endblock content %}{% endraw %}` tags.
@@ -137,7 +137,7 @@ To create a template for a page that lists all blog posts, create `templates/blo
   {% endfor %}
 </ul>
 {% endblock content %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 As done by `index.html`, `blog.html` extends `base.html`, but in this template we want to list the blog posts. Here we also see expressions such as `{% raw %}{{ section.[...] }}{% endraw %}` and `{% raw %}{{ page.[...] }}{% endraw %}` which will be replaced with values from our [content](#content) when zola combines content with this template to render a page. 
@@ -159,7 +159,7 @@ We have templates describing our home page and a page that lists all blog posts.
 <p class="subtitle"><strong>{{ page.date }}</strong></p>
 {{ page.content | safe }}
 {% endblock content %}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 > Note the `| safe` filter for `{% raw %}{{ page.content }}{% endraw %}`.
@@ -255,7 +255,7 @@ As a final step, let's modify `templates/index.html` (our home page) to link to 
 </h1>
 <p><a href="{{ get_url(path='@/blog/_index.md') }}">Posts</a>.</p>
 {% endblock content %}
-{%- endraw -%}
+{%- endraw %}
 ```  
 
 This has been a quick overview of Zola. You can now dive into the rest of the documentation.

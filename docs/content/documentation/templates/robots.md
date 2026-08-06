@@ -15,7 +15,7 @@ User-agent: *
 Disallow:
 Allow: /
 Sitemap: {{ get_url(path="sitemap.xml") }}
-{%- endraw -%}
+{%- endraw %}
 ```
 
 The file can be extended & expanded like other templates using e.g. Tera's `include` tag:
@@ -28,5 +28,5 @@ Allow: /
 Sitemap: {{ get_url(path="sitemap.xml") }}
 
 {% include "path/to/other/robots.txt" %}
-{%- endraw -%}
+{%- endraw %}
 ```

@@ -71,6 +71,6 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN<WEB_APP_NAME> }}
           action: "close"
-{%- endraw -%}
+{%- endraw %}
 ```
 Once your YAML changes have been pushed, GitHub will automatically kick off a workflow deploying your site!
