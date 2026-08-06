@@ -3,7 +3,7 @@
     <channel>
       <title>{{ config.title }}
         {%- if term %} - {{ term.name }}
-        {%- elif section.title %} - {{ section.title }}
+        {%- elif section and section.title %} - {{ section.title }}
         {%- endif -%}
       </title>
       <link>
