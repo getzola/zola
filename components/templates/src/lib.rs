@@ -73,6 +73,7 @@ pub static ZOLA_TERA: LazyLock<Tera> = LazyLock::new(|| {
     tera.register_function("resize_image", ResizeImage::default());
     tera.register_function("get_image_metadata", GetImageMetadata::default());
     tera.register_function("load_data", LoadData::default());
+    tera.register_function("get_env", functions::get_env);
 
     tera.register_filter("num_format", NumFormatFilter::default());
     tera.register_filter("markdown", MarkdownFilter::default());
