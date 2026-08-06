@@ -100,11 +100,11 @@ description = ""
 # If the section variable `sort_by` is set to `date`, then any page that lacks a `date`
 # will not be rendered.
 # Setting this overrides a date set in the filename.
-date =
+# date =
 
 # The last updated date of the post, if different from the date.
 # Same format as `date`.
-updated =
+# updated =
 
 # The weight as defined on the Section page of the documentation.
 # If the section variable `sort_by` is set to `weight`, then any page that lacks a `weight`

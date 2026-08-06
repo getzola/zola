@@ -94,7 +94,7 @@ feed_filenames = ["atom.xml"]
 hard_link_static = false
 
 # The default author for pages
-author =
+# author =
 
 # The taxonomies to be rendered for the site and their configuration of the default languages
 # Example:
@@ -128,7 +128,7 @@ generate_robots_txt = true
 render_emoji = false
 
 # CSS class to add to external links (e.g. "external-link")
-external_links_class =
+# external_links_class =
 
 # Whether external links are to be opened in a new tab
 # If this is true, a `rel="noopener"` will always automatically be added for security reasons
