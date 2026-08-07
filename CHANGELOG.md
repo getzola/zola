@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.23.3 (unreleased)
+
 ## 0.23.2 (2026-08-07)
 
 - Fix dual class CSS generation
