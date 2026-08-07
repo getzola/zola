@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.23.2 (unreleased)
+## 0.23.2 (2026-08-07)
 
 - Fix dual class CSS generation
 - Fix `data_attr_position` values not being lowercased
