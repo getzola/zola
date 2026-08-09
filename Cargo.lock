@@ -6416,11 +6416,13 @@ dependencies = [
  "same-file",
  "search",
  "serde_json",
+ "sha2",
  "site",
  "tauri-winres",
  "templates",
  "time",
  "tokio",
+ "toml 0.9.12+spec-1.1.0",
  "url",
  "utils",
 ]

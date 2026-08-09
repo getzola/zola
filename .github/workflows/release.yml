@@ -1,210 +1,32 @@
-name: Release
+# ADR-008 / Z-2: the ONLY workflow on this fork.
+# Replaces upstream's GitHub-hosted docs/release/build-and-test workflows
+# (deleted — they would burn GitHub-hosted minutes). Builds the release binary
+# on the org's self-hosted tailnet runner (the NixOS box) and attaches it to the
+# GitHub Release for the tag. Runs only on version tags.
+name: release
 
 on:
   push:
-    tags: ["v*.*.*"]
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+    tags:
+      - 'v*'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  Release-Build:
-    runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read
-      attestations: write
-      id-token: write
-    strategy:
-      matrix:
-        target:
-          - x86_64-unknown-linux-gnu
-          - x86_64-unknown-linux-musl
-          - aarch64-unknown-linux-gnu
-          - x86_64-pc-windows-msvc
-          - x86_64-apple-darwin
-          - aarch64-apple-darwin
-        rustup_toolchain: [stable]
-        include:
-          - os: windows-2022
-            target: x86_64-pc-windows-msvc
-          - os: ubuntu-22.04
-            target: x86_64-unknown-linux-gnu
-          - os: ubuntu-22.04
-            target: x86_64-unknown-linux-musl
-          - os: ubuntu-22.04-arm
-            target: aarch64-unknown-linux-gnu
-          - os: macos-15-intel
-            target: x86_64-apple-darwin
-          - os: macos-15
-            target: aarch64-apple-darwin
+  release:
+    runs-on: [self-hosted, tailnet]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: ${{ matrix.rustup_toolchain }}
-          targets: ${{ matrix.target }}
+      - name: Build release binary
+        run: nix shell nixpkgs#cargo nixpkgs#rustc nixpkgs#gcc -c cargo build --release --bin zola
 
-      - name: Install Zig and cargo-zigbuild
+      - name: Attach binary to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          curl -sSfL https://ziglang.org/download/0.14.0/zig-linux-x86_64-0.14.0.tar.xz | tar -xJf -
-          echo "$PWD/zig-linux-x86_64-0.14.0" >> $GITHUB_PATH
-          cargo install --locked cargo-zigbuild
-        if: ${{ endsWith(matrix.target, 'linux-musl') }}
-
-      - name: Cargo build
-        run: cargo build --release --target ${{ matrix.target }}
-        if: ${{ ! endsWith(matrix.target, 'linux-musl') }}
-
-      - name: Cargo zigbuild
-        run: cargo zigbuild --release --target ${{ matrix.target }}
-        if: ${{ endsWith(matrix.target, 'linux-musl') }}
-
-      - name: Show version
-        run: ./target/${{ matrix.target }}/release/zola --version
-
-      - name: Archive (UNIX)
-        run: |
-          mkdir -p artifacts
-          cp -av target/${{ matrix.target }}/release/zola .
-          OUTPUT_DIR="$(find target -path '*/zola-*/out' -type d)"
-          cp -av "$OUTPUT_DIR"/* artifacts
-          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz zola artifacts LICENSE LICENSE-MIT
-        if: ${{ ! startsWith(matrix.os, 'windows') }}
-
-      - name: Archive (Windows)
-        run: |
-          mkdir -p artifacts
-          cp target/${{ matrix.target }}/release/zola.exe .
-          Compress-Archive zola.exe,LICENSE,LICENSE-MIT ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.zip
-        if: ${{ startsWith(matrix.os, 'windows') }}
-
-      - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@v4
-        continue-on-error: true
-        with:
-          subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}
-          path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
-          if-no-files-found: error
-          retention-days: 7
-
-  Release:
-    needs: [Release-Build]
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: write
-
-    steps:
-      - name: Ensure artifacts dir exists
-        run: mkdir -p artifacts
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v8
-        with:
-          path: artifacts
-          merge-multiple: true
-
-      - name: Release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228
-        with:
-          name: ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-          body: |
-            Welcome to this new release of Zola ${{ github.ref_name }}!
-            
-            See the full changelog at https://github.com/getzola/zola/blob/master/CHANGELOG.md
-
-            All artifacts are signed with this repos identity using Sigstore.
-            You can verify the signatures using the `GitHub` CLI.
-
-            ```shell
-            gh attestation verify --owner ${{ github.repository_owner }} <my-artifact>
-            ```
-          token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{ contains(github.ref, '-pre') }}
-          files: artifacts/*
-
-  Release-Container-Image:
-    strategy:
-      matrix:
-        include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-            arch: amd64
-          - platform: linux/arm64
-            runner: ubuntu-22.04-arm
-            arch: arm64
-    runs-on: ${{ matrix.runner }}
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Docker buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push distroless (${{ matrix.platform }})
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
-        with:
-          context: .
-          push: true
-          target: distroless
-          platforms: ${{ matrix.platform }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:distroless-${{ matrix.arch }}
-
-      - name: Build and push alpine (${{ matrix.platform }})
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a
-        with:
-          context: .
-          push: true
-          target: alpine
-          platforms: ${{ matrix.platform }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpine-${{ matrix.arch }}
-
-  Create-Manifest:
-    needs: [Release-Container-Image]
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-    steps:
-      - name: Log in to the Container registry
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create distroless multi-arch manifest
-        run: |
-          docker buildx imagetools create \
-            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:distroless-amd64 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:distroless-arm64
-
-      - name: Create alpine multi-arch manifest
-        run: |
-          docker buildx imagetools create \
-            -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-alpine \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpine-amd64 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpine-arm64
+          gh release create "$GITHUB_REF_NAME" \
+            target/release/zola \
+            --target "$GITHUB_SHA" \
+            --generate-notes

@@ -64,6 +64,8 @@ log = { workspace = true }
 percent-encoding = { workspace = true }
 relative-path = { workspace = true }
 serde_json = { workspace = true }
+sha2 = { workspace = true }
+toml = { workspace = true }
 time = { workspace = true, features = ["formatting", "macros", "local-offset", "parsing"] }
 url = { workspace = true }
 

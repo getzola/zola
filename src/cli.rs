@@ -128,4 +128,17 @@ pub enum Command {
         #[clap(value_enum)]
         shell: Shell,
     },
+
+    /// Translate default-language pages into each configured language via OpenRouter
+    /// (ADR-008 files-as-truth). Generates/refreshes co-located `<slug>.<lang>.md`
+    /// siblings, hash-gated on `extra.source_hash`. Network lives only here.
+    Translate {
+        /// Cap on real API calls (success + fail) this run; remainder resumes next run
+        #[clap(long)]
+        max: Option<usize>,
+
+        /// Report stale/missing siblings without calling the API (no key needed)
+        #[clap(long)]
+        dry_run: bool,
+    },
 }
