@@ -34,6 +34,8 @@ use utils::types::InsertAnchor;
 pub static SITE_CONTENT: LazyLock<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
     LazyLock::new(|| Arc::new(RwLock::new(HashMap::new())));
 
+static CONTENT_LIBRARY: LazyLock<Library> = LazyLock::new(Library::default);
+
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum BuildMode {
@@ -473,8 +475,7 @@ impl Site {
         }
 
         // For rendering content, we do not need the real library since it's not going to be filled
-        let dummy_library = Library::default();
-        let renderer = Renderer { tera, config, library: &dummy_library, cache: &self.cache };
+        let renderer = Renderer::new(tera, config, &CONTENT_LIBRARY, &self.cache);
 
         let library = Arc::make_mut(&mut self.library);
         library
@@ -535,7 +536,7 @@ impl Site {
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
             md_render::render_page(
                 &mut page,
-                self.renderer(),
+                self.content_renderer(),
                 &self.permalinks,
                 &self.library.colocated_assets,
                 &self.tera,
@@ -567,7 +568,7 @@ impl Site {
         if render_md {
             md_render::render_section(
                 &mut section,
-                self.renderer(),
+                self.content_renderer(),
                 &self.permalinks,
                 &self.library.colocated_assets,
                 &self.tera,
@@ -632,9 +633,9 @@ impl Site {
         self.cache = Arc::new(cache);
     }
 
-    /// Create a Renderer for this site
-    fn renderer(&self) -> Renderer<'_> {
-        Renderer::new(&self.tera, &self.config, &self.library, &self.cache)
+    /// Create a Renderer to template the content of a page/section
+    fn content_renderer(&self) -> Renderer<'_> {
+        Renderer::new(&self.tera, &self.config, &CONTENT_LIBRARY, &self.cache)
     }
 
     /// Inject live reload script tag if in live reload mode

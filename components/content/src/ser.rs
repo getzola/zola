@@ -162,7 +162,7 @@ impl<'a> SerializingSection<'a> {
         let subsections: Vec<&str> = section
             .subsections
             .iter()
-            .map(|p| library.sections[p].file.relative.as_str())
+            .filter_map(|p| library.sections.get(p).map(|s| s.file.relative.as_str()))
             .collect();
         let backlinks = find_backlinks(&section.file.relative, library);
 

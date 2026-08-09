@@ -8,7 +8,7 @@ use std::sync::Arc;
 use ahash::AHashMap;
 use common::{build_site, build_site_with_setup};
 use config::TaxonomyConfig;
-use content::Page;
+use content::{Page, Section};
 use site::Site;
 use site::sitemap;
 use tera::Value;
@@ -124,6 +124,24 @@ fn errors_on_unknown_taxonomies() {
         err.to_string(),
         "Page `unknown/taxo.md` has taxonomy `wrong` which is not defined in config.toml"
     );
+}
+
+#[test]
+fn content_templating_never_sees_the_library() {
+    let (mut site, _, _) = build_site("test_site");
+    // `serve --fast` re-renders a single section while the library is fully populated but the
+    // content templating still has to get the empty one, otherwise the output of `zola serve`
+    // would differ from the output of `zola build`
+    let subsection = site.library.sections.keys().next().unwrap().clone();
+    let content = "+++\n+++\nsubsections:{% for s in section.subsections %} {{ s }}{% endfor %}";
+    let mut section =
+        Section::parse(Path::new("_index.md"), content, &site.config, &PathBuf::new()).unwrap();
+    section.subsections.push(subsection);
+    let path = section.file.path.clone();
+
+    site.add_section(section, true).unwrap();
+
+    assert_eq!(site.library.sections[&path].content.trim(), "<p>subsections:</p>");
 }
 
 #[test]

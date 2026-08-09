@@ -121,12 +121,12 @@ mod tests {
     use ahash::AHashMap;
 
     use config::Config;
-    use content::{Library, Page};
+    use content::{Library, Page, Section};
     use render::{RenderCache, Renderer};
     use templates::ZOLA_TERA;
     use utils::types::InsertAnchor;
 
-    use super::render_page;
+    use super::{render_page, render_section};
 
     fn make_renderer<'a>(
         config: &'a Config,
@@ -134,6 +134,31 @@ mod tests {
         cache: &'a RenderCache,
     ) -> Renderer<'a> {
         Renderer::new(&ZOLA_TERA, config, library, cache)
+    }
+
+    #[test]
+    fn can_render_section_with_subsections() {
+        let config = Config::default_for_test();
+        let library = Library::default();
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &ZOLA_TERA);
+        let content = "+++\n+++\n{{ 1 + 1 }}";
+        let res = Section::parse(Path::new("_index.md"), content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let mut section = res.unwrap();
+        section.subsections.push(PathBuf::from("content/guide/_index.md"));
+
+        let renderer = make_renderer(&config, &library, &cache);
+        render_section(
+            &mut section,
+            renderer,
+            &HashMap::default(),
+            &AHashMap::default(),
+            &ZOLA_TERA,
+            &config,
+        )
+        .unwrap();
+        assert!(section.content.contains("<p>2</p>"));
     }
 
     #[test]

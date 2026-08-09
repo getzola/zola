@@ -2,6 +2,8 @@
 
 ## 0.23.3 (unreleased)
 
+- Fix panic when templating a section body that has subsections
+
 ## 0.23.2 (2026-08-07)
 
 - Fix dual class CSS generation
