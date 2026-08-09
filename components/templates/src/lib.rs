@@ -93,8 +93,14 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
         .with_context(|| format!("Failed to render alias for '{}'", url))
 }
 
-/// Creates the Tera instance we will use to render things.
+/// Turns a base path into a string suitable for building a template glob, ignoring all Windows stuff
+/// like \\? or whatever it is
 ///
+/// https://zola.discourse.group/t/where-should-i-put-component-definitions-in-zola-0-23/2957
+fn glob_base(path: &Path) -> String {
+    dunce::simplified(path).display().to_string()
+}
+
 /// Combines the builtin Zola templates with an optional theme and the user templates.
 /// Filters/Functions requiring the site data will be added to it later
 pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
@@ -137,7 +143,7 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
     if let Some(ref theme) = config.theme {
         let pattern = format!(
             "{}/themes/{theme}/templates/**/*.{{html,xml,md,txt,json,ics}}",
-            path.display()
+            glob_base(path)
         );
         for (file_path, name) in tera::load_from_glob(&pattern)? {
             // "page.html" → "sample/templates/page.html"
@@ -150,7 +156,7 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
     // Load site templates (higher priority, will override theme templates)
     if site_tpl_dir.exists() {
-        let pattern = format!("{}/templates/**/*.{{html,xml,md,txt,json,ics}}", path.display());
+        let pattern = format!("{}/templates/**/*.{{html,xml,md,txt,json,ics}}", glob_base(path));
         for (file_path, name) in tera::load_from_glob(&pattern)? {
             let content = fs::read_to_string(&file_path)
                 .with_context(|| format!("Failed to read '{}'", file_path.display()))?;

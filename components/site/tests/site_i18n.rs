@@ -1,14 +1,11 @@
 mod common;
 
-use std::env;
-
 use common::*;
 use site::Site;
 
 #[test]
 fn can_parse_multilingual_site() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site_i18n");
+    let path = test_site_path("test_site_i18n");
     let config_file = path.join("config.toml");
     let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();

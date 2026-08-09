@@ -1,12 +1,11 @@
 mod common;
 
 use std::collections::HashMap;
-use std::env;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use ahash::AHashMap;
-use common::{build_site, build_site_with_setup};
+use common::{build_site, build_site_with_setup, test_site_path};
 use config::TaxonomyConfig;
 use content::Page;
 use site::Site;
@@ -17,8 +16,7 @@ use utils::types::InsertAnchor;
 
 #[test]
 fn can_parse_site() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
+    let path = test_site_path("test_site");
     let config_file = path.join("config.toml");
     let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
@@ -810,8 +808,7 @@ fn can_build_with_extra_syntaxes() {
 
 #[test]
 fn can_apply_page_templates() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
+    let path = test_site_path("test_site");
     let config_file = path.join("config.toml");
     let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
@@ -1004,8 +1001,7 @@ fn external_links_ignored_on_check() {
 
 #[test]
 fn can_find_site_and_page_authors() {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push("test_site");
+    let path = test_site_path("test_site");
     let config_file = path.join("config.toml");
     let mut site = Site::new(&path, config_file).unwrap();
     site.load().unwrap();

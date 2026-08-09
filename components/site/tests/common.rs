@@ -36,11 +36,18 @@ macro_rules! file_contains {
     }};
 }
 
+/// Resolves the path to a test site, canonicalizing it like the `zola` cli does
+/// To ensure Windows canonicalization does not mess things up
+pub fn test_site_path(name: &str) -> PathBuf {
+    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
+    path.push(name);
+    path.canonicalize().expect("canonicalize test site path")
+}
+
 /// We return the tmpdir otherwise it would get out of scope and be deleted
 /// The tests can ignore it if they dont need it by prefixing it with a `_`
 pub fn build_site(name: &str) -> (Site, TempDir, PathBuf) {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push(name);
+    let path = test_site_path(name);
     let config_file = path.join("config.toml");
     let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
@@ -56,8 +63,7 @@ pub fn build_site_with_setup<F>(name: &str, mut setup_cb: F) -> (Site, TempDir, 
 where
     F: FnMut(Site) -> (Site, bool),
 {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push(name);
+    let path = test_site_path(name);
     let config_file = path.join("config.toml");
     let site = Site::new(&path, &config_file).unwrap();
     let (mut site, needs_loading) = setup_cb(site);
@@ -151,8 +157,7 @@ pub fn find_expected_translations(
     name: &str,
     default_language: &str,
 ) -> HashMap<String, Vec<String>> {
-    let mut path = env::current_dir().unwrap().parent().unwrap().parent().unwrap().to_path_buf();
-    path.push(name);
+    let mut path = test_site_path(name);
     path.push("content");
 
     // Find expected translations from content folder
