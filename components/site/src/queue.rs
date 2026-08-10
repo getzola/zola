@@ -386,8 +386,13 @@ impl<'a> Queue<'a> {
                     self.site.library.pages.values().filter(|p| p.lang == *lang).collect();
                 let feed_data =
                     feeds::prepare_feed(&pages, self.site.config.feed_limit, &self.site.cache);
+                let base_path = if *lang == self.site.config.default_language {
+                    None
+                } else {
+                    Some(PathBuf::from(lang))
+                };
                 for feed_filename in &self.site.config.languages[*lang].feed_filenames {
-                    let feed_url = self.site.make_feed_url(None, feed_filename);
+                    let feed_url = self.site.make_feed_url(base_path.as_ref(), feed_filename);
                     let input = FeedInput {
                         feed_filename,
                         lang,

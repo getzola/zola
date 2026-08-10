@@ -116,7 +116,10 @@ fn can_build_multilingual_site() {
         "atom.xml",
         r#"<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">"#
     ));
+    assert!(file_contains!(public, "atom.xml", "<id>https://example.com/atom.xml</id>"));
     assert!(file_exists!(public, "fr/atom.xml"));
+    // each language's feed links to itself, not to the default language one
+    assert!(file_contains!(public, "fr/atom.xml", "<id>https://example.com/fr/atom.xml</id>"));
     assert!(!file_contains!(public, "fr/atom.xml", "https://example.com/blog/something-else/"));
     assert!(file_contains!(public, "fr/atom.xml", "https://example.com/fr/blog/something-else/"));
     assert!(file_contains!(
