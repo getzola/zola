@@ -3,14 +3,14 @@
 title = "tapestry"
 description = "A Zola theme for academic and industry researcher profile websites, derived from and backward-compatible with terminus"
 template = "theme.html"
-date = 2026-07-17T01:56:44Z
+date = 2026-08-04T23:34:16Z
 
 [taxonomies]
 theme-tags = ['scholarly', 'academic', 'portfolio', 'blog', 'minimal', 'personal', 'responsive', 'seo']
 
 [extra]
-created = 2026-07-17T01:56:44Z
-updated = 2026-07-17T01:56:44Z
+created = 2026-08-04T23:34:16Z
+updated = 2026-08-04T23:34:16Z
 repository = "https://github.com/anirbanbasu/tapestry.git"
 homepage = "https://github.com/anirbanbasu/tapestry"
 minimum_version = "0.22.0"

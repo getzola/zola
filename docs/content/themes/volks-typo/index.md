@@ -3,14 +3,14 @@
 title = "volks-typo"
 description = "Minimalist blog theme with bold industrial typography and an 8-point grid (Zola port of the Astro Volks-Typo theme)."
 template = "theme.html"
-date = 2026-07-10T11:28:41+02:00
+date = 2026-08-03T21:29:26Z
 
 [taxonomies]
 theme-tags = ['blog', 'minimal', 'dark-mode', 'search', 'responsive', 'bauhaus']
 
 [extra]
-created = 2026-07-10T11:28:41+02:00
-updated = 2026-07-10T11:28:41+02:00
+created = 2026-08-03T21:29:26Z
+updated = 2026-08-03T21:29:26Z
 repository = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
 homepage = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
 minimum_version = "0.19.0"
@@ -51,6 +51,8 @@ A Zola port of the Astro **Volks-Typo** theme: a blog theme with bold, industria
 - Self-Hosted Fonts - No external dependencies for privacy.
 - Git-"Star" - From the original Astro theme, now configurable/optional.
 
+Minimum Zola version: **0.19.0** (developed and tested on Zola 0.22.1).
+
 ## Screenshots
 
 **Landing page**
@@ -73,24 +75,17 @@ The easiest way to install this theme is to clone this repository in the themes 
 git clone https://gitlab.com/tisgoud/zola-volks-typo-theme.git
 ```
 
-ro use it as a submodule:
+or use it as a submodule:
 
 ```
 git submodule add https://gitlab.com/tisgoud/zola-volks-typo-theme.git themes/volks-typo
 ```
-then set volks-typo as your theme in config.toml.
 
-```
-theme = "volks-typo"
-```
-
-Enable it in your `config.toml`:
+Set volks-typo as your theme in `config.toml`:
 
 ```toml
 theme = "volks-typo"
 ```
-
-Minimum Zola version: **0.19.0** (developed and tested on Zola 0.22.1).
 
 ## Required configuration
 
@@ -107,13 +102,13 @@ theme = "volks-typo"
 generate_feeds = false
 feed_filenames = ["rss.xml"]
 
+# Optionally set "paginate_by = 10" to set the number of items per page
+# name = "categories", feed = true, paginate_by = 10
+# name = "tags", feed = true, paginate_by = 10
 taxonomies = [
   { name = "categories", feed = true },
   { name = "tags", feed = true },
 ]
-
-[markdown]
-highlight_code = true
 
 [markdown.highlighting]
 # Zola bundles "nord" (a dark theme close to the original's catppuccin-mocha).
@@ -128,6 +123,19 @@ main_menu = [
   { name = "About", url = "/about" },
 ]
 
+# Favicon path (in `static/`). Defaults to the bundled `favicon.svg`
+favicon = "favicon.png"
+
+Header logo image path (in `static/`)
+logo = "site-title.svg"
+
+# Repo URL for the header repository button. Omit to hide the button
+repo_url = false
+# Repo label default is "Star"
+repo_label = "Star"
+# Bundled icon name (`github`, `gitlab`, `codeberg`) default `gitlab`
+repo_icon = "gitlab"
+
 author_name = "Your Name"
 author_bio = "Writer, designer, and explorer of aesthetic tensions between past and present."
 # author_avatar = "/images/avatar.jpg"   # optional
@@ -136,7 +144,7 @@ author_bio = "Writer, designer, and explorer of aesthetic tensions between past 
 # static/icons/ (github, gitlab, codeberg, x, instagram, linkedin, mastodon,
 # email) or a custom path like "/icons/gitea.svg".
 social_links = [
-  { name = "Gitlab", icon = "gitlab", url = "https://gitlab.com/tisgoud/zola-volks-typo-theme/" },
+  { name = "Gitlab", icon = "gitlab", url = "https://gitlab.com/you/your-site/" },
   { name = "Mastodon", icon = "mastodon", url = "https://fosstodon.org/@you" },
   { name = "Email",    icon = "email",    url = "mailto:you@example.com" },
 ]
@@ -155,7 +163,7 @@ Site title and description come from the **top-level** `title` / `description` k
 | `favicon` | no | Favicon path (in `static/`). Defaults to the bundled `favicon.svg` |
 | `logo` | no | Header logo image path (in `static/`). Omit to show the site title as text |
 | `repo_url` | no | Repo URL for the header repository button. Omit to hide the button |
-| `repo_icon` | no | Bundled icon name (`github`, `gitlab`, `codeberg`) or a custom SVG path in `static/`. Default `github` |
+| `repo_icon` | no | Bundled icon name (`github`, `gitlab`, `codeberg`) or a custom SVG path in `static/`. Default `gitlab` |
 | `repo_label` | no | Repo button text. Default `Star` |
 | `author_name` | yes | Author shown in sidebar / footer |
 | `author_bio` | yes | Short bio in the sidebar |
@@ -166,6 +174,10 @@ Bundled social/forge icons live in `static/icons/`: `github`, `gitlab`,
 `codeberg`, `x`, `instagram`, `linkedin`, `mastodon`, `email`. Add your own by dropping an SVG in `static/icons/` (or anywhere) and referencing it by path.
 
 Any omitted social key simply hides that link.
+
+## Copy content and static
+
+Copy the files from `themes/volks-typo/content` and `themes/volks-typo/static` to your `content`- and `static` directory.
 
 ## Content structure
 
