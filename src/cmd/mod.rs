@@ -1,5 +1,6 @@
 mod build;
 mod check;
+pub mod graph;
 mod init;
 mod serve;
 mod translate;

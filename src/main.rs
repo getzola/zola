@@ -214,5 +214,13 @@ fn main() {
                 std::process::exit(1);
             }
         }
+        Command::Graph { command } => {
+            log::info!("Graph...");
+            let (root_dir, config_file) = get_config_file_path(&cli_dir, cli.config.as_deref());
+            if let Err(e) = cmd::graph::run(&root_dir, &config_file, command) {
+                messages::unravel_errors("Failed to graph", &e);
+                std::process::exit(1);
+            }
+        }
     }
 }

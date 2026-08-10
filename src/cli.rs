@@ -141,4 +141,46 @@ pub enum Command {
         #[clap(long)]
         dry_run: bool,
     },
+
+    /// Build/refresh the topical knowledge graph (migrate once via Firecrawl,
+    /// then maintain locally with `refresh`). Network lives only here.
+    Graph {
+        #[clap(subcommand)]
+        command: GraphCommand,
+    },
+}
+
+/// Subcommands of `zola graph`.
+#[derive(Subcommand)]
+pub enum GraphCommand {
+    /// One-time Firecrawl crawl of a live site into markdown + topical KG.
+    /// Refuses a second crawl for the same origin unless `--force`.
+    Migrate {
+        /// Site origin to bootstrap from, e.g. `https://curriculo.me`.
+        #[clap(long)]
+        from: String,
+
+        /// Cap on pages fetched + enriched this run; remainder resumes next run.
+        #[clap(long)]
+        max: Option<usize>,
+
+        /// Report the planned crawl without fetching/writing/calling the LLM.
+        #[clap(long)]
+        dry_run: bool,
+
+        /// Re-crawl even if `meta.source_origin` already matches (ops escape).
+        #[clap(long)]
+        force: bool,
+    },
+
+    /// Refresh the topical KG from local markdown. No Firecrawl, no remote fetch.
+    Refresh {
+        /// Cap on stale pages re-enriched this run; remainder resumes next run.
+        #[clap(long)]
+        max: Option<usize>,
+
+        /// Report stale/new pages without calling the LLM (no key needed).
+        #[clap(long)]
+        dry_run: bool,
+    },
 }
