@@ -162,7 +162,8 @@ impl<'a> SerializingSection<'a> {
         let subsections: Vec<&str> = section
             .subsections
             .iter()
-            .map(|p| library.sections[p].file.relative.as_str())
+            // The library will be empty when rendering markdown the first time
+            .flat_map(|p| library.sections.get(p).map(|s| s.file.relative.as_str()))
             .collect();
         let backlinks = find_backlinks(&section.file.relative, library);
 
