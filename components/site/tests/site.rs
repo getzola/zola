@@ -151,6 +151,9 @@ fn can_build_site_without_live_reload() {
     // "render = false" should not generate an index.html
     assert!(!file_exists!(public, "posts/render/index.html"));
 
+    assert!(file_exists!(public, "posts/2018/asset.txt"));
+    assert!(file_exists!(public, "posts/tutorials/devops/asset.txt"));
+
     // Sections
     assert!(file_exists!(public, "posts/index.html"));
     assert!(file_exists!(public, "posts/tutorials/index.html"));
@@ -457,6 +460,7 @@ fn can_build_site_with_pagination_for_section() {
     // even if there is no pages, only the section!
     assert!(file_exists!(public, "paginated/page/1/index.html"));
     assert!(file_exists!(public, "paginated/index.html"));
+    assert!(file_exists!(public, "paginated/asset.txt"));
     // should redirect to posts/
     assert!(file_contains!(
         public,

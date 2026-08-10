@@ -23,6 +23,7 @@ enum Job<'a> {
     Alias { from: &'a str, to: &'a str },
     Page(&'a Page),
     Section { section: &'a Section, path: PathBuf },
+    SectionAssets { section: &'a Section, path: PathBuf },
     Paginated { paginator_index: usize, pager_index: usize, path: PathBuf },
     TaxonomyList { taxonomy: &'a Taxonomy, path: PathBuf },
     TaxonomyTerm { taxonomy: &'a Taxonomy, term: &'a TaxonomyTerm, path: PathBuf },
@@ -94,16 +95,20 @@ impl<'a> Queue<'a> {
             self.jobs.push(Job::Feed(Feed::Section { pages, section }));
         }
 
-        if !section.meta.render {
-            return;
-        }
-
         let mut base_path = PathBuf::new();
         if section.lang != self.site.config.default_language {
             base_path.push(&section.lang);
         }
         for component in &section.file.components {
             base_path.push(component);
+        }
+
+        if !section.assets.is_empty() {
+            self.jobs.push(Job::SectionAssets { section, path: base_path.clone() });
+        }
+
+        if !section.meta.render {
+            return;
         }
 
         if section.meta.is_paginated() {
@@ -232,7 +237,7 @@ impl<'a> Queue<'a> {
                         .join(page.path.strip_prefix('/').unwrap_or(&page.path));
                     self.site.copy_assets(page.file.path.parent().unwrap(), &page.assets, &dest)?;
                 }
-                Job::Section { section, path } if section.meta.redirect_to.is_none() => {
+                Job::SectionAssets { section, path } => {
                     let dest = self.site.output_path.join(path);
                     self.site.copy_assets(
                         section.file.path.parent().unwrap(),
@@ -523,6 +528,7 @@ impl<'a> Queue<'a> {
             Job::Alias { from, to } => Ok(vec![self.render_alias(from, to)?]),
             Job::Page(page) => Ok(vec![self.render_page(page)?]),
             Job::Section { section, path } => Ok(vec![self.render_section(section, path)?]),
+            Job::SectionAssets { .. } => Ok(Vec::new()),
             Job::Paginated { paginator_index, pager_index, path } => {
                 self.render_paginated(*paginator_index, *pager_index, path)
             }
