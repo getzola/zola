@@ -2,6 +2,11 @@
 
 ## 0.23.3 (unreleased)
 
+- Fix Windows issues
+- Fix panic in section templating
+- Fix feed URL for non-default languages
+- Fix colocated assets for sections not being copied in some cases
+
 ## 0.23.2 (2026-08-07)
 
 - Fix dual class CSS generation

@@ -16,7 +16,7 @@ include = ["src/**/*", "LICENSE", "README.md"]
 members = ["components/*"]
 
 [workspace.package]
-version = "0.23.2"
+version = "0.23.3"
 edition = "2024"
 
 [build-dependencies]
