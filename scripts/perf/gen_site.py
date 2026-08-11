@@ -591,10 +591,18 @@ def generate(cfg: Scenario, pages: int, seed: int, out: Path) -> Manifest:
 
         terms: dict[str, list[str]] = {}
         if taxonomy_names and cfg.taxonomies_per_page:
-            per_tax = max(1, cfg.taxonomies_per_page // len(taxonomy_names))
-            for name in taxonomy_names:
+            # `taxonomies_per_page` is the total number of (taxonomy, term)
+            # entries on the page, spread round-robin over the taxonomies, so
+            # the knob keeps meaning something when it is smaller or larger than
+            # the taxonomy count.
+            wanted: dict[str, int] = {name: 0 for name in taxonomy_names}
+            for slot in range(cfg.taxonomies_per_page):
+                wanted[taxonomy_names[slot % len(taxonomy_names)]] += 1
+            for name, count in wanted.items():
+                if not count:
+                    continue
                 pool = taxonomy_terms_pool[name]
-                chosen = sorted({rng.pick(pool) for _ in range(per_tax)})
+                chosen = sorted({rng.pick(pool) for _ in range(count)})
                 terms[name] = chosen
 
         fm, aliases = front_matter(rng, cfg, title, i, terms)

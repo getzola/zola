@@ -16,6 +16,7 @@ Zola renders in parallel, summed CPU time across threads exceeds wall time.
 from __future__ import annotations
 
 import argparse
+import bisect
 import collections
 import gzip
 import json
@@ -41,14 +42,78 @@ def string_array(profile: dict, thread: dict) -> list[str]:
     raise SystemExit("could not locate the profile's string table")
 
 
-def func_names(profile: dict, thread: dict) -> list[str]:
+def load_symbols(profile_path: Path) -> dict[str, list[tuple[int, int, str]]]:
+    """Load samply's `--unstable-presymbolicate` sidecar, if present.
+
+    Returns {debug_name: [(rva, size, symbol), ...]} sorted by rva. Only
+    `symbol_table` is used: the sidecar's `known_addresses` list carries
+    placeholder names ("UNKNOWN", "start") that would otherwise shadow real
+    symbols. Without the sidecar, frames stay as hex addresses, because samply
+    normally symbolicates inside its own UI, which we deliberately do not use.
+    """
+    sidecar = profile_path.with_name(profile_path.stem + ".syms.json")
+    if not sidecar.exists():
+        return {}
+    payload = json.loads(sidecar.read_text())
+    strings = payload["string_table"]
+    out: dict[str, list[tuple[int, int, str]]] = {}
+    for lib in payload["data"]:
+        entries = [
+            (e["rva"], e.get("size") or 0, strings[e["symbol"]])
+            for e in (lib.get("symbol_table") or [])
+        ]
+        entries.sort()
+        out[lib["debug_name"]] = entries
+    return out
+
+
+def resolve(table: list[tuple[int, int, str]], rva: int) -> str | None:
+    """Find the symbol whose [rva, rva+size) range contains `rva`."""
+    if not table:
+        return None
+    index = bisect.bisect_right(table, (rva, float("inf"), "")) - 1
+    if index < 0:
+        return None
+    start, size, name = table[index]
+    if size and rva >= start + size:
+        return None
+    return name
+
+
+def func_names(profile: dict, thread: dict, symbols: dict) -> list[str]:
     strings = string_array(profile, thread)
     func_table = thread["funcTable"]
     names = func_table["name"]
-    return [strings[i] if isinstance(i, int) and i < len(strings) else "<unknown>" for i in names]
+    resources = func_table.get("resource") or [-1] * len(names)
+    resource_lib = thread.get("resourceTable", {}).get("lib") or []
+    libs = profile.get("libs") or []
+
+    resolved: list[str] = []
+    for i, name_index in enumerate(names):
+        raw = (strings[name_index] if isinstance(name_index, int) and name_index < len(strings)
+               else "<unknown>")
+        if symbols and raw.startswith("0x"):
+            res = resources[i] if i < len(resources) else -1
+            lib_name = None
+            if isinstance(res, int) and 0 <= res < len(resource_lib):
+                lib_index = resource_lib[res]
+                if isinstance(lib_index, int) and 0 <= lib_index < len(libs):
+                    lib_name = libs[lib_index].get("debugName")
+            if lib_name:
+                try:
+                    rva = int(raw, 16)
+                except ValueError:
+                    rva = None
+                symbol = resolve(symbols.get(lib_name, []), rva) if rva is not None else None
+                if symbol:
+                    raw = symbol if lib_name == "zola" else f"{symbol} [{lib_name}]"
+                else:
+                    raw = f"{raw} [{lib_name}]"
+        resolved.append(raw)
+    return resolved
 
 
-def analyze(profile: dict) -> tuple[dict, dict, dict, float]:
+def analyze(profile: dict, symbols: dict) -> tuple[dict, dict, dict, float]:
     self_ms: dict[str, float] = collections.defaultdict(float)
     total_ms: dict[str, float] = collections.defaultdict(float)
     callers: dict[str, collections.Counter] = collections.defaultdict(collections.Counter)
@@ -61,7 +126,7 @@ def analyze(profile: dict) -> tuple[dict, dict, dict, float]:
             continue
         interval = thread.get("interval") or profile.get("meta", {}).get("interval") or 1.0
 
-        names = func_names(profile, thread)
+        names = func_names(profile, thread, symbols)
         frame_func = thread["frameTable"]["func"]
         stack_prefix = thread["stackTable"]["prefix"]
         stack_frame = thread["stackTable"]["frame"]
@@ -114,7 +179,11 @@ def main() -> int:
     args = ap.parse_args()
 
     profile = load_profile(args.profile)
-    self_ms, total_ms, callers, wall_ms = analyze(profile)
+    symbols = load_symbols(args.profile)
+    if not symbols:
+        print('warning: no .syms.json sidecar next to the profile; frames will be raw addresses.\n'
+              '         re-record with: samply record --save-only --unstable-presymbolicate', file=sys.stderr)
+    self_ms, total_ms, callers, wall_ms = analyze(profile, symbols)
     if not self_ms:
         print("no samples found in profile", file=sys.stderr)
         return 1

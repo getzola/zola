@@ -1,0 +1,419 @@
+{
+  "machine": {
+    "arch": "arm64",
+    "build_profile": "release (pinned, see scripts/perf/build.sh)",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "cpu": "Apple M4 Pro",
+    "git_branch": "perf/large-site-scaling",
+    "git_commit": "9ec4407a-dirty",
+    "logical_cores": "12",
+    "memory_bytes": "25769803776",
+    "os": "macOS-26.2-arm64-arm-64bit",
+    "physical_cores": "12",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "timestamp": "2026-08-11T22:59:07+0200",
+    "zola_version": "zola 0.23.3"
+  },
+  "results": [
+    {
+      "input": {
+        "input_bytes": 2009135,
+        "internal_links": 0,
+        "md_files": 4011,
+        "page_files": 4000,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-4000-t1",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2011132,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4011,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 4055207,
+        "files": 4015
+      },
+      "parallel_efficiency": 1.0,
+      "resources": {
+        "cpu_utilization": 6.29,
+        "peak_rss_bytes": 383287296,
+        "sys_seconds": 8.91,
+        "user_seconds": 0.28,
+        "wall_seconds": 1.46
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-4000",
+      "speedup_vs_1_thread": 1.0,
+      "thread_count": 1,
+      "threads": 1,
+      "timing_seconds": {
+        "max": 1.0566641642599999,
+        "mean": 1.03232902526,
+        "median": 1.03501916426,
+        "min": 1.00530374726,
+        "runs": 3,
+        "stddev": 0.02578566936270923,
+        "system": 0.8058169999999999,
+        "times": [
+          1.00530374726,
+          1.03501916426,
+          1.0566641642599999
+        ],
+        "user": 0.20950528
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 2009135,
+        "internal_links": 0,
+        "md_files": 4011,
+        "page_files": 4000,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-4000-t2",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2011132,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4011,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 4055207,
+        "files": 4015
+      },
+      "parallel_efficiency": 0.567,
+      "resources": {
+        "cpu_utilization": 6.25,
+        "peak_rss_bytes": 383860736,
+        "sys_seconds": 8.97,
+        "user_seconds": 0.28,
+        "wall_seconds": 1.48
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-4000",
+      "speedup_vs_1_thread": 1.133,
+      "thread_count": 2,
+      "threads": 2,
+      "timing_seconds": {
+        "max": 0.92134129322,
+        "mean": 0.9019967232199999,
+        "median": 0.91313991722,
+        "min": 0.87150895922,
+        "runs": 3,
+        "stddev": 0.026719720383325776,
+        "system": 0.9793588400000001,
+        "times": [
+          0.87150895922,
+          0.91313991722,
+          0.92134129322
+        ],
+        "user": 0.22939946666666666
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 2009135,
+        "internal_links": 0,
+        "md_files": 4011,
+        "page_files": 4000,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-4000-t4",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2011132,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4011,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 4055207,
+        "files": 4015
+      },
+      "parallel_efficiency": 0.274,
+      "resources": {
+        "cpu_utilization": 5.69,
+        "peak_rss_bytes": 382468096,
+        "sys_seconds": 7.97,
+        "user_seconds": 0.28,
+        "wall_seconds": 1.45
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-4000",
+      "speedup_vs_1_thread": 1.096,
+      "thread_count": 4,
+      "threads": 4,
+      "timing_seconds": {
+        "max": 0.9588215077600001,
+        "mean": 0.9360051187600001,
+        "median": 0.94402075776,
+        "min": 0.9051730907600001,
+        "runs": 3,
+        "stddev": 0.027707869154541872,
+        "system": 1.6918705866666668,
+        "times": [
+          0.9051730907600001,
+          0.94402075776,
+          0.9588215077600001
+        ],
+        "user": 0.24094890666666666
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 2009135,
+        "internal_links": 0,
+        "md_files": 4011,
+        "page_files": 4000,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-4000-t8",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2011132,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4011,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 4055207,
+        "files": 4015
+      },
+      "parallel_efficiency": 0.098,
+      "resources": {
+        "cpu_utilization": 5.53,
+        "peak_rss_bytes": 383746048,
+        "sys_seconds": 7.41,
+        "user_seconds": 0.28,
+        "wall_seconds": 1.39
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-4000",
+      "speedup_vs_1_thread": 0.784,
+      "thread_count": 8,
+      "threads": 8,
+      "timing_seconds": {
+        "max": 1.6614158872400002,
+        "mean": 1.399763220906667,
+        "median": 1.3196605542400002,
+        "min": 1.21821322124,
+        "runs": 3,
+        "stddev": 0.232205681869997,
+        "system": 5.115599419999999,
+        "times": [
+          1.21821322124,
+          1.3196605542400002,
+          1.6614158872400002
+        ],
+        "user": 0.2658846266666666
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 2009135,
+        "internal_links": 0,
+        "md_files": 4011,
+        "page_files": 4000,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-4000-t12",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2011132,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4011,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 4055207,
+        "files": 4015
+      },
+      "parallel_efficiency": 0.063,
+      "resources": {
+        "cpu_utilization": 5.51,
+        "peak_rss_bytes": 382877696,
+        "sys_seconds": 7.17,
+        "user_seconds": 0.27,
+        "wall_seconds": 1.35
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-4000",
+      "speedup_vs_1_thread": 0.76,
+      "thread_count": 12,
+      "threads": 12,
+      "timing_seconds": {
+        "max": 1.9048354422,
+        "mean": 1.5122709005333332,
+        "median": 1.3618042752,
+        "min": 1.2701729842,
+        "runs": 3,
+        "stddev": 0.3430441121824593,
+        "system": 6.669745806666666,
+        "times": [
+          1.2701729842,
+          1.3618042752,
+          1.9048354422
+        ],
+        "user": 0.2827181733333333
+      }
+    }
+  ]
+}
