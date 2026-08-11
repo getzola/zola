@@ -114,9 +114,11 @@ impl Function<TeraResult<String>> for GetUrl {
 
             if let Some(ref lang) = explicit_lang
                 && *lang != self.config.default_language
-                && (path.is_empty() || !path[1..].starts_with(lang))
             {
-                segments.push(lang.clone());
+                let p = path.strip_prefix('/').unwrap_or(&path);
+                if p != lang.as_str() && !p.starts_with(&format!("{lang}/")) {
+                    segments.push(lang.clone());
+                }
             }
 
             segments.push(path.clone());
@@ -836,5 +838,21 @@ title = "A title"
         let ctx = Context::new();
         let err = get_hash.call(kwargs, &State::new(&ctx)).unwrap_err();
         assert!(err.to_string().contains("Cannot find file"));
+    }
+
+    // https://github.com/getzola/zola/issues/2621
+    #[test]
+    fn does_not_drop_lang_() {
+        let dir = create_temp_dir();
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let get_url =
+            GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new(), AHashMap::new());
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("genres")),
+            ("lang", tera::Value::from("en")),
+        ]);
+        let ctx = Context::new();
+        let url = get_url.call(kwargs, &State::new(&ctx)).unwrap();
+        assert_eq!(url, "https://remplace-par-ton-url.fr/en/genres");
     }
 }
