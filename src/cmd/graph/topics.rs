@@ -42,7 +42,8 @@ pub fn merge_page_topics(store: &mut GraphStore, page_url: &str, extract: &Topic
     let mut label_to_id: Vec<(String, String)> = Vec::new(); // (lowercase label, id)
     for spec in &extract.topics {
         let key = spec.label.to_ascii_lowercase();
-        let id = if let Some(t) = store.topics.iter().find(|t| t.label.to_ascii_lowercase() == key) {
+        let id = if let Some(t) = store.topics.iter().find(|t| t.label.to_ascii_lowercase() == key)
+        {
             t.id.clone()
         } else if let Some((_, id)) = label_to_id.iter().find(|(l, _)| *l == key) {
             id.clone()
@@ -117,7 +118,8 @@ fn unique_topic_id(topics: &[Topic], label: &str, taken: &[(String, String)]) ->
     if base.is_empty() {
         return "topic".into();
     }
-    let id_exists = |id: &str| topics.iter().any(|t| t.id == id) || taken.iter().any(|(_, t)| t == id);
+    let id_exists =
+        |id: &str| topics.iter().any(|t| t.id == id) || taken.iter().any(|(_, t)| t == id);
     if !id_exists(&base) {
         return base;
     }
@@ -130,25 +132,16 @@ fn unique_topic_id(topics: &[Topic], label: &str, taken: &[(String, String)]) ->
     unreachable!()
 }
 
-fn lookup_label(
-    fresh: &[(String, String)],
-    topics: &[Topic],
-    label: &str,
-) -> Option<String> {
+fn lookup_label(fresh: &[(String, String)], topics: &[Topic], label: &str) -> Option<String> {
     let key = label.to_ascii_lowercase();
     if let Some((_, id)) = fresh.iter().find(|(l, _)| *l == key) {
         return Some(id.clone());
     }
-    topics
-        .iter()
-        .find(|t| t.label.to_ascii_lowercase() == key)
-        .map(|t| t.id.clone())
+    topics.iter().find(|t| t.label.to_ascii_lowercase() == key).map(|t| t.id.clone())
 }
 
 fn upsert_relation(rels: &mut Vec<Relation>, rel: &Relation) {
-    let exists = rels
-        .iter()
-        .any(|r| r.from == rel.from && r.to == rel.to && r.kind == rel.kind);
+    let exists = rels.iter().any(|r| r.from == rel.from && r.to == rel.to && r.kind == rel.kind);
     if !exists {
         rels.push(rel.clone());
     }
@@ -266,11 +259,8 @@ mod tests {
     #[test]
     fn enrich_one_merges_and_reports_called() {
         let mut store = store_with_page("https://x/a");
-        let input = TopicInput {
-            title: "T".into(),
-            description: String::new(),
-            body: "body".into(),
-        };
+        let input =
+            TopicInput { title: "T".into(), description: String::new(), body: "body".into() };
         let called =
             enrich_one(&mut store, "https://x/a", &input, &FixedClient, "k", false).unwrap();
         assert!(called);
@@ -281,11 +271,8 @@ mod tests {
     #[test]
     fn enrich_one_dry_run_does_not_mutate() {
         let mut store = store_with_page("https://x/a");
-        let input = TopicInput {
-            title: "T".into(),
-            description: String::new(),
-            body: "body".into(),
-        };
+        let input =
+            TopicInput { title: "T".into(), description: String::new(), body: "body".into() };
         let called =
             enrich_one(&mut store, "https://x/a", &input, &FixedClient, "k", true).unwrap();
         assert!(!called);

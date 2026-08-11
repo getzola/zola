@@ -77,10 +77,7 @@ fn tokenize(s: &str) -> Vec<Tok<'_>> {
             toks.push(Tok::Text(&s[last..m.start()]));
         }
         let raw = m.as_str();
-        let inner = raw
-            .trim_start_matches('<')
-            .trim_end_matches('>')
-            .trim_end_matches('/');
+        let inner = raw.trim_start_matches('<').trim_end_matches('>').trim_end_matches('/');
         let (name, attrs) = match inner.find(char::is_whitespace) {
             Some(i) => (inner[..i].to_ascii_lowercase(), inner[i..].to_string()),
             None => (inner.to_ascii_lowercase(), String::new()),
@@ -97,8 +94,8 @@ fn tokenize(s: &str) -> Vec<Tok<'_>> {
 /// Prefix/suffix whitespace a start-of-block tag contributes.
 fn block_separator(tag: &str, last: char) -> &'static str {
     match tag {
-        "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p" | "li" | "ul" | "ol"
-        | "div" | "section" | "article" | "header" | "footer" | "br" => {
+        "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p" | "li" | "ul" | "ol" | "div" | "section"
+        | "article" | "header" | "footer" | "br" => {
             if last == '\n' {
                 "\n"
             } else {

@@ -13,6 +13,7 @@
 //!
 //! Network lives only in migrate/refresh — `zola build` stays offline.
 
+pub mod clean;
 pub mod firecrawl;
 pub mod html_to_md;
 pub mod migrate;
@@ -67,11 +68,7 @@ fn now_iso() -> String {
 fn read_langs(config_file: &Path) -> Result<(String, Vec<String>)> {
     let text = fs::read_to_string(config_file).map_err(|e| anyhow!("read config: {e}"))?;
     let cfg: Value = toml::from_str(&text).map_err(|e| anyhow!("parse config: {e}"))?;
-    let default = cfg
-        .get("default_language")
-        .and_then(|v| v.as_str())
-        .unwrap_or("en")
-        .to_string();
+    let default = cfg.get("default_language").and_then(|v| v.as_str()).unwrap_or("en").to_string();
     let mut langs: Vec<String> = cfg
         .get("languages")
         .and_then(|v| v.as_table())
@@ -142,8 +139,8 @@ fn parse_page(path: &Path) -> Result<(Value, String)> {
     if !closed {
         bail!("{}: frontmatter not terminated by `{}`", path.display(), FM_DELIM);
     }
-    let fm: Value =
-        toml::from_str(&fm_buf).map_err(|e| anyhow!("{}: frontmatter parse: {e}", path.display()))?;
+    let fm: Value = toml::from_str(&fm_buf)
+        .map_err(|e| anyhow!("{}: frontmatter parse: {e}", path.display()))?;
     Ok((fm, body_buf))
 }
 
@@ -161,12 +158,8 @@ fn write_page(path: &Path, fm_str: &str, body: &str) -> Result<()> {
 /// collapsed. Ceiling = same URL at ?x=1 and ?x=2 collide — fine for graph.
 fn url_to_content_path(raw_url: &str) -> Result<String> {
     let parsed = Url::parse(raw_url)?;
-    let mut segments: Vec<&str> = parsed
-        .path()
-        .trim_end_matches('/')
-        .split('/')
-        .filter(|s| !s.is_empty())
-        .collect();
+    let mut segments: Vec<&str> =
+        parsed.path().trim_end_matches('/').split('/').filter(|s| !s.is_empty()).collect();
     if segments.is_empty() {
         segments.push("home");
     }

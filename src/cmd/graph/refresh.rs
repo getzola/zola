@@ -14,9 +14,7 @@ use errors::{Result, anyhow, bail};
 
 use super::openrouter::{OpenRouterTopicClient, TopicClient, TopicInput};
 use super::schema::Page;
-use super::{
-    content_hash, is_default_page, now_iso, parse_page, read_langs, summarize, walk_md,
-};
+use super::{content_hash, is_default_page, now_iso, parse_page, read_langs, summarize, walk_md};
 
 /// Public entry from `main.rs`.
 pub fn refresh(
@@ -141,7 +139,11 @@ fn refresh_with_inner<C: TopicClient>(
         }
     }
 
-    log::info!("refresh: {} page(s) stale/new out of {} default-language files", todo.len(), files.len());
+    log::info!(
+        "refresh: {} page(s) stale/new out of {} default-language files",
+        todo.len(),
+        files.len()
+    );
 
     let cap = max.unwrap_or(usize::MAX);
     let mut enriched = 0usize;
@@ -199,7 +201,8 @@ mod tests {
 
     fn tmp_root() -> PathBuf {
         let id = NEXT_ID.fetch_add(1, Ordering::SeqCst);
-        let r = std::env::temp_dir().join(format!("zola-graph-refresh-{id}-{}", std::process::id()));
+        let r =
+            std::env::temp_dir().join(format!("zola-graph-refresh-{id}-{}", std::process::id()));
         fs::create_dir_all(&r).unwrap();
         r
     }
@@ -208,7 +211,10 @@ mod tests {
     impl TopicClient for FixedTopics {
         fn extract(&self, input: &TopicInput, _key: &str) -> Result<TopicExtract> {
             Ok(TopicExtract {
-                topics: vec![TopicSpec { label: format!("Topic-{}", input.title), aliases: vec![] }],
+                topics: vec![TopicSpec {
+                    label: format!("Topic-{}", input.title),
+                    aliases: vec![],
+                }],
                 relations: vec![],
             })
         }
@@ -253,9 +259,7 @@ mod tests {
         fs::create_dir_all(root.join("content/a")).unwrap();
         fs::write(
             root.join("content/a/index.md"),
-            format!(
-                "+++\ntitle = \"A\"\n[extra]\nsource_url = \"https://x/a\"\n+++\n\n{body}"
-            ),
+            format!("+++\ntitle = \"A\"\n[extra]\nsource_url = \"https://x/a\"\n+++\n\n{body}"),
         )
         .unwrap();
         assert_ne!(hash, "oldhash");
@@ -274,11 +278,8 @@ mod tests {
         seed_migrated(&root);
         let body = "Edited body.\n";
         fs::create_dir_all(root.join("content/a")).unwrap();
-        fs::write(
-            root.join("content/a/index.md"),
-            format!("+++\ntitle = \"A\"\n+++\n\n{body}"),
-        )
-        .unwrap();
+        fs::write(root.join("content/a/index.md"), format!("+++\ntitle = \"A\"\n+++\n\n{body}"))
+            .unwrap();
         refresh_with(&root, None, true, &FixedTopics, "k").unwrap();
         let after = super::super::schema::GraphStore::load(&root.join("data/graph")).unwrap();
         assert_eq!(after.pages[0].content_hash, "oldhash", "dry-run must not change hash");

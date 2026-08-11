@@ -5,7 +5,7 @@
 use std::time::Duration;
 
 use errors::{Result, anyhow, bail};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 const OPENROUTER_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
 /// Umbrella ADR-003: gpt-4o-mini only.
@@ -91,9 +91,9 @@ impl TopicClient for OpenRouterTopicClient {
         }
         let data: Value = serde_json::from_str(&text)
             .map_err(|e| anyhow!("OpenRouter non-JSON response: {e}"))?;
-        let content = data["choices"][0]["message"]["content"]
-            .as_str()
-            .ok_or_else(|| anyhow!("OpenRouter: unexpected shape: {}", take160(&data.to_string())))?;
+        let content = data["choices"][0]["message"]["content"].as_str().ok_or_else(|| {
+            anyhow!("OpenRouter: unexpected shape: {}", take160(&data.to_string()))
+        })?;
         parse_extract(content)
     }
 }
@@ -126,9 +126,12 @@ pub fn parse_extract(content: &str) -> Result<TopicExtract> {
     let mut relations = Vec::new();
     if let Some(arr) = v.get("relations").and_then(|t| t.as_array()) {
         for r in arr {
-            let from_label = r.get("from_label").and_then(|x| x.as_str()).unwrap_or("").trim().to_string();
-            let to_label = r.get("to_label").and_then(|x| x.as_str()).unwrap_or("").trim().to_string();
-            let kind = r.get("kind").and_then(|x| x.as_str()).unwrap_or("related").trim().to_string();
+            let from_label =
+                r.get("from_label").and_then(|x| x.as_str()).unwrap_or("").trim().to_string();
+            let to_label =
+                r.get("to_label").and_then(|x| x.as_str()).unwrap_or("").trim().to_string();
+            let kind =
+                r.get("kind").and_then(|x| x.as_str()).unwrap_or("related").trim().to_string();
             if from_label.is_empty() || to_label.is_empty() {
                 continue;
             }

@@ -23,7 +23,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use errors::{Result, anyhow, bail};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 const OPENROUTER_URL: &str = "https://openrouter.ai/api/v1/chat/completions";
@@ -98,13 +98,16 @@ impl LlmClient for OpenRouterClient {
         if !status.is_success() {
             bail!("OpenRouter HTTP {status}: {}", take200(&text));
         }
-        let data: Value =
-            serde_json::from_str(&text).map_err(|e| anyhow!("OpenRouter non-JSON response: {e}"))?;
-        let content = data["choices"][0]["message"]["content"]
-            .as_str()
-            .ok_or_else(|| anyhow!("OpenRouter: unexpected shape: {}", take160(&data.to_string())))?;
+        let data: Value = serde_json::from_str(&text)
+            .map_err(|e| anyhow!("OpenRouter non-JSON response: {e}"))?;
+        let content = data["choices"][0]["message"]["content"].as_str().ok_or_else(|| {
+            anyhow!("OpenRouter: unexpected shape: {}", take160(&data.to_string()))
+        })?;
         let out: Value = serde_json::from_str(content).map_err(|_| {
-            anyhow!("model returned non-JSON (likely truncated at output cap): {}", take160(content))
+            anyhow!(
+                "model returned non-JSON (likely truncated at output cap): {}",
+                take160(content)
+            )
         })?;
         Ok(Translatable {
             title: out["title"].as_str().unwrap_or("").to_string(),
@@ -140,7 +143,12 @@ pub fn glossary_ok(en: &Translatable, t: &Translatable) -> Result<()> {
 
 /// Entry point from `main.rs`. Reads `OPENROUTER_API_KEY` (fail-fast when absent
 /// and not a dry-run), then delegates to [`translate_with`].
-pub fn translate(root_dir: &Path, config_file: &Path, max: Option<usize>, dry_run: bool) -> Result<()> {
+pub fn translate(
+    root_dir: &Path,
+    config_file: &Path,
+    max: Option<usize>,
+    dry_run: bool,
+) -> Result<()> {
     let key = if dry_run {
         String::new()
     } else {
@@ -225,10 +233,10 @@ pub fn translate_with<C: LlmClient>(
                 continue; // --max reached; resumes next run
             }
             calls += 1;
-            match client
-                .translate(&en, lang, &key)
-                .and_then(|t| { glossary_ok(&en, &t)?; Ok(t) })
-            {
+            match client.translate(&en, lang, &key).and_then(|t| {
+                glossary_ok(&en, &t)?;
+                Ok(t)
+            }) {
                 Ok(t) => {
                     write_sibling(&sibling, &en_fm, &t, &hash)?;
                     written += 1;
@@ -255,14 +263,9 @@ pub fn translate_with<C: LlmClient>(
 // ---- helpers ----
 
 fn read_langs(config_file: &Path) -> Result<(String, Vec<String>)> {
-    let text =
-        fs::read_to_string(config_file).map_err(|e| anyhow!("read config: {e}"))?;
+    let text = fs::read_to_string(config_file).map_err(|e| anyhow!("read config: {e}"))?;
     let cfg: toml::Value = toml::from_str(&text).map_err(|e| anyhow!("parse config: {e}"))?;
-    let default = cfg
-        .get("default_language")
-        .and_then(|v| v.as_str())
-        .unwrap_or("en")
-        .to_string();
+    let default = cfg.get("default_language").and_then(|v| v.as_str()).unwrap_or("en").to_string();
     let mut langs: Vec<String> = cfg
         .get("languages")
         .and_then(|v| v.as_table())
@@ -332,8 +335,8 @@ fn parse_page(path: &Path) -> Result<(toml::Value, String)> {
     if !closed {
         bail!("{}: frontmatter not terminated by `{}`", path.display(), FM_DELIM);
     }
-    let fm: toml::Value =
-        toml::from_str(&fm_buf).map_err(|e| anyhow!("{}: frontmatter parse: {e}", path.display()))?;
+    let fm: toml::Value = toml::from_str(&fm_buf)
+        .map_err(|e| anyhow!("{}: frontmatter parse: {e}", path.display()))?;
     Ok((fm, body_buf))
 }
 
@@ -356,9 +359,8 @@ fn write_sibling(path: &Path, en_fm: &toml::Value, t: &Translatable, hash: &str)
     if let Some(table) = fm.as_table_mut() {
         table.insert("title".into(), toml::Value::String(t.title.clone()));
         table.insert("description".into(), toml::Value::String(t.description.clone()));
-        let extra = table
-            .entry("extra")
-            .or_insert_with(|| toml::Value::Table(toml::value::Table::new()));
+        let extra =
+            table.entry("extra").or_insert_with(|| toml::Value::Table(toml::value::Table::new()));
         if let Some(et) = extra.as_table_mut() {
             et.insert("source_hash".into(), toml::Value::String(hash.to_string()));
         }

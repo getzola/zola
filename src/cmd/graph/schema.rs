@@ -121,8 +121,9 @@ impl GraphStore {
 fn load_json<T: for<'de> Deserialize<'de> + Default>(path: &Path) -> Result<T> {
     match fs::read_to_string(path) {
         Ok(text) if text.trim().is_empty() => Ok(T::default()),
-        Ok(text) => serde_json::from_str(&text)
-            .map_err(|e| anyhow!("{}: parse JSON: {e}", path.display())),
+        Ok(text) => {
+            serde_json::from_str(&text).map_err(|e| anyhow!("{}: parse JSON: {e}", path.display()))
+        }
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(T::default()),
         Err(e) => Err(anyhow!("{}: read: {e}", path.display())),
     }
@@ -144,7 +145,8 @@ mod tests {
 
     fn tmp_dir() -> PathBuf {
         let id = NEXT_ID.fetch_add(1, Ordering::SeqCst);
-        let dir = std::env::temp_dir().join(format!("zola-graph-schema-{id}-{}", std::process::id()));
+        let dir =
+            std::env::temp_dir().join(format!("zola-graph-schema-{id}-{}", std::process::id()));
         fs::create_dir_all(&dir).unwrap();
         dir
     }
@@ -206,10 +208,8 @@ mod tests {
 
     #[test]
     fn load_missing_dir_gives_defaults() {
-        let dir = std::env::temp_dir().join(format!(
-            "zola-graph-schema-missing-{}",
-            std::process::id()
-        ));
+        let dir =
+            std::env::temp_dir().join(format!("zola-graph-schema-missing-{}", std::process::id()));
         let back = GraphStore::load(&dir).unwrap();
         assert!(back.pages.is_empty());
         assert_eq!(back.meta.schema_version, SCHEMA_VERSION);
