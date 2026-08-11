@@ -1,0 +1,6 @@
+# Generated benchmark sites are reproducible from scripts/perf/gen_site.py,
+# and proxy sites may contain copies of external content — never commit either.
+sites/
+proxies/
+# Profiler artifacts can be hundreds of MB.
+profiles/

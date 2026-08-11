@@ -146,6 +146,13 @@ strip = true
 # and we don't rely on it for debugging that much.
 debug = 0
 
+# Identical codegen to `release`, but keeps debug symbols so profilers can
+# resolve stacks. Used by scripts/perf/build.sh profiling.
+[profile.profiling]
+inherits = "release"
+debug = "full"
+strip = false
+
 [package.metadata.winres]
 OriginalFilename = "zola.exe"
 InternalName = "zola"
