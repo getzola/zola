@@ -281,8 +281,8 @@ Hello world"#;
         assert!(res.is_ok());
         let page = res.unwrap();
 
-        assert_eq!(1, page.meta.authors.len());
-        assert_eq!("person@example.com (A. Person)", page.meta.authors.get(0).unwrap());
+        assert_eq!(1, page.meta.authors().len());
+        assert_eq!("person@example.com (A. Person)", page.meta.authors().first().unwrap());
     }
 
     #[test]

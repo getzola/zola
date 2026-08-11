@@ -140,7 +140,7 @@ impl Library {
 
     pub fn insert_page(&mut self, page: Page) {
         let file_path = page.file.path.clone();
-        if page.meta.render {
+        if page.meta.render() {
             let mut entries = vec![page.path.clone()];
             entries.extend(page.meta.aliases.to_vec());
             self.insert_reverse_aliases(&file_path, entries);
@@ -423,7 +423,7 @@ impl Library {
 
         // Then once we took care of the sections, we find the pages of each section
         for (path, page) in self.pages.iter_mut() {
-            if !page.meta.render {
+            if !page.meta.render() {
                 continue;
             }
             let parent_filename = &index_filename_by_lang[&page.lang];

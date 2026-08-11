@@ -54,6 +54,7 @@ pub struct Config {
     pub default_language: String,
     /// The list of supported languages outside of the default one
     pub languages: BTreeMap<String, languages::LanguageOptions>,
+    pub inherit_metadata: bool,
     /// The translations strings for the default language
     translations: BTreeMap<String, String>,
 
@@ -460,6 +461,7 @@ impl Default for Config {
             theme: None,
             default_language: "en".to_string(),
             languages: BTreeMap::new(),
+            inherit_metadata: false,
             generate_feeds: false,
             feed_limit: None,
             feed_filenames: vec!["atom.xml".to_string()],
@@ -1140,6 +1142,16 @@ base_url = "example.com"
 "#;
         let config = Config::parse(config).unwrap();
         assert!(config.generate_robots_txt);
+    }
+
+    #[test]
+    fn can_parse_inherit_metadata() {
+        let config = r#"
+base_url = "example.com"
+inherit_metadata = true
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.inherit_metadata);
     }
 
     // TODO: add a test for excluding paginated pages

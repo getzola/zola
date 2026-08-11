@@ -22,6 +22,18 @@ fn toml_value_to_tera(val: toml::Value) -> Value {
     }
 }
 
+pub(super) fn merge_maps(base: &Map, overlay: &Map) -> Map {
+    let mut merged = base.clone();
+    for (key, value) in overlay {
+        let value = match (merged.get(key).and_then(Value::as_map), value.as_map()) {
+            (Some(base), Some(overlay)) => Value::from(merge_maps(base, overlay)),
+            _ => value.clone(),
+        };
+        merged.insert(key.clone(), value);
+    }
+    merged
+}
+
 /// Default value for the `extra` field - an empty map wrapped in Value
 pub fn default_extra() -> Value {
     Value::from(Map::new())
