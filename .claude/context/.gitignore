@@ -1,0 +1,4 @@
+# Session state is local and ephemeral. Durable findings belong in docs/ —
+# see .claude/workflows/session.md.
+*
+!.gitignore

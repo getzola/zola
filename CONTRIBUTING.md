@@ -4,6 +4,25 @@ the `next` branch, unless it is fixing the current documentation.**
 
 However, if you notice an error or typo in the documentation, feel free to directly submit a PR without opening an issue.
 
+## Working on the code
+
+Everything you need is cargo:
+
+```bash
+cargo build --all
+cargo test --all
+cargo fmt --check     # CI fails on this
+```
+
+Optionally, `scripts/dev.sh` bundles those into tiers and adds a few checks CI
+also runs — `scripts/dev.sh doctor` reports what your machine can do,
+`scripts/dev.sh quality` is the "is my branch healthy" command, and
+`scripts/dev.sh quality-full` is what to run before opening a PR. It is a
+convenience, not a requirement.
+
+`docs/architecture/COMPONENTS.md` maps the workspace; `docs/performance/`
+documents the large-site performance work and its benchmark harness.
+
 ## Feature requests
 If you want a feature added or modified, please open a thread on the [forum](https://zola.discourse.group/) to discuss it before doing a PR.
 

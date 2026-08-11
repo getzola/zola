@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+`AGENTS.md` states what you are required to do. This file describes how the code
+is arranged. Longer procedures live in `.claude/workflows/`; the tooling behind
+them is `scripts/dev.sh`, which is plain bash and works without an agent.
+
 ## Project
 
 Zola is a static site generator shipped as a single Rust binary. The repo is a Cargo workspace:
@@ -10,6 +14,19 @@ the `zola` binary lives in `src/`, all the logic lives in `components/*` crates.
 Edition 2024. Version is set once in `[workspace.package]` of the root `Cargo.toml`.
 
 ## Commands
+
+```bash
+scripts/dev.sh doctor                  # what this machine can do
+scripts/dev.sh check                   # fast: fmt --check + cargo check
+scripts/dev.sh quality                 # the gate: fmt + clippy ratchet + tests
+scripts/dev.sh quality-full            # + generated-file drift + tooling tests
+scripts/dev.sh impact                  # changed components, risk class, docs affected
+scripts/dev.sh clippy --list           # current lint debt (ratchet baseline)
+scripts/dev.sh generate                # rewrite generated documents
+scripts/dev.sh perf <cmd>              # forwards to scripts/perf/run.sh
+```
+
+The underlying cargo commands, which is what CI runs:
 
 ```bash
 cargo build --all                      # what CI builds
@@ -28,6 +45,12 @@ cargo bench -p markdown                # criterion; site benches need `python co
 
 Optional features (forwarded from the root crate to `search`): `indexing-zh`, `indexing-ja`.
 
+Note on this machine class: a global `~/.cargo/config.toml` that sets
+`rustflags` (`lto`, `panic`, `target-cpu`) leaks into every build here — clippy
+can fail to compile the workspace and release timings stop being comparable.
+`scripts/dev.sh` and `scripts/perf/build.sh` clear `RUSTFLAGS`; `scripts/dev.sh
+doctor` tells you whether yours does this.
+
 Docs (`docs/`) are a Zola site built by CI with a released Zola; edit content there, don't
 regenerate it from this checkout.
 
@@ -41,13 +64,20 @@ regenerate it from this checkout.
 
 ## Architecture
 
-### Crate graph (bottom-up)
+`docs/architecture/COMPONENTS.md` is generated from the crate manifests and is
+the authoritative map: layer, responsibility, dependencies, dependents, test and
+bench targets, and which components carry open `PERF-*` items.
 
-`errors` (re-export of `anyhow`) and `utils` → `config` → `content` → `markdown` / `templates` /
-`render` / `search` / `imageproc` / `link_checker` → `site` → binary. `console` is stdout printing only.
+### Crate layering
 
-A crate must not depend on something above it; `site/src/md_render.rs` exists solely so `content`
-doesn't have to depend on `markdown`.
+`errors` and `console` are leaves. Above them: `utils` → `config` → `content` →
+`render` → (`markdown`, `search`) → `templates` → `site` → the binary, with
+`imageproc` and `link_checker` sitting beside `content` on top of `config`.
+
+A crate must not depend on something above it. Two edges are forbidden outright
+and checked by `scripts/dev.sh map`: `content` → `markdown` (content stays
+renderer-agnostic; `site/src/md_render.rs` bridges them) and `config` →
+`content`.
 
 ### Build pipeline (`components/site/src/lib.rs`)
 
@@ -126,3 +156,48 @@ and `serve.rs` matches on it to pick the cheapest rebuild. `--fast` restricts co
   or removing a file in `test_site` will break unrelated tests — update the counts deliberately.
 - `markdown` and `templates` use `insta` snapshots under `tests/snapshots/`.
 - `templates` uses `mockito` for `load_data` HTTP tests.
+
+## Working rules
+
+These exist because each one has cost a session here.
+
+- **Read before editing.** Including the parts of the file you are not changing.
+- **Do not guess the architecture.** `docs/architecture/COMPONENTS.md` and the
+  pipeline above are cheap to check.
+- **Do not declare success without running the gate** in the tree's current
+  state. A gate you did not run is reported as "not run".
+- **Do not optimise without a benchmark.** `docs/performance/HOTSPOTS.md`
+  records several places that look expensive and are not.
+- **Do not change observable behaviour silently.** Output bytes, URLs, error
+  messages and their order, and template-visible structure are all observable.
+- **Do not hand-edit generated output.** `docs/architecture/COMPONENTS.md`,
+  `docs/performance/STATUS.md`, man pages and completions come from generators.
+- **Do not mix unrelated refactors** into a change that must be reviewed for
+  output equivalence.
+- **Do not leave temporary files behind.** Generated benchmark sites, profiler
+  output and scratch scripts are not commits.
+- **Check documentation impact.** `scripts/dev.sh impact` lists the documents
+  that describe what you changed. Saying "no documentation change needed" is
+  fine; ignoring it is not.
+
+## Performance work
+
+There is an active program: `docs/performance/README.md` for the harness and
+the measured baseline, `docs/performance/HOTSPOTS.md` for the evidence-backed
+`PERF-*` backlog, `docs/performance/STATUS.md` for its state.
+
+The rules that make a result believable — measure first, release builds,
+interleaved A/B, byte-identical output, one hotspot per change, report memory,
+record negative results — are in `.claude/workflows/performance.md`. Read it
+before touching anything in the backlog.
+
+## Where to look
+
+| Need | Path |
+| ---- | ---- |
+| what a crate owns | `docs/architecture/COMPONENTS.md` |
+| why an architectural choice was made | `docs/architecture/decisions/` |
+| what is slow, with evidence | `docs/performance/HOTSPOTS.md` |
+| session, investigation, implementation, quality, performance procedures | `.claude/workflows/` |
+| the tooling itself | `scripts/dev.sh`, `scripts/dev/`, `scripts/perf/` |
+</content>
