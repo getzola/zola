@@ -1,0 +1,59 @@
+{
+  "machine": {
+    "arch": "arm64",
+    "build_profile": "release (pinned, see scripts/perf/build.sh)",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "cpu": "Apple M4 Pro",
+    "git_branch": "perf/large-site-scaling",
+    "git_commit": "1d46fbad-dirty",
+    "logical_cores": "12",
+    "memory_bytes": "25769803776",
+    "os": "macOS-26.2-arm64-arm-64bit",
+    "physical_cores": "12",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "timestamp": "2026-08-11T22:20:14+0200",
+    "zola_version": "zola 0.23.3"
+  },
+  "results": [
+    {
+      "input": {
+        "input_bytes": 6193978,
+        "internal_links": 6625,
+        "md_files": 5368,
+        "page_files": 3728,
+        "section_files": 1640,
+        "static_files": 989,
+        "templates": 42
+      },
+      "label": "vomaste-proxy",
+      "output": {
+        "bytes": 73135589,
+        "files": 6544
+      },
+      "resources": {
+        "cpu_utilization": 4.53,
+        "peak_rss_bytes": 373047296,
+        "sys_seconds": 8.29,
+        "user_seconds": 0.82,
+        "wall_seconds": 2.01
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/proxies/vomaste.cz-proxy",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 2.0997829492399998,
+        "mean": 2.0499447409066667,
+        "median": 2.08663336624,
+        "min": 1.96341790724,
+        "runs": 3,
+        "stddev": 0.0752223210992104,
+        "system": 8.327439453333334,
+        "times": [
+          1.96341790724,
+          2.08663336624,
+          2.0997829492399998
+        ],
+        "user": 0.8262671133333334
+      }
+    }
+  ]
+}

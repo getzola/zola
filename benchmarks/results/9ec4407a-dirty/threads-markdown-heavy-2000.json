@@ -1,0 +1,419 @@
+{
+  "machine": {
+    "arch": "arm64",
+    "build_profile": "release (pinned, see scripts/perf/build.sh)",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "cpu": "Apple M4 Pro",
+    "git_branch": "perf/large-site-scaling",
+    "git_commit": "9ec4407a-dirty",
+    "logical_cores": "12",
+    "memory_bytes": "25769803776",
+    "os": "macOS-26.2-arm64-arm-64bit",
+    "physical_cores": "12",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "timestamp": "2026-08-11T22:56:32+0200",
+    "zola_version": "zola 0.23.3"
+  },
+  "results": [
+    {
+      "input": {
+        "input_bytes": 17295994,
+        "internal_links": 4000,
+        "md_files": 2016,
+        "page_files": 2000,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-2000-t1",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 17298103,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2016,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 42887461,
+        "files": 2020
+      },
+      "parallel_efficiency": 1.0,
+      "resources": {
+        "cpu_utilization": 2.73,
+        "peak_rss_bytes": 764428288,
+        "sys_seconds": 4.28,
+        "user_seconds": 3.2,
+        "wall_seconds": 2.74
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-2000",
+      "speedup_vs_1_thread": 1.0,
+      "thread_count": 1,
+      "threads": 1,
+      "timing_seconds": {
+        "max": 2.460678585,
+        "mean": 2.4524991963333336,
+        "median": 2.449164502,
+        "min": 2.4476545020000002,
+        "runs": 3,
+        "stddev": 0.007123680524861896,
+        "system": 0.5002966933333334,
+        "times": [
+          2.4476545020000002,
+          2.449164502,
+          2.460678585
+        ],
+        "user": 1.925460593333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 17295994,
+        "internal_links": 4000,
+        "md_files": 2016,
+        "page_files": 2000,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-2000-t2",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 17298103,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2016,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 42887461,
+        "files": 2020
+      },
+      "parallel_efficiency": 0.486,
+      "resources": {
+        "cpu_utilization": 3.16,
+        "peak_rss_bytes": 763969536,
+        "sys_seconds": 6.09,
+        "user_seconds": 3.66,
+        "wall_seconds": 3.09
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-2000",
+      "speedup_vs_1_thread": 0.972,
+      "thread_count": 2,
+      "threads": 2,
+      "timing_seconds": {
+        "max": 2.75269606504,
+        "mean": 2.5933142177066664,
+        "median": 2.52058427304,
+        "min": 2.50666231504,
+        "runs": 3,
+        "stddev": 0.1382041431114781,
+        "system": 1.2256587733333333,
+        "times": [
+          2.50666231504,
+          2.52058427304,
+          2.75269606504
+        ],
+        "user": 2.903184553333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 17295994,
+        "internal_links": 4000,
+        "md_files": 2016,
+        "page_files": 2000,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-2000-t4",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 17298103,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2016,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 42887461,
+        "files": 2020
+      },
+      "parallel_efficiency": 0.087,
+      "resources": {
+        "cpu_utilization": 1.28,
+        "peak_rss_bytes": 736935936,
+        "sys_seconds": 3.06,
+        "user_seconds": 4.94,
+        "wall_seconds": 6.27
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-2000",
+      "speedup_vs_1_thread": 0.346,
+      "thread_count": 4,
+      "threads": 4,
+      "timing_seconds": {
+        "max": 9.27221271294,
+        "mean": 7.763309504606667,
+        "median": 7.0733114629400005,
+        "min": 6.94440433794,
+        "runs": 3,
+        "stddev": 1.3083370860783208,
+        "system": 1.84644658,
+        "times": [
+          6.94440433794,
+          7.0733114629400005,
+          9.27221271294
+        ],
+        "user": 4.627618593333334
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 17295994,
+        "internal_links": 4000,
+        "md_files": 2016,
+        "page_files": 2000,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-2000-t8",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 17298103,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2016,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 42887461,
+        "files": 2020
+      },
+      "parallel_efficiency": 0.044,
+      "resources": {
+        "cpu_utilization": 1.56,
+        "peak_rss_bytes": 736493568,
+        "sys_seconds": 4.43,
+        "user_seconds": 5.02,
+        "wall_seconds": 6.07
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-2000",
+      "speedup_vs_1_thread": 0.356,
+      "thread_count": 8,
+      "threads": 8,
+      "timing_seconds": {
+        "max": 6.9583817128800005,
+        "mean": 6.616943851546668,
+        "median": 6.88489592088,
+        "min": 6.00755392088,
+        "runs": 3,
+        "stddev": 0.5290246743819331,
+        "system": 2.8403283599999996,
+        "times": [
+          6.00755392088,
+          6.88489592088,
+          6.9583817128800005
+        ],
+        "user": 4.871552240000001
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 17295994,
+        "internal_links": 4000,
+        "md_files": 2016,
+        "page_files": 2000,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-2000-t12",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 17298103,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2016,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 42887461,
+        "files": 2020
+      },
+      "parallel_efficiency": 0.032,
+      "resources": {
+        "cpu_utilization": 1.15,
+        "peak_rss_bytes": 761561088,
+        "sys_seconds": 3.24,
+        "user_seconds": 4.98,
+        "wall_seconds": 7.12
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-2000",
+      "speedup_vs_1_thread": 0.382,
+      "thread_count": 12,
+      "threads": 12,
+      "timing_seconds": {
+        "max": 6.64873481246,
+        "mean": 6.31461090946,
+        "median": 6.40851385346,
+        "min": 5.88658406246,
+        "runs": 3,
+        "stddev": 0.3896559554277221,
+        "system": 3.6924446866666667,
+        "times": [
+          5.88658406246,
+          6.40851385346,
+          6.64873481246
+        ],
+        "user": 5.0633398000000005
+      }
+    }
+  ]
+}

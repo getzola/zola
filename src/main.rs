@@ -10,11 +10,17 @@ use utils::net::{get_available_port, port_is_available};
 use clap::{CommandFactory, Parser};
 use time::UtcOffset;
 
+#[cfg(feature = "alloc-stats")]
+mod alloc_stats;
 mod cli;
 mod cmd;
 mod fs_utils;
 mod messages;
 mod prompt;
+
+#[cfg(feature = "alloc-stats")]
+#[global_allocator]
+static GLOBAL: alloc_stats::CountingAllocator = alloc_stats::CountingAllocator;
 
 fn get_config_file_path(dir: &Path, config_path: Option<&Path>) -> (PathBuf, PathBuf) {
     let (root_dir, config_path) = match config_path {
@@ -73,6 +79,9 @@ static SHOULD_COLOR_OUTPUT: LazyLock<anstream::ColorChoice> =
     LazyLock::new(|| anstream::AutoStream::choice(&std::io::stderr()));
 
 fn main() {
+    #[cfg(feature = "alloc-stats")]
+    utils::timings::set_alloc_probe(alloc_stats::snapshot);
+
     // ensure that logging uses the “info” level for anything in Zola by default
     let env = Env::new().default_filter_or("zola=info");
     env_logger::Builder::from_env(env)
@@ -121,7 +130,7 @@ fn main() {
                 std::process::exit(1);
             }
         }
-        Command::Build { base_url, output_dir, force, drafts, minify } => {
+        Command::Build { base_url, output_dir, force, drafts, minify, timings } => {
             log::info!("Building site...");
             let start = Instant::now();
             let (root_dir, config_file) = get_config_file_path(&cli_dir, cli.config.as_deref());
@@ -133,6 +142,7 @@ fn main() {
                 force,
                 drafts,
                 minify,
+                timings,
             ) {
                 Ok(()) => messages::report_elapsed_time(start),
                 Err(e) => {

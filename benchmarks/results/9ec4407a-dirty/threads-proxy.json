@@ -1,0 +1,234 @@
+{
+  "machine": {
+    "arch": "arm64",
+    "build_profile": "release (pinned, see scripts/perf/build.sh)",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "cpu": "Apple M4 Pro",
+    "git_branch": "perf/large-site-scaling",
+    "git_commit": "9ec4407a-dirty",
+    "logical_cores": "12",
+    "memory_bytes": "25769803776",
+    "os": "macOS-26.2-arm64-arm-64bit",
+    "physical_cores": "12",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "timestamp": "2026-08-11T22:58:27+0200",
+    "zola_version": "zola 0.23.3"
+  },
+  "results": [
+    {
+      "input": {
+        "input_bytes": 6193978,
+        "internal_links": 6625,
+        "md_files": 5368,
+        "page_files": 3728,
+        "section_files": 1640,
+        "static_files": 989,
+        "templates": 42
+      },
+      "label": "vomaste.cz-proxy-t1",
+      "output": {
+        "bytes": 73135589,
+        "files": 6544
+      },
+      "parallel_efficiency": 1.0,
+      "resources": {
+        "cpu_utilization": 1.18,
+        "peak_rss_bytes": 374194176,
+        "sys_seconds": 4.03,
+        "user_seconds": 1.22,
+        "wall_seconds": 4.44
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/proxies/vomaste.cz-proxy",
+      "speedup_vs_1_thread": 1.0,
+      "thread_count": 1,
+      "threads": 1,
+      "timing_seconds": {
+        "max": 9.15873496214,
+        "mean": 7.736088101140001,
+        "median": 7.808501462140001,
+        "min": 6.241027879140001,
+        "runs": 3,
+        "stddev": 1.460200817245895,
+        "system": 3.448183853333333,
+        "times": [
+          6.241027879140001,
+          7.808501462140001,
+          9.15873496214
+        ],
+        "user": 1.1520878733333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 6193978,
+        "internal_links": 6625,
+        "md_files": 5368,
+        "page_files": 3728,
+        "section_files": 1640,
+        "static_files": 989,
+        "templates": 42
+      },
+      "label": "vomaste.cz-proxy-t2",
+      "output": {
+        "bytes": 73135589,
+        "files": 6544
+      },
+      "parallel_efficiency": 1.551,
+      "resources": {
+        "cpu_utilization": 1.29,
+        "peak_rss_bytes": 371752960,
+        "sys_seconds": 4.32,
+        "user_seconds": 1.17,
+        "wall_seconds": 4.26
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/proxies/vomaste.cz-proxy",
+      "speedup_vs_1_thread": 3.102,
+      "thread_count": 2,
+      "threads": 2,
+      "timing_seconds": {
+        "max": 4.01071787062,
+        "mean": 2.972401065286667,
+        "median": 2.5170784536200004,
+        "min": 2.3894068716200003,
+        "runs": 3,
+        "stddev": 0.9014717684935062,
+        "system": 2.5908917466666668,
+        "times": [
+          2.3894068716200003,
+          2.5170784536200004,
+          4.01071787062
+        ],
+        "user": 0.8249082266666666
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 6193978,
+        "internal_links": 6625,
+        "md_files": 5368,
+        "page_files": 3728,
+        "section_files": 1640,
+        "static_files": 989,
+        "templates": 42
+      },
+      "label": "vomaste.cz-proxy-t4",
+      "output": {
+        "bytes": 73135589,
+        "files": 6544
+      },
+      "parallel_efficiency": 0.598,
+      "resources": {
+        "cpu_utilization": 5.21,
+        "peak_rss_bytes": 374390784,
+        "sys_seconds": 10.14,
+        "user_seconds": 0.81,
+        "wall_seconds": 2.1
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/proxies/vomaste.cz-proxy",
+      "speedup_vs_1_thread": 2.391,
+      "thread_count": 4,
+      "threads": 4,
+      "timing_seconds": {
+        "max": 5.17802595666,
+        "mean": 3.66426534566,
+        "median": 3.26520295666,
+        "min": 2.54956712366,
+        "runs": 3,
+        "stddev": 1.3589102442507823,
+        "system": 3.9772424933333332,
+        "times": [
+          2.54956712366,
+          3.26520295666,
+          5.17802595666
+        ],
+        "user": 0.9095836333333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 6193978,
+        "internal_links": 6625,
+        "md_files": 5368,
+        "page_files": 3728,
+        "section_files": 1640,
+        "static_files": 989,
+        "templates": 42
+      },
+      "label": "vomaste.cz-proxy-t8",
+      "output": {
+        "bytes": 73135589,
+        "files": 6544
+      },
+      "parallel_efficiency": 0.533,
+      "resources": {
+        "cpu_utilization": 4.72,
+        "peak_rss_bytes": 372129792,
+        "sys_seconds": 9.76,
+        "user_seconds": 0.81,
+        "wall_seconds": 2.24
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/proxies/vomaste.cz-proxy",
+      "speedup_vs_1_thread": 4.265,
+      "thread_count": 8,
+      "threads": 8,
+      "timing_seconds": {
+        "max": 1.8656676898400002,
+        "mean": 1.84166099484,
+        "median": 1.83088931384,
+        "min": 1.82842598084,
+        "runs": 3,
+        "stddev": 0.02082685900428807,
+        "system": 5.6815042133333336,
+        "times": [
+          1.82842598084,
+          1.83088931384,
+          1.8656676898400002
+        ],
+        "user": 0.6721057666666667
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 6193978,
+        "internal_links": 6625,
+        "md_files": 5368,
+        "page_files": 3728,
+        "section_files": 1640,
+        "static_files": 989,
+        "templates": 42
+      },
+      "label": "vomaste.cz-proxy-t12",
+      "output": {
+        "bytes": 73135589,
+        "files": 6544
+      },
+      "parallel_efficiency": 0.304,
+      "resources": {
+        "cpu_utilization": 4.89,
+        "peak_rss_bytes": 373587968,
+        "sys_seconds": 10.14,
+        "user_seconds": 0.82,
+        "wall_seconds": 2.24
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/proxies/vomaste.cz-proxy",
+      "speedup_vs_1_thread": 3.648,
+      "thread_count": 12,
+      "threads": 12,
+      "timing_seconds": {
+        "max": 2.2004387538,
+        "mean": 2.154741393133333,
+        "median": 2.1406804628,
+        "min": 2.1231049628,
+        "runs": 3,
+        "stddev": 0.040539007498791364,
+        "system": 9.164512960000001,
+        "times": [
+          2.1231049628,
+          2.1406804628,
+          2.2004387538
+        ],
+        "user": 0.8122468733333333
+      }
+    }
+  ]
+}
