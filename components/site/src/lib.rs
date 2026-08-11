@@ -20,7 +20,7 @@ use walkdir::{DirEntry, WalkDir};
 
 use crate::queue::Queue;
 use config::{Config, IndexFormat, get_config};
-use content::{Library, Page, Section, Taxonomy};
+use content::{Library, Page, Section, Taxonomy, merge_inherited_raw};
 use errors::{Result, anyhow, bail};
 use relative_path::RelativePathBuf;
 use render::{RenderCache, Renderer};
@@ -297,8 +297,9 @@ impl Site {
             return Err(anyhow!("Failed to parse {} page(s):\n{msg}", errors.len()));
         }
 
-        let pages: Vec<Page> = pages.into_iter().map(|(_, r)| r.unwrap()).collect();
+        let mut pages: Vec<Page> = pages.into_iter().map(|(_, r)| r.unwrap()).collect();
         self.create_default_index_sections()?;
+        self.inherit_translated_metadata(&mut pages)?;
 
         for page in pages {
             // should we skip drafts?
@@ -554,7 +555,22 @@ impl Site {
     /// Adds a page to the site and render it
     /// Only used in `zola serve --fast`
     pub fn add_and_render_page(&mut self, path: &Path) -> Result<()> {
-        let page = Page::from_file(path, &self.config, &self.base_path)?;
+        let mut page = Page::from_file(path, &self.config, &self.base_path)?;
+        if page.lang != self.config.default_language
+            && self.inherits_metadata(&page.file.parent, &page.lang)
+        {
+            let mut default_path = page.file.canonical.clone().into_os_string();
+            default_path.push(".md");
+            if let Some(default_page) = self.library.pages.get(Path::new(&default_path))
+                && let (Some(default_raw), Some(raw)) = (&default_page.meta_raw, &page.meta_raw)
+            {
+                let default_taxonomies =
+                    default_page.meta.taxonomies.keys().cloned().collect::<HashSet<_>>();
+                page.meta =
+                    merge_inherited_raw(&default_raw.as_raw(), &raw.as_raw(), &page.file.path)?;
+                self.retain_valid_inherited_taxonomies(&mut page, &default_taxonomies);
+            }
+        }
         self.add_page(page, true)?;
         let page = self.library.pages.get(path).unwrap();
         Queue::single_page(self, page).process()
@@ -623,6 +639,99 @@ impl Site {
     pub fn populate_taxonomies(&mut self) -> Result<()> {
         self.taxonomies = self.library.find_taxonomies(&self.config)?;
         Ok(())
+    }
+
+    /// Whether translated pages in `dir` inherit front matter: closest section setting
+    /// wins (own language before default at each level), otherwise the config value.
+    fn inherits_metadata(&self, dir: &Path, lang: &str) -> bool {
+        let mut dir = Some(dir);
+        while let Some(d) = dir {
+            if lang != self.config.default_language
+                && let Some(v) = self
+                    .library
+                    .sections
+                    .get(&d.join(format!("_index.{lang}.md")))
+                    .and_then(|s| s.meta.inherit_metadata)
+            {
+                return v;
+            }
+            if let Some(v) = self
+                .library
+                .sections
+                .get(&d.join("_index.md"))
+                .and_then(|s| s.meta.inherit_metadata)
+            {
+                return v;
+            }
+            dir = d.parent().filter(|p| p.starts_with(&self.content_path));
+        }
+        self.config.inherit_metadata
+    }
+
+    /// Fill translated pages' missing front matter from the default language.
+    /// Must run before `add_page`, which consumes the merged taxonomies and permalinks.
+    fn inherit_translated_metadata(&self, pages: &mut [Page]) -> Result<()> {
+        if !self.config.is_multilingual() {
+            return Ok(());
+        }
+
+        // Pages to be used as the source of default values
+        let mut defaults: HashMap<PathBuf, usize> = HashMap::new();
+        for (i, page) in pages.iter().enumerate() {
+            if page.lang == self.config.default_language && page.meta_raw.is_some() {
+                defaults.insert(page.file.canonical.clone(), i);
+            }
+        }
+        if defaults.is_empty() {
+            return Ok(());
+        }
+
+        // Pages to backfill metadata
+        let mut merges = Vec::new();
+        for (i, page) in pages.iter().enumerate() {
+            if page.lang == self.config.default_language {
+                continue;
+            }
+            let Some(&default_idx) = defaults.get(&page.file.canonical) else { continue };
+            if self.inherits_metadata(&page.file.parent, &page.lang) {
+                merges.push((i, default_idx));
+            }
+        }
+
+        // Perform the backfill
+        for (translated_idx, default_idx) in merges {
+            let default_taxonomies =
+                pages[default_idx].meta.taxonomies.keys().cloned().collect::<HashSet<_>>();
+            let translated_path = pages[translated_idx].file.path.clone();
+            let Some(translated_raw) = pages[translated_idx].meta_raw.take() else {
+                bail!("`{}` is missing its raw front matter", translated_path.display());
+            };
+            let default_path = pages[default_idx].file.path.clone();
+            let Some(default_raw) = pages[default_idx].meta_raw.as_ref() else {
+                bail!("`{}` is missing its raw front matter", default_path.display());
+            };
+            pages[translated_idx].meta = merge_inherited_raw(
+                &default_raw.as_raw(),
+                &translated_raw.as_raw(),
+                &translated_path,
+            )?;
+            let page = &mut pages[translated_idx];
+            self.retain_valid_inherited_taxonomies(page, &default_taxonomies);
+            page.meta_raw = Some(translated_raw);
+        }
+        Ok(())
+    }
+
+    /// Drop taxonomy names inherited from the default page that this language doesn't define,
+    /// or `add_page` rejects the page for an unknown taxonomy.
+    fn retain_valid_inherited_taxonomies(
+        &self,
+        page: &mut Page,
+        default_taxonomies: &HashSet<String>,
+    ) {
+        page.meta.taxonomies.retain(|name, _| {
+            self.config.has_taxonomy(name, &page.lang) || !default_taxonomies.contains(name)
+        });
     }
 
     /// Rebuild the render cache (needed after modifying library or taxonomies)

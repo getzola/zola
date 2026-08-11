@@ -51,6 +51,56 @@ the default language configured, an error will be shown.
 If your default language has an `_index.md` in a directory, you will need to add an `_index.{code}.md`
 file with the desired front-matter options as there is no language fallback.
 
+## Inheriting metadata
+Translated pages often repeat most of the front matter of the default-language page.
+Setting `inherit_metadata = true` in `config.toml` makes a translated page (e.g. `an-article.fr.md`)
+inherit every front-matter field it omits from the default-language page (`an-article.md`).
+
+For example, with the setting enabled:
+
+```toml
+# an-article.md
++++
+title = "On the road"
+date = 2026-07-01
+weight = 10
+
+[taxonomies]
+tags = ["travel"]
+
+[extra]
+cover = "road.jpg"
+motto = "Always pack light."
++++
+```
+
+```toml
+# an-article.fr.md
++++
+title = "En route"
++++
+```
+
+The French page gets `date`, `weight`, `tags`, `cover` and `motto` from the English page.
+
+The merge rule is: tables merge per key recursively, the translated page wins every conflict,
+and arrays or scalars replace the inherited value wholly. In the example above, writing
+`motto = "Toujours léger."` under `[extra]` in the French page would override only that key
+and still inherit `cover`. Setting `tags = []` in the translation empties the inherited list.
+
+Three fields are never inherited: `slug`, `path` and `aliases`, since URLs are language-specific.
+
+Taxonomies defined only for the default language (e.g. `authors` when the translation's
+language only defines `auteurs`) are dropped when they arrive via inheritance.
+
+A section can override the site setting with `inherit_metadata = true/false` in its `_index.md`.
+The value cascades to that section's pages and subsections: for each page, the closest section
+setting wins, preferring the page's own language (`_index.fr.md`) over the default one
+(`_index.md`) at the same level.
+
+Under `zola serve --fast`, editing the default-language page does not re-render the
+translations that inherit from it until the next full reload.
+
 ## Output
 Zola outputs the translated content with a base URL of `{base_url}/{code}/`.
 The only exception to this is if you are setting a translated page `path` directly in the front matter.

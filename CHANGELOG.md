@@ -2,6 +2,8 @@
 
 ## 0.23.4 (unreleased)
 
+- Add `inherit_metadata` setting (config-wide and per-section) letting translated pages inherit front matter they don't specify from the default language
+
 ## 0.23.3 (2026-08-11)
 
 - Fix Windows issues

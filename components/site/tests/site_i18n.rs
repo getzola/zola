@@ -10,8 +10,8 @@ fn can_parse_multilingual_site() {
     let mut site = Site::new(&path, &config_file).unwrap();
     site.load().unwrap();
 
-    assert_eq!(site.library.pages.len(), 11);
-    assert_eq!(site.library.sections.len(), 6);
+    assert_eq!(site.library.pages.len(), 15);
+    assert_eq!(site.library.sections.len(), 8);
 
     // default index sections
     let default_index_section =
@@ -29,7 +29,7 @@ fn can_parse_multilingual_site() {
 
     let default_blog = site.library.sections.get(&blog_path.join("_index.md")).unwrap();
     assert_eq!(default_blog.subsections.len(), 0);
-    assert_eq!(default_blog.pages.len(), 4);
+    assert_eq!(default_blog.pages.len(), 5);
     assert_eq!(default_blog.ancestors, vec![default_index_section.file.relative.clone()]);
     for key in &default_blog.pages {
         let page = &site.library.pages[key];
@@ -38,7 +38,7 @@ fn can_parse_multilingual_site() {
 
     let fr_blog = site.library.sections.get(&blog_path.join("_index.fr.md")).unwrap();
     assert_eq!(fr_blog.subsections.len(), 0);
-    assert_eq!(fr_blog.pages.len(), 4);
+    assert_eq!(fr_blog.pages.len(), 5);
     assert_eq!(fr_blog.ancestors, vec![fr_index_section.file.relative.clone()]);
     for key in &fr_blog.pages {
         let page = &site.library.pages[key];
@@ -182,6 +182,42 @@ fn can_build_multilingual_site() {
     assert!(!file_exists!(public, "search_index.fr.js"));
 }
 
+// https://github.com/getzola/zola/issues/3204
+#[test]
+fn translated_pages_inherit_metadata_when_enabled() {
+    let (site, _tmp_dir, public) = build_site("test_site_i18n");
+    let content_path = site.base_path.join("content");
+
+    let en = &site.library.pages[&content_path.join("blog/inherit.md")];
+    let fr = &site.library.pages[&content_path.join("blog/inherit.fr.md")];
+
+    assert_eq!(fr.meta.title.as_deref(), Some("Hérite de moi"));
+    assert_eq!(fr.meta.weight, Some(10));
+    assert_eq!(fr.meta.date.as_deref(), Some("2019-06-06"));
+    // Derived by the normal parse of the merged front matter
+    assert!(fr.meta.datetime.is_some());
+    assert_eq!(fr.meta.taxonomies["tags"], vec!["inherit-tag".to_string()]);
+    // `authors` is only defined for `en`, so it is not inherited by the fr page
+    assert!(!fr.meta.taxonomies.contains_key("authors"));
+    let extra = fr.meta.extra.as_map().unwrap();
+    assert_eq!(extra.get(&"cover".into()).unwrap(), &tera::Value::from("cover.png"));
+    assert_eq!(extra.get(&"flavor".into()).unwrap(), &tera::Value::from("saveur traduite"));
+    // slug/path are never inherited
+    assert_eq!(fr.slug, "inherit");
+    assert_eq!(en.slug, "custom-slug-en");
+
+    // Section-level opt-out wins over the config
+    let pair_fr = &site.library.pages[&content_path.join("no-inherit/pair.fr.md")];
+    assert_eq!(pair_fr.meta.weight, None);
+
+    // the en-only `authors` taxonomy must not leak into the fr page
+    let something_fr = &site.library.pages[&content_path.join("blog/something.fr.md")];
+    assert!(something_fr.meta.taxonomies.contains_key("tags"));
+    assert!(!something_fr.meta.taxonomies.contains_key("authors"));
+
+    assert!(file_exists!(public, "fr/blog/inherit/index.html"));
+}
+
 // https://github.com/getzola/zola/issues/2689
 #[test]
 fn can_build_search_index_for_non_default_language_only() {
@@ -248,4 +284,18 @@ fn can_resolve_colocated_assets_language_aware() {
         "fr/blog/with-assets/index.html",
         "src=\"https://example.com/fr/blog/with-assets/some.js\""
     ));
+}
+
+#[test]
+fn serve_reload_keeps_inherited_metadata() {
+    let (mut site, _tmp_dir, _public) = build_site("test_site_i18n");
+    let fr_path = site.base_path.join("content/blog/inherit.fr.md");
+
+    // Without the serve-path merge, reload resets weight to None
+    site.add_and_render_page(&fr_path).unwrap();
+
+    let page = &site.library.pages[&fr_path];
+    assert_eq!(page.meta.weight, Some(10));
+    let extra = page.meta.extra.as_map().unwrap();
+    assert_eq!(extra.get(&"cover".into()).unwrap(), &tera::Value::from("cover.png"));
 }

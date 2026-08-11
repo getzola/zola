@@ -38,6 +38,29 @@ impl RawFrontMatter<'_> {
         };
         Ok(f)
     }
+
+    pub fn to_owned_raw(&self) -> OwnedRawFrontMatter {
+        match self {
+            RawFrontMatter::Toml(s) => OwnedRawFrontMatter::Toml(s.to_string()),
+            RawFrontMatter::Yaml(s) => OwnedRawFrontMatter::Yaml(s.to_string()),
+        }
+    }
+}
+
+/// An owned copy of a page's raw front matter, kept on multilingual sites.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum OwnedRawFrontMatter {
+    Toml(String),
+    Yaml(String),
+}
+
+impl OwnedRawFrontMatter {
+    pub fn as_raw(&self) -> RawFrontMatter<'_> {
+        match self {
+            OwnedRawFrontMatter::Toml(s) => RawFrontMatter::Toml(s.as_str()),
+            OwnedRawFrontMatter::Yaml(s) => RawFrontMatter::Yaml(s.as_str()),
+        }
+    }
 }
 
 /// Split a file between the front matter and its content
@@ -83,16 +106,16 @@ pub fn split_section_content<'c>(
 }
 
 /// Split a file between the front matter and its content
-/// Returns a parsed `PageFrontMatter` and the rest of the content
-pub fn split_page_content<'c>(
+/// Returns the raw front matter, a parsed `PageFrontMatter`, and the rest of the content
+pub fn split_page_content_with_raw<'c>(
     file_path: &Path,
     content: &'c str,
-) -> Result<(PageFrontMatter, &'c str)> {
+) -> Result<(RawFrontMatter<'c>, PageFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
     let meta = PageFrontMatter::parse(&front_matter).with_context(|| {
         format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy())
     })?;
-    Ok((meta, content))
+    Ok((front_matter, meta, content))
 }
 
 #[cfg(test)]
@@ -100,7 +123,27 @@ mod tests {
     use std::path::Path;
     use test_case::test_case;
 
-    use super::{split_page_content, split_section_content};
+    use super::{RawFrontMatter, split_page_content_with_raw, split_section_content};
+
+    #[test]
+    fn split_page_content_with_raw_keeps_raw() {
+        let content = "+++\ntitle = \"Title\"\n+++\nHello\n";
+        let (raw, meta, body) = split_page_content_with_raw(Path::new(""), content).unwrap();
+        assert_eq!(body, "Hello\n");
+        assert_eq!(meta.title.unwrap(), "Title");
+        match raw {
+            RawFrontMatter::Toml(s) => assert!(s.contains("title = \"Title\"")),
+            RawFrontMatter::Yaml(_) => panic!("expected TOML"),
+        }
+    }
+
+    #[test]
+    fn owned_raw_roundtrip() {
+        let raw = RawFrontMatter::Toml("title = \"x\"");
+        let owned = raw.to_owned_raw();
+        let owned2 = owned.as_raw().to_owned_raw();
+        assert_eq!(owned, owned2);
+    }
 
     #[test_case(r#"
 +++
@@ -135,7 +178,8 @@ date: 2002-10-12
 Hello
 "#; "yaml with trailing whitespace")]
     fn can_split_page_content_valid(content: &str) {
-        let (front_matter, content) = split_page_content(Path::new(""), content).unwrap();
+        let (_, front_matter, content) =
+            split_page_content_with_raw(Path::new(""), content).unwrap();
         assert_eq!(content, "Hello\n");
         assert_eq!(front_matter.title.unwrap(), "Title");
     }
@@ -185,7 +229,8 @@ description: hey there
 date: 2002-10-12
 ---"#; "yaml no newline")]
     fn can_split_content_with_only_frontmatter_valid(content: &str) {
-        let (front_matter, content) = split_page_content(Path::new(""), content).unwrap();
+        let (_, front_matter, content) =
+            split_page_content_with_raw(Path::new(""), content).unwrap();
         assert_eq!(content, "");
         assert_eq!(front_matter.title.unwrap(), "Title");
     }
@@ -219,7 +264,8 @@ date: 2002-10-02T15:00:00Z
 ---
 ---"#, "---"; "yaml with minuses in content")]
     fn can_split_content_lazily(content: &str, expected: &str) {
-        let (front_matter, content) = split_page_content(Path::new(""), content).unwrap();
+        let (_, front_matter, content) =
+            split_page_content_with_raw(Path::new(""), content).unwrap();
         assert_eq!(content, expected);
         assert_eq!(front_matter.title.unwrap(), "Title");
     }
@@ -259,7 +305,7 @@ description: hey there
 date: 2002-10-12
 ----"#; "yaml too many dashes")]
     fn errors_if_cannot_locate_frontmatter(content: &str) {
-        let res = split_page_content(Path::new(""), content);
+        let res = split_page_content_with_raw(Path::new(""), content);
         assert!(res.is_err());
     }
 }

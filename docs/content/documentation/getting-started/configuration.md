@@ -37,6 +37,11 @@ description = ""
 # The default language; used in feeds.
 default_language = "en"
 
+# When set to "true", translated pages inherit front-matter fields they omit from the
+# default-language version of the page. Can be overridden per section in `_index.md`.
+# See the multilingual documentation for the merge rules.
+inherit_metadata = false
+
 # The site theme to use.
 theme = ""
 
