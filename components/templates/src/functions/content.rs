@@ -205,7 +205,10 @@ mod tests {
         let ctx = make_context_with_lang("fr");
         let res = get_page.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"title".into()).unwrap().as_str().unwrap(), "Recettes");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("title")).unwrap().as_str().unwrap(),
+            "Recettes"
+        );
 
         // Find with lang kwarg (takes precedence over context)
         let kwargs =
@@ -213,21 +216,30 @@ mod tests {
         let ctx = Context::new();
         let res = get_page.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"title".into()).unwrap().as_str().unwrap(), "Recettes");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("title")).unwrap().as_str().unwrap(),
+            "Recettes"
+        );
 
         // Find with default lang (no lang in context)
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes.md"))]);
         let ctx = Context::new();
         let res = get_page.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"title".into()).unwrap().as_str().unwrap(), "Recipes");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("title")).unwrap().as_str().unwrap(),
+            "Recipes"
+        );
 
         // Find with default lang when default lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes.md"))]);
         let ctx = make_context_with_lang("en");
         let res = get_page.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"title".into()).unwrap().as_str().unwrap(), "Recipes");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("title")).unwrap().as_str().unwrap(),
+            "Recipes"
+        );
 
         // Error: non-existent path
         let kwargs = Kwargs::from([("path", Value::from("nonexistent.md"))]);
@@ -301,7 +313,10 @@ mod tests {
         let ctx = make_context_with_lang("fr");
         let res = get_section.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"title".into()).unwrap().as_str().unwrap(), "Recettes");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("title")).unwrap().as_str().unwrap(),
+            "Recettes"
+        );
 
         // Find with lang kwarg (takes precedence over context)
         let kwargs = Kwargs::from([
@@ -311,21 +326,30 @@ mod tests {
         let ctx = Context::new();
         let res = get_section.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"title".into()).unwrap().as_str().unwrap(), "Recettes");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("title")).unwrap().as_str().unwrap(),
+            "Recettes"
+        );
 
         // Find with default lang (no lang in context)
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes/_index.md"))]);
         let ctx = Context::new();
         let res = get_section.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"title".into()).unwrap().as_str().unwrap(), "Recipes");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("title")).unwrap().as_str().unwrap(),
+            "Recipes"
+        );
 
         // Find with default lang when default lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes/_index.md"))]);
         let ctx = make_context_with_lang("en");
         let res = get_section.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"title".into()).unwrap().as_str().unwrap(), "Recipes");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("title")).unwrap().as_str().unwrap(),
+            "Recipes"
+        );
 
         // Error: non-existent path
         let kwargs = Kwargs::from([("path", Value::from("nonexistent/_index.md"))]);

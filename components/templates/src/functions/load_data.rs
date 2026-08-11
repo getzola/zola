@@ -902,9 +902,9 @@ mod tests {
         let ctx = Context::new();
         let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
         let map = result.as_map().unwrap();
-        let test = map.get(&"test".into()).unwrap();
+        let test = map.get(&tera::value::Key::from("test")).unwrap();
         let test_map = test.as_map().unwrap();
-        let foo = test_map.get(&"foo".into()).unwrap();
+        let foo = test_map.get(&tera::value::Key::from("foo")).unwrap();
         assert_eq!(foo, &Value::from("bar"));
     }
 
@@ -983,9 +983,9 @@ mod tests {
         let ctx = Context::new();
         let result = static_fn.call(kwargs, &State::new(&ctx)).unwrap();
         let map = result.as_map().unwrap();
-        let test = map.get(&"test".into()).unwrap();
+        let test = map.get(&tera::value::Key::from("test")).unwrap();
         let test_map = test.as_map().unwrap();
-        let foo = test_map.get(&"foo".into()).unwrap();
+        let foo = test_map.get(&tera::value::Key::from("foo")).unwrap();
         assert_eq!(foo, &Value::from("bar"));
     }
 

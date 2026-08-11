@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use render::RenderCache;
+use tera::value::Key;
 use tera::{Error, Function, Kwargs, State, TeraResult, Value};
 use utils::slugs::{SlugifyStrategy, slugify_paths};
 
@@ -58,7 +59,7 @@ impl Function<TeraResult<Value>> for GetTaxonomyUrl {
         let slug = slugify_paths(term, self.slugify);
         if let Some(t) = cached.terms.get(&slug)
             && let Some(map) = t.as_map()
-            && let Some(permalink) = map.get(&"permalink".into()).and_then(|v| v.as_str())
+            && let Some(permalink) = map.get(&Key::from("permalink")).and_then(|v| v.as_str())
         {
             return Ok(Value::from(permalink));
         }
@@ -225,31 +226,43 @@ mod tests {
         let ctx = Context::new();
         let res = get_taxonomy.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        let items = res_obj.get(&"items".into()).unwrap().as_array().unwrap();
+        let items = res_obj.get(&tera::value::Key::from("items")).unwrap().as_array().unwrap();
         assert_eq!(items.len(), 1);
         let item = items[0].as_map().unwrap();
-        assert_eq!(item.get(&"name".into()).unwrap().as_str().unwrap(), "Programming");
-        assert_eq!(item.get(&"slug".into()).unwrap().as_str().unwrap(), "programming");
+        assert_eq!(
+            item.get(&tera::value::Key::from("name")).unwrap().as_str().unwrap(),
+            "Programming"
+        );
+        assert_eq!(
+            item.get(&tera::value::Key::from("slug")).unwrap().as_str().unwrap(),
+            "programming"
+        );
 
         // Works with other languages as well (lang in context)
         let kwargs = Kwargs::from([("kind", Value::from("tags"))]);
         let ctx = make_context_with_lang("fr");
         let res = get_taxonomy.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        let items = res_obj.get(&"items".into()).unwrap().as_array().unwrap();
+        let items = res_obj.get(&tera::value::Key::from("items")).unwrap().as_array().unwrap();
         assert_eq!(items.len(), 1);
         let item = items[0].as_map().unwrap();
-        assert_eq!(item.get(&"name".into()).unwrap().as_str().unwrap(), "Programmation");
+        assert_eq!(
+            item.get(&tera::value::Key::from("name")).unwrap().as_str().unwrap(),
+            "Programmation"
+        );
 
         // kwargs lang takes priority over state lang
         let kwargs = Kwargs::from([("kind", Value::from("tags")), ("lang", Value::from("en"))]);
         let ctx = make_context_with_lang("fr");
         let res = get_taxonomy.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        let items = res_obj.get(&"items".into()).unwrap().as_array().unwrap();
+        let items = res_obj.get(&tera::value::Key::from("items")).unwrap().as_array().unwrap();
         assert_eq!(items.len(), 1);
         let item = items[0].as_map().unwrap();
-        assert_eq!(item.get(&"name".into()).unwrap().as_str().unwrap(), "Programming");
+        assert_eq!(
+            item.get(&tera::value::Key::from("name")).unwrap().as_str().unwrap(),
+            "Programming"
+        );
 
         // and errors if it can't find it
         let kwargs = Kwargs::from([("kind", Value::from("something-else"))]);
@@ -398,8 +411,14 @@ mod tests {
         let ctx = Context::new();
         let res = get_taxonomy_term.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"name".into()).unwrap().as_str().unwrap(), "Programming");
-        assert_eq!(res_obj.get(&"slug".into()).unwrap().as_str().unwrap(), "programming");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("name")).unwrap().as_str().unwrap(),
+            "Programming"
+        );
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("slug")).unwrap().as_str().unwrap(),
+            "programming"
+        );
 
         // Works with other languages as well (lang in context)
         let kwargs =
@@ -407,7 +426,10 @@ mod tests {
         let ctx = make_context_with_lang("fr");
         let res = get_taxonomy_term.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"name".into()).unwrap().as_str().unwrap(), "Programmation");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("name")).unwrap().as_str().unwrap(),
+            "Programmation"
+        );
 
         // kwargs lang takes priority over state lang
         let kwargs = Kwargs::from([
@@ -418,7 +440,10 @@ mod tests {
         let ctx = make_context_with_lang("fr");
         let res = get_taxonomy_term.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"name".into()).unwrap().as_str().unwrap(), "Programming");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("name")).unwrap().as_str().unwrap(),
+            "Programming"
+        );
 
         // and errors if it can't find either taxonomy or term
         let kwargs = Kwargs::from([
@@ -439,7 +464,13 @@ mod tests {
         let ctx = Context::new();
         let res = get_taxonomy_term.call(kwargs, &State::new(&ctx)).unwrap();
         let res_obj = res.as_map().unwrap();
-        assert_eq!(res_obj.get(&"name".into()).unwrap().as_str().unwrap(), "acción");
-        assert_eq!(res_obj.get(&"slug".into()).unwrap().as_str().unwrap(), "accion");
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("name")).unwrap().as_str().unwrap(),
+            "acción"
+        );
+        assert_eq!(
+            res_obj.get(&tera::value::Key::from("slug")).unwrap().as_str().unwrap(),
+            "accion"
+        );
     }
 }

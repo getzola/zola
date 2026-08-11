@@ -199,14 +199,14 @@ mod tests {
         let static_path = Path::new("static").join("processed_images");
 
         assert_eq!(
-            data.get(&"static_path".into()).unwrap(),
+            data.get(&tera::value::Key::from("static_path")).unwrap(),
             &Value::from(format!(
                 "{}",
                 static_path.join("gutenberg.e99218b5a3185c99.jpg").display()
             ))
         );
         assert_eq!(
-            data.get(&"url".into()).unwrap(),
+            data.get(&tera::value::Key::from("url")).unwrap(),
             &Value::from("http://a-website.com/processed_images/gutenberg.e99218b5a3185c99.jpg")
         );
 
@@ -219,14 +219,14 @@ mod tests {
         let data = static_fn.call(kwargs, &state).unwrap();
         let data = data.as_map().unwrap();
         assert_eq!(
-            data.get(&"static_path".into()).unwrap(),
+            data.get(&tera::value::Key::from("static_path")).unwrap(),
             &Value::from(format!(
                 "{}",
                 static_path.join("gutenberg.155d032b1aae0133.jpg").display()
             ))
         );
         assert_eq!(
-            data.get(&"url".into()).unwrap(),
+            data.get(&tera::value::Key::from("url")).unwrap(),
             &Value::from("http://a-website.com/processed_images/gutenberg.155d032b1aae0133.jpg")
         );
 
@@ -257,11 +257,11 @@ mod tests {
         let data = static_fn.call(kwargs, &state).unwrap();
         let data = data.as_map().unwrap();
         assert_eq!(
-            data.get(&"static_path".into()).unwrap(),
+            data.get(&tera::value::Key::from("static_path")).unwrap(),
             &Value::from(format!("{}", static_path.join("asset.160461e0d0be19e6.jpg").display()))
         );
         assert_eq!(
-            data.get(&"url".into()).unwrap(),
+            data.get(&tera::value::Key::from("url")).unwrap(),
             &Value::from("http://a-website.com/processed_images/asset.160461e0d0be19e6.jpg")
         );
 
@@ -274,14 +274,14 @@ mod tests {
         let data = static_fn.call(kwargs, &state).unwrap();
         let data = data.as_map().unwrap();
         assert_eq!(
-            data.get(&"static_path".into()).unwrap(),
+            data.get(&tera::value::Key::from("static_path")).unwrap(),
             &Value::from(format!(
                 "{}",
                 static_path.join("in-theme.d8f4f6eef30de1b2.jpg").display()
             ))
         );
         assert_eq!(
-            data.get(&"url".into()).unwrap(),
+            data.get(&tera::value::Key::from("url")).unwrap(),
             &Value::from("http://a-website.com/processed_images/in-theme.d8f4f6eef30de1b2.jpg")
         );
     }
@@ -301,36 +301,36 @@ mod tests {
         let kwargs = Kwargs::from([("path", Value::from("static/gutenberg.jpg"))]);
         let data = static_fn.call(kwargs, &state).unwrap();
         let data = data.as_map().unwrap();
-        assert_eq!(data.get(&"height".into()).unwrap(), &Value::from(380));
-        assert_eq!(data.get(&"width".into()).unwrap(), &Value::from(300));
-        assert_eq!(data.get(&"format".into()).unwrap(), &Value::from("jpg"));
-        assert_eq!(data.get(&"mime".into()).unwrap(), &Value::from("image/jpeg"));
+        assert_eq!(data.get(&tera::value::Key::from("height")).unwrap(), &Value::from(380));
+        assert_eq!(data.get(&tera::value::Key::from("width")).unwrap(), &Value::from(300));
+        assert_eq!(data.get(&tera::value::Key::from("format")).unwrap(), &Value::from("jpg"));
+        assert_eq!(data.get(&tera::value::Key::from("mime")).unwrap(), &Value::from("image/jpeg"));
 
         // 2. a call to something in `static` with an absolute path is handled currently the same as the above
         let kwargs = Kwargs::from([("path", Value::from("/static/gutenberg.jpg"))]);
         let data = static_fn.call(kwargs, &state).unwrap();
         let data = data.as_map().unwrap();
-        assert_eq!(data.get(&"height".into()).unwrap(), &Value::from(380));
-        assert_eq!(data.get(&"width".into()).unwrap(), &Value::from(300));
-        assert_eq!(data.get(&"format".into()).unwrap(), &Value::from("jpg"));
-        assert_eq!(data.get(&"mime".into()).unwrap(), &Value::from("image/jpeg"));
+        assert_eq!(data.get(&tera::value::Key::from("height")).unwrap(), &Value::from(380));
+        assert_eq!(data.get(&tera::value::Key::from("width")).unwrap(), &Value::from(300));
+        assert_eq!(data.get(&tera::value::Key::from("format")).unwrap(), &Value::from("jpg"));
+        assert_eq!(data.get(&tera::value::Key::from("mime")).unwrap(), &Value::from("image/jpeg"));
 
         // 3. a call to something in `content` with a relative path
         let kwargs = Kwargs::from([("path", Value::from("content/gutenberg.jpg"))]);
         let data = static_fn.call(kwargs, &state).unwrap();
         let data = data.as_map().unwrap();
-        assert_eq!(data.get(&"height".into()).unwrap(), &Value::from(380));
-        assert_eq!(data.get(&"width".into()).unwrap(), &Value::from(300));
-        assert_eq!(data.get(&"format".into()).unwrap(), &Value::from("jpg"));
-        assert_eq!(data.get(&"mime".into()).unwrap(), &Value::from("image/jpeg"));
+        assert_eq!(data.get(&tera::value::Key::from("height")).unwrap(), &Value::from(380));
+        assert_eq!(data.get(&tera::value::Key::from("width")).unwrap(), &Value::from(300));
+        assert_eq!(data.get(&tera::value::Key::from("format")).unwrap(), &Value::from("jpg"));
+        assert_eq!(data.get(&tera::value::Key::from("mime")).unwrap(), &Value::from("image/jpeg"));
 
         // 4. a call to something in `content` with a @/ path corresponds to
         let kwargs = Kwargs::from([("path", Value::from("@/gutenberg.jpg"))]);
         let data = static_fn.call(kwargs, &state).unwrap();
         let data = data.as_map().unwrap();
-        assert_eq!(data.get(&"height".into()).unwrap(), &Value::from(380));
-        assert_eq!(data.get(&"width".into()).unwrap(), &Value::from(300));
-        assert_eq!(data.get(&"format".into()).unwrap(), &Value::from("jpg"));
-        assert_eq!(data.get(&"mime".into()).unwrap(), &Value::from("image/jpeg"));
+        assert_eq!(data.get(&tera::value::Key::from("height")).unwrap(), &Value::from(380));
+        assert_eq!(data.get(&tera::value::Key::from("width")).unwrap(), &Value::from(300));
+        assert_eq!(data.get(&tera::value::Key::from("format")).unwrap(), &Value::from("jpg"));
+        assert_eq!(data.get(&tera::value::Key::from("mime")).unwrap(), &Value::from("image/jpeg"));
     }
 }

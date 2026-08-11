@@ -93,3 +93,84 @@ PERF-006 (serial discovery).
 * Output equivalence, `data-heavy-4000` (4205 files): **IDENTICAL**
 
 **Commit.** `perf(PERF-001): don't hold the load_data cache lock across I/O`
+
+---
+
+## Output determinism — a prerequisite for the equivalence gate (not a PERF item)
+
+**Problem.** Two runs of the *same* binary produced different HTML.
+`compare_output.py --baseline X --candidate X` on `mixed-realistic-1000`
+reported 484 of 1547 files changed. The mandatory output-equivalence gate was
+therefore meaningless for any site with more than one taxonomy on a page.
+
+**Cause.** Two layers of hash-ordered maps:
+
+1. `PageFrontMatter.taxonomies` was a `std::collections::HashMap`, and
+2. `tera::Map` is a `HashMap` unless the `preserve_order` feature is enabled.
+
+Templates iterate both directly (`{% for name, terms in page.taxonomies %}`),
+so the order came from a per-process random hash seed.
+
+**Change.** `taxonomies` becomes a `BTreeMap`, and Zola enables tera's
+`preserve_order` feature so every `Value` map keeps insertion order. Both are
+needed: the feature alone would still preserve a random insertion order.
+
+**Test.** `render::cache::tests::taxonomies_serialize_in_a_stable_order` builds
+a cache for a page with 20 taxonomies and asserts sorted key order. It fails
+without the change (verified by toggling the feature off) and passes with it.
+An earlier 3-key version of the same test passed by luck — recorded here
+because it is exactly the trap this gate exists to avoid.
+
+**Output impact.** This change is *about* output, so byte-equality with the
+previous binary is not expected. On `mixed-realistic-1000`, 487 of 1547 files
+differ — and all 487 contain **exactly the same characters** as before, i.e.
+the difference is purely reordering. No file is added or removed.
+
+**Performance (interleaved, `mixed-realistic-4000`):**
+
+| round | before | after |
+| ----- | ------ | ----- |
+| 1 | 2.71 s | 2.51 s |
+| 2 | 2.19 s | 2.07 s |
+| 3 | 2.37 s | 2.15 s |
+| median | 2.37 s | **2.15 s (−9%)** |
+
+Peak RSS: **384 MB → 326 MB (−15%)**. `IndexMap` iterates contiguously and
+stores entries more compactly than the hash map it replaces, so the fix is
+faster and smaller as well as correct.
+
+**Gates.** `scripts/dev.sh quality`: ALL PASS (fmt, clippy ratchet,
+461 tests).
+
+---
+
+## Rejected experiment: caching created directories (hotspot PERF-003)
+
+**Hypothesis.** `write_output` calls `fs::create_dir_all` once per rendered
+output; the CPU profile attributed 18.9% of busy samples on
+`simple-pages-1000` (and 1237 ms of `mkdir` on `mixed-realistic-4000`) to it.
+Remembering the directories already created should remove those syscalls.
+
+**Implementation tried.** An `Arc<Mutex<AHashSet<PathBuf>>>` on `Queue`,
+checked before `create_dir_all` and updated after; the lock is held only for
+the hash lookup.
+
+**Result — no improvement.** Write-phase CPU (`out: write file` accumulator,
+`simple-pages-4000`, interleaved):
+
+| round | without | with |
+| ----- | ------- | ---- |
+| 1 | 8.84 s | 7.00 s |
+| 2 | 7.71 s | 7.67 s |
+| 3 | 7.71 s | 7.98 s |
+| median | 7.71 s | 7.67 s |
+
+Whole-build wall time was likewise indistinguishable (median 1.31 s vs 1.39 s,
+with a 1.03–1.37 s spread on the *same* binary). The mutex costs roughly what
+the skipped `mkdir` calls save.
+
+**Not committed.** The doctrine rejects optimizations whose benefit cannot be
+demonstrated. The hotspot itself is real; what is disproven is this particular
+fix. The next variant worth measuring is a **thread-local** set of created
+directories: it keeps the syscall saving without any shared lock, at the cost
+of a few duplicate `mkdir` calls across worker threads.

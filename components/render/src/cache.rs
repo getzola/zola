@@ -242,3 +242,70 @@ impl RenderCache {
         self.taxonomies.get(lang)?.get(slug)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use config::{Config, TaxonomyConfig};
+    use content::{Library, Page};
+    use tera::Tera;
+
+    use super::RenderCache;
+
+    /// A page's taxonomies must reach templates in a stable order.
+    ///
+    /// `page.taxonomies` is iterated directly by templates
+    /// (`{% for name, terms in page.taxonomies %}`). Before this was fixed the
+    /// front matter held them in a `HashMap` and Tera's own map type was a
+    /// `HashMap` too, so the order changed from process to process and two
+    /// runs of the same binary wrote different HTML for any page with more
+    /// than one taxonomy.
+    #[test]
+    fn taxonomies_serialize_in_a_stable_order() {
+        // Enough names that a hash-ordered map coming out sorted by accident is
+        // not a realistic outcome; with three keys the old code passed by luck.
+        let names: Vec<String> = (0..20).map(|i| format!("tax{:02}", (19 - i))).collect();
+
+        let mut config = Config::default_for_test();
+        for name in &names {
+            config
+                .languages
+                .get_mut(&config.default_language)
+                .unwrap()
+                .taxonomies
+                .push(TaxonomyConfig { name: name.clone(), ..TaxonomyConfig::default() });
+        }
+        config.slugify_taxonomies();
+
+        let mut library = Library::new(&config);
+        let mut page = Page::default();
+        page.file.path = PathBuf::from("content/a.md");
+        page.lang = config.default_language.clone();
+        // Inserted in a deliberately unsorted order.
+        for name in &names {
+            page.meta.taxonomies.insert(name.clone(), vec!["term".to_string()]);
+        }
+        library.insert_page(page);
+
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &Tera::default());
+
+        let cached = cache.pages.get(&PathBuf::from("content/a.md")).expect("page in cache");
+        let taxonomies = cached
+            .value
+            .as_map()
+            .expect("page value is a map")
+            .get(&tera::value::Key::from("taxonomies"))
+            .expect("taxonomies key")
+            .as_map()
+            .expect("taxonomies is a map")
+            .keys()
+            .map(|k| k.as_str().unwrap_or_default().to_string())
+            .collect::<Vec<_>>();
+
+        let mut expected = names.clone();
+        expected.sort();
+        assert_eq!(taxonomies, expected);
+    }
+}

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::path::Path;
 
 use serde::Serialize;
@@ -54,7 +54,7 @@ pub struct SerializingPage<'a> {
     year: Option<i32>,
     month: Option<u8>,
     day: Option<u8>,
-    taxonomies: &'a HashMap<String, Vec<String>>,
+    taxonomies: &'a BTreeMap<String, Vec<String>>,
     authors: &'a [String],
     aliases: &'a [String],
     extra: &'a Value,

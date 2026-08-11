@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Builds are now reproducible: maps reaching templates (`page.taxonomies`,
+  `page.extra`, `load_data` results, …) iterate in a stable order instead of a
+  per-process random one, so two runs of the same binary produce identical
+  output. Templates that iterate a map will see a fixed order where they
+  previously saw an arbitrary one; `page.taxonomies` is now sorted by name.
+
 ## 0.23.3 (2026-08-11)
 
 - Fix Windows issues

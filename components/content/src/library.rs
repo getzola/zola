@@ -511,7 +511,6 @@ mod tests {
     use super::*;
     use crate::{FileInfo, SortBy};
     use config::{LanguageOptions, TaxonomyConfig};
-    use std::collections::HashMap;
     use utils::slugs::SlugifyStrategy;
 
     #[test]
@@ -870,7 +869,7 @@ mod tests {
         let mut page = Page::default();
         page.file.path = PathBuf::from(path);
         page.lang = lang.to_owned();
-        let mut taxonomies = HashMap::new();
+        let mut taxonomies = std::collections::BTreeMap::new();
         for (name, terms) in taxo {
             taxonomies.insert(name.to_owned(), terms.iter().map(|t| t.to_string()).collect());
         }
