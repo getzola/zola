@@ -115,9 +115,9 @@ retired — scraped/legacy URLs win when both exist.
 - **`workflow_dispatch` `graph-migrate.yml`:** run **once** (or `--force` remigrate);
   commits content + graph. Sole Firecrawl entrypoint.
 - **`master.yml` graph path:** `graph refresh` → `zola build` → enrich → **parity
-  gates** → deploy to Cloudflare Pages. Translate is currently commented out so
-  it cannot starve the single self-hosted runner; restore later with
-  `needs: [deploy-curriculo]`.
+  gates** → deploy to Cloudflare Pages. Translate runs **after** deploy
+  (`needs: [deploy-curriculo]`) so it cannot starve the single self-hosted
+  runner.
 
 ## Implementation map
 
