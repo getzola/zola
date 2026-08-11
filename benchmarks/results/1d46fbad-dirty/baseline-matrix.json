@@ -1,0 +1,4443 @@
+{
+  "machine": {
+    "arch": "arm64",
+    "build_profile": "release (pinned, see scripts/perf/build.sh)",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "cpu": "Apple M4 Pro",
+    "git_branch": "perf/large-site-scaling",
+    "git_commit": "1d46fbad-dirty",
+    "logical_cores": "12",
+    "memory_bytes": "25769803776",
+    "os": "macOS-26.2-arm64-arm-64bit",
+    "physical_cores": "12",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "timestamp": "2026-08-11T22:20:01+0200",
+    "zola_version": "zola 0.23.3"
+  },
+  "results": [
+    {
+      "input": {
+        "input_bytes": 50896,
+        "internal_links": 0,
+        "md_files": 111,
+        "page_files": 100,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-100",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 52893,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 111,
+        "pages": 100,
+        "requested_pages": 100,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 106129,
+        "files": 115
+      },
+      "pages": 100,
+      "resources": {
+        "cpu_utilization": 2.58,
+        "peak_rss_bytes": 173883392,
+        "sys_seconds": 0.24,
+        "user_seconds": 0.07,
+        "wall_seconds": 0.12
+      },
+      "scenario": "simple-pages",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-100",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.13098209178,
+        "mean": 0.12880060611333335,
+        "median": 0.12834046778000002,
+        "min": 0.12707925878,
+        "runs": 3,
+        "stddev": 0.0019916881836332502,
+        "system": 0.2727909133333333,
+        "times": [
+          0.12707925878,
+          0.12834046778000002,
+          0.13098209178
+        ],
+        "user": 0.07549172666666666
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 125937,
+        "internal_links": 0,
+        "md_files": 261,
+        "page_files": 250,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-250",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 127934,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 261,
+        "pages": 250,
+        "requested_pages": 250,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 257308,
+        "files": 265
+      },
+      "pages": 250,
+      "resources": {
+        "cpu_utilization": 3.29,
+        "peak_rss_bytes": 181993472,
+        "sys_seconds": 0.48,
+        "user_seconds": 0.08,
+        "wall_seconds": 0.17
+      },
+      "scenario": "simple-pages",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-250",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.17523147334,
+        "mean": 0.17335566767333332,
+        "median": 0.17411055634,
+        "min": 0.17072497334,
+        "runs": 3,
+        "stddev": 0.002346173104610213,
+        "system": 0.5314627066666665,
+        "times": [
+          0.17072497334,
+          0.17411055634,
+          0.17523147334
+        ],
+        "user": 0.08422563999999999
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 250870,
+        "internal_links": 0,
+        "md_files": 511,
+        "page_files": 500,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-500",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 252867,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 511,
+        "pages": 500,
+        "requested_pages": 500,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 509019,
+        "files": 515
+      },
+      "pages": 500,
+      "resources": {
+        "cpu_utilization": 4.69,
+        "peak_rss_bytes": 196345856,
+        "sys_seconds": 1.13,
+        "user_seconds": 0.09,
+        "wall_seconds": 0.26
+      },
+      "scenario": "simple-pages",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-500",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.2654883433,
+        "mean": 0.2593134683,
+        "median": 0.2581345093,
+        "min": 0.2543175523,
+        "runs": 3,
+        "stddev": 0.005677948673084391,
+        "system": 1.0859177466666665,
+        "times": [
+          0.2543175523,
+          0.2581345093,
+          0.2654883433
+        ],
+        "user": 0.09737619333333335
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 501249,
+        "internal_links": 0,
+        "md_files": 1011,
+        "page_files": 1000,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-1000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 503246,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 1011,
+        "pages": 1000,
+        "requested_pages": 1000,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 1012997,
+        "files": 1015
+      },
+      "pages": 1000,
+      "resources": {
+        "cpu_utilization": 5.61,
+        "peak_rss_bytes": 219414528,
+        "sys_seconds": 2.18,
+        "user_seconds": 0.12,
+        "wall_seconds": 0.41
+      },
+      "scenario": "simple-pages",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-1000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.44448109846000006,
+        "mean": 0.42418259846000006,
+        "median": 0.41893272346000004,
+        "min": 0.40913397346,
+        "runs": 3,
+        "stddev": 0.018248991809908997,
+        "system": 2.1458370666666666,
+        "times": [
+          0.40913397346,
+          0.41893272346000004,
+          0.44448109846000006
+        ],
+        "user": 0.12239761999999998
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 1004321,
+        "internal_links": 0,
+        "md_files": 2011,
+        "page_files": 2000,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-2000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 1006318,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2011,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 2027486,
+        "files": 2015
+      },
+      "pages": 2000,
+      "resources": {
+        "cpu_utilization": 5.73,
+        "peak_rss_bytes": 272154624,
+        "sys_seconds": 4.13,
+        "user_seconds": 0.17,
+        "wall_seconds": 0.75
+      },
+      "scenario": "simple-pages",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-2000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.76854210166,
+        "mean": 0.7524900319933333,
+        "median": 0.75342318466,
+        "min": 0.7355048096600001,
+        "runs": 3,
+        "stddev": 0.01653840216277846,
+        "system": 4.1879548600000005,
+        "times": [
+          0.7355048096600001,
+          0.75342318466,
+          0.76854210166
+        ],
+        "user": 0.17765329333333332
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 2009135,
+        "internal_links": 0,
+        "md_files": 4011,
+        "page_files": 4000,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-4000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2011132,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4011,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 4055207,
+        "files": 4015
+      },
+      "pages": 4000,
+      "resources": {
+        "cpu_utilization": 6.13,
+        "peak_rss_bytes": 383057920,
+        "sys_seconds": 8.37,
+        "user_seconds": 0.28,
+        "wall_seconds": 1.41
+      },
+      "scenario": "simple-pages",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-4000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 1.45888971284,
+        "mean": 1.4276806155066666,
+        "median": 1.41652533784,
+        "min": 1.4076267958400002,
+        "runs": 3,
+        "stddev": 0.02739163795216605,
+        "system": 8.37311186,
+        "times": [
+          1.4076267958400002,
+          1.41652533784,
+          1.45888971284
+        ],
+        "user": 0.2821159466666667
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 4020974,
+        "internal_links": 0,
+        "md_files": 8011,
+        "page_files": 8000,
+        "section_files": 11,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "simple-pages-8000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 4022971,
+        "internal_links": 0,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 1,
+          "description": "Flat-ish sections, tiny pages, no links, no taxonomies. Measures the floor cost per page.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 0,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "simple-pages",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 10,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 8011,
+        "pages": 8000,
+        "requested_pages": 8000,
+        "scenario": "simple-pages",
+        "sections": 11,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 8111661,
+        "files": 8015
+      },
+      "pages": 8000,
+      "resources": {
+        "cpu_utilization": 5.85,
+        "peak_rss_bytes": 615219200,
+        "sys_seconds": 16.65,
+        "user_seconds": 0.5,
+        "wall_seconds": 2.93
+      },
+      "scenario": "simple-pages",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/simple-pages-8000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 2.88925807834,
+        "mean": 2.8839804530066666,
+        "median": 2.88157524434,
+        "min": 2.8811080363399997,
+        "runs": 3,
+        "stddev": 0.004576523538462248,
+        "system": 16.7227515,
+        "times": [
+          2.8811080363399997,
+          2.88157524434,
+          2.88925807834
+        ],
+        "user": 0.5020278466666667
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 224290,
+        "internal_links": 4000,
+        "md_files": 121,
+        "page_files": 100,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "dense-internal-links-100",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 226399,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Every page links to 40 other pages via @/ links. Stresses link resolution, backlinks and anchor checking.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 40,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "dense-internal-links",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 121,
+        "pages": 100,
+        "requested_pages": 100,
+        "scenario": "dense-internal-links",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 529634,
+        "files": 125
+      },
+      "pages": 100,
+      "resources": {
+        "cpu_utilization": 2.64,
+        "peak_rss_bytes": 187809792,
+        "sys_seconds": 0.27,
+        "user_seconds": 0.1,
+        "wall_seconds": 0.14
+      },
+      "scenario": "dense-internal-links",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/dense-internal-links-100",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.14206185612000002,
+        "mean": 0.14082627245333335,
+        "median": 0.14138848012000002,
+        "min": 0.13902848112000002,
+        "runs": 3,
+        "stddev": 0.0015929215511130295,
+        "system": 0.24559004666666664,
+        "times": [
+          0.13902848112000002,
+          0.14138848012000002,
+          0.14206185612000002
+        ],
+        "user": 0.10215648666666666
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 567273,
+        "internal_links": 10000,
+        "md_files": 271,
+        "page_files": 250,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "dense-internal-links-250",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 569382,
+        "internal_links": 10000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Every page links to 40 other pages via @/ links. Stresses link resolution, backlinks and anchor checking.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 40,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "dense-internal-links",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 271,
+        "pages": 250,
+        "requested_pages": 250,
+        "scenario": "dense-internal-links",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 1317120,
+        "files": 275
+      },
+      "pages": 250,
+      "resources": {
+        "cpu_utilization": 3.24,
+        "peak_rss_bytes": 215105536,
+        "sys_seconds": 0.55,
+        "user_seconds": 0.13,
+        "wall_seconds": 0.21
+      },
+      "scenario": "dense-internal-links",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/dense-internal-links-250",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.21383045834000003,
+        "mean": 0.21132301367333337,
+        "median": 0.21077883334000003,
+        "min": 0.20935974934,
+        "runs": 3,
+        "stddev": 0.002284493142265997,
+        "system": 0.5184273466666666,
+        "times": [
+          0.20935974934,
+          0.21077883334000003,
+          0.21383045834000003
+        ],
+        "user": 0.1427248733333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 1137754,
+        "internal_links": 20000,
+        "md_files": 521,
+        "page_files": 500,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "dense-internal-links-500",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 1139863,
+        "internal_links": 20000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Every page links to 40 other pages via @/ links. Stresses link resolution, backlinks and anchor checking.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 40,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "dense-internal-links",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 521,
+        "pages": 500,
+        "requested_pages": 500,
+        "scenario": "dense-internal-links",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 2628549,
+        "files": 525
+      },
+      "pages": 500,
+      "resources": {
+        "cpu_utilization": 4.0,
+        "peak_rss_bytes": 260816896,
+        "sys_seconds": 1.05,
+        "user_seconds": 0.19,
+        "wall_seconds": 0.31
+      },
+      "scenario": "dense-internal-links",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/dense-internal-links-500",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.30867452292,
+        "mean": 0.30575162025333336,
+        "median": 0.30452527292000003,
+        "min": 0.30405506492,
+        "runs": 3,
+        "stddev": 0.0025422025666577714,
+        "system": 0.8819247666666666,
+        "times": [
+          0.30405506492,
+          0.30452527292000003,
+          0.30867452292
+        ],
+        "user": 0.19999007333333332
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 2278659,
+        "internal_links": 40000,
+        "md_files": 1021,
+        "page_files": 1000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "dense-internal-links-1000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2280768,
+        "internal_links": 40000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Every page links to 40 other pages via @/ links. Stresses link resolution, backlinks and anchor checking.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 40,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "dense-internal-links",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 1021,
+        "pages": 1000,
+        "requested_pages": 1000,
+        "scenario": "dense-internal-links",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 5251285,
+        "files": 1025
+      },
+      "pages": 1000,
+      "resources": {
+        "cpu_utilization": 4.51,
+        "peak_rss_bytes": 348569600,
+        "sys_seconds": 2.07,
+        "user_seconds": 0.32,
+        "wall_seconds": 0.53
+      },
+      "scenario": "dense-internal-links",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/dense-internal-links-1000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.55120116882,
+        "mean": 0.5483867104866667,
+        "median": 0.54891012682,
+        "min": 0.54504883582,
+        "runs": 3,
+        "stddev": 0.003109384799156018,
+        "system": 2.1661354266666666,
+        "times": [
+          0.54504883582,
+          0.54891012682,
+          0.55120116882
+        ],
+        "user": 0.33012826
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 4599330,
+        "internal_links": 80000,
+        "md_files": 2021,
+        "page_files": 2000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "dense-internal-links-2000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 4601439,
+        "internal_links": 80000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Every page links to 40 other pages via @/ links. Stresses link resolution, backlinks and anchor checking.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 40,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "dense-internal-links",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2021,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "dense-internal-links",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 10539828,
+        "files": 2025
+      },
+      "pages": 2000,
+      "resources": {
+        "cpu_utilization": 4.49,
+        "peak_rss_bytes": 531103744,
+        "sys_seconds": 3.89,
+        "user_seconds": 0.6,
+        "wall_seconds": 1.0
+      },
+      "scenario": "dense-internal-links",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/dense-internal-links-2000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.9851703171800001,
+        "mean": 0.9667854285133335,
+        "median": 0.9614676091800001,
+        "min": 0.9537183591800001,
+        "runs": 3,
+        "stddev": 0.01638645225040862,
+        "system": 3.5623321466666664,
+        "times": [
+          0.9537183591800001,
+          0.9614676091800001,
+          0.9851703171800001
+        ],
+        "user": 0.5857987333333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 9240529,
+        "internal_links": 160000,
+        "md_files": 4021,
+        "page_files": 4000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "dense-internal-links-4000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 9242638,
+        "internal_links": 160000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Every page links to 40 other pages via @/ links. Stresses link resolution, backlinks and anchor checking.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 40,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "dense-internal-links",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4021,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "dense-internal-links",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 21116989,
+        "files": 4025
+      },
+      "pages": 4000,
+      "resources": {
+        "cpu_utilization": 3.83,
+        "peak_rss_bytes": 901349376,
+        "sys_seconds": 6.46,
+        "user_seconds": 1.17,
+        "wall_seconds": 1.99
+      },
+      "scenario": "dense-internal-links",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/dense-internal-links-4000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 2.0486326164000004,
+        "mean": 2.0164371714000002,
+        "median": 2.0146692404000004,
+        "min": 1.9860096574000001,
+        "runs": 3,
+        "stddev": 0.031348890466721444,
+        "system": 7.1233888599999995,
+        "times": [
+          1.9860096574000001,
+          2.0146692404000004,
+          2.0486326164000004
+        ],
+        "user": 1.1528129133333331
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 18530325,
+        "internal_links": 320000,
+        "md_files": 8021,
+        "page_files": 8000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "dense-internal-links-8000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 18532434,
+        "internal_links": 320000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Every page links to 40 other pages via @/ links. Stresses link resolution, backlinks and anchor checking.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 40,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "dense-internal-links",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 8021,
+        "pages": 8000,
+        "requested_pages": 8000,
+        "scenario": "dense-internal-links",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 42278815,
+        "files": 8025
+      },
+      "pages": 8000,
+      "resources": {
+        "cpu_utilization": 3.99,
+        "peak_rss_bytes": 1658634240,
+        "sys_seconds": 14.33,
+        "user_seconds": 2.3,
+        "wall_seconds": 4.17
+      },
+      "scenario": "dense-internal-links",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/dense-internal-links-8000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 4.217484435839999,
+        "mean": 3.8758562551733333,
+        "median": 3.72726835284,
+        "min": 3.6828159768399997,
+        "runs": 3,
+        "stddev": 0.2966923723357641,
+        "system": 13.274444006666664,
+        "times": [
+          3.6828159768399997,
+          3.72726835284,
+          4.217484435839999
+        ],
+        "user": 2.189238366666667
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 84431,
+        "internal_links": 100,
+        "md_files": 121,
+        "page_files": 100,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "many-taxonomies-100",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 87048,
+        "internal_links": 100,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "4 taxonomies, 6 terms per page, high cardinality. Stresses taxonomy construction and term page lists.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "many-taxonomies",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 6,
+          "taxonomy_cardinality": 60,
+          "taxonomy_count": 4,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 121,
+        "pages": 100,
+        "requested_pages": 100,
+        "scenario": "many-taxonomies",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 4,
+        "taxonomy_terms": 240,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 358187,
+        "files": 328
+      },
+      "pages": 100,
+      "resources": {
+        "cpu_utilization": 3.14,
+        "peak_rss_bytes": 204439552,
+        "sys_seconds": 0.78,
+        "user_seconds": 0.1,
+        "wall_seconds": 0.28
+      },
+      "scenario": "many-taxonomies",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/many-taxonomies-100",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.23276059916000003,
+        "mean": 0.22918125149333335,
+        "median": 0.22845564016000003,
+        "min": 0.22632751516000002,
+        "runs": 3,
+        "stddev": 0.003277350498964117,
+        "system": 0.8169453333333333,
+        "times": [
+          0.22632751516000002,
+          0.22845564016000003,
+          0.23276059916000003
+        ],
+        "user": 0.10967303333333334
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 208738,
+        "internal_links": 250,
+        "md_files": 271,
+        "page_files": 250,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "many-taxonomies-250",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 211355,
+        "internal_links": 250,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "4 taxonomies, 6 terms per page, high cardinality. Stresses taxonomy construction and term page lists.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "many-taxonomies",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 6,
+          "taxonomy_cardinality": 60,
+          "taxonomy_count": 4,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 271,
+        "pages": 250,
+        "requested_pages": 250,
+        "scenario": "many-taxonomies",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 4,
+        "taxonomy_terms": 240,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 750347,
+        "files": 516
+      },
+      "pages": 250,
+      "resources": {
+        "cpu_utilization": 3.03,
+        "peak_rss_bytes": 262324224,
+        "sys_seconds": 0.91,
+        "user_seconds": 0.15,
+        "wall_seconds": 0.35
+      },
+      "scenario": "many-taxonomies",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/many-taxonomies-250",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.31409591346000004,
+        "mean": 0.30708753912666675,
+        "median": 0.30475466446000005,
+        "min": 0.30241203946000006,
+        "runs": 3,
+        "stddev": 0.006181420230800544,
+        "system": 0.9817242266666666,
+        "times": [
+          0.30241203946000006,
+          0.30475466446000005,
+          0.31409591346000004
+        ],
+        "user": 0.15289291333333332
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 415333,
+        "internal_links": 500,
+        "md_files": 521,
+        "page_files": 500,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "many-taxonomies-500",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 417950,
+        "internal_links": 500,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "4 taxonomies, 6 terms per page, high cardinality. Stresses taxonomy construction and term page lists.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "many-taxonomies",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 6,
+          "taxonomy_cardinality": 60,
+          "taxonomy_count": 4,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 521,
+        "pages": 500,
+        "requested_pages": 500,
+        "scenario": "many-taxonomies",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 4,
+        "taxonomy_terms": 240,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 1373049,
+        "files": 769
+      },
+      "pages": 500,
+      "resources": {
+        "cpu_utilization": 3.95,
+        "peak_rss_bytes": 357646336,
+        "sys_seconds": 1.48,
+        "user_seconds": 0.22,
+        "wall_seconds": 0.43
+      },
+      "scenario": "many-taxonomies",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/many-taxonomies-500",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.48800255364,
+        "mean": 0.4515327199733334,
+        "median": 0.46816692864,
+        "min": 0.39842867764,
+        "runs": 3,
+        "stddev": 0.04704670539889589,
+        "system": 1.0258533866666666,
+        "times": [
+          0.39842867764,
+          0.46816692864,
+          0.48800255364
+        ],
+        "user": 0.23049242
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 828702,
+        "internal_links": 1000,
+        "md_files": 1021,
+        "page_files": 1000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "many-taxonomies-1000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 831319,
+        "internal_links": 1000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "4 taxonomies, 6 terms per page, high cardinality. Stresses taxonomy construction and term page lists.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "many-taxonomies",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 6,
+          "taxonomy_cardinality": 60,
+          "taxonomy_count": 4,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 1021,
+        "pages": 1000,
+        "requested_pages": 1000,
+        "scenario": "many-taxonomies",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 4,
+        "taxonomy_terms": 240,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 2616510,
+        "files": 1269
+      },
+      "pages": 1000,
+      "resources": {
+        "cpu_utilization": 4.41,
+        "peak_rss_bytes": 549486592,
+        "sys_seconds": 2.67,
+        "user_seconds": 0.37,
+        "wall_seconds": 0.69
+      },
+      "scenario": "many-taxonomies",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/many-taxonomies-1000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.68934584586,
+        "mean": 0.6855317901933334,
+        "median": 0.68787022086,
+        "min": 0.67937930386,
+        "runs": 3,
+        "stddev": 0.005379050413088403,
+        "system": 2.51574286,
+        "times": [
+          0.67937930386,
+          0.68787022086,
+          0.68934584586
+        ],
+        "user": 0.3682329733333334
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 1659565,
+        "internal_links": 2000,
+        "md_files": 2021,
+        "page_files": 2000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "many-taxonomies-2000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 1662182,
+        "internal_links": 2000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "4 taxonomies, 6 terms per page, high cardinality. Stresses taxonomy construction and term page lists.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "many-taxonomies",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 6,
+          "taxonomy_cardinality": 60,
+          "taxonomy_count": 4,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2021,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "many-taxonomies",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 4,
+        "taxonomy_terms": 240,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 5119189,
+        "files": 2269
+      },
+      "pages": 2000,
+      "resources": {
+        "cpu_utilization": 4.36,
+        "peak_rss_bytes": 926187520,
+        "sys_seconds": 4.63,
+        "user_seconds": 0.69,
+        "wall_seconds": 1.22
+      },
+      "scenario": "many-taxonomies",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/many-taxonomies-2000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 1.25766302014,
+        "mean": 1.2349909511400001,
+        "median": 1.23992460414,
+        "min": 1.2073852291400002,
+        "runs": 3,
+        "stddev": 0.025499407167681815,
+        "system": 4.881363793333333,
+        "times": [
+          1.2073852291400002,
+          1.23992460414,
+          1.25766302014
+        ],
+        "user": 0.6709780333333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 3321761,
+        "internal_links": 4000,
+        "md_files": 4021,
+        "page_files": 4000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "many-taxonomies-4000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 3324378,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "4 taxonomies, 6 terms per page, high cardinality. Stresses taxonomy construction and term page lists.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "many-taxonomies",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 6,
+          "taxonomy_cardinality": 60,
+          "taxonomy_count": 4,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4021,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "many-taxonomies",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 4,
+        "taxonomy_terms": 240,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 10124940,
+        "files": 4269
+      },
+      "pages": 4000,
+      "resources": {
+        "cpu_utilization": 4.32,
+        "peak_rss_bytes": 1696317440,
+        "sys_seconds": 8.89,
+        "user_seconds": 1.3,
+        "wall_seconds": 2.36
+      },
+      "scenario": "many-taxonomies",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/many-taxonomies-4000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 2.8587970253000003,
+        "mean": 2.5107928723,
+        "median": 2.3577927753,
+        "min": 2.3157888163000004,
+        "runs": 3,
+        "stddev": 0.30211132223379844,
+        "system": 9.358692433333333,
+        "times": [
+          2.3157888163000004,
+          2.3577927753,
+          2.8587970253000003
+        ],
+        "user": 1.3048623199999998
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 6648266,
+        "internal_links": 8000,
+        "md_files": 8021,
+        "page_files": 8000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "many-taxonomies-8000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 6650883,
+        "internal_links": 8000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "4 taxonomies, 6 terms per page, high cardinality. Stresses taxonomy construction and term page lists.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "many-taxonomies",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 6,
+          "taxonomy_cardinality": 60,
+          "taxonomy_count": 4,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 8021,
+        "pages": 8000,
+        "requested_pages": 8000,
+        "scenario": "many-taxonomies",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 4,
+        "taxonomy_terms": 240,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 20137697,
+        "files": 8269
+      },
+      "pages": 8000,
+      "resources": {
+        "cpu_utilization": 4.63,
+        "peak_rss_bytes": 3245735936,
+        "sys_seconds": 18.93,
+        "user_seconds": 2.45,
+        "wall_seconds": 4.62
+      },
+      "scenario": "many-taxonomies",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/many-taxonomies-8000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 4.81372710674,
+        "mean": 4.77045113474,
+        "median": 4.76402164874,
+        "min": 4.73360464874,
+        "runs": 3,
+        "stddev": 0.0404463321780676,
+        "system": 18.37623011333333,
+        "times": [
+          4.73360464874,
+          4.76402164874,
+          4.81372710674
+        ],
+        "user": 2.5011599066666665
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 99057,
+        "internal_links": 100,
+        "md_files": 501,
+        "page_files": 100,
+        "section_files": 401,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "deep-sections-100",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 101246,
+        "internal_links": 100,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 5,
+          "description": "Deep section tree with few pages per section (mirrors doc/dossier sites). Stresses ancestors, subsections and per-section sorting.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "deep-sections",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 400,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 501,
+        "pages": 100,
+        "requested_pages": 100,
+        "scenario": "deep-sections",
+        "sections": 401,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 353151,
+        "files": 505
+      },
+      "pages": 100,
+      "resources": {
+        "cpu_utilization": 4.28,
+        "peak_rss_bytes": 176521216,
+        "sys_seconds": 0.99,
+        "user_seconds": 0.08,
+        "wall_seconds": 0.25
+      },
+      "scenario": "deep-sections",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/deep-sections-100",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.26472973010000006,
+        "mean": 0.26116511943333337,
+        "median": 0.26083481410000003,
+        "min": 0.2579308141,
+        "runs": 3,
+        "stddev": 0.003411471955576578,
+        "system": 0.9972753866666667,
+        "times": [
+          0.2579308141,
+          0.26083481410000003,
+          0.26472973010000006
+        ],
+        "user": 0.08598201333333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 181774,
+        "internal_links": 250,
+        "md_files": 651,
+        "page_files": 250,
+        "section_files": 401,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "deep-sections-250",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 183963,
+        "internal_links": 250,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 5,
+          "description": "Deep section tree with few pages per section (mirrors doc/dossier sites). Stresses ancestors, subsections and per-section sorting.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "deep-sections",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 400,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 651,
+        "pages": 250,
+        "requested_pages": 250,
+        "scenario": "deep-sections",
+        "sections": 401,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 525105,
+        "files": 655
+      },
+      "pages": 250,
+      "resources": {
+        "cpu_utilization": 4.68,
+        "peak_rss_bytes": 180797440,
+        "sys_seconds": 1.36,
+        "user_seconds": 0.09,
+        "wall_seconds": 0.31
+      },
+      "scenario": "deep-sections",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/deep-sections-250",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.31729822446,
+        "mean": 0.3148321131266667,
+        "median": 0.31560222446,
+        "min": 0.31159589046,
+        "runs": 3,
+        "stddev": 0.002928131974687151,
+        "system": 1.4061627666666665,
+        "times": [
+          0.31159589046,
+          0.31560222446,
+          0.31729822446
+        ],
+        "user": 0.09383304666666666
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 319354,
+        "internal_links": 500,
+        "md_files": 901,
+        "page_files": 500,
+        "section_files": 401,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "deep-sections-500",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 321543,
+        "internal_links": 500,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 5,
+          "description": "Deep section tree with few pages per section (mirrors doc/dossier sites). Stresses ancestors, subsections and per-section sorting.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "deep-sections",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 400,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 901,
+        "pages": 500,
+        "requested_pages": 500,
+        "scenario": "deep-sections",
+        "sections": 401,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 811290,
+        "files": 905
+      },
+      "pages": 500,
+      "resources": {
+        "cpu_utilization": 5.26,
+        "peak_rss_bytes": 191676416,
+        "sys_seconds": 1.95,
+        "user_seconds": 0.1,
+        "wall_seconds": 0.39
+      },
+      "scenario": "deep-sections",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/deep-sections-500",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.40375479266000003,
+        "mean": 0.3970147096600001,
+        "median": 0.39462079266000005,
+        "min": 0.39266854366000004,
+        "runs": 3,
+        "stddev": 0.005918138066543135,
+        "system": 1.9681812466666668,
+        "times": [
+          0.39266854366000004,
+          0.39462079266000005,
+          0.40375479266000003
+        ],
+        "user": 0.10911905999999999
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 595207,
+        "internal_links": 1000,
+        "md_files": 1401,
+        "page_files": 1000,
+        "section_files": 401,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "deep-sections-1000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 597396,
+        "internal_links": 1000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 5,
+          "description": "Deep section tree with few pages per section (mirrors doc/dossier sites). Stresses ancestors, subsections and per-section sorting.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "deep-sections",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 400,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 1401,
+        "pages": 1000,
+        "requested_pages": 1000,
+        "scenario": "deep-sections",
+        "sections": 401,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 1384159,
+        "files": 1405
+      },
+      "pages": 1000,
+      "resources": {
+        "cpu_utilization": 5.5,
+        "peak_rss_bytes": 223150080,
+        "sys_seconds": 2.94,
+        "user_seconds": 0.14,
+        "wall_seconds": 0.56
+      },
+      "scenario": "deep-sections",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/deep-sections-1000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.6037114267200001,
+        "mean": 0.5787219130533335,
+        "median": 0.5682853017200001,
+        "min": 0.5641690107200001,
+        "runs": 3,
+        "stddev": 0.021739199798326517,
+        "system": 3.0575631066666666,
+        "times": [
+          0.5641690107200001,
+          0.5682853017200001,
+          0.6037114267200001
+        ],
+        "user": 0.14404748666666664
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 1150731,
+        "internal_links": 2000,
+        "md_files": 2401,
+        "page_files": 2000,
+        "section_files": 401,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "deep-sections-2000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 1152920,
+        "internal_links": 2000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 5,
+          "description": "Deep section tree with few pages per section (mirrors doc/dossier sites). Stresses ancestors, subsections and per-section sorting.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "deep-sections",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 400,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2401,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "deep-sections",
+        "sections": 401,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 2538090,
+        "files": 2405
+      },
+      "pages": 2000,
+      "resources": {
+        "cpu_utilization": 6.03,
+        "peak_rss_bytes": 277561344,
+        "sys_seconds": 5.29,
+        "user_seconds": 0.2,
+        "wall_seconds": 0.91
+      },
+      "scenario": "deep-sections",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/deep-sections-2000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.9230479213200001,
+        "mean": 0.9062849496533335,
+        "median": 0.9009377553200001,
+        "min": 0.8948691723200001,
+        "runs": 3,
+        "stddev": 0.014830874526813151,
+        "system": 5.275826433333333,
+        "times": [
+          0.8948691723200001,
+          0.9009377553200001,
+          0.9230479213200001
+        ],
+        "user": 0.20546500666666667
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 2261374,
+        "internal_links": 4000,
+        "md_files": 4401,
+        "page_files": 4000,
+        "section_files": 401,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "deep-sections-4000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2263563,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 5,
+          "description": "Deep section tree with few pages per section (mirrors doc/dossier sites). Stresses ancestors, subsections and per-section sorting.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "deep-sections",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 400,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4401,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "deep-sections",
+        "sections": 401,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 4844707,
+        "files": 4405
+      },
+      "pages": 4000,
+      "resources": {
+        "cpu_utilization": 6.31,
+        "peak_rss_bytes": 401129472,
+        "sys_seconds": 9.78,
+        "user_seconds": 0.32,
+        "wall_seconds": 1.6
+      },
+      "scenario": "deep-sections",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/deep-sections-4000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 1.60525562482,
+        "mean": 1.59050256882,
+        "median": 1.60161366582,
+        "min": 1.5646384158200002,
+        "runs": 3,
+        "stddev": 0.02247291200857096,
+        "system": 9.630207446666667,
+        "times": [
+          1.5646384158200002,
+          1.60161366582,
+          1.60525562482
+        ],
+        "user": 0.3212543
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 4482462,
+        "internal_links": 8000,
+        "md_files": 8401,
+        "page_files": 8000,
+        "section_files": 401,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "deep-sections-8000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 4484651,
+        "internal_links": 8000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 5,
+          "description": "Deep section tree with few pages per section (mirrors doc/dossier sites). Stresses ancestors, subsections and per-section sorting.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 3,
+          "minify": false,
+          "name": "deep-sections",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 400,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 8401,
+        "pages": 8000,
+        "requested_pages": 8000,
+        "scenario": "deep-sections",
+        "sections": 401,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 9459119,
+        "files": 8405
+      },
+      "pages": 8000,
+      "resources": {
+        "cpu_utilization": 5.87,
+        "peak_rss_bytes": 654475264,
+        "sys_seconds": 18.0,
+        "user_seconds": 0.56,
+        "wall_seconds": 3.16
+      },
+      "scenario": "deep-sections",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/deep-sections-8000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 3.2448923175799997,
+        "mean": 3.173943025913333,
+        "median": 3.16342310858,
+        "min": 3.11351365158,
+        "runs": 3,
+        "stddev": 0.0663180968176108,
+        "system": 18.26221836,
+        "times": [
+          3.11351365158,
+          3.16342310858,
+          3.2448923175799997
+        ],
+        "user": 0.5654818933333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 73243,
+        "internal_links": 100,
+        "md_files": 121,
+        "page_files": 100,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "template-heavy-100",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 77062,
+        "internal_links": 100,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Rich templates that walk section pages, ancestors and site data on every render.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "template-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 121,
+        "pages": 100,
+        "requested_pages": 100,
+        "scenario": "template-heavy",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 417388,
+        "files": 125
+      },
+      "pages": 100,
+      "resources": {
+        "cpu_utilization": 3.0,
+        "peak_rss_bytes": 176947200,
+        "sys_seconds": 0.3,
+        "user_seconds": 0.09,
+        "wall_seconds": 0.13
+      },
+      "scenario": "template-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/template-heavy-100",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.13745208592,
+        "mean": 0.13595732192,
+        "median": 0.13575858592,
+        "min": 0.13466129392,
+        "runs": 3,
+        "stddev": 0.0014059701259585779,
+        "system": 0.32091801999999997,
+        "times": [
+          0.13466129392,
+          0.13575858592,
+          0.13745208592
+        ],
+        "user": 0.09761256
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 180844,
+        "internal_links": 250,
+        "md_files": 271,
+        "page_files": 250,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "template-heavy-250",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 184663,
+        "internal_links": 250,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Rich templates that walk section pages, ancestors and site data on every render.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "template-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 271,
+        "pages": 250,
+        "requested_pages": 250,
+        "scenario": "template-heavy",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 1003885,
+        "files": 275
+      },
+      "pages": 250,
+      "resources": {
+        "cpu_utilization": 3.84,
+        "peak_rss_bytes": 186204160,
+        "sys_seconds": 0.61,
+        "user_seconds": 0.12,
+        "wall_seconds": 0.19
+      },
+      "scenario": "template-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/template-heavy-250",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.19754785630000002,
+        "mean": 0.19559599530000002,
+        "median": 0.1961095233,
+        "min": 0.1931306063,
+        "runs": 3,
+        "stddev": 0.0022529553137408255,
+        "system": 0.6540103666666667,
+        "times": [
+          0.1931306063,
+          0.1961095233,
+          0.19754785630000002
+        ],
+        "user": 0.12681035333333335
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 360912,
+        "internal_links": 500,
+        "md_files": 521,
+        "page_files": 500,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "template-heavy-500",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 364731,
+        "internal_links": 500,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Rich templates that walk section pages, ancestors and site data on every render.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "template-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 521,
+        "pages": 500,
+        "requested_pages": 500,
+        "scenario": "template-heavy",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 1982933,
+        "files": 525
+      },
+      "pages": 500,
+      "resources": {
+        "cpu_utilization": 4.86,
+        "peak_rss_bytes": 202211328,
+        "sys_seconds": 1.24,
+        "user_seconds": 0.17,
+        "wall_seconds": 0.29
+      },
+      "scenario": "template-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/template-heavy-500",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.29561906450000003,
+        "mean": 0.2909343005,
+        "median": 0.2949066895,
+        "min": 0.2822771475,
+        "runs": 3,
+        "stddev": 0.007505770652252382,
+        "system": 1.1796311333333334,
+        "times": [
+          0.2822771475,
+          0.2949066895,
+          0.29561906450000003
+        ],
+        "user": 0.17678872666666667
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 720808,
+        "internal_links": 1000,
+        "md_files": 1021,
+        "page_files": 1000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "template-heavy-1000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 724627,
+        "internal_links": 1000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Rich templates that walk section pages, ancestors and site data on every render.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "template-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 1021,
+        "pages": 1000,
+        "requested_pages": 1000,
+        "scenario": "template-heavy",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 3940260,
+        "files": 1025
+      },
+      "pages": 1000,
+      "resources": {
+        "cpu_utilization": 5.35,
+        "peak_rss_bytes": 231374848,
+        "sys_seconds": 2.31,
+        "user_seconds": 0.26,
+        "wall_seconds": 0.48
+      },
+      "scenario": "template-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/template-heavy-1000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.4991849974600001,
+        "mean": 0.4954047477933334,
+        "median": 0.4984285394600001,
+        "min": 0.48860070646,
+        "runs": 3,
+        "stddev": 0.005904599141832001,
+        "system": 2.356852793333333,
+        "times": [
+          0.48860070646,
+          0.4984285394600001,
+          0.4991849974600001
+        ],
+        "user": 0.2713608533333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 1443239,
+        "internal_links": 2000,
+        "md_files": 2021,
+        "page_files": 2000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "template-heavy-2000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 1447058,
+        "internal_links": 2000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Rich templates that walk section pages, ancestors and site data on every render.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "template-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2021,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "template-heavy",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 7870960,
+        "files": 2025
+      },
+      "pages": 2000,
+      "resources": {
+        "cpu_utilization": 5.52,
+        "peak_rss_bytes": 293535744,
+        "sys_seconds": 4.34,
+        "user_seconds": 0.46,
+        "wall_seconds": 0.87
+      },
+      "scenario": "template-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/template-heavy-2000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.89260685228,
+        "mean": 0.86520690728,
+        "median": 0.87410789328,
+        "min": 0.8289059762800001,
+        "runs": 3,
+        "stddev": 0.03276997199603609,
+        "system": 4.135205093333333,
+        "times": [
+          0.8289059762800001,
+          0.87410789328,
+          0.89260685228
+        ],
+        "user": 0.4675610799999999
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 2889444,
+        "internal_links": 4000,
+        "md_files": 4021,
+        "page_files": 4000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "template-heavy-4000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2893263,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Rich templates that walk section pages, ancestors and site data on every render.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "template-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4021,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "template-heavy",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 15733749,
+        "files": 4025
+      },
+      "pages": 4000,
+      "resources": {
+        "cpu_utilization": 5.8,
+        "peak_rss_bytes": 424984576,
+        "sys_seconds": 9.02,
+        "user_seconds": 0.89,
+        "wall_seconds": 1.71
+      },
+      "scenario": "template-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/template-heavy-4000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 1.68995706858,
+        "mean": 1.6796050552466666,
+        "median": 1.67514994458,
+        "min": 1.6737081525800002,
+        "runs": 3,
+        "stddev": 0.008994043922671767,
+        "system": 8.8801312,
+        "times": [
+          1.6737081525800002,
+          1.67514994458,
+          1.68995706858
+        ],
+        "user": 0.8411332466666667
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 5781260,
+        "internal_links": 8000,
+        "md_files": 8021,
+        "page_files": 8000,
+        "section_files": 21,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "template-heavy-8000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 5785079,
+        "internal_links": 8000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Rich templates that walk section pages, ancestors and site data on every render.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 1,
+          "markdown_paragraphs": 4,
+          "minify": false,
+          "name": "template-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 20,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 8021,
+        "pages": 8000,
+        "requested_pages": 8000,
+        "scenario": "template-heavy",
+        "sections": 21,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 31455972,
+        "files": 8025
+      },
+      "pages": 8000,
+      "resources": {
+        "cpu_utilization": 5.51,
+        "peak_rss_bytes": 698548224,
+        "sys_seconds": 17.42,
+        "user_seconds": 1.59,
+        "wall_seconds": 3.45
+      },
+      "scenario": "template-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/template-heavy-8000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 3.4530856189000003,
+        "mean": 3.4044752442333337,
+        "median": 3.3935657859000004,
+        "min": 3.3667743279000004,
+        "runs": 3,
+        "stddev": 0.044177731374151825,
+        "system": 17.07867659333333,
+        "times": [
+          3.3667743279000004,
+          3.3935657859000004,
+          3.4530856189000003
+        ],
+        "user": 1.62266036
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 865449,
+        "internal_links": 200,
+        "md_files": 116,
+        "page_files": 100,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-100",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 867558,
+        "internal_links": 200,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 116,
+        "pages": 100,
+        "requested_pages": 100,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 2151078,
+        "files": 120
+      },
+      "pages": 100,
+      "resources": {
+        "cpu_utilization": 2.85,
+        "peak_rss_bytes": 204455936,
+        "sys_seconds": 0.35,
+        "user_seconds": 0.22,
+        "wall_seconds": 0.2
+      },
+      "scenario": "markdown-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-100",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.21442780986,
+        "mean": 0.21307265686000001,
+        "median": 0.21285918486000002,
+        "min": 0.21193097586000004,
+        "runs": 3,
+        "stddev": 0.0012620311909683412,
+        "system": 0.3709040333333333,
+        "times": [
+          0.21193097586000004,
+          0.21285918486000002,
+          0.21442780986
+        ],
+        "user": 0.22802007999999999
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 2162148,
+        "internal_links": 500,
+        "md_files": 266,
+        "page_files": 250,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-250",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 2164257,
+        "internal_links": 500,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 266,
+        "pages": 250,
+        "requested_pages": 250,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 5366362,
+        "files": 270
+      },
+      "pages": 250,
+      "resources": {
+        "cpu_utilization": 3.05,
+        "peak_rss_bytes": 248479744,
+        "sys_seconds": 0.71,
+        "user_seconds": 0.45,
+        "wall_seconds": 0.38
+      },
+      "scenario": "markdown-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-250",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.3917705575,
+        "mean": 0.38863562683333336,
+        "median": 0.3912818495,
+        "min": 0.3828544735,
+        "runs": 3,
+        "stddev": 0.005012585089048291,
+        "system": 0.7670180266666665,
+        "times": [
+          0.3828544735,
+          0.3912818495,
+          0.3917705575
+        ],
+        "user": 0.44441328
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 4324967,
+        "internal_links": 1000,
+        "md_files": 516,
+        "page_files": 500,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-500",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 4327076,
+        "internal_links": 1000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 516,
+        "pages": 500,
+        "requested_pages": 500,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 10726629,
+        "files": 520
+      },
+      "pages": 500,
+      "resources": {
+        "cpu_utilization": 3.49,
+        "peak_rss_bytes": 322732032,
+        "sys_seconds": 1.53,
+        "user_seconds": 0.81,
+        "wall_seconds": 0.67
+      },
+      "scenario": "markdown-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-500",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.6803383507999999,
+        "mean": 0.6743591561333333,
+        "median": 0.6772666838,
+        "min": 0.6654724338,
+        "runs": 3,
+        "stddev": 0.007847876140208003,
+        "system": 1.4036125133333333,
+        "times": [
+          0.6654724338,
+          0.6772666838,
+          0.6803383507999999
+        ],
+        "user": 0.7957605266666666
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 8649981,
+        "internal_links": 2000,
+        "md_files": 1016,
+        "page_files": 1000,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-1000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 8652090,
+        "internal_links": 2000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 1016,
+        "pages": 1000,
+        "requested_pages": 1000,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 21447010,
+        "files": 1020
+      },
+      "pages": 1000,
+      "resources": {
+        "cpu_utilization": 3.6,
+        "peak_rss_bytes": 468041728,
+        "sys_seconds": 3.06,
+        "user_seconds": 1.58,
+        "wall_seconds": 1.29
+      },
+      "scenario": "markdown-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-1000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 1.28891909678,
+        "mean": 1.2601376384466667,
+        "median": 1.25272713878,
+        "min": 1.2387666797799999,
+        "runs": 3,
+        "stddev": 0.02588441348993101,
+        "system": 3.033181593333333,
+        "times": [
+          1.2387666797799999,
+          1.25272713878,
+          1.28891909678
+        ],
+        "user": 1.5108319666666665
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 17295994,
+        "internal_links": 4000,
+        "md_files": 2016,
+        "page_files": 2000,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-2000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 17298103,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2016,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 42887461,
+        "files": 2020
+      },
+      "pages": 2000,
+      "resources": {
+        "cpu_utilization": 3.7,
+        "peak_rss_bytes": 764329984,
+        "sys_seconds": 6.04,
+        "user_seconds": 2.88,
+        "wall_seconds": 2.41
+      },
+      "scenario": "markdown-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-2000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 2.4002645031800003,
+        "mean": 2.3865918501800003,
+        "median": 2.3964967941800004,
+        "min": 2.3630142531800002,
+        "runs": 3,
+        "stddev": 0.020505516769834867,
+        "system": 5.844518286666666,
+        "times": [
+          2.3630142531800002,
+          2.3964967941800004,
+          2.4002645031800003
+        ],
+        "user": 2.8709119466666664
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 34590832,
+        "internal_links": 8000,
+        "md_files": 4016,
+        "page_files": 4000,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-4000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 34592941,
+        "internal_links": 8000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4016,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 85771435,
+        "files": 4020
+      },
+      "pages": 4000,
+      "resources": {
+        "cpu_utilization": 3.75,
+        "peak_rss_bytes": 1361870848,
+        "sys_seconds": 12.01,
+        "user_seconds": 5.6,
+        "wall_seconds": 4.69
+      },
+      "scenario": "markdown-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-4000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 4.74500456328,
+        "mean": 4.6958551042800005,
+        "median": 4.69126031228,
+        "min": 4.65130043728,
+        "runs": 3,
+        "stddev": 0.047020738961637325,
+        "system": 11.867228239999998,
+        "times": [
+          4.65130043728,
+          4.69126031228,
+          4.74500456328
+        ],
+        "user": 5.5988823
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 69194089,
+        "internal_links": 16000,
+        "md_files": 8016,
+        "page_files": 8000,
+        "section_files": 16,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "markdown-heavy-8000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 69196198,
+        "internal_links": 16000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 2,
+          "description": "Large markdown bodies with code blocks, tables and many headings.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 60,
+          "minify": false,
+          "name": "markdown-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 15,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "simple",
+          "templating_frequency": 0.0,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 8016,
+        "pages": 8000,
+        "requested_pages": 8000,
+        "scenario": "markdown-heavy",
+        "sections": 16,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 171553411,
+        "files": 8020
+      },
+      "pages": 8000,
+      "resources": {
+        "cpu_utilization": 3.67,
+        "peak_rss_bytes": 2563784704,
+        "sys_seconds": 23.42,
+        "user_seconds": 11.15,
+        "wall_seconds": 9.42
+      },
+      "scenario": "markdown-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/markdown-heavy-8000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 9.482431058480001,
+        "mean": 9.40844935048,
+        "median": 9.41810722548,
+        "min": 9.324809767480001,
+        "runs": 3,
+        "stddev": 0.0792532255259265,
+        "system": 23.53050005333333,
+        "times": [
+          9.324809767480001,
+          9.41810722548,
+          9.482431058480001
+        ],
+        "user": 11.189959526666668
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 103298,
+        "internal_links": 200,
+        "md_files": 301,
+        "page_files": 100,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-100",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 1247055,
+        "internal_links": 200,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 301,
+        "pages": 100,
+        "requested_pages": 100,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 1301060,
+        "files": 305
+      },
+      "pages": 100,
+      "resources": {
+        "cpu_utilization": 2.95,
+        "peak_rss_bytes": 192479232,
+        "sys_seconds": 0.43,
+        "user_seconds": 0.16,
+        "wall_seconds": 0.2
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-100",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.19344191534000002,
+        "mean": 0.19006158200666667,
+        "median": 0.18840737334000002,
+        "min": 0.18833545734,
+        "runs": 3,
+        "stddev": 0.0029276753681201323,
+        "system": 0.44656868666666666,
+        "times": [
+          0.18833545734,
+          0.18840737334000002,
+          0.19344191534000002
+        ],
+        "user": 0.1627741
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 226556,
+        "internal_links": 500,
+        "md_files": 451,
+        "page_files": 250,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-250",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 3081349,
+        "internal_links": 500,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 451,
+        "pages": 250,
+        "requested_pages": 250,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 2852028,
+        "files": 455
+      },
+      "pages": 250,
+      "resources": {
+        "cpu_utilization": 3.05,
+        "peak_rss_bytes": 219709440,
+        "sys_seconds": 0.44,
+        "user_seconds": 0.23,
+        "wall_seconds": 0.22
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-250",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.23265805290000002,
+        "mean": 0.22928201123333336,
+        "median": 0.22797713590000002,
+        "min": 0.22721084490000001,
+        "runs": 3,
+        "stddev": 0.002948735911449576,
+        "system": 0.39666285999999995,
+        "times": [
+          0.22721084490000001,
+          0.22797713590000002,
+          0.23265805290000002
+        ],
+        "user": 0.23904788
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 433354,
+        "internal_links": 1000,
+        "md_files": 701,
+        "page_files": 500,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-500",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 6138465,
+        "internal_links": 1000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 701,
+        "pages": 500,
+        "requested_pages": 500,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 5464272,
+        "files": 705
+      },
+      "pages": 500,
+      "resources": {
+        "cpu_utilization": 2.68,
+        "peak_rss_bytes": 268566528,
+        "sys_seconds": 0.46,
+        "user_seconds": 0.37,
+        "wall_seconds": 0.31
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-500",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.3186026624,
+        "mean": 0.3141241760666667,
+        "median": 0.3134646204,
+        "min": 0.31030524540000004,
+        "runs": 3,
+        "stddev": 0.004187844609825709,
+        "system": 0.4851393333333333,
+        "times": [
+          0.31030524540000004,
+          0.3134646204,
+          0.3186026624
+        ],
+        "user": 0.36108937333333335
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 846156,
+        "internal_links": 2000,
+        "md_files": 1201,
+        "page_files": 1000,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-1000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 12252521,
+        "internal_links": 2000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 1201,
+        "pages": 1000,
+        "requested_pages": 1000,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 10687555,
+        "files": 1205
+      },
+      "pages": 1000,
+      "resources": {
+        "cpu_utilization": 2.94,
+        "peak_rss_bytes": 364019712,
+        "sys_seconds": 0.83,
+        "user_seconds": 0.61,
+        "wall_seconds": 0.49
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-1000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.5004916783,
+        "mean": 0.48671673396666665,
+        "median": 0.48287576130000004,
+        "min": 0.4767827623,
+        "runs": 3,
+        "stddev": 0.012312310008415307,
+        "system": 0.7610134466666666,
+        "times": [
+          0.4767827623,
+          0.48287576130000004,
+          0.5004916783
+        ],
+        "user": 0.6139313666666667
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 1675224,
+        "internal_links": 4000,
+        "md_files": 2201,
+        "page_files": 2000,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-2000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 24485995,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 2201,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 21153911,
+        "files": 2205
+      },
+      "pages": 2000,
+      "resources": {
+        "cpu_utilization": 2.88,
+        "peak_rss_bytes": 558202880,
+        "sys_seconds": 1.42,
+        "user_seconds": 1.11,
+        "wall_seconds": 0.88
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-2000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.8580291646800001,
+        "mean": 0.8504204566800001,
+        "median": 0.85677420668,
+        "min": 0.83645799868,
+        "runs": 3,
+        "stddev": 0.012108113186899297,
+        "system": 1.3970595866666666,
+        "times": [
+          0.83645799868,
+          0.85677420668,
+          0.8580291646800001
+        ],
+        "user": 1.1157639466666667
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 3332914,
+        "internal_links": 8000,
+        "md_files": 4201,
+        "page_files": 4000,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-4000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 48949366,
+        "internal_links": 8000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 4201,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 42083872,
+        "files": 4205
+      },
+      "pages": 4000,
+      "resources": {
+        "cpu_utilization": 3.03,
+        "peak_rss_bytes": 953352192,
+        "sys_seconds": 2.71,
+        "user_seconds": 2.1,
+        "wall_seconds": 1.59
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-4000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 1.65059342658,
+        "mean": 1.6089947322466667,
+        "median": 1.61924438458,
+        "min": 1.5571463855799998,
+        "runs": 3,
+        "stddev": 0.04755921464479393,
+        "system": 2.6419058266666666,
+        "times": [
+          1.5571463855799998,
+          1.61924438458,
+          1.65059342658
+        ],
+        "user": 2.1213347
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 6647078,
+        "internal_links": 16000,
+        "md_files": 8201,
+        "page_files": 8000,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-8000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 97874441,
+        "internal_links": 16000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 8201,
+        "pages": 8000,
+        "requested_pages": 8000,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 83942169,
+        "files": 8205
+      },
+      "pages": 8000,
+      "resources": {
+        "cpu_utilization": 2.91,
+        "peak_rss_bytes": 1754103808,
+        "sys_seconds": 5.17,
+        "user_seconds": 4.09,
+        "wall_seconds": 3.18
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-8000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 3.1148887833599996,
+        "mean": 3.0838483526933334,
+        "median": 3.0697030333599997,
+        "min": 3.06695324136,
+        "runs": 3,
+        "stddev": 0.02691693873734376,
+        "system": 5.17544106,
+        "times": [
+          3.06695324136,
+          3.0697030333599997,
+          3.1148887833599996
+        ],
+        "user": 4.071548739999999
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 187405,
+        "internal_links": 600,
+        "md_files": 401,
+        "page_files": 100,
+        "section_files": 301,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "mixed-realistic-100",
+      "manifest": {
+        "aliases": 14,
+        "assets": 7,
+        "input_bytes": 191767,
+        "internal_links": 600,
+        "knobs": {
+          "alias_frequency": 0.1,
+          "assets_frequency": 0.05,
+          "depth": 4,
+          "description": "Approximates the reference site: deep sections, moderate links, content templating, aliases, minify, some assets.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 6,
+          "markdown_paragraphs": 8,
+          "minify": true,
+          "name": "mixed-realistic",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 300,
+          "taxonomies_per_page": 3,
+          "taxonomy_cardinality": 40,
+          "taxonomy_count": 2,
+          "template_complexity": "rich",
+          "templating_frequency": 0.25,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 401,
+        "pages": 100,
+        "requested_pages": 100,
+        "scenario": "mixed-realistic",
+        "sections": 301,
+        "seed": 20260811,
+        "taxonomies": 2,
+        "taxonomy_terms": 80,
+        "templated_pages": 19
+      },
+      "output": {
+        "bytes": 1034690,
+        "files": 499
+      },
+      "pages": 100,
+      "resources": {
+        "cpu_utilization": 4.32,
+        "peak_rss_bytes": 189775872,
+        "sys_seconds": 0.93,
+        "user_seconds": 0.15,
+        "wall_seconds": 0.25
+      },
+      "scenario": "mixed-realistic",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/mixed-realistic-100",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.26339243958,
+        "mean": 0.2627188149133333,
+        "median": 0.26271473158,
+        "min": 0.26204927358,
+        "runs": 3,
+        "stddev": 0.0006715923101832971,
+        "system": 0.9547395533333334,
+        "times": [
+          0.26204927358,
+          0.26271473158,
+          0.26339243958
+        ],
+        "user": 0.15884800000000002
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 424506,
+        "internal_links": 1500,
+        "md_files": 551,
+        "page_files": 250,
+        "section_files": 301,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "mixed-realistic-250",
+      "manifest": {
+        "aliases": 27,
+        "assets": 18,
+        "input_bytes": 428868,
+        "internal_links": 1500,
+        "knobs": {
+          "alias_frequency": 0.1,
+          "assets_frequency": 0.05,
+          "depth": 4,
+          "description": "Approximates the reference site: deep sections, moderate links, content templating, aliases, minify, some assets.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 6,
+          "markdown_paragraphs": 8,
+          "minify": true,
+          "name": "mixed-realistic",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 300,
+          "taxonomies_per_page": 3,
+          "taxonomy_cardinality": 40,
+          "taxonomy_count": 2,
+          "template_complexity": "rich",
+          "templating_frequency": 0.25,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 551,
+        "pages": 250,
+        "requested_pages": 250,
+        "scenario": "mixed-realistic",
+        "sections": 301,
+        "seed": 20260811,
+        "taxonomies": 2,
+        "taxonomy_terms": 80,
+        "templated_pages": 57
+      },
+      "output": {
+        "bytes": 1854143,
+        "files": 682
+      },
+      "pages": 250,
+      "resources": {
+        "cpu_utilization": 4.42,
+        "peak_rss_bytes": 208912384,
+        "sys_seconds": 1.24,
+        "user_seconds": 0.22,
+        "wall_seconds": 0.33
+      },
+      "scenario": "mixed-realistic",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/mixed-realistic-250",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.4460747275,
+        "mean": 0.36577921350000003,
+        "median": 0.32577989350000003,
+        "min": 0.3254830195,
+        "runs": 3,
+        "stddev": 0.06953811336192631,
+        "system": 1.20750764,
+        "times": [
+          0.3254830195,
+          0.32577989350000003,
+          0.4460747275
+        ],
+        "user": 0.22390234666666664
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 815673,
+        "internal_links": 3000,
+        "md_files": 801,
+        "page_files": 500,
+        "section_files": 301,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "mixed-realistic-500",
+      "manifest": {
+        "aliases": 50,
+        "assets": 32,
+        "input_bytes": 820035,
+        "internal_links": 3000,
+        "knobs": {
+          "alias_frequency": 0.1,
+          "assets_frequency": 0.05,
+          "depth": 4,
+          "description": "Approximates the reference site: deep sections, moderate links, content templating, aliases, minify, some assets.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 6,
+          "markdown_paragraphs": 8,
+          "minify": true,
+          "name": "mixed-realistic",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 300,
+          "taxonomies_per_page": 3,
+          "taxonomy_cardinality": 40,
+          "taxonomy_count": 2,
+          "template_complexity": "rich",
+          "templating_frequency": 0.25,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 801,
+        "pages": 500,
+        "requested_pages": 500,
+        "scenario": "mixed-realistic",
+        "sections": 301,
+        "seed": 20260811,
+        "taxonomies": 2,
+        "taxonomy_terms": 80,
+        "templated_pages": 112
+      },
+      "output": {
+        "bytes": 3230975,
+        "files": 969
+      },
+      "pages": 500,
+      "resources": {
+        "cpu_utilization": 4.16,
+        "peak_rss_bytes": 277381120,
+        "sys_seconds": 1.5,
+        "user_seconds": 0.33,
+        "wall_seconds": 0.44
+      },
+      "scenario": "mixed-realistic",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/mixed-realistic-500",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.45446744346,
+        "mean": 0.4510943881266667,
+        "median": 0.45286394346000003,
+        "min": 0.44595177746000003,
+        "runs": 3,
+        "stddev": 0.004525222250253047,
+        "system": 1.7506680466666664,
+        "times": [
+          0.44595177746000003,
+          0.45286394346000003,
+          0.45446744346
+        ],
+        "user": 0.34392602
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 1601859,
+        "internal_links": 6000,
+        "md_files": 1301,
+        "page_files": 1000,
+        "section_files": 301,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "mixed-realistic-1000",
+      "manifest": {
+        "aliases": 95,
+        "assets": 65,
+        "input_bytes": 1606221,
+        "internal_links": 6000,
+        "knobs": {
+          "alias_frequency": 0.1,
+          "assets_frequency": 0.05,
+          "depth": 4,
+          "description": "Approximates the reference site: deep sections, moderate links, content templating, aliases, minify, some assets.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 6,
+          "markdown_paragraphs": 8,
+          "minify": true,
+          "name": "mixed-realistic",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 300,
+          "taxonomies_per_page": 3,
+          "taxonomy_cardinality": 40,
+          "taxonomy_count": 2,
+          "template_complexity": "rich",
+          "templating_frequency": 0.25,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 1301,
+        "pages": 1000,
+        "requested_pages": 1000,
+        "scenario": "mixed-realistic",
+        "sections": 301,
+        "seed": 20260811,
+        "taxonomies": 2,
+        "taxonomy_terms": 80,
+        "templated_pages": 243
+      },
+      "output": {
+        "bytes": 6000302,
+        "files": 1547
+      },
+      "pages": 1000,
+      "resources": {
+        "cpu_utilization": 4.35,
+        "peak_rss_bytes": 430587904,
+        "sys_seconds": 2.5,
+        "user_seconds": 0.59,
+        "wall_seconds": 0.71
+      },
+      "scenario": "mixed-realistic",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/mixed-realistic-1000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 0.74804361968,
+        "mean": 0.7163861200133333,
+        "median": 0.70539566168,
+        "min": 0.69571907868,
+        "runs": 3,
+        "stddev": 0.027839846057363914,
+        "system": 2.18489426,
+        "times": [
+          0.69571907868,
+          0.70539566168,
+          0.74804361968
+        ],
+        "user": 0.57895256
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 3183881,
+        "internal_links": 12000,
+        "md_files": 2301,
+        "page_files": 2000,
+        "section_files": 301,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "mixed-realistic-2000",
+      "manifest": {
+        "aliases": 215,
+        "assets": 112,
+        "input_bytes": 3188243,
+        "internal_links": 12000,
+        "knobs": {
+          "alias_frequency": 0.1,
+          "assets_frequency": 0.05,
+          "depth": 4,
+          "description": "Approximates the reference site: deep sections, moderate links, content templating, aliases, minify, some assets.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 6,
+          "markdown_paragraphs": 8,
+          "minify": true,
+          "name": "mixed-realistic",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 300,
+          "taxonomies_per_page": 3,
+          "taxonomy_cardinality": 40,
+          "taxonomy_count": 2,
+          "template_complexity": "rich",
+          "templating_frequency": 0.25,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 2301,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "mixed-realistic",
+        "sections": 301,
+        "seed": 20260811,
+        "taxonomies": 2,
+        "taxonomy_terms": 80,
+        "templated_pages": 501
+      },
+      "output": {
+        "bytes": 11591731,
+        "files": 2714
+      },
+      "pages": 2000,
+      "resources": {
+        "cpu_utilization": 3.66,
+        "peak_rss_bytes": 742277120,
+        "sys_seconds": 3.57,
+        "user_seconds": 1.08,
+        "wall_seconds": 1.27
+      },
+      "scenario": "mixed-realistic",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/mixed-realistic-2000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 1.30557163588,
+        "mean": 1.28064813588,
+        "median": 1.30280780188,
+        "min": 1.23356496988,
+        "runs": 3,
+        "stddev": 0.04079862846999342,
+        "system": 3.8408580466666664,
+        "times": [
+          1.23356496988,
+          1.30280780188,
+          1.30557163588
+        ],
+        "user": 1.0976164666666666
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 6347070,
+        "internal_links": 24000,
+        "md_files": 4301,
+        "page_files": 4000,
+        "section_files": 301,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "mixed-realistic-4000",
+      "manifest": {
+        "aliases": 418,
+        "assets": 207,
+        "input_bytes": 6351432,
+        "internal_links": 24000,
+        "knobs": {
+          "alias_frequency": 0.1,
+          "assets_frequency": 0.05,
+          "depth": 4,
+          "description": "Approximates the reference site: deep sections, moderate links, content templating, aliases, minify, some assets.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 6,
+          "markdown_paragraphs": 8,
+          "minify": true,
+          "name": "mixed-realistic",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 300,
+          "taxonomies_per_page": 3,
+          "taxonomy_cardinality": 40,
+          "taxonomy_count": 2,
+          "template_complexity": "rich",
+          "templating_frequency": 0.25,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 4301,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "mixed-realistic",
+        "sections": 301,
+        "seed": 20260811,
+        "taxonomies": 2,
+        "taxonomy_terms": 80,
+        "templated_pages": 1020
+      },
+      "output": {
+        "bytes": 22765217,
+        "files": 5012
+      },
+      "pages": 4000,
+      "resources": {
+        "cpu_utilization": 2.81,
+        "peak_rss_bytes": 1368948736,
+        "sys_seconds": 4.53,
+        "user_seconds": 2.11,
+        "wall_seconds": 2.36
+      },
+      "scenario": "mixed-realistic",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/mixed-realistic-4000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 2.41820526448,
+        "mean": 2.32463740348,
+        "median": 2.36579488948,
+        "min": 2.18991205648,
+        "runs": 3,
+        "stddev": 0.1195821943063138,
+        "system": 5.426372613333334,
+        "times": [
+          2.18991205648,
+          2.36579488948,
+          2.41820526448
+        ],
+        "user": 2.0684304333333334
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 12676966,
+        "internal_links": 48000,
+        "md_files": 8301,
+        "page_files": 8000,
+        "section_files": 301,
+        "static_files": 1,
+        "templates": 6
+      },
+      "label": "mixed-realistic-8000",
+      "manifest": {
+        "aliases": 815,
+        "assets": 441,
+        "input_bytes": 12681328,
+        "internal_links": 48000,
+        "knobs": {
+          "alias_frequency": 0.1,
+          "assets_frequency": 0.05,
+          "depth": 4,
+          "description": "Approximates the reference site: deep sections, moderate links, content templating, aliases, minify, some assets.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 6,
+          "markdown_paragraphs": 8,
+          "minify": true,
+          "name": "mixed-realistic",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 300,
+          "taxonomies_per_page": 3,
+          "taxonomy_cardinality": 40,
+          "taxonomy_count": 2,
+          "template_complexity": "rich",
+          "templating_frequency": 0.25,
+          "view_model_kb": 0
+        },
+        "languages": 1,
+        "md_files": 8301,
+        "pages": 8000,
+        "requested_pages": 8000,
+        "scenario": "mixed-realistic",
+        "sections": 301,
+        "seed": 20260811,
+        "taxonomies": 2,
+        "taxonomy_terms": 80,
+        "templated_pages": 2047
+      },
+      "output": {
+        "bytes": 45109374,
+        "files": 9643
+      },
+      "pages": 8000,
+      "resources": {
+        "cpu_utilization": 2.75,
+        "peak_rss_bytes": 2632876032,
+        "sys_seconds": 9.59,
+        "user_seconds": 4.37,
+        "wall_seconds": 5.07
+      },
+      "scenario": "mixed-realistic",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/mixed-realistic-8000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 5.154855297119999,
+        "mean": 5.066677700119999,
+        "median": 5.0496038811199995,
+        "min": 4.995573922119999,
+        "runs": 3,
+        "stddev": 0.08100170107415164,
+        "system": 9.542501006666667,
+        "times": [
+          4.995573922119999,
+          5.0496038811199995,
+          5.154855297119999
+        ],
+        "user": 4.370788553333333
+      }
+    }
+  ]
+}

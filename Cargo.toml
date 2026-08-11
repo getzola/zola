@@ -73,6 +73,10 @@ same-file = "1"
 [features]
 indexing-zh = ["search/indexing-zh"]
 indexing-ja = ["search/indexing-ja"]
+# Developer diagnostic: wraps the system allocator to count allocations and
+# bytes per build phase, reported by `zola build --timings`. Off by default;
+# enabling it slows the binary down and must never be used for timing runs.
+alloc-stats = []
 
 [workspace.dependencies]
 # External dependencies

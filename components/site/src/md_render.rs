@@ -12,6 +12,7 @@ use errors::{Context as _, Result};
 use markdown::MarkdownContext;
 use render::Renderer;
 use utils::net::is_external_link;
+use utils::timings;
 use utils::types::InsertAnchor;
 
 #[inline]
@@ -38,7 +39,9 @@ pub fn render_page(
         .is_some_and(|gs| gs.is_match(&page.file.relative));
 
     let input = if !skip_templating && needs_templating(&page.raw_content) {
-        Cow::Owned(renderer.render_page_content(&page.raw_content, page)?)
+        Cow::Owned(timings::measure("md: content templating (pages)", || {
+            renderer.render_page_content(&page.raw_content, page)
+        })?)
     } else {
         Cow::Borrowed(&page.raw_content)
     };
@@ -53,8 +56,10 @@ pub fn render_page(
         current_path: &page.file.relative,
         insert_anchor,
     };
-    let res = markdown::render_content(&input, &context)
-        .with_context(|| format!("Failed to render content of {}", page.file.path.display()))?;
+    let res = timings::measure("md: markdown render (pages)", || {
+        markdown::render_content(&input, &context)
+    })
+    .with_context(|| format!("Failed to render content of {}", page.file.path.display()))?;
 
     page.summary = res.summary;
     page.content = res.body;
@@ -79,7 +84,9 @@ pub fn render_section(
         .is_some_and(|gs| gs.is_match(&section.file.relative));
 
     let input = if !skip_templating && needs_templating(&section.raw_content) {
-        Cow::Owned(renderer.render_section_content(&section.raw_content, section)?)
+        Cow::Owned(timings::measure("md: content templating (sections)", || {
+            renderer.render_section_content(&section.raw_content, section)
+        })?)
     } else {
         Cow::Borrowed(&section.raw_content)
     };
@@ -96,8 +103,10 @@ pub fn render_section(
             .insert_anchor_links
             .unwrap_or(config.markdown.insert_anchor_links),
     };
-    let res = markdown::render_content(&input, &context)
-        .with_context(|| format!("Failed to render content of {}", section.file.path.display()))?;
+    let res = timings::measure("md: markdown render (sections)", || {
+        markdown::render_content(&input, &context)
+    })
+    .with_context(|| format!("Failed to render content of {}", section.file.path.display()))?;
 
     section.content = res.body;
     section.raw_content.clear();

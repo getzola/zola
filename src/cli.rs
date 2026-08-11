@@ -58,6 +58,10 @@ pub enum Command {
         /// Minify generated HTML files
         #[clap(long)]
         minify: bool,
+
+        /// Print a breakdown of how long each build phase took (developer diagnostic)
+        #[clap(long)]
+        timings: bool,
     },
 
     /// Serve the site. Rebuild and reload on change automatically

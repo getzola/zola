@@ -10,6 +10,7 @@ use relative_path::RelativePathBuf;
 use render::{FeedInput, Paginator, Renderer};
 use templates::render_redirect_template;
 use utils::net::is_external_link;
+use utils::timings;
 
 #[derive(Debug, Clone, PartialEq)]
 enum Feed<'a> {
@@ -31,6 +32,25 @@ enum Job<'a> {
     Sitemap,
     NotFound,
     Robots,
+}
+
+impl Job<'_> {
+    /// Stable label for `--timings` accumulators.
+    fn timing_label(&self) -> &'static str {
+        match self {
+            Job::Alias { .. } => "render: alias",
+            Job::Page(_) => "render: page",
+            Job::Section { .. } => "render: section",
+            Job::SectionAssets { .. } => "render: section assets (noop)",
+            Job::Paginated { .. } => "render: paginated",
+            Job::TaxonomyList { .. } => "render: taxonomy list",
+            Job::TaxonomyTerm { .. } => "render: taxonomy term",
+            Job::Feed(_) => "render: feed",
+            Job::Sitemap => "render: sitemap",
+            Job::NotFound => "render: 404",
+            Job::Robots => "render: robots",
+        }
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -225,7 +245,8 @@ impl<'a> Queue<'a> {
 
     pub fn process(&self) -> Result<()> {
         self.jobs.par_iter().try_for_each(|job| {
-            for output in self.execute_job(job)? {
+            let outputs = timings::measure(job.timing_label(), || self.execute_job(job))?;
+            for output in outputs {
                 self.write_output(output)?;
             }
 
@@ -235,15 +256,19 @@ impl<'a> Queue<'a> {
                         .site
                         .output_path
                         .join(page.path.strip_prefix('/').unwrap_or(&page.path));
-                    self.site.copy_assets(page.file.path.parent().unwrap(), &page.assets, &dest)?;
+                    timings::measure("out: copy page assets", || {
+                        self.site.copy_assets(page.file.path.parent().unwrap(), &page.assets, &dest)
+                    })?;
                 }
                 Job::SectionAssets { section, path } => {
                     let dest = self.site.output_path.join(path);
-                    self.site.copy_assets(
-                        section.file.path.parent().unwrap(),
-                        &section.assets,
-                        &dest,
-                    )?;
+                    timings::measure("out: copy section assets", || {
+                        self.site.copy_assets(
+                            section.file.path.parent().unwrap(),
+                            &section.assets,
+                            &dest,
+                        )
+                    })?;
                 }
                 _ => {}
             }
@@ -257,7 +282,7 @@ impl<'a> Queue<'a> {
                 // TODO: move live reload injection to this file
                 let mut c = self.site.inject_livereload(output.content);
                 if self.site.config.minify_html {
-                    c = minify::html(c)?;
+                    c = timings::measure("out: minify html", || minify::html(c))?;
                 }
                 c
             }
@@ -269,10 +294,13 @@ impl<'a> Queue<'a> {
         match self.site.build_mode {
             BuildMode::Disk | BuildMode::Both => {
                 let full_path = self.site.output_path.join(relative_path);
-                if let Some(parent) = full_path.parent() {
-                    fs::create_dir_all(parent)?;
-                }
-                fs::write(&full_path, &content)?;
+                timings::measure("out: write file", || -> Result<()> {
+                    if let Some(parent) = full_path.parent() {
+                        fs::create_dir_all(parent)?;
+                    }
+                    fs::write(&full_path, &content)?;
+                    Ok(())
+                })?;
             }
             _ => (),
         }

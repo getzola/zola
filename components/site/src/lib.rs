@@ -29,6 +29,7 @@ use utils::fs::{
     clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
 };
 use utils::net::get_available_port;
+use utils::timings;
 use utils::types::InsertAnchor;
 
 pub static SITE_CONTENT: LazyLock<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
@@ -81,14 +82,24 @@ impl Site {
     pub fn new<P: AsRef<Path>, P2: AsRef<Path>>(path: P, config_file: P2) -> Result<Site> {
         let path = path.as_ref();
         let config_file = config_file.as_ref();
-        let mut config = get_config(&path.join(config_file))?;
+        let config = {
+            let _span = timings::span("config");
+            let mut config = get_config(&path.join(config_file))?;
 
-        if let Some(theme) = config.theme.clone() {
-            // Grab data from the extra section of the theme
-            config.merge_with_theme(path.join("themes").join(&theme).join("theme.toml"), &theme)?;
-        }
+            if let Some(theme) = config.theme.clone() {
+                // Grab data from the extra section of the theme
+                config.merge_with_theme(
+                    path.join("themes").join(&theme).join("theme.toml"),
+                    &theme,
+                )?;
+            }
+            config
+        };
 
-        let tera = load_tera(path, &config)?;
+        let tera = {
+            let _span = timings::span("templates::load");
+            load_tera(path, &config)?
+        };
 
         let content_path = path.join("content");
         let sass_path = path.join("sass");
@@ -187,6 +198,7 @@ impl Site {
     /// out of them
     pub fn load(&mut self) -> Result<()> {
         self.library = Arc::new(Library::new(&self.config));
+        let discover_span = timings::span("discover + parse sections");
 
         // not the most elegant loop, but this is necessary to use skip_current_dir
         // which we can only decide to use after we've deserialised the section
@@ -278,6 +290,8 @@ impl Site {
                 page_paths.push(path.to_path_buf());
             }
         }
+        drop(discover_span);
+        let parse_span = timings::span("parse pages");
         let results: Vec<(PathBuf, Result<Page>)> = page_paths
             .par_iter()
             .map(|p| (p.clone(), Page::from_file(p, &self.config, &self.base_path)))
@@ -298,6 +312,8 @@ impl Site {
         }
 
         let pages: Vec<Page> = pages.into_iter().map(|(_, r)| r.unwrap()).collect();
+        drop(parse_span);
+        let index_span = timings::span("index (insert pages + permalinks)");
         self.create_default_index_sections()?;
 
         for page in pages {
@@ -326,6 +342,8 @@ impl Site {
             self.add_page(page, false)?;
         }
 
+        drop(index_span);
+        let collision_span = timings::span("path collision check");
         let collisions = self.library.find_path_collisions(&self.config);
         if !collisions.is_empty() {
             let mut msg = String::from("Found path collisions:\n");
@@ -336,21 +354,45 @@ impl Site {
             return Err(anyhow!(msg));
         }
 
+        drop(collision_span);
         self.cache = Arc::new(RenderCache::new(&self.config));
         // Sections need to be populated first to handle the `hidden` visibility so the `populate_taxonomies`
         // call below can use it to exclude pages.
-        self.populate_sections();
+        {
+            let _span = timings::span("populate sections (graph + sorting)");
+            self.populate_sections();
+        }
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
-        self.populate_taxonomies()?;
-        tpls::register_early_global_fns(self);
-        self.render_markdown()?;
-        Arc::make_mut(&mut self.library).fill_backlinks();
-        Arc::make_mut(&mut self.cache).build(&self.library, &self.taxonomies, &self.tera);
-        tpls::register_tera_global_fns(self);
+        {
+            let _span = timings::span("populate taxonomies");
+            self.populate_taxonomies()?;
+        }
+        {
+            let _span = timings::span("register tera fns (early)");
+            tpls::register_early_global_fns(self);
+        }
+        {
+            let _span = timings::span("render markdown");
+            self.render_markdown()?;
+        }
+        {
+            let _span = timings::span("fill backlinks");
+            Arc::make_mut(&mut self.library).fill_backlinks();
+        }
+        {
+            let _span = timings::span("build render cache");
+            Arc::make_mut(&mut self.cache).build(&self.library, &self.taxonomies, &self.tera);
+        }
+        {
+            let _span = timings::span("register tera fns");
+            tpls::register_tera_global_fns(self);
+        }
 
         // Needs to be done after rendering markdown as we only get the anchors at that point
+        let link_span = timings::span("check internal links");
         let internal_link_messages = link_checking::check_internal_links_with_anchors(self);
+        drop(link_span);
 
         // log any broken internal links and error out if needed
         if !internal_link_messages.is_empty() {
@@ -715,6 +757,7 @@ impl Site {
         let mut start = Instant::now();
         // Do not clean on `zola serve` otherwise we end up copying assets all the time
         if self.build_mode == BuildMode::Disk {
+            let _span = timings::span("clean output dir");
             self.clean()?;
         }
         start = log_time(start, "Cleaned folder");
@@ -723,32 +766,50 @@ impl Site {
         if let Some(ref theme) = self.config.theme {
             let theme_path = self.base_path.join("themes").join(theme);
             if theme_path.join("sass").exists() {
+                let _span = timings::span("sass (theme)");
                 sass::compile_sass(&theme_path, &self.output_path)?;
                 start = log_time(start, "Compiled theme Sass");
             }
         }
 
         if self.config.compile_sass {
+            let _span = timings::span("sass");
             sass::compile_sass(&self.base_path, &self.output_path)?;
             start = log_time(start, "Compiled own Sass");
         }
 
         if self.config.needs_search_index() {
+            let _span = timings::span("search index");
             self.build_search_index()?;
             start = log_time(start, "Built search index");
         }
-        self.render_themes_css()?;
+        {
+            let _span = timings::span("highlighting css");
+            self.render_themes_css()?;
+        }
         start = log_time(start, "Rendered themes css");
 
-        let queue = Queue::full_build(self);
-        queue.process()?;
+        let queue = {
+            let _span = timings::span("build job queue");
+            Queue::full_build(self)
+        };
+        {
+            let _span = timings::span("render + write outputs");
+            queue.process()?;
+        }
 
         // We process images at the end as we might have picked up images to process from markdown
         // or from templates
-        self.process_images()?;
+        {
+            let _span = timings::span("process images");
+            self.process_images()?;
+        }
         start = log_time(start, "Processed images");
         // Processed images will be in static so the last step is to copy it
-        self.copy_static_directories()?;
+        {
+            let _span = timings::span("copy static");
+            self.copy_static_directories()?;
+        }
         log_time(start, "Copied static dir");
 
         Ok(())

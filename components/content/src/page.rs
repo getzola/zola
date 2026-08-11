@@ -180,12 +180,16 @@ impl Page {
     /// Read and parse a .md file into a Page struct
     pub fn from_file<P: AsRef<Path>>(path: P, config: &Config, base_path: &Path) -> Result<Page> {
         let path = path.as_ref();
-        let content = read_file(path)?;
-        let mut page = Page::parse(path, &content, config, base_path)?;
+        let content = utils::timings::measure("parse: read file", || read_file(path))?;
+        let mut page = utils::timings::measure("parse: front matter + metadata", || {
+            Page::parse(path, &content, config, base_path)
+        })?;
 
         if page.file.name == "index" {
             let parent_dir = path.parent().unwrap();
-            page.assets = find_related_assets(parent_dir, config, true);
+            page.assets = utils::timings::measure("parse: find colocated assets", || {
+                find_related_assets(parent_dir, config, true)
+            });
             page.serialized_assets = page.serialize_assets(base_path);
             if let Some(colocated_path) = page.file.colocated_path.as_ref()
                 && !page.assets.is_empty()
