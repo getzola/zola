@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.23.4 (unreleased)
+
 ## 0.23.3 (2026-08-11)
 
 - Fix Windows issues
