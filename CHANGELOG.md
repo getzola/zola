@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.23.3 (unreleased)
+## 0.23.3 (2026-08-11)
 
 - Fix Windows issues
 - Fix panic in section templating
