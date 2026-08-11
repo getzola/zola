@@ -40,6 +40,7 @@ import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+# Overridable with --binary so a candidate can be A/B'd against a saved baseline.
 ZOLA = REPO / "target" / "release" / "zola"
 SITES = REPO / "benchmarks" / "sites"
 RESULTS = REPO / "benchmarks" / "results"
@@ -306,6 +307,8 @@ def main() -> int:
     common.add_argument("--threads", type=int, default=None,
                         help="RAYON_NUM_THREADS for the measured runs")
     common.add_argument("--name", default=None, help="result file name (without .json)")
+    common.add_argument("--binary", type=Path, default=None,
+                        help="zola binary to benchmark (default: target/release/zola)")
 
     m = sub.add_parser("matrix", parents=[common], help="scenario × size matrix")
     m.add_argument("--scenarios", default=None)
@@ -325,6 +328,9 @@ def main() -> int:
     t.set_defaults(func=cmd_threads)
 
     args = parser.parse_args()
+    if getattr(args, "binary", None):
+        global ZOLA
+        ZOLA = args.binary.expanduser().resolve()
     if not ZOLA.exists():
         print(f"error: {ZOLA} missing — run scripts/perf/build.sh first", file=sys.stderr)
         return 2

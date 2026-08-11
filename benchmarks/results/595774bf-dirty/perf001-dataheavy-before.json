@@ -1,0 +1,335 @@
+{
+  "machine": {
+    "arch": "arm64",
+    "build_profile": "release (pinned, see scripts/perf/build.sh)",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "cpu": "Apple M4 Pro",
+    "git_branch": "perf/large-site-scaling",
+    "git_commit": "595774bf-dirty",
+    "logical_cores": "12",
+    "memory_bytes": "25769803776",
+    "os": "macOS-26.2-arm64-arm-64bit",
+    "physical_cores": "12",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "timestamp": "2026-08-11T23:15:30+0200",
+    "zola_version": "zola 0.23.3"
+  },
+  "results": [
+    {
+      "input": {
+        "input_bytes": 846156,
+        "internal_links": 2000,
+        "md_files": 1201,
+        "page_files": 1000,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-1000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 12252521,
+        "internal_links": 2000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 1201,
+        "pages": 1000,
+        "requested_pages": 1000,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 10687555,
+        "files": 1205
+      },
+      "pages": 1000,
+      "resources": {
+        "cpu_utilization": 1.08,
+        "peak_rss_bytes": 363446272,
+        "sys_seconds": 1.08,
+        "user_seconds": 1.09,
+        "wall_seconds": 2.0
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-1000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 1.6348863538,
+        "mean": 1.4244005621333333,
+        "median": 1.3259268538,
+        "min": 1.3123884788,
+        "runs": 3,
+        "stddev": 0.18241168621984644,
+        "system": 1.02900224,
+        "times": [
+          1.3123884788,
+          1.3259268538,
+          1.6348863538
+        ],
+        "user": 1.0645630799999999
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 1675224,
+        "internal_links": 4000,
+        "md_files": 2201,
+        "page_files": 2000,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-2000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 24485995,
+        "internal_links": 4000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 2201,
+        "pages": 2000,
+        "requested_pages": 2000,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 21153911,
+        "files": 2205
+      },
+      "pages": 2000,
+      "resources": {
+        "cpu_utilization": 1.51,
+        "peak_rss_bytes": 496582656,
+        "sys_seconds": 2.05,
+        "user_seconds": 1.97,
+        "wall_seconds": 2.66
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-2000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 2.65451484082,
+        "mean": 2.60825047982,
+        "median": 2.6029418408200002,
+        "min": 2.56729475782,
+        "runs": 3,
+        "stddev": 0.043851704136281464,
+        "system": 2.025320273333333,
+        "times": [
+          2.56729475782,
+          2.6029418408200002,
+          2.65451484082
+        ],
+        "user": 2.0375829266666665
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 3332914,
+        "internal_links": 8000,
+        "md_files": 4201,
+        "page_files": 4000,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-4000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 48949366,
+        "internal_links": 8000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 4201,
+        "pages": 4000,
+        "requested_pages": 4000,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 42083872,
+        "files": 4205
+      },
+      "pages": 4000,
+      "resources": {
+        "cpu_utilization": 1.96,
+        "peak_rss_bytes": 953696256,
+        "sys_seconds": 3.63,
+        "user_seconds": 3.52,
+        "wall_seconds": 3.65
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-4000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 7.01885086612,
+        "mean": 5.92573844912,
+        "median": 5.44454790712,
+        "min": 5.31381657412,
+        "runs": 3,
+        "stddev": 0.9489171394314028,
+        "system": 3.8598540866666666,
+        "times": [
+          5.31381657412,
+          5.44454790712,
+          7.01885086612
+        ],
+        "user": 3.794799113333333
+      }
+    },
+    {
+      "input": {
+        "input_bytes": 6647078,
+        "internal_links": 16000,
+        "md_files": 8201,
+        "page_files": 8000,
+        "section_files": 201,
+        "static_files": 1,
+        "templates": 4
+      },
+      "label": "data-heavy-8000",
+      "manifest": {
+        "aliases": 0,
+        "assets": 0,
+        "input_bytes": 97874441,
+        "internal_links": 16000,
+        "knobs": {
+          "alias_frequency": 0.0,
+          "assets_frequency": 0.0,
+          "depth": 4,
+          "description": "Each page loads its own JSON view model through load_data(). Mirrors data-driven sites where content is a thin shell over generated data.",
+          "feeds": false,
+          "languages": 1,
+          "links_per_page": 2,
+          "markdown_paragraphs": 4,
+          "minify": true,
+          "name": "data-heavy",
+          "paginate_by": 0,
+          "search": false,
+          "sections": 200,
+          "taxonomies_per_page": 0,
+          "taxonomy_cardinality": 0,
+          "taxonomy_count": 0,
+          "template_complexity": "rich",
+          "templating_frequency": 0.0,
+          "view_model_kb": 12
+        },
+        "languages": 1,
+        "md_files": 8201,
+        "pages": 8000,
+        "requested_pages": 8000,
+        "scenario": "data-heavy",
+        "sections": 201,
+        "seed": 20260811,
+        "taxonomies": 0,
+        "taxonomy_terms": 0,
+        "templated_pages": 0
+      },
+      "output": {
+        "bytes": 83942169,
+        "files": 8205
+      },
+      "pages": 8000,
+      "resources": {
+        "cpu_utilization": 2.88,
+        "peak_rss_bytes": 1754841088,
+        "sys_seconds": 5.92,
+        "user_seconds": 4.32,
+        "wall_seconds": 3.55
+      },
+      "scenario": "data-heavy",
+      "site": "/Users/korczis/dev/zola/benchmarks/sites/data-heavy-8000",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 3.90239588906,
+        "mean": 3.7990053610600003,
+        "median": 3.8039332640600003,
+        "min": 3.69068693006,
+        "runs": 3,
+        "stddev": 0.10594047385772347,
+        "system": 6.630555153333333,
+        "times": [
+          3.69068693006,
+          3.8039332640600003,
+          3.90239588906
+        ],
+        "user": 4.665054053333333
+      }
+    }
+  ]
+}

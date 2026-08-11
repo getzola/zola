@@ -314,8 +314,14 @@ impl Function<TeraResult<Value>> for LoadData {
             &headers,
         );
 
-        let mut cache = self.result_cache.lock().expect("result cache lock");
-        if let Some(cached_result) = cache.get(&cache_key) {
+        // The lock is only held for the lookup, never across the fetch and the
+        // deserialization below: `load_data` is called from every page render,
+        // so holding it would serialize all of them against each other.
+        // Two threads racing on the same missing key each do the work once and
+        // the last insert wins, which is the same value either way.
+        if let Some(cached_result) =
+            self.result_cache.lock().expect("result cache lock").get(&cache_key)
+        {
             return Ok(cached_result.clone());
         }
 
@@ -395,7 +401,10 @@ impl Function<TeraResult<Value>> for LoadData {
         };
 
         if let Ok(data_result) = &result_value {
-            cache.insert(cache_key, data_result.clone());
+            self.result_cache
+                .lock()
+                .expect("result cache lock")
+                .insert(cache_key, data_result.clone());
         }
 
         result_value
