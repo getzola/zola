@@ -7,6 +7,7 @@ use crate::taxonomies::{Taxonomy, TaxonomyFound};
 use crate::{Page, Section, SortBy};
 use ahash::{AHashMap, AHashSet};
 use config::{Config, TaxonomyConfig};
+use errors::Result;
 use utils::slugs::slugify_paths;
 
 macro_rules! set {
@@ -203,7 +204,7 @@ impl Library {
     }
 
     /// This is called _before_ rendering the markdown the pages/sections
-    pub fn find_taxonomies(&self, config: &Config) -> Vec<Taxonomy> {
+    pub fn find_taxonomies(&self, config: &Config) -> Result<Vec<Taxonomy>> {
         let mut taxonomies = Vec::new();
 
         let taxo_configs: AHashMap<(&str, &str), &TaxonomyConfig> = config
@@ -228,11 +229,11 @@ impl Library {
                     }
                 }
 
-                taxonomies.push(Taxonomy::new(taxo_found, config));
+                taxonomies.push(Taxonomy::new(taxo_found, config)?);
             }
         }
 
-        taxonomies
+        Ok(taxonomies)
     }
 
     /// Sort all sections pages according to sorting method given
@@ -902,7 +903,7 @@ mod tests {
             "en",
             vec![("tags", vec!["js"]), ("authors", vec!["Vincent Prouillet"])],
         );
-        let taxonomies = taxonomies!(config, [page1, page2, page3]);
+        let taxonomies = taxonomies!(config, [page1, page2, page3]).unwrap();
 
         let tags = taxonomies.iter().find(|t| t.kind.name == "tags").unwrap();
         assert_eq!(tags.len(), 3);
@@ -945,7 +946,7 @@ mod tests {
         let page1 = create_page_w_taxa("a.md", "en", vec![("categories", vec!["rust"])]);
         let page2 = create_page_w_taxa("b.md", "en", vec![("tags", vec!["rust"])]);
         let page3 = create_page_w_taxa("c.md", "fr", vec![("catégories", vec!["rust"])]);
-        let taxonomies = taxonomies!(config, [page1, page2, page3]);
+        let taxonomies = taxonomies!(config, [page1, page2, page3]).unwrap();
 
         let categories = taxonomies.iter().find(|t| t.kind.name == "categories").unwrap();
         assert_eq!(categories.len(), 1);
@@ -972,7 +973,7 @@ mod tests {
         let page2 = create_page_w_taxa("b.md", "en", vec![("test taxonomy", vec!["École"])]);
         let page3 = create_page_w_taxa("c.md", "en", vec![("test-taxonomy ", vec!["ecole"])]);
         let page4 = create_page_w_taxa("d.md", "en", vec![("Test-Taxonomy ", vec!["école"])]);
-        let taxonomies = taxonomies!(config, [page1, page2, page3, page4]);
+        let taxonomies = taxonomies!(config, [page1, page2, page3, page4]).unwrap();
         assert_eq!(taxonomies.len(), 1);
 
         let tax = &taxonomies[0];
@@ -996,7 +997,7 @@ mod tests {
         let page2 = create_page_w_taxa("b.md", "en", vec![("test", vec!["École"])]);
         let page3 = create_page_w_taxa("c.md", "en", vec![("test", vec!["ecole"])]);
         let page4 = create_page_w_taxa("d.md", "en", vec![("test", vec!["école"])]);
-        let taxonomies = taxonomies!(config, [page1, page2, page3, page4]);
+        let taxonomies = taxonomies!(config, [page1, page2, page3, page4]).unwrap();
         assert_eq!(taxonomies.len(), 1);
         let tax = &taxonomies[0];
         // under the safe slugify strategy all terms should be distinct

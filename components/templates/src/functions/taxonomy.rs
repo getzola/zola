@@ -192,8 +192,10 @@ mod tests {
         config.slugify_taxonomies();
         let library = Library::new(&config);
         let tag =
-            TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config);
-        let tag_fr = TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config);
+            TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config)
+                .unwrap();
+        let tag_fr =
+            TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config).unwrap();
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
@@ -268,8 +270,10 @@ mod tests {
         config.slugify_taxonomies();
         let library = Library::new(&config);
         let tag =
-            TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config);
-        let tag_fr = TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config);
+            TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config)
+                .unwrap();
+        let tag_fr =
+            TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config).unwrap();
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
@@ -353,13 +357,16 @@ mod tests {
         config.slugify_taxonomies();
         let library = Library::new(&config);
         let tag =
-            TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config);
-        let tag_fr = TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config);
+            TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config)
+                .unwrap();
+        let tag_fr =
+            TaxonomyTerm::new("Programmation", "fr", &taxo_config_fr, &[], &config).unwrap();
         // Regression for https://github.com/getzola/zola/issues/2829: terms
         // whose names get slugified (accents, spaces, etc.) must be
         // retrievable via the slug.
         let tag_accent =
-            TaxonomyTerm::new("acción", &config.default_language, &taxo_config, &[], &config);
+            TaxonomyTerm::new("acción", &config.default_language, &taxo_config, &[], &config)
+                .unwrap();
         let tags = Taxonomy {
             kind: taxo_config,
             lang: config.default_language.clone(),
