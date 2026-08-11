@@ -1,0 +1,22 @@
+{
+  "comment": "Pre-existing clippy warnings, per lint. Checked by scripts/dev/clippy_gate.py; regenerate with --update. The only acceptable direction for these numbers is down.",
+  "total": 67,
+  "lints": {
+    "clippy::assertions_on_constants": 4,
+    "clippy::bool_assert_comparison": 2,
+    "clippy::clone_on_copy": 2,
+    "clippy::collapsible_else_if": 2,
+    "clippy::doc_lazy_continuation": 2,
+    "clippy::explicit_auto_deref": 2,
+    "clippy::extra_unused_lifetimes": 2,
+    "clippy::field_reassign_with_default": 10,
+    "clippy::get_first": 1,
+    "clippy::len_zero": 2,
+    "clippy::manual_strip": 2,
+    "clippy::needless_borrow": 8,
+    "clippy::needless_borrows_for_generic_args": 16,
+    "clippy::unnecessary_literal_unwrap": 5,
+    "clippy::useless_vec": 5,
+    "unused_must_use": 2
+  }
+}

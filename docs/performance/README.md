@@ -16,6 +16,7 @@ Motivating workload: a ~3.7k-page / ~1.6k-section site that keeps growing.
 | `ALLOCATIONS.md` | Allocation behaviour and dominant sources (M8) |
 | `HOTSPOTS.md` | Ranked, evidence-backed `PERF-*` backlog (M10) |
 | `OPTIMIZATIONS.md` | Append-only log of completed `PERF-*` items with real numbers |
+| `STATUS.md` | Backlog state, **generated** from the two files above |
 | `INCREMENTAL-BUILD-DESIGN.md` | Dependency-graph design for incremental builds |
 | `FINAL-REPORT.md` | Summary against the program's success criteria |
 
@@ -45,6 +46,14 @@ Components:
 
 Generated sites and proxies live under `benchmarks/` and are gitignored; only
 result JSON is committed.
+
+The backlog itself is validated: `scripts/dev.sh perf-index check` fails if a
+`PERF-*` id is referenced but never defined, or if a completed item does not
+cite the commit that delivered it. `scripts/dev.sh generate` rewrites
+`STATUS.md`. Both also run in CI.
+
+The rules this program follows are stated below; the working procedure — what a
+finished item owes, and when to stop — is in `.claude/workflows/performance.md`.
 
 ## Scenarios
 

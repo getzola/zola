@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Opt-in pre-commit hook. Enable with `scripts/dev.sh hooks install`,
+# disable with `scripts/dev.sh hooks uninstall`.
+#
+# Deliberately cheap: formatting, a type check, and the generated-file drift
+# check. No test suite, no clippy, no benchmarks — those belong in
+# `scripts/dev.sh quality` before you push, not in every commit.
+set -uo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root" || exit 1
+
+# Nothing to check mid-merge; git will run this again on the merge commit.
+if [ -f .git/MERGE_HEAD ] || [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+  exit 0
+fi
+
+if ! git diff --cached --quiet --name-only 2>/dev/null; then :; else
+  exit 0  # nothing staged
+fi
+
+fail=0
+
+if ! scripts/dev.sh check; then
+  echo
+  echo "pre-commit: the fast gate failed."
+  echo "    Fix it, or commit with --no-verify if you are deliberately committing"
+  echo "    a broken intermediate state on a private branch."
+  fail=1
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+  if ! scripts/dev.sh generate --check >/dev/null; then
+    echo
+    echo "pre-commit: a generated file is out of date."
+    scripts/dev.sh generate --check
+    fail=1
+  fi
+fi
+
+exit $fail
