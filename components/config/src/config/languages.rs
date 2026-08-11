@@ -65,13 +65,6 @@ impl LanguageOptions {
         }
         merge_field!(self.title, other.title, "title");
         merge_field!(self.description, other.description, "description");
-        merge_field!(
-            self.feed_filenames.is_empty()
-                || self.feed_filenames == LanguageOptions::default().feed_filenames,
-            self.feed_filenames,
-            other.feed_filenames,
-            "feed_filename"
-        );
         merge_field!(self.taxonomies.is_empty(), self.taxonomies, other.taxonomies, "taxonomies");
         merge_field!(
             self.translations.is_empty(),
@@ -83,9 +76,23 @@ impl LanguageOptions {
         self.generate_feeds = self.generate_feeds || other.generate_feeds;
         self.build_search_index = self.build_search_index || other.build_search_index;
 
-        if self.search == search::Search::default() {
+        let default_feeds = LanguageOptions::default().feed_filenames;
+        if self.feed_filenames.is_empty() || self.feed_filenames == default_feeds {
+            self.feed_filenames = other.feed_filenames.clone();
+        } else if other.feed_filenames != default_feeds
+            && self.feed_filenames != other.feed_filenames
+        {
+            bail!(
+                "`feed_filename` for default language is specified twice, as {:?} and {:?}.",
+                self.feed_filenames,
+                other.feed_filenames
+            );
+        }
+
+        let default_search = search::Search::default();
+        if self.search == default_search {
             self.search = other.search.clone();
-        } else if self.search != other.search {
+        } else if self.search != other.search && other.search != default_search {
             bail!(
                 "`search` for default language is specified twice, as {:?} and {:?}.",
                 self.search,
@@ -182,5 +189,42 @@ mod tests {
         let res =
             base_default_language_options.merge(&section_default_language_options).unwrap_err();
         assert!(res.to_string().contains("`description` for default language is specified twice"));
+    }
+
+    // https://github.com/getzola/zola/issues/2467
+    #[test]
+    fn merge_search_keeps_base_when_section_only_sets_translations() {
+        let mut base = LanguageOptions {
+            build_search_index: true,
+            search: search::Search {
+                index_format: search::IndexFormat::ElasticlunrJson,
+                ..search::Search::default()
+            },
+            ..LanguageOptions::default()
+        };
+
+        let mut translations = HashMap::new();
+        translations.insert("hello".to_string(), "Hello".to_string());
+        let section = LanguageOptions { translations, ..LanguageOptions::default() };
+
+        base.merge(&section).unwrap();
+        assert_eq!(base.search.index_format, search::IndexFormat::ElasticlunrJson);
+    }
+
+    // Same as above but for feed filenames
+    #[test]
+    fn merge_feed_filenames_keeps_base_when_section_only_sets_translations() {
+        let mut base = LanguageOptions {
+            generate_feeds: true,
+            feed_filenames: vec!["rss.xml".to_string()],
+            ..LanguageOptions::default()
+        };
+
+        let mut translations = HashMap::new();
+        translations.insert("hello".to_string(), "Hello".to_string());
+        let section = LanguageOptions { translations, ..LanguageOptions::default() };
+
+        base.merge(&section).unwrap();
+        assert_eq!(base.feed_filenames, vec!["rss.xml".to_string()]);
     }
 }
