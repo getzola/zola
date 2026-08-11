@@ -845,8 +845,13 @@ title = "A title"
     fn does_not_drop_lang_() {
         let dir = create_temp_dir();
         let config = Config::parse(CONFIG_DATA).unwrap();
-        let get_url =
-            GetUrl::new(dir.path().to_path_buf(), config, HashMap::new(), PathBuf::new(), AHashMap::new());
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            HashMap::new(),
+            PathBuf::new(),
+            AHashMap::new(),
+        );
         let kwargs = Kwargs::from([
             ("path", tera::Value::from("genres")),
             ("lang", tera::Value::from("en")),
