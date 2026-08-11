@@ -54,6 +54,9 @@ pub struct Config {
     pub default_language: String,
     /// The list of supported languages outside of the default one
     pub languages: HashMap<String, languages::LanguageOptions>,
+    /// Whether translated pages inherit front matter they don't specify from the default
+    /// language. Can be overridden per section. Defaults to false.
+    pub inherit_metadata: bool,
     /// The translations strings for the default language
     translations: HashMap<String, String>,
 
@@ -460,6 +463,7 @@ impl Default for Config {
             theme: None,
             default_language: "en".to_string(),
             languages: HashMap::new(),
+            inherit_metadata: false,
             generate_feeds: false,
             feed_limit: None,
             feed_filenames: vec!["atom.xml".to_string()],
@@ -1140,6 +1144,22 @@ base_url = "example.com"
 "#;
         let config = Config::parse(config).unwrap();
         assert!(config.generate_robots_txt);
+    }
+
+    #[test]
+    fn can_parse_inherit_metadata() {
+        let config = r#"
+base_url = "example.com"
+inherit_metadata = true
+"#;
+        let config = Config::parse(config).unwrap();
+        assert!(config.inherit_metadata);
+    }
+
+    #[test]
+    fn inherit_metadata_defaults_to_false() {
+        let config = Config::default();
+        assert!(!config.inherit_metadata);
     }
 
     // TODO: add a test for excluding paginated pages

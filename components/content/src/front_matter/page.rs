@@ -99,23 +99,34 @@ fn parse_datetime(d: &str) -> Option<OffsetDateTime> {
 
 impl PageFrontMatter {
     pub fn parse(raw: &RawFrontMatter) -> Result<PageFrontMatter> {
-        let mut f: PageFrontMatter = raw.deserialize()?;
+        let f: PageFrontMatter = raw.deserialize()?;
+        f.validate()
+    }
 
-        if let Some(ref slug) = f.slug
+    /// Parses merged front matter (from merging a translation over its default-language
+    /// counterpart) with the same validation as `parse`.
+    pub(crate) fn parse_value(value: Value) -> Result<PageFrontMatter> {
+        let f: PageFrontMatter = PageFrontMatter::deserialize(value)
+            .map_err(|e| errors::anyhow!("Error deserializing merged front matter: {e}"))?;
+        f.validate()
+    }
+
+    fn validate(mut self) -> Result<PageFrontMatter> {
+        if let Some(ref slug) = self.slug
             && slug.is_empty()
         {
             bail!("`slug` can't be empty if present")
         }
 
-        if let Some(ref path) = f.path
+        if let Some(ref path) = self.path
             && path.is_empty()
         {
             bail!("`path` can't be empty if present")
         }
 
-        f.date_to_datetime();
+        self.date_to_datetime();
 
-        for terms in f.taxonomies.values() {
+        for terms in self.taxonomies.values() {
             for term in terms {
                 if term.trim().is_empty() {
                     bail!("A taxonomy term cannot be an empty string");
@@ -123,13 +134,13 @@ impl PageFrontMatter {
             }
         }
 
-        if let Some(ref date) = f.date
-            && f.datetime.is_none()
+        if let Some(ref date) = self.date
+            && self.datetime.is_none()
         {
             bail!("`date` could not be parsed: {}.", date);
         }
 
-        Ok(f)
+        Ok(self)
     }
 
     /// Converts the TOML datetime to a time::OffsetDateTime

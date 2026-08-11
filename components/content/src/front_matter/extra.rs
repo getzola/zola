@@ -2,7 +2,7 @@ use serde::Deserialize;
 use tera::{Map, Value};
 
 /// Convert a toml::Value to a tera Value
-fn toml_value_to_tera(val: toml::Value) -> Value {
+pub(crate) fn toml_value_to_tera(val: toml::Value) -> Value {
     match val {
         toml::Value::String(s) => Value::from(s),
         toml::Value::Integer(i) => Value::from(i),

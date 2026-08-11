@@ -10,7 +10,7 @@ use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
 
 use crate::file_info::FileInfo;
-use crate::front_matter::{PageFrontMatter, split_page_content};
+use crate::front_matter::{OwnedRawFrontMatter, PageFrontMatter, split_page_content_with_raw};
 use crate::utils::get_reading_analytics;
 use crate::utils::{find_related_assets, get_colocated_assets, has_anchor};
 use utils::anchors::has_anchor_id;
@@ -30,6 +30,8 @@ pub struct Page {
     pub file: FileInfo,
     /// The front matter meta-data
     pub meta: PageFrontMatter,
+    /// The raw front matter, kept on multilingual sites for inheritance
+    pub meta_raw: Option<OwnedRawFrontMatter>,
     /// The list of parent sections relative paths
     pub ancestors: Vec<String>,
     /// The actual content of the page, in markdown
@@ -97,8 +99,11 @@ impl Page {
         config: &Config,
         base_path: &Path,
     ) -> Result<Page> {
-        let (meta, content) = split_page_content(file_path, content)?;
+        let (front_matter, meta, content) = split_page_content_with_raw(file_path, content)?;
         let mut page = Page::new(file_path, meta, base_path);
+        if config.is_multilingual() {
+            page.meta_raw = Some(front_matter.to_owned_raw());
+        }
 
         page.lang =
             page.file.find_language(&config.default_language, &config.other_languages_codes())?;
@@ -283,6 +288,19 @@ Hello world"#;
 
         assert_eq!(1, page.meta.authors.len());
         assert_eq!("person@example.com (A. Person)", page.meta.authors.get(0).unwrap());
+    }
+
+    #[test]
+    fn meta_raw_stored_only_when_multilingual() {
+        let content = "+++\ntitle = \"Hello\"\n+++\nHello world";
+        let config = Config::default_for_test();
+        let page = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new()).unwrap();
+        assert!(page.meta_raw.is_none());
+
+        let mut config = Config::default_for_test();
+        config.languages.insert("fr".to_string(), LanguageOptions::default());
+        let page = Page::parse(Path::new("post.md"), content, &config, &PathBuf::new()).unwrap();
+        assert!(page.meta_raw.is_some());
     }
 
     #[test]

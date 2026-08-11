@@ -122,6 +122,10 @@ generate_feeds = false
 # By default it applies to all children of this section but each of them can opt out by setting their own hidden property
 hidden = false
 
+# When set to `true` or `false`, overrides the site-wide `inherit_metadata` configuration for
+# the pages of this section and its subsections. Only has an effect on multilingual sites.
+# inherit_metadata =
+
 # Your own data.
 [extra]
 ```

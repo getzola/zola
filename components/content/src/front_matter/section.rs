@@ -74,6 +74,10 @@ pub struct SectionFrontMatter {
     /// Pages and subsections can override it by setting their own `hidden` field
     #[serde(skip_serializing)]
     pub hidden: Option<bool>,
+    /// Whether pages and subsections inherit front matter from the default language.
+    /// Overrides the config value for this subtree.
+    #[serde(skip_serializing)]
+    pub inherit_metadata: Option<bool>,
     /// Any extra parameter present in the front matter
     #[serde(default = "default_extra", deserialize_with = "deserialize_extra")]
     pub extra: Value,
@@ -110,8 +114,26 @@ impl Default for SectionFrontMatter {
             aliases: Vec::new(),
             generate_feeds: false,
             hidden: None,
+            inherit_metadata: None,
             extra: Value::from(Map::new()),
             draft: false,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::front_matter::split::RawFrontMatter;
+
+    #[test]
+    fn section_inherit_metadata_is_optional() {
+        let raw = RawFrontMatter::Toml("title = \"Section\"\ninherit_metadata = false\n");
+        let meta = SectionFrontMatter::parse(&raw).unwrap();
+        assert_eq!(meta.inherit_metadata, Some(false));
+
+        let raw = RawFrontMatter::Toml("title = \"Section\"\n");
+        let meta = SectionFrontMatter::parse(&raw).unwrap();
+        assert_eq!(meta.inherit_metadata, None);
     }
 }

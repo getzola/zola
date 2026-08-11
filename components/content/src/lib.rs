@@ -11,7 +11,9 @@ mod types;
 mod utils;
 
 pub use file_info::FileInfo;
-pub use front_matter::{PageFrontMatter, SectionFrontMatter};
+pub use front_matter::{
+    OwnedRawFrontMatter, PageFrontMatter, RawFrontMatter, SectionFrontMatter, merge_inherited_raw,
+};
 pub use library::Library;
 pub use page::Page;
 pub use section::Section;

@@ -9,6 +9,8 @@ build_search_index = true
 
 default_language = "en"
 
+inherit_metadata = true
+
 generate_feeds = true
 
 taxonomies = [
