@@ -182,6 +182,22 @@ fn can_build_multilingual_site() {
     assert!(!file_exists!(public, "search_index.fr.js"));
 }
 
+// https://github.com/getzola/zola/issues/2689
+#[test]
+fn can_build_search_index_for_non_default_language_only() {
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site_i18n", |mut site| {
+        site.config.build_search_index = false;
+        if let Some(en) = site.config.languages.get_mut("en") {
+            en.build_search_index = false;
+        }
+        (site, true)
+    });
+
+    assert!(!file_exists!(public, "search_index.en.js"));
+    assert!(file_exists!(public, "search_index.it.js"));
+    assert!(!file_exists!(public, "search_index.fr.js"));
+}
+
 #[test]
 fn correct_translations_on_all_pages() {
     let (site, _tmp_dir, public) = build_site("test_site_i18n");

@@ -8,6 +8,9 @@
 - Fix colocated assets for sections not being copied in some cases
 - Fix config merge errors with multilingual sites
 - Now error when taxonomies terms slugify to an empty string
+- Fix language region (eg en-US, zh-Hans) for elasticlunr search backend 
+- Fix search language generation for languages not working if default lang search is disabled
+
 
 ## 0.23.2 (2026-08-07)
 

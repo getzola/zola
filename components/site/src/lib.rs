@@ -733,7 +733,7 @@ impl Site {
             start = log_time(start, "Compiled own Sass");
         }
 
-        if self.config.build_search_index {
+        if self.config.needs_search_index() {
             self.build_search_index()?;
             start = log_time(start, "Built search index");
         }
@@ -800,7 +800,9 @@ impl Site {
         // TODO: add those to the SITE_CONTENT map
 
         // index first
-        self.index_for_lang(&self.config.default_language)?;
+        if self.config.build_search_index {
+            self.index_for_lang(&self.config.default_language)?;
+        }
 
         for (code, language) in &self.config.other_languages() {
             if code != &self.config.default_language && language.build_search_index {
