@@ -6,6 +6,7 @@
 - Fix panic in section templating
 - Fix feed URL for non-default languages
 - Fix colocated assets for sections not being copied in some cases
+- Fix config merge errors with multilingual sites
 
 ## 0.23.2 (2026-08-07)
 
