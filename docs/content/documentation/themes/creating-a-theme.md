@@ -59,6 +59,7 @@ If you want your theme to be featured in the [themes](@/themes/_index.md) sectio
 of this site, make sure that the theme meets the following three requirements:
 
 - have a `screenshot.png` of the theme in action with a max size of around 2000x1000
+- have a default working site in the repository, with a `{zola,config}.toml` in it
 - have a thorough `README.md` explaining how to use the theme and any other information
 of importance
 - be of reasonably high quality
