@@ -34,3 +34,7 @@ shell.nix
 /result
 flake.nix
 flake.lock
+
+# Python bytecode from the scripts under scripts/
+__pycache__/
+*.pyc
