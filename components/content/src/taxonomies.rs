@@ -1,11 +1,12 @@
 use std::cmp::Ordering;
 use std::path::PathBuf;
 
+use ahash::AHashMap;
 use serde::Serialize;
 use tera::Value;
 
-use ahash::AHashMap;
 use config::{Config, TaxonomyConfig};
+use errors::{Result, bail};
 use utils::slugs::slugify_paths;
 
 use crate::{Page, SortBy};
@@ -53,8 +54,14 @@ impl TaxonomyTerm {
         taxo: &TaxonomyConfig,
         taxo_pages: &[&Page],
         config: &Config,
-    ) -> Self {
+    ) -> Result<Self> {
         let slug = slugify_paths(name, config.slugify.taxonomies);
+        if slug.is_empty() {
+            bail!(
+                "The term `{name}` in the taxonomy `{}` slugifies to an empty string. You need to rename the term.",
+                taxo.name
+            )
+        }
         let path = config.get_taxonomy_term_path(lang, taxo, &slug);
         let permalink = config.make_permalink(&path);
 
@@ -64,7 +71,7 @@ impl TaxonomyTerm {
         let (mut pages, ignored_pages) = sort_pages(taxo_pages, SortBy::Date);
         // We still append pages without dates at the end
         pages.extend(ignored_pages);
-        TaxonomyTerm { name: name.to_string(), permalink, path, slug, pages }
+        Ok(TaxonomyTerm { name: name.to_string(), permalink, path, slug, pages })
     }
 
     pub fn merge(&mut self, other: Self) {
@@ -115,7 +122,7 @@ pub struct Taxonomy {
 }
 
 impl Taxonomy {
-    pub(crate) fn new(tax_found: TaxonomyFound, config: &Config) -> Self {
+    pub(crate) fn new(tax_found: TaxonomyFound, config: &Config) -> Result<Self> {
         let mut sorted_items = vec![];
         let slug = tax_found.slug;
         for (name, pages) in tax_found.terms {
@@ -125,7 +132,7 @@ impl Taxonomy {
                 tax_found.config,
                 &pages,
                 config,
-            ));
+            )?);
         }
 
         sorted_items.sort_by(|a, b| match a.slug.cmp(&b.slug) {
@@ -147,14 +154,14 @@ impl Taxonomy {
         let path = config.get_taxonomy_path(tax_found.lang, tax_found.config);
         let permalink = config.make_permalink(&path);
 
-        Taxonomy {
+        Ok(Taxonomy {
             slug,
             lang: tax_found.lang.to_owned(),
             kind: tax_found.config.clone(),
             path,
             permalink,
             items: sorted_items,
-        }
+        })
     }
 
     pub fn len(&self) -> usize {
@@ -198,9 +205,10 @@ mod tests {
         let mut tax_conf = TaxonomyConfig::default();
         tax_conf.slug = "tags".to_string();
         let tax_found = TaxonomyFound::new("tags".into(), &conf.default_language, &tax_conf);
-        let tax = Taxonomy::new(tax_found, &conf);
+        let tax = Taxonomy::new(tax_found, &conf).unwrap();
         let pages = &[];
-        let term = TaxonomyTerm::new("rust", &conf.default_language, &tax_conf, pages, &conf);
+        let term =
+            TaxonomyTerm::new("rust", &conf.default_language, &tax_conf, pages, &conf).unwrap();
 
         // Verify taxonomy list path
         assert_eq!(tax.path, "/blog/tags/");
@@ -217,9 +225,10 @@ mod tests {
         let mut tax_conf = TaxonomyConfig::default();
         tax_conf.slug = "tags".to_string();
         let tax_found = TaxonomyFound::new("tags".into(), &conf.default_language, &tax_conf);
-        let tax = Taxonomy::new(tax_found, &conf);
+        let tax = Taxonomy::new(tax_found, &conf).unwrap();
         let pages = &[];
-        let term = TaxonomyTerm::new("rust", &conf.default_language, &tax_conf, pages, &conf);
+        let term =
+            TaxonomyTerm::new("rust", &conf.default_language, &tax_conf, pages, &conf).unwrap();
 
         // Verify taxonomy list path
         assert_eq!(tax.path, "/tags/");
@@ -250,11 +259,23 @@ mod tests {
         tax_found.terms.insert("League of legends", vec![&page1]);
         tax_found.terms.insert("League of Legends", vec![&page2]);
 
-        let tax = Taxonomy::new(tax_found, &conf);
+        let tax = Taxonomy::new(tax_found, &conf).unwrap();
 
         // Only one item in the end, with the 2 pages
         assert_eq!(tax.items.len(), 1);
         assert_eq!(tax.items[0].slug, "league-of-legends");
         assert_eq!(tax.items[0].pages.len(), 2);
+    }
+
+    // https://github.com/getzola/zola/issues/2338
+    #[test]
+    fn taxonomy_slug_is_empty_errors() {
+        let conf = Config::default_for_test();
+        let mut tax_conf = TaxonomyConfig::default();
+        tax_conf.name = "tags".to_string();
+        let pages = &[];
+        let res = TaxonomyTerm::new(";", &conf.default_language, &tax_conf, pages, &conf);
+        println!("{res:?}");
+        assert!(res.is_err());
     }
 }

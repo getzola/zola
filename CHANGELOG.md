@@ -7,6 +7,7 @@
 - Fix feed URL for non-default languages
 - Fix colocated assets for sections not being copied in some cases
 - Fix config merge errors with multilingual sites
+- Now error when taxonomies terms slugify to an empty string
 
 ## 0.23.2 (2026-08-07)
 
