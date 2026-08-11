@@ -1,0 +1,65 @@
+name: Engineering checks
+
+# Complements "Build & Test", which compiles and tests on six targets. This
+# workflow adds the checks that only need to run once, and only when the files
+# they cover actually change: lints, generated-file drift, architecture
+# invariants, backlog integrity, and the tests for the repository tooling.
+
+on:
+  push:
+    branches: ["*"]
+    paths:
+      - "**/*.rs"
+      - "**/Cargo.toml"
+      - "Cargo.lock"
+      - "scripts/**"
+      - ".githooks/**"
+      - "docs/architecture/**"
+      - "docs/performance/**"
+      - ".github/workflows/engineering.yml"
+  pull_request:
+    paths:
+      - "**/*.rs"
+      - "**/Cargo.toml"
+      - "Cargo.lock"
+      - "scripts/**"
+      - ".githooks/**"
+      - "docs/architecture/**"
+      - "docs/performance/**"
+      - ".github/workflows/engineering.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  Lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Not `-D warnings`: the workspace has pre-existing warnings. This fails
+      # only when a lint appears that was not already in the baseline, or when
+      # an existing one becomes more frequent.
+      - name: Clippy (no new warnings)
+        run: scripts/dev/clippy_gate.py
+
+  Tooling:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Fails with the exact command to run when a generated document has
+      # drifted from the manifests or the performance backlog.
+      - name: Generated files are current
+        run: scripts/dev.sh generate --check
+
+      - name: Tooling tests
+        run: scripts/dev.sh test-tooling
