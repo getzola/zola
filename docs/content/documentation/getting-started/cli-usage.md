@@ -3,7 +3,9 @@ title = "CLI usage"
 weight = 15
 +++
 
-Zola only has 4 commands: `init`, `build`, `serve` and `check`.
+Upstream Zola has 4 commands: `init`, `build`, `serve` and `check`.
+The **Curriculo fork** also ships `translate` and `graph` (see
+[CURRICULO.md](../../../../CURRICULO.md) and [docs/curriculo/graph.md](../../../curriculo/graph.md)).
 
 You can view the help for the whole program by running `zola --help` and
 that for a specific command by running `zola <cmd> --help`.
@@ -124,6 +126,33 @@ them (links in the template files are not checked).
 You can skip link checking for all the external links by `--skip-external-links` flag.
 
 By default, drafts are not loaded. If you wish to include them, pass the `--drafts` flag.
+
+## translate (Curriculo fork)
+
+Generate or refresh co-located `index.<lang>.md` siblings via OpenRouter.
+Requires `OPENROUTER_API_KEY`. Hash-gated so fresh siblings are skipped.
+
+```bash
+$ zola translate
+$ zola translate --max 60
+$ zola translate --dry-run
+```
+
+## graph (Curriculo fork)
+
+Topical knowledge graph. **Migrate once** from a live site (Firecrawl), then
+**refresh** from local markdown forever (no Firecrawl). Writes
+`data/graph/{pages,topics,relations,meta}.json`. Full design:
+[docs/curriculo/graph.md](../../../curriculo/graph.md).
+
+```bash
+$ zola graph migrate --from https://curriculo.me
+$ zola graph migrate --from https://curriculo.me --max 30 --force
+$ zola graph refresh
+$ zola graph refresh --max 40
+```
+
+Requires `OPENROUTER_API_KEY`. `migrate` also requires `FIRECRAWL_API_KEY`.
 
 ## Colored output
 

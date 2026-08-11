@@ -5,6 +5,11 @@
 
 A fast static site generator in a single binary with everything built-in.
 
+> **Curriculo fork** (`curriculo-tech/zola`): adds `zola translate` and
+> `zola graph migrate|refresh`. See [CURRICULO.md](CURRICULO.md) and
+> [docs/curriculo/graph.md](docs/curriculo/graph.md). Release tags look like
+> `v0.23.2-curriculo.N`.
+
 To find out more see the [Zola Documentation](https://www.getzola.org/documentation/getting-started/overview/), look
 in the [docs/content](docs/content) folder of this repository or visit the [Zola community forum](https://zola.discourse.group).
 
