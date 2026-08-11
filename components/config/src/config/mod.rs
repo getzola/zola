@@ -340,6 +340,14 @@ impl Config {
         self.languages.keys().filter(|k| *k != &self.default_language).map(|k| k.as_str()).collect()
     }
 
+    pub fn needs_search_index(&self) -> bool {
+        if self.build_search_index {
+            true
+        } else {
+            self.other_languages().values().any(|x| x.build_search_index)
+        }
+    }
+
     /// Is this site using i18n?
     pub fn is_multilingual(&self) -> bool {
         self.languages.iter().len() > 1
