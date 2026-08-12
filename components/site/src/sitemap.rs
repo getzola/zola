@@ -1,21 +1,37 @@
 use std::borrow::Cow;
+use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
 use serde::Serialize;
+use tera::Value;
+use time::format_description::well_known::Rfc3339;
 
 use config::Config;
-use content::{Library, Taxonomy};
-use std::cmp::Ordering;
-use tera::Value;
+use content::{Library, Page, Taxonomy};
 
 /// The sitemap only needs links, potentially date and extra for pages in case of updates
 /// for examples so we trim down all entries to only that
 #[derive(Debug, Serialize)]
 pub struct SitemapEntry<'a> {
     pub permalink: Cow<'a, str>,
-    pub updated: &'a Option<String>,
+    pub updated: Option<String>,
     pub extra: Option<Value>,
+}
+
+/// W3C Datetime for `<lastmod>`, preserving time if its present
+fn lastmod(page: &Page) -> Option<String> {
+    let (raw, dt) = page
+        .meta
+        .updated
+        .as_deref()
+        .zip(page.meta.updated_datetime)
+        .or_else(|| page.meta.date.as_deref().zip(page.meta.datetime))?;
+    Some(if raw.contains(':') {
+        dt.format(&Rfc3339).ok()?
+    } else {
+        format!("{:04}-{:02}-{:02}", dt.year(), u8::from(dt.month()), dt.day())
+    })
 }
 
 // Hash/Eq is not implemented for tera::Map but in our case we only care about the permalink
@@ -33,7 +49,7 @@ impl<'a> PartialEq for SitemapEntry<'a> {
 impl<'a> Eq for SitemapEntry<'a> {}
 
 impl<'a> SitemapEntry<'a> {
-    pub fn new(permalink: Cow<'a, str>, updated: &'a Option<String>) -> Self {
+    pub fn new(permalink: Cow<'a, str>, updated: Option<String>) -> Self {
         SitemapEntry { permalink, updated, extra: None }
     }
 
@@ -68,10 +84,7 @@ pub fn find_entries<'a>(
             continue;
         }
 
-        let mut entry = SitemapEntry::new(
-            Cow::Borrowed(&p.permalink),
-            if p.meta.updated.is_some() { &p.meta.updated } else { &p.meta.date },
-        );
+        let mut entry = SitemapEntry::new(Cow::Borrowed(&p.permalink), lastmod(p));
         entry.add_extra(p.meta.extra.clone());
         entries.insert(entry);
     }
@@ -82,7 +95,7 @@ pub fn find_entries<'a>(
         }
 
         if s.meta.render {
-            let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), &None);
+            let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), None);
             entry.add_extra(s.meta.extra.clone());
             entries.insert(entry);
         }
@@ -93,7 +106,7 @@ pub fn find_entries<'a>(
             let number_pagers = (s.pages.len() as f64 / paginate_by as f64).ceil() as isize;
             for i in 1..=number_pagers {
                 let permalink = format!("{}{}/{}/", s.permalink, s.meta.paginate_path, i);
-                entries.insert(SitemapEntry::new(Cow::Owned(permalink), &None));
+                entries.insert(SitemapEntry::new(Cow::Owned(permalink), None));
             }
         }
     }
@@ -102,10 +115,10 @@ pub fn find_entries<'a>(
         if !taxonomy.kind.render {
             continue;
         }
-        entries.insert(SitemapEntry::new(Cow::Borrowed(&taxonomy.permalink), &None));
+        entries.insert(SitemapEntry::new(Cow::Borrowed(&taxonomy.permalink), None));
 
         for item in &taxonomy.items {
-            entries.insert(SitemapEntry::new(Cow::Borrowed(&item.permalink), &None));
+            entries.insert(SitemapEntry::new(Cow::Borrowed(&item.permalink), None));
 
             if taxonomy.kind.is_paginated() && !config.should_exclude_paginated_pages_in_sitemap() {
                 let number_pagers = (item.pages.len() as f64
@@ -118,7 +131,7 @@ pub fn find_entries<'a>(
                         taxonomy.kind.paginate_path(),
                         i
                     ));
-                    entries.insert(SitemapEntry::new(Cow::Owned(permalink), &None));
+                    entries.insert(SitemapEntry::new(Cow::Owned(permalink), None));
                 }
             }
         }
@@ -127,4 +140,32 @@ pub fn find_entries<'a>(
     let mut entries = entries.into_iter().collect::<Vec<_>>();
     entries.sort();
     entries
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // https://github.com/getzola/zola/issues/2335
+    #[test]
+    fn lastmod_preserves_time_and_adds_tz() {
+        let inputs = vec![
+            ((Some("2026-08-12"), None), Some("2026-08-12".to_string())),
+            ((Some("2026-08-12T14:36:26"), None), Some("2026-08-12T14:36:26Z".to_string())),
+            (
+                (Some("2026-08-12T14:36:26-05:00"), None),
+                Some("2026-08-12T14:36:26-05:00".to_string()),
+            ),
+            ((Some("2020-01-01"), Some("2026-08-12")), Some("2026-08-12".to_string())),
+        ];
+
+        for ((date, updated), expected) in inputs {
+            let mut p = Page::default();
+            p.meta.date = date.map(String::from);
+            p.meta.updated = updated.map(String::from);
+            p.meta.date_to_datetime();
+
+            assert_eq!(lastmod(&p), expected);
+        }
+    }
 }

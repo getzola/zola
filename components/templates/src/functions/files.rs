@@ -865,10 +865,8 @@ title = "A title"
         assert_eq!(url, "https://remplace-par-ton-url.fr/en/genres");
 
         // https://github.com/getzola/zola/issues/2216
-        let kwargs = Kwargs::from([
-            ("path", tera::Value::from("/")),
-            ("lang", tera::Value::from("en")),
-        ]);
+        let kwargs =
+            Kwargs::from([("path", tera::Value::from("/")), ("lang", tera::Value::from("en"))]);
         let url = get_url.call(kwargs, &State::new(&ctx)).unwrap();
         assert_eq!(url, "https://remplace-par-ton-url.fr/en");
 
