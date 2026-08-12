@@ -8,6 +8,7 @@
 #   scripts/perf/run.sh site <path>        benchmark an external site (or $ZOLA_PERF_SITE)
 #   scripts/perf/run.sh threads <path>     parallel efficiency sweep
 #   scripts/perf/run.sh scaling <file...>  scaling analysis of result JSON
+#   scripts/perf/run.sh ab <a-bin> <b-bin> <site>...   interleaved A/B comparison
 #   scripts/perf/run.sh equivalence <baseline-bin> <candidate-bin> [site]
 #
 # Nothing here ever writes into an external site: builds always target a temp dir.
@@ -44,6 +45,14 @@ case "$CMD" in
     ;;
   scaling)
     exec python3 "$PERF/scaling.py" "$@"
+    ;;
+  ab)
+    a="${1:?usage: run.sh ab <a-bin> <b-bin> <site>...}"; shift
+    b="${1:?usage: run.sh ab <a-bin> <b-bin> <site>...}"; shift
+    [ $# -gt 0 ] || { echo "usage: run.sh ab <a-bin> <b-bin> <site>..." >&2; exit 2; }
+    sites=()
+    for s in "$@"; do sites+=(--site "$s"); done
+    exec python3 "$PERF/ab.py" --a "$a" --b "$b" --rounds 3 --warmup "${sites[@]}"
     ;;
   equivalence)
     base="${1:?usage: run.sh equivalence <baseline-bin> <candidate-bin> [site]}"

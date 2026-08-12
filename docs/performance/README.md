@@ -71,6 +71,14 @@ Components:
     run spoiled by other programs competing for the machine is corrected by
     closing them and running again, not by pruning stale files.
 * `scripts/perf/scaling.py` — growth-model fitting over result files.
+* `scripts/perf/ab.py` — interleaved A/B of two binaries. The two alternate
+  inside every round and swap order between rounds, and the verdict is the
+  **paired** per-round delta plus whether every round agrees on its sign — not
+  the difference of two medians, which on a laptop measures thermal state and
+  background load as much as it measures code. It reports CPU time alongside
+  wall, because a build that writes gigabytes stalls on the filesystem in ways
+  that move wall time several seconds in both directions without saying anything
+  about the change under test.
 * `scripts/perf/compare_output.py` — byte-for-byte output equivalence gate.
 
 Generated sites and proxies live under `benchmarks/` and are gitignored; only
@@ -113,3 +121,9 @@ obvious, was measured, and did not pay; re-proposing one costs a day.
 4. Never benchmark a debug build; never count cargo compilation as build time.
 5. Scaling ratios (8k/4k, 4k/2k) are the primary regression signal, not
    absolute milliseconds.
+6. Comparisons are interleaved and judged on the paired per-round delta. A
+   sequential "N runs of A, then N runs of B" comparison produced a −69% result
+   early in this program that was entirely thermal drift.
+7. When an effect is smaller than the noise floor of a whole-build measurement,
+   measure the phase or the profile symbol instead — and say which was measured.
+   A change that cannot be resolved is reported as unresolved, not as a win.
