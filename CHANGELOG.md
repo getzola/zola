@@ -5,6 +5,9 @@
 - Fix another `get_url` bug adding a trailing slash for non default language
 - Fix `index.<default_language>.md` paths collision
 - Fix sitemap `<lastmod>` emitting invalid dates (eg a datetime without a timezone) for sitemap validation
+- Fix `get_url` returning links to pages/sections with `render = false`
+- Various fixes with `zola serve` -u/-i flags
+- Date sorting is now using descending permalink as tie breaker instead of ascending to match date sorting
 
 ## 0.23.3 (2026-08-11)
 

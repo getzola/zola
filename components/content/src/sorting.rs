@@ -39,7 +39,16 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
             SortBy::None => unreachable!(),
         };
 
-        if ord == Ordering::Equal { a.permalink.cmp(&b.permalink) } else { ord }
+        if ord == Ordering::Equal {
+            // https://github.com/getzola/zola/issues/1975
+            // Keep the same order as primary sort for breaking the ties
+            match sort_by {
+                SortBy::Date | SortBy::UpdateDate => b.permalink.cmp(&a.permalink),
+                _ => a.permalink.cmp(&b.permalink),
+            }
+        } else {
+            ord
+        }
     });
 
     (
@@ -140,6 +149,21 @@ mod tests {
         assert_eq!(pages[1], page3.file.path);
         assert_eq!(pages[2], page1.file.path);
         assert_eq!(ignored_pages.len(), 0);
+    }
+
+    // https://github.com/getzola/zola/issues/1975
+    #[test]
+    fn date_ties_break_by_permalink_descending() {
+        let older = create_page_with_date("2024-08-23", None);
+        let mut a = create_page_with_date("2024-08-24", None);
+        let mut b = create_page_with_date("2024-08-24", None);
+        a.permalink = "https://example.com/topic-01/".to_string();
+        a.file.path = PathBuf::from("content/topic-01.md");
+        b.permalink = "https://example.com/topic-02/".to_string();
+        b.file.path = PathBuf::from("content/topic-02.md");
+
+        let (pages, _) = sort_pages(&[&a, &b, &older], SortBy::Date);
+        assert_eq!(pages, vec![b.file.path.clone(), a.file.path.clone(), older.file.path.clone()]);
     }
 
     #[test]
