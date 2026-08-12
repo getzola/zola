@@ -1,0 +1,63 @@
+{
+  "machine": {
+    "arch": "arm64",
+    "build_profile": "release (pinned, see scripts/perf/build.sh)",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "commit_date": "2026-08-12T16:50:42+02:00",
+    "commit_slug": "20260812T145042Z-4cf6124c",
+    "cpu": "Apple M4 Pro",
+    "git_branch": "feature/engineering-system",
+    "git_commit": "4cf6124c",
+    "hardware_slug": "m4-pro-12c-24gb-mac16-8",
+    "hw_model": "Mac16,8",
+    "logical_cores": "12",
+    "memory_bytes": "25769803776",
+    "os": "macOS-26.2-arm64-arm-64bit",
+    "physical_cores": "12",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "timestamp": "2026-08-12T16:54:16+0200",
+    "zola_version": "zola 0.23.3"
+  },
+  "results": [
+    {
+      "input": {
+        "input_bytes": 6332428,
+        "internal_links": 6672,
+        "md_files": 5416,
+        "page_files": 3776,
+        "section_files": 1640,
+        "static_files": 989,
+        "templates": 56
+      },
+      "label": "vomaste-live",
+      "output": {
+        "bytes": 9028264535,
+        "files": 6592
+      },
+      "resources": {
+        "cpu_utilization": 5.91,
+        "peak_rss_bytes": 524468224,
+        "sys_seconds": 14.3,
+        "user_seconds": 243.34,
+        "wall_seconds": 43.59
+      },
+      "site": "/Users/korczis/dev/zola/benchmarks/proxies/vomaste-live",
+      "threads": "all",
+      "timing_seconds": {
+        "max": 34.9452909062,
+        "mean": 31.484892864200003,
+        "median": 30.5517228642,
+        "min": 28.957664822199998,
+        "runs": 3,
+        "stddev": 3.100971011977426,
+        "system": 12.157260339999999,
+        "times": [
+          28.957664822199998,
+          30.5517228642,
+          34.9452909062
+        ],
+        "user": 245.7319857133333
+      }
+    }
+  ]
+}
