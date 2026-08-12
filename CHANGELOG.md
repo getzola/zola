@@ -2,6 +2,8 @@
 
 ## 0.23.4 (unreleased)
 
+- Fix another `get_url` bug adding a trailing slash for non default language
+
 ## 0.23.3 (2026-08-11)
 
 - Fix Windows issues
