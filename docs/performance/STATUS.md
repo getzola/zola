@@ -3,14 +3,18 @@
 
 # PERF backlog status
 
-5 done, 6 open. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
+5 done, 4 open, 2 rejected. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
 
-| ID | Component | Location | Priority | Status | Commit |
-| -- | --------- | -------- | -------- | ------ | ------ |
+A *rejected* item is not abandoned: it was measured and the change did
+not pay off. The measurement is in `OPTIMIZATIONS.md` so it is not
+re-litigated.
+
+| ID | Component | Location | Priority | Status | Delivered by |
+| -- | --------- | -------- | -------- | ------ | ------------ |
 | PERF-001 | templates | `templates/src/functions/load_data.rs:317` | P0 | done | perf(PERF-001): don't hold the load_data cache lock across I/O |
-| PERF-002 | markdown | `giallo-0.5.2 pattern_set.rs:21 via markdown::render_content` | done | done | perf(PERF-002): vendor giallo with a RegSet per thread |
-| PERF-003 | site | `site/src/queue.rs write_output` | rejected | open | — |
-| PERF-004 | utils | `utils/src/fs.rs:216 clean_site_output_folder` | rejected | open | — |
+| PERF-002 | markdown | `giallo-0.5.2 pattern_set.rs:21 via markdown::render_content` | — | done | perf(PERF-002): vendor giallo with a RegSet per thread |
+| PERF-003 | site | `site/src/queue.rs write_output` | — | rejected | not pursued — see OPTIMIZATIONS.md |
+| PERF-004 | utils | `utils/src/fs.rs:216 clean_site_output_folder` | — | rejected | not pursued — see OPTIMIZATIONS.md |
 | PERF-005 (PERF-005a) | render | `render/src/cache.rs:59 RenderCache::build` | P1 | done | perf(PERF-005a): reuse cached page values instead of re-serializing them |
 | PERF-006 | site | `site/src/lib.rs:190 discover loop` | P1 | done | perf(PERF-006): read each content directory once during discovery |
 | PERF-007 | utils | `utils/src/fs.rs:107 copy_directory` | P2 | open | — |

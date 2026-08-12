@@ -190,7 +190,8 @@ make_perf_docs "$P2" '| PERF-001 | `x` | slow | P0 |' \
   '# Optimizations
 
 ## PERF-001 — done, but no evidence'
-assert_run "perf_index: completed item must cite a commit" 1 "no \`**Commit.**\` line" -- \
+assert_run "perf_index: completed item must cite what delivered it" 1 \
+  "cites neither \`**Commit.**\` nor \`**Upstream.**\`" -- \
   env ZOLA_DEV_ROOT="$P2" python3 "$DEV/perf_index.py" check
 
 P3="$TMP/perf-dangling"
@@ -227,6 +228,50 @@ assert_run "perf_index: open lists only open items" 0 "PERF-002 (P1" -- \
   env ZOLA_DEV_ROOT="$P" python3 "$DEV/perf_index.py" open
 assert_run "perf_index: open omits completed items" 0 "" -- \
   env ZOLA_DEV_ROOT="$P" bash -c "python3 \"$DEV/perf_index.py\" open | grep -qv PERF-001"
+
+# The priority column doubles as a status column once an item closes.
+P7="$TMP/perf-rejected"
+make_perf_docs "$P7" \
+  '| PERF-001 | `components/base/src/a.rs:1` | slow | **rejected** |
+| PERF-002 | `components/top/src/b.rs:2` | slow | P1 |' \
+  '# Optimizations
+
+## Rejected experiment: the obvious fix (hotspot PERF-001)
+
+Measured, no gain.'
+ZOLA_DEV_ROOT="$P7" python3 "$DEV/perf_index.py" generate >/dev/null
+assert_run "perf_index: a rejected item needs no completion entry" 0 "PERF backlog OK" -- \
+  env ZOLA_DEV_ROOT="$P7" python3 "$DEV/perf_index.py" check
+assert_run "perf_index: rejected items are counted separately" 0 "1 rejected" -- \
+  bash -c "cat '$P7/docs/performance/STATUS.md'"
+assert_run "perf_index: a rejected item is not listed as open work" 0 "" -- \
+  bash -c "! env ZOLA_DEV_ROOT='$P7' python3 \"$DEV/perf_index.py\" open | grep -q PERF-001"
+
+# A `## Rejected experiment:` heading must not be read as a completion.
+P8="$TMP/perf-rejected-heading"
+make_perf_docs "$P8" '| PERF-001 | `x` | slow | P0 |' \
+  '# Optimizations
+
+## Rejected experiment: something (hotspot PERF-001)
+
+**Commit.** `this line belongs to no completed item`'
+assert_run "perf_index: a rejected-experiment heading is not a completion" 0 "PERF backlog OK" -- \
+  bash -c "env ZOLA_DEV_ROOT='$P8' python3 \"$DEV/perf_index.py\" generate >/dev/null &&
+           env ZOLA_DEV_ROOT='$P8' python3 \"$DEV/perf_index.py\" check"
+
+# An upstream fix is a legitimate closure; it must cite the upstream release.
+P9="$TMP/perf-upstream"
+make_perf_docs "$P9" '| PERF-001 | `x` | slow | P0 |' \
+  '# Optimizations
+
+## PERF-001 — fixed in the dependency
+
+**Upstream.** `somecrate 1.2.0`'
+assert_run "perf_index: an upstream fix closes an item" 0 "PERF backlog OK" -- \
+  bash -c "env ZOLA_DEV_ROOT='$P9' python3 \"$DEV/perf_index.py\" generate >/dev/null &&
+           env ZOLA_DEV_ROOT='$P9' python3 \"$DEV/perf_index.py\" check"
+assert_run "perf_index: an upstream fix is labelled as such" 0 "upstream: somecrate 1.2.0" -- \
+  bash -c "cat '$P9/docs/performance/STATUS.md'"
 
 P6="$TMP/perf-missing"
 mkdir -p "$P6/docs"

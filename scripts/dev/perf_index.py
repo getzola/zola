@@ -5,8 +5,15 @@ Source of truth:
 
 * `docs/performance/HOTSPOTS.md` — the summary table defines every `PERF-*` item
   (id, location, priority) and is the only place an item may be introduced.
-* `docs/performance/OPTIMIZATIONS.md` — append-only log; an item is *done* when
-  it has a `## PERF-NNN` section there, and that section must cite a commit.
+* `docs/performance/OPTIMIZATIONS.md` — append-only log. An item is *done* when
+  it has a `## PERF-NNN` section there, and that section must cite the artifact
+  that delivered the fix: `**Commit.**` for a change in this repository, or
+  `**Upstream.**` when a dependency fixed it.
+
+The priority column in HOTSPOTS.md doubles as a status column once an item
+closes: `rejected` means the change was measured and did not pay off, `done`
+mirrors a completed entry here. A rejected item needs no entry in
+OPTIMIZATIONS.md, but the measurement that rejected it must be there.
 
 Everything else (this index, cross-references in other documents) is derived.
 
@@ -55,7 +62,9 @@ class Item:
     component: str
     priority: str
     status: str = "open"
+    # How the item was closed: a commit in this repo, or an upstream release.
     commit: str = ""
+    resolution: str = ""
     subitems: list[str] = field(default_factory=list)
 
 
@@ -80,27 +89,42 @@ def parse_hotspots(text: str) -> dict[str, Item]:
         ident = cells[0]
         location = cells[1].replace("`", "").strip()
         priority = cells[-1].strip("*")
+        # The priority column doubles as a status column once an item closes:
+        # it holds `rejected` (measured, did not pay off) or `done` instead of
+        # a P-level. Read those as status and leave the priority unknown.
+        word = priority.lower()
+        status = word if word in ("rejected", "done") else "open"
         items[ident] = Item(
             id=ident,
             location=location,
             component=_component_of(location),
-            priority=priority,
+            priority="—" if status != "open" else priority,
+            status=status,
         )
     return items
 
 
-def parse_optimizations(text: str) -> dict[str, str]:
-    """Map completed item id -> cited commit subject (empty string if absent)."""
-    done: dict[str, str] = {}
+def parse_optimizations(text: str) -> dict[str, tuple[str, str]]:
+    """Map completed item id -> (kind, evidence).
+
+    `kind` is "commit" or "upstream"; both are empty when the section cites
+    neither. A `## Rejected experiment: … (hotspot PERF-NNN)` heading is not a
+    completion — it is the evidence behind a rejected item.
+    """
+    done: dict[str, tuple[str, str]] = {}
     current = None
     for line in text.splitlines():
-        heading = re.match(r"^##\s+(PERF-\d{3}[a-z]?)\b", line)
-        if heading:
-            current = heading.group(1)
-            done[current] = ""
+        if line.startswith("## "):
+            heading = re.match(r"^##\s+(PERF-\d{3}[a-z]?)\b", line)
+            current = heading.group(1) if heading else None
+            if current:
+                done[current] = ("", "")
             continue
-        if current and line.startswith("**Commit.**"):
-            done[current] = line[len("**Commit.**") :].strip().strip("`")
+        if not current:
+            continue
+        for marker, kind in (("**Commit.**", "commit"), ("**Upstream.**", "upstream")):
+            if line.startswith(marker):
+                done[current] = (kind, line[len(marker) :].strip().strip("`"))
     return done
 
 
@@ -143,7 +167,7 @@ def build() -> tuple[dict[str, Item], list[str]]:
     done = parse_optimizations(
         OPTIMIZATIONS.read_text(encoding="utf-8") if OPTIMIZATIONS.is_file() else ""
     )
-    for ident, commit in done.items():
+    for ident, (kind, evidence) in done.items():
         parent = ident[:8]  # PERF-005a -> PERF-005
         target = items.get(ident) or items.get(parent)
         if target is None:
@@ -156,11 +180,14 @@ def build() -> tuple[dict[str, Item], list[str]]:
         if ident != target.id:
             target.subitems.append(ident)
         target.status = "done"
-        target.commit = commit or target.commit
-        if not commit:
+        target.commit = evidence or target.commit
+        target.resolution = kind or target.resolution
+        if not kind:
             errors.append(
-                f"{OPTIMIZATIONS.name}: {ident} has no `**Commit.**` line.\n"
-                "    A completed item must cite the commit that delivered it."
+                f"{OPTIMIZATIONS.name}: {ident} cites neither `**Commit.**` nor "
+                "`**Upstream.**`.\n"
+                "    A completed item must name what delivered the fix: a commit in\n"
+                "    this repository, or the upstream release that carries it."
             )
 
     for ident, where in sorted(collect_references().items()):
@@ -177,26 +204,37 @@ def build() -> tuple[dict[str, Item], list[str]]:
 
 
 def render(items: dict[str, Item]) -> str:
-    open_items = [i for i in items.values() if i.status == "open"]
-    done_items = [i for i in items.values() if i.status == "done"]
+    counts = {k: 0 for k in ("done", "open", "rejected")}
+    for i in items.values():
+        counts[i.status] = counts.get(i.status, 0) + 1
     lines = [
         GENERATED_BANNER,
         "",
         "# PERF backlog status",
         "",
-        f"{len(done_items)} done, {len(open_items)} open. "
+        f"{counts['done']} done, {counts['open']} open, "
+        f"{counts['rejected']} rejected. "
         "Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.",
         "",
-        "| ID | Component | Location | Priority | Status | Commit |",
-        "| -- | --------- | -------- | -------- | ------ | ------ |",
+        "A *rejected* item is not abandoned: it was measured and the change did",
+        "not pay off. The measurement is in `OPTIMIZATIONS.md` so it is not",
+        "re-litigated.",
+        "",
+        "| ID | Component | Location | Priority | Status | Delivered by |",
+        "| -- | --------- | -------- | -------- | ------ | ------------ |",
     ]
     for item in sorted(items.values(), key=lambda i: i.id):
         ident = item.id
         if item.subitems:
             ident += " (" + ", ".join(sorted(item.subitems)) + ")"
+        delivered = item.commit or "—"
+        if item.status == "rejected":
+            delivered = "not pursued — see OPTIMIZATIONS.md"
+        elif item.resolution == "upstream":
+            delivered = f"upstream: {item.commit}"
         lines.append(
             f"| {ident} | {item.component} | `{item.location}` | {item.priority} | "
-            f"{item.status} | {item.commit or '—'} |"
+            f"{item.status} | {delivered} |"
         )
     lines.append("")
     return "\n".join(lines)
