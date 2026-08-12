@@ -156,12 +156,12 @@ same binary already differed, which is why the gate had to be repaired first.
 
 ## 20. What bottleneck is dominant now?
 
-1. **Syntax highlighting (PERF-002)** — the largest CPU item on any site with
-   code blocks, and it does not parallelise: 3.37 s single-threaded versus
-   3.96 s on 12 threads. The cause is one `Mutex<RegSet>` per shared pattern set
-   in giallo. The fix belongs upstream; the Zola-side workaround (per-thread
-   registries) was rejected on memory and correctness grounds, with reasons
-   recorded in `HOTSPOTS.md`.
+1. ~~**Syntax highlighting (PERF-002)**~~ — **fixed**, in giallo rather than in
+   Zola: one `RegSet` per thread instead of one `Mutex<RegSet>` shared by all.
+   The markdown phase drops 83–84% and `markdown-heavy` builds 61%; the phase
+   now scales 5.9× on 12 threads where it previously got slower with more
+   cores. Patch and numbers in `OPTIMIZATIONS.md`; Zola picks it up by bumping
+   the dependency. This makes **output writing** the largest remaining item.
 2. **Output writing** — 1.4 ms per file, filesystem-bound, two fixes rejected.
 3. **Deleting the previous output** — up to 36% of wall on a large output tree,
    and *not* recoverable: parallel deletion is slower on APFS, and renaming the

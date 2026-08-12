@@ -424,3 +424,61 @@ footprint on small sites.
 `scripts/dev.sh quality`: ALL PASS.
 
 **Commit.** `perf(PERF-010): share the highlighting registry behind an Arc`
+
+---
+
+## PERF-002 — fixed upstream in giallo: a RegSet per thread
+
+**Problem.** `PatternSet` (`giallo/src/grammars/pattern_set.rs`) held
+`Option<Mutex<RegSet>>`, because `onig_regset_search` writes to the regset's
+internal region storage and one instance cannot be searched concurrently.
+Pattern sets are handed out as `Arc` from the registry's cache, so every worker
+highlighting the same language queued behind a single lock. Highlighting did
+not parallelise at all: the markdown phase took **1.58 s on one thread and
+1.69 s on twelve**.
+
+**Change.** Keep the pattern strings in the `PatternSet` and compile a `RegSet`
+per thread on first use, in a thread-local map keyed by a per-pattern-set id.
+Only a thread that actually searches a set pays for a copy. The patch is
+`docs/performance/giallo-thread-local-regset.patch`, applied to
+`getzola/giallo@5e19db8` and measured through Zola with
+`[patch.crates-io] giallo = { path = … }`.
+
+**Results.** `render markdown` phase and whole-build wall time, interleaved:
+
+| site | md phase before | md phase after | wall before | wall after |
+| ---- | --------------- | -------------- | ----------- | ---------- |
+| `markdown-heavy-2000` | 1.690 s | 0.284 s (**−83%**) | 2.25 s | **0.87 s (−61%)** |
+| `markdown-heavy-4000` | 3.082 s | 0.505 s (**−84%**) | 4.23 s | **1.67 s (−61%)** |
+| `template-heavy-4000` | 268.3 ms | 63.0 ms (−77%) | 1.40 s | 1.17 s (−16%) |
+| `mixed-realistic-4000` | 273.0 ms | 68.4 ms (−75%) | 1.57 s | 1.38 s (−12%) |
+
+Thread scaling of the markdown phase on `markdown-heavy-2000` — the measurement
+that showed the bug in the first place:
+
+| threads | before | after |
+| ------- | ------ | ----- |
+| 1 | 1.58 s | 1.58 s |
+| 2 | ~1.6 s | 0.94 s |
+| 4 | ~1.6 s | 0.56 s |
+| 12 | 1.69 s | **0.27 s** (5.9×, efficiency 0.49) |
+
+Peak RSS grows by **5–8 MB** (292 → 297 MB on `markdown-heavy-2000`), not the
+~270 MB the per-thread-*registry* workaround would have cost: only the pattern
+sets a thread actually uses are compiled, and a compiled regset is small next to
+the grammar data.
+
+**Correctness.** Output equivalence IDENTICAL against the unpatched binary on
+`markdown-heavy-1000`, `markdown-heavy-4000`, `template-heavy-1000` and
+`mixed-realistic-1000`; the patched binary also agrees with itself run to run.
+giallo's own test suite is unchanged by the patch: 46 pass and 11 fail both
+before and after, all 11 for missing grammar/theme fixtures that the repository
+does not ship.
+
+**Not committed to Zola** — there is nothing to commit here. The fix is one file
+in a dependency; Zola picks it up by bumping `giallo` once it is released.
+Known limitation, stated in the patch: thread-local entries live until the
+thread exits, so a process that keeps building registries (`zola serve`
+reloading a config) grows the map. Storing a `thread_local::ThreadLocal<RegSet>`
+inside `PatternSet` would tie the storage to the object's lifetime instead, at
+the cost of one dependency — the maintainer's call.
