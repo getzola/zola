@@ -174,3 +174,70 @@ demonstrated. The hotspot itself is real; what is disproven is this particular
 fix. The next variant worth measuring is a **thread-local** set of created
 directories: it keeps the syscall saving without any shared lock, at the cost
 of a few duplicate `mkdir` calls across worker threads.
+
+---
+
+## PERF-005a — stop re-serializing page values into sections and taxonomies
+
+**Problem.** `RenderCache::build` embedded already-built page values into their
+section and into every taxonomy term by handing them to
+`Value::from_serializable`. That function walks a structure through serde and
+rebuilds every map, key and string it meets — including `Value`s that were
+already built — so a page belonging to a section and four taxonomy terms was
+materialised five extra times, each copy carrying the page's full rendered HTML.
+
+**Evidence (before).** `build render cache` was 24.3% of wall time on
+`mixed-realistic-4000` while running single-threaded, allocated 7.4–10 M times
+(963 MB–1.2 GB) and accounted for ~86% of the peak heap. A controlled
+experiment showed each additional taxonomy membership cost ≈67 KB of retained
+heap and ≈60 ms per 2000 pages — see `ALLOCATIONS.md`.
+
+**Change.** `components/render/src/cache.rs`: serialize the section / term /
+taxonomy struct with an *empty* placeholder for its child collection, then
+replace that entry with the `Value`s already in hand. `tera::Value` is
+`Arc`-backed, so this is a refcount bump instead of a deep copy. The
+placeholder means the key already exists, and re-inserting an existing key in
+an order-preserving map keeps its position — so field order, and therefore the
+bytes templates produce, are unchanged.
+
+**Results.**
+
+`build render cache` phase (`--timings`, `many-taxonomies-4000`):
+
+| round | before | after |
+| ----- | ------ | ----- |
+| 1 | 344.6 ms | 22.2 ms |
+| 2 | 349.7 ms | 22.4 ms |
+| 3 | 339.8 ms | 22.4 ms |
+| median | 344.6 ms | **22.4 ms (−94%, 15× faster)** |
+
+Wall time, interleaved:
+
+| site | before (median) | after (median) | change |
+| ---- | --------------- | -------------- | ------ |
+| `many-taxonomies-4000` | 2.08 s | 1.58 s | **−24%** |
+| `mixed-realistic-4000` | 2.04 s | 1.61 s | **−21%** |
+| `mixed-realistic-16000` | 8.06 s | 6.49 s | **−19%** |
+
+Peak RSS:
+
+| site | before | after | change |
+| ---- | ------ | ----- | ------ |
+| `many-taxonomies-4000` | 1303 MB | 273 MB | **−79%** |
+| `mixed-realistic-4000` | 1108 MB | 312 MB | **−72%** |
+| `mixed-realistic-16000` | 4070 MB | 741 MB | **−82%** |
+
+The memory scaling wall identified in `SCALING.md` is gone: a 16k-page site
+that needed 4.1 GB now needs 741 MB, so per-page cost drops from ~330 KB to
+~46 KB.
+
+**PERF-005b (parallelising the phase) is no longer worth doing**: the phase it
+would parallelise now takes 22 ms.
+
+**Correctness.**
+
+* output equivalence **IDENTICAL** on `many-taxonomies-2000` (2269 files),
+  `mixed-realistic-1000`, `deep-sections-1000`, `dense-internal-links-1000`;
+* `scripts/dev.sh quality`: ALL PASS (fmt, clippy ratchet, 461 tests).
+
+**Commit.** `perf(PERF-005a): reuse cached page values instead of re-serializing them`

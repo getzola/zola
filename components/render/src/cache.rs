@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use ahash::AHashMap;
+use tera::value::Key;
 use tera::{Tera, Value};
 
 use config::Config;
@@ -42,6 +43,28 @@ pub struct RenderCache {
     pub configs: AHashMap<String, Value>,
     /// Cached taxonomies: lang -> (taxonomy_slug -> CachedTaxonomy)
     pub taxonomies: AHashMap<String, AHashMap<String, CachedTaxonomy>>,
+}
+
+/// Replace one key's value in an already serialized map, keeping its position.
+///
+/// `Value::from_serializable` walks a structure through serde and rebuilds
+/// every map, key and string it finds — including any `Value` already stored
+/// inside it. Serializing a section with its pages therefore materialised a
+/// second full copy of every page, and a taxonomy materialised one copy per
+/// term membership. `tera::Value` is `Arc`-backed, so re-using the value we
+/// already built is a refcount bump instead.
+///
+/// The struct is serialized with an empty placeholder for the field, so the key
+/// already exists and re-inserting it keeps the field order the serializer
+/// produced — the map is order-preserving and templates can iterate it.
+fn replace_entry(value: Value, key: &'static str, entry: Value) -> Value {
+    match value.into_map() {
+        Some(mut map) => {
+            map.insert(Key::from(key), entry);
+            Value::from(map)
+        }
+        None => unreachable!("a serialized struct is always a map"),
+    }
 }
 
 impl RenderCache {
@@ -128,14 +151,15 @@ impl RenderCache {
                     .filter_map(|p| pages.get(p).map(|c| c.value.clone()))
                     .collect();
 
+                let serialized = Value::from_serializable(&SerializingSection::new(
+                    section,
+                    library,
+                    Vec::new(),
+                ));
                 sections.insert(
                     path.clone(),
                     CachedContent {
-                        value: Value::from_serializable(&SerializingSection::new(
-                            section,
-                            library,
-                            section_pages,
-                        )),
+                        value: replace_entry(serialized, "pages", Value::from(section_pages)),
                         canonical: section.file.canonical.clone(),
                     },
                 );
@@ -194,7 +218,7 @@ impl RenderCache {
 
                 // Serialize all terms using cached page values
                 let mut terms = AHashMap::with_capacity(t.items.len());
-                let mut serialized_terms = Vec::with_capacity(t.items.len());
+                let mut term_values = Vec::with_capacity(t.items.len());
                 for term in &t.items {
                     // Look up pre-cached page values
                     let term_pages: Vec<Value> = term
@@ -203,17 +227,20 @@ impl RenderCache {
                         .filter_map(|p| pages.get(p).map(|c| c.value.clone()))
                         .collect();
 
-                    let serialized_term =
-                        SerializedTaxonomyTerm::from_item_with_pages(term, term_pages);
-                    terms.insert(term.slug.clone(), Value::from_serializable(&serialized_term));
-                    serialized_terms.push(serialized_term);
+                    let serialized = Value::from_serializable(
+                        &SerializedTaxonomyTerm::from_item_with_pages(term, Vec::new()),
+                    );
+                    let value = replace_entry(serialized, "pages", Value::from(term_pages));
+                    terms.insert(term.slug.clone(), value.clone());
+                    term_values.push(value);
                 }
 
+                let serialized_taxonomy = Value::from_serializable(
+                    &SerializedTaxonomy::from_taxonomy_with_terms(t, Vec::new()),
+                );
+
                 let cached = CachedTaxonomy {
-                    value: Value::from_serializable(&SerializedTaxonomy::from_taxonomy_with_terms(
-                        t,
-                        serialized_terms,
-                    )),
+                    value: replace_entry(serialized_taxonomy, "items", Value::from(term_values)),
                     terms,
                     single_template,
                     list_template,
