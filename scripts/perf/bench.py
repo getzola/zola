@@ -11,7 +11,18 @@ on external real-world sites, with statistical repetition via hyperfine.
     ./bench.py site --path ~/dev/example.com --label example
     ZOLA_PERF_SITE=~/dev/example.com ./bench.py site
 
-Results are written to benchmarks/results/<git-sha>/<label>.json.
+Results are written to
+
+    benchmarks/results/<hardware>/<commit-utc>-<sha>[-dirty]/<label>.json
+
+so that runs group by the machine they were taken on, sort chronologically by
+commit date within a machine, and name the commit they measured. The path is a
+pure function of (machine, commit, label): re-running the same benchmark
+overwrites its own file instead of accumulating variants, which is what you
+want after closing the noisy programs that spoiled the first attempt.
+
+`ZOLA_PERF_HW` overrides the hardware slug when the detected one is not the
+label you want to group by.
 
 Benchmark hygiene notes
 -----------------------
@@ -60,22 +71,87 @@ def sh(cmd: list[str], cwd: Path | None = None, check: bool = True) -> str:
     return res.stdout.strip()
 
 
+def slugify(text: str) -> str:
+    out = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    return re.sub(r"-+", "-", out)
+
+
+def sysctl(key: str) -> str:
+    try:
+        return sh(["sysctl", "-n", key])
+    except Exception:
+        return ""
+
+
+def hardware_slug() -> str:
+    """A stable name for the machine, used to group results.
+
+    Two machines with the same CPU but different memory, core count or model
+    are not comparable, so all four go into the slug. `ZOLA_PERF_HW` overrides
+    it when you want a label of your own.
+    """
+    override = os.environ.get("ZOLA_PERF_HW")
+    if override:
+        return slugify(override)
+
+    cpu = sysctl("machdep.cpu.brand_string")
+    model = sysctl("hw.model")
+    cores = sysctl("hw.logicalcpu") or str(os.cpu_count() or 0)
+    mem_bytes = sysctl("hw.memsize")
+
+    if not cpu:  # Linux fallback
+        try:
+            for line in Path("/proc/cpuinfo").read_text().splitlines():
+                if line.startswith("model name"):
+                    cpu = line.split(":", 1)[1].strip()
+                    break
+        except OSError:
+            cpu = platform.processor() or "unknown-cpu"
+        try:
+            for line in Path("/proc/meminfo").read_text().splitlines():
+                if line.startswith("MemTotal"):
+                    mem_bytes = str(int(line.split()[1]) * 1024)
+                    break
+        except OSError:
+            mem_bytes = ""
+
+    # "Apple M4 Pro" -> "m4-pro": the vendor adds nothing once the model is there.
+    cpu_slug = slugify(re.sub(r"^(apple|intel\(r\)|intel|amd)\s+", "", cpu, flags=re.I))
+    gb = round(int(mem_bytes) / 1024**3) if mem_bytes.isdigit() else 0
+    parts = [cpu_slug or "unknown-cpu", f"{cores}c"]
+    if gb:
+        parts.append(f"{gb}gb")
+    if model:
+        parts.append(slugify(model))
+    else:
+        parts.append(slugify(platform.machine()))
+    return "-".join(parts)
+
+
+def commit_slug() -> str:
+    """`<commit time in UTC>-<short sha>`, so directories sort by commit date."""
+    sha = sh(["git", "rev-parse", "--short", "HEAD"], cwd=REPO)
+    epoch = sh(["git", "show", "-s", "--format=%ct", "HEAD"], cwd=REPO)
+    stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(int(epoch))) if epoch.isdigit() \
+        else "unknown"
+    dirty = sh(["git", "status", "--porcelain"], cwd=REPO)
+    # A dirty tree means the sha does not identify what was measured, so say so
+    # rather than filing the result under a commit it does not belong to.
+    return f"{stamp}-{sha}-dirty" if dirty else f"{stamp}-{sha}"
+
+
 def git_sha() -> str:
     sha = sh(["git", "rev-parse", "--short", "HEAD"], cwd=REPO)
     dirty = sh(["git", "status", "--porcelain"], cwd=REPO)
-    # Untracked/modified files under scripts/ and docs/ do not change the binary,
-    # but we still record dirtiness so results are never silently mislabelled.
     return f"{sha}-dirty" if dirty else sha
 
 
 def machine_metadata() -> dict:
-    def sysctl(key: str) -> str:
-        try:
-            return sh(["sysctl", "-n", key])
-        except Exception:
-            return ""
-
     return {
+        "hardware_slug": hardware_slug(),
+        "hw_model": sysctl("hw.model"),
+        "commit_slug": commit_slug(),
+        "commit_date": sh(["git", "show", "-s", "--format=%cI", "HEAD"], cwd=REPO, check=False),
         "os": platform.platform(),
         "arch": platform.machine(),
         "cpu": sysctl("machdep.cpu.brand_string") or platform.processor(),
@@ -224,7 +300,7 @@ def benchmark(site: Path, label: str, runs: int, warmup: int,
 
 
 def write_results(name: str, payload: dict) -> Path:
-    target = RESULTS / git_sha()
+    target = RESULTS / hardware_slug() / commit_slug()
     target.mkdir(parents=True, exist_ok=True)
     path = target / f"{name}.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

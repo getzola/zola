@@ -26,7 +26,7 @@ Motivating workload: a ~3.7k-page / ~1.6k-section site that keeps growing.
 scripts/perf/run.sh build                 # build the benchmark binary (pinned profile)
 scripts/perf/run.sh quick                 # ~1 min smoke run
 scripts/perf/run.sh baseline              # full scenario × size matrix
-scripts/perf/run.sh scaling benchmarks/results/<sha>/baseline-matrix.json --markdown
+scripts/perf/run.sh scaling benchmarks/results/<hardware>/<commit-utc>-<sha>/baseline-matrix.json --markdown
 scripts/perf/run.sh threads --pages 4000  # parallel efficiency sweep
 ```
 
@@ -40,7 +40,20 @@ Components:
   external site (real content, substitute templates) for sites that cannot be
   built by the version under test.
 * `scripts/perf/bench.py` — hyperfine-driven runner; writes
-  `benchmarks/results/<git-sha>/*.json`.
+  `benchmarks/results/<hardware>/<commit-utc>-<sha>[-dirty]/<label>.json`.
+
+  The path is a pure function of (machine, commit, label):
+
+  * **grouped by hardware** — `m4-pro-12c-24gb-mac16-8` — because numbers from
+    different machines must not be compared. Override with `ZOLA_PERF_HW=…`.
+  * **sorted by commit date** — the directory starts with the commit's UTC
+    timestamp, so a plain `ls` inside a machine is chronological.
+  * **named by commit** — the short sha is in the directory, and `-dirty` is
+    appended when the working tree was modified, because then the sha does not
+    identify what was measured.
+  * **idempotent** — re-running the same benchmark overwrites its own file. A
+    run spoiled by other programs competing for the machine is corrected by
+    closing them and running again, not by pruning stale files.
 * `scripts/perf/scaling.py` — growth-model fitting over result files.
 * `scripts/perf/compare_output.py` — byte-for-byte output equivalence gate.
 

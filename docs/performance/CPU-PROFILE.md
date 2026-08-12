@@ -108,7 +108,7 @@ publish: on `markdown-heavy` the same configuration varied between 2.3 s and
 7.1 s across runs, and the proxy sweep came out non-monotonic (t1 7.8 s, t2
 2.5 s, t4 3.3 s, t8 1.8 s, t12 2.1 s). Lock-convoy dynamics plus output-tree I/O
 make whole-build wall time a bad instrument here. Raw data is kept in
-`benchmarks/results/9ec4407a-dirty/threads-*.json`, and no speedup claim is made
+`benchmarks/results/m4-pro-12c-24gb-mac16-8/20260811T203235Z-9ec4407a-dirty/threads-*.json`, and no speedup claim is made
 from it.
 
 Instead the highlighting phase was isolated with `--timings`, which reports the

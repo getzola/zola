@@ -1,7 +1,7 @@
 # Baseline measurement (M4)
 
 Everything below is measured, not estimated. Raw data:
-`benchmarks/results/1d46fbad-dirty/{baseline-matrix,baseline-16k,site-vomaste-proxy}.json`.
+`benchmarks/results/m4-pro-12c-24gb-mac16-8/20260811T201125Z-1d46fbad-dirty/{baseline-matrix,baseline-16k,site-vomaste-proxy}.json`.
 
 ## Environment
 

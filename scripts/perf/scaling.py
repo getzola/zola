@@ -11,8 +11,8 @@ reports:
   * the best fitting model among O(1), O(log n), O(n), O(n log n), O(n²),
     chosen by relative RMSE of a one-parameter fit.
 
-    ./scaling.py benchmarks/results/<sha>/baseline-matrix.json
-    ./scaling.py --markdown benchmarks/results/<sha>/*.json
+    ./scaling.py benchmarks/results/<hardware>/<commit-utc>-<sha>/baseline-matrix.json
+    ./scaling.py --markdown benchmarks/results/<hardware>/<commit-utc>-<sha>/*.json
 
 A single doubling ratio is never enough to classify growth, so the exponent and
 the model fit are computed over every measured size.
