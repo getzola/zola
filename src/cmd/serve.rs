@@ -485,6 +485,11 @@ fn create_new_site(
         |u| u.to_string(),
     );
 
+    // https://github.com/getzola/zola/issues/2170#issuecomment-3225548197
+    if base_url.starts_with("https://") {
+        no_port_append = true;
+    }
+
     let mut constructed_base_url = construct_url(&base_url, no_port_append, interface_port);
 
     if !site.config.base_url.ends_with('/') && constructed_base_url != "/" {
