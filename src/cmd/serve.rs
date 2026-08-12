@@ -1081,7 +1081,7 @@ mod tests {
             None,
             Some("https://example.com/path/to/site"),
             false,
-            String::from("https://example.com:1111/path/to/site"),
+            String::from("https://example.com/path/to/site"),
         );
     }
 
