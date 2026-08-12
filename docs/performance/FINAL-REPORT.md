@@ -163,9 +163,11 @@ same binary already differed, which is why the gate had to be repaired first.
    registries) was rejected on memory and correctness grounds, with reasons
    recorded in `HOTSPOTS.md`.
 2. **Output writing** — 1.4 ms per file, filesystem-bound, two fixes rejected.
-3. **Deleting the previous output** — up to 36% of wall on a large output tree;
-   the remaining idea (rename aside, delete in the background) changes what
-   exists on disk during a build and needs a decision before it is written.
+3. **Deleting the previous output** — up to 36% of wall on a large output tree,
+   and *not* recoverable: parallel deletion is slower on APFS, and renaming the
+   tree aside to delete it in the background removes the phase from the
+   timeline (930 ms → 0.2 ms) without changing wall time at all, because the
+   build already saturates the machine. Both measured, both rejected.
 4. **For the reference site specifically**: none of the above. Its build is
    dominated by producing 9 GB of HTML, 88% of which is the same navigation
    tree repeated on every page. The largest available win for that site is in
@@ -175,7 +177,12 @@ same binary already differed, which is why the gate had to be repaired first.
 
 * **PERF-003** (cache created directories) — shared-lock and thread-local
   variants both measured; neither moved the write path.
-* **PERF-004** (parallel output cleaning) — measurably slower on APFS.
+* **PERF-004** (output cleaning) — two approaches. Parallel deletion is
+  measurably slower on APFS. Renaming the tree aside and deleting it in the
+  background does exactly what it promises to the phase timeline and nothing at
+  all to wall time: the work is moved, not removed, and the build already uses
+  every core and the same disk. 8 interleaved rounds on the case that should
+  have shown it best: +1.8% median.
 * An early cumulative table was thrown away after a full disk made builds fail
   fast and the numbers look excellent.
 * A first version of the determinism test passed by luck with three keys; it

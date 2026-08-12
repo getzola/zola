@@ -281,11 +281,39 @@ samples were worse.
 **Why.** APFS serialises directory-metadata mutations; concurrent `unlink`
 storms contend rather than overlap. Parallelism is not the lever here.
 
-**Not committed.** The hotspot is real and still open. The approach worth
-measuring next does not try to delete faster but to take the delete off the
-critical path: rename the output tree aside (an O(1) operation) and delete it
-on a background thread while the build proceeds. That changes what exists on
-disk during a build, so it needs a decision before it is written.
+**Second variant — rename aside, delete in the background — also rejected.**
+Approved and implemented: the previous output is renamed to a sibling scratch
+directory (one `rename`, regardless of size), deleted on a background thread
+while the build runs, and joined before the build reports success. It worked
+exactly as designed at the phase level, on the reference workload:
+
+| phase | before | after |
+| ----- | ------ | ----- |
+| `clean output dir` | 929.8 ms | 0.2 ms (rename) |
+| `wait for background clean` | — | 0.0 ms |
+
+**And it made no difference to wall time.** Interleaved:
+
+| site | before (median) | after (median) |
+| ---- | --------------- | -------------- |
+| reference proxy (9 GB output) | 24.42 s | 24.55 s |
+| `mixed-realistic-8000` | 3.19 s | 3.33 s |
+| `markdown-heavy-4000`, 8 rounds | 4.275 s | 4.350 s (+1.8%; min −0.7%) |
+
+`markdown-heavy-4000` is the case that should have shown it most clearly: the
+clean is 301 ms of a 4.3 s build (7.1%), the build is CPU-bound, and the run
+spread was tight (4.22–4.40 s). The effect is absent.
+
+**Why.** The deletion is not removed, only moved. The build already saturates
+all 12 cores and the same disk, so a background deleter competes with the
+workers for exactly the resources they need; total work is conserved. Winning
+would require not waiting for the deletion at all — detaching it from the
+process lifetime — which would let `zola build` return while it is still
+writing to disk, and race with whatever consumes the output next.
+
+**Not committed.** What was kept is this record: the clean phase can be made to
+disappear from the timeline, and doing so buys nothing on a machine where the
+build is already the bottleneck. PERF-004 is closed as rejected.
 
 ---
 
