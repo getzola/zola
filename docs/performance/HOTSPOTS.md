@@ -93,7 +93,8 @@ change, ranked by how close they are to the edge.
 | PERF-010 | `site/src/tpls.rs:5` `register_early_global_fns` | clones `Config`, `permalinks`, `colocated_assets` and the whole `Tera` per registration; runs twice | 2× per build | O(P) copies | timings: 44 ms = 3.1% of wall (mixed-4k) | 44 ms wall | P2 |
 | PERF-011 | `config` highlighting registry init | ~170 MB RSS and ~110 ms before any page is processed | once | O(1) | baseline: 100-page build = 128 ms / 174 MB | fixed overhead | P3 |
 | PERF-012 | the platform allocator | large `String` churn (render → minify → drop) on every worker | once per output | O(outputs × page size) | profile: 34 s of 138 s busy CPU in `_xzm_*`/`_free` (reference site) | **−23.7% CPU on the reference site; shipped as mimalloc** | **done** |
-| PERF-013 | `templates/src/functions/files.rs:133,199` | `get_url(cachebust=true)` and `get_hash(path=…)` re-read and re-hash the file on every call | once per call per page | O(P × file size) | profile: `compute_hash` 2.2 s self CPU; the reference site hashes 3 files (one of them the search index) on all 5601 outputs | 2.2 s CPU + the reads behind it | P2 |
+| PERF-013 | `templates/src/functions/files.rs:133,199` | `get_url(cachebust=true)` and `get_hash(path=…)` re-read and re-hash the file on every call | once per call per page | O(P × file size) | profile: `compute_hash` 2.2 s self CPU; the reference site hashes 3 files (one of them the search index) on all 5601 outputs | **2.2 s CPU, gone from the profile; below the noise floor of a whole-build A/B** | **done** |
+| PERF-014 | `minify_html::parse::element::parse_tag` (dependency) | seeds a new ahash hasher per tag parsed | once per HTML tag | O(tags) | profile: `gen_hasher_seed` 1.9 s self CPU (2.2%), 1825 of its 1898 samples under `parse_tag` | 1.9 s CPU on the reference site | P3, upstream |
 
 ## Detail
 
@@ -287,6 +288,17 @@ the same discipline `load_data` already uses. Validation is not optional here:
 `search_for_file` also looks in the *output* directory, so a hashed file can be
 one the build itself writes, and a path-only cache could capture it before it is
 written.
+
+### PERF-014 — minify-html seeds a hasher per tag (P3, upstream)
+
+`gen_hasher_seed` is 1.9 s of self CPU on the reference site and 1825 of its 1898
+samples come from `minify_html::parse::element::parse_tag`: the minifier builds a
+randomly-seeded ahash map for each tag's attributes. On pages of a few kilobytes
+this is invisible; at 1.6 MB per page it is 2.2% of the build.
+
+Nothing to do here without patching a second dependency, which is not worth it
+for 2%. Recorded so the symbol is not re-investigated: it is not Zola's hashing,
+and it is not the `preserve_order` change.
 
 ## What is explicitly *not* a hotspot
 

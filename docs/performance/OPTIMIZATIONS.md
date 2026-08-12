@@ -604,3 +604,54 @@ required by oniguruma, so this adds no build dependency.
 the full 6592-file reference site. `scripts/dev.sh quality`: ALL PASS.
 
 **Commit.** `perf(PERF-012): use mimalloc as the global allocator`
+
+---
+
+## PERF-013 — hash each file once per build, not once per page
+
+**Problem.** `get_url(cachebust=true)` and `get_hash(path=…)` open, read and SHA
+their target on every call. Both are template functions, so a cachebusted
+`<link>` in a base template hashes the same file once per output. The reference
+site does this three times in `base.html` — one of them on the generated search
+index — across 5601 outputs: 2.2 s of `compute_hash` self CPU plus the reads
+feeding it.
+
+**Change.** A `FileHashes` memo in `templates/src/functions/files.rs`, one per
+`GetUrl`/`GetHash` (so one per build, since the functions are registered during
+`Site::load`), keyed by `(path, sha_type, base64)` and validated against the
+file's `(timestamp, length)`.
+
+The validation is not belt-and-braces. `search_for_file` also looks in the
+*output* directory, so a hashed file can be one the build itself writes; a
+path-only cache would be a correctness bug waiting for the day someone hashes a
+file that is generated later. Following PERF-001, the lock is held for the
+lookup and the insert only — never across the read.
+
+`GetHash` now reads its `sha_type`/`base64` kwargs before opening the file,
+since the memo cannot be looked up without knowing which hash was asked for.
+The one observable consequence: for a call that is *both* unreadable and has a
+malformed `sha_type` argument, the kwarg error now surfaces instead of the file
+error. "Cannot find file" still wins over both.
+
+**Results.** A whole-build A/B cannot resolve this: 2.2 s of CPU is ~1% of the
+reference build, and that session's paired CPU spread was 76 s because another
+program on the machine was using three cores. Reported as measured — five
+interleaved rounds gave −0.4% CPU with the rounds disagreeing on the sign, which
+is a non-result, not a win.
+
+What *can* be measured is the thing that changed. In a profile of the same site,
+`compute_hash` accounted for 2217 ms of self time before and **does not appear at
+all** after (top-40 by self time; the fortieth entry is 667 ms).
+
+So: a real but small saving, taken because it is also the correct thing to do —
+the previous code re-read a file up to 5601 times per build — and because it
+costs nothing.
+
+**Correctness.** Output equivalence IDENTICAL on the full 6592-file reference
+site (whose pages embed a cachebust hash of the search index) and on
+`mixed-realistic-1000`. `scripts/dev.sh quality`: ALL PASS. Two tests were added
+for the memo, one per failure mode it could have: that a hash flavour is part of
+the key, and that a rewritten file is noticed. The second was confirmed to fail
+when the `(timestamp, length)` check is removed.
+
+**Commit.** `perf(PERF-013): memoize file hashes for cachebust and get_hash`

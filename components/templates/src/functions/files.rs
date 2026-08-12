@@ -3,16 +3,62 @@ use fs_err as fs;
 use std::collections::HashMap;
 use std::fmt::Write as _;
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
+use std::time::SystemTime;
 
 use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
 use sha2::{Sha256, Sha384, Sha512, digest};
 
 use config::Config;
 use tera::{Error, Function, Kwargs, State, TeraResult};
+use utils::fs::get_file_time;
 use utils::site::resolve_internal_link;
 
 use crate::helpers::search_for_file;
+
+/// What a cached hash was computed from: the file's timestamp and length.
+type Stamp = (Option<SystemTime>, u64);
+/// A file plus the flavour of hash asked for: `(path, sha_type, base64)`.
+type HashKey = (PathBuf, u16, bool);
+
+/// Memo of file hashes, keyed by path and by the flavour of hash asked for.
+///
+/// `get_url(cachebust=true)` and `get_hash(path=…)` are called from templates,
+/// so anything in a base template is hashed once per page: the reference site
+/// hashed the same three files — one of them a multi-megabyte search index — on
+/// all 5601 of its outputs.
+///
+/// Entries are validated against `(timestamp, length)` rather than trusted for
+/// the rest of the build. `search_for_file` also looks in the output directory,
+/// so a hashed file can be one the build itself produces, and a path-only cache
+/// could hand out the hash of a file that has since been rewritten.
+#[derive(Debug, Default, Clone)]
+pub struct FileHashes(Arc<Mutex<AHashMap<HashKey, (Stamp, String)>>>);
+
+impl FileHashes {
+    /// The hash of `path`, if one was computed from the file as it is now.
+    ///
+    /// Returns `None` when the file cannot be stat'ed, leaving the caller to
+    /// read it and report the failure in its own words.
+    fn lookup(&self, path: &Path, sha_type: u16, base64: bool) -> Option<String> {
+        let stamp = Self::stamp(path)?;
+        let key: HashKey = (path.to_path_buf(), sha_type, base64);
+        let cache = self.0.lock().expect("file hash cache lock");
+        let (cached_stamp, hash) = cache.get(&key)?;
+        (*cached_stamp == stamp).then(|| hash.clone())
+    }
+
+    fn store(&self, path: &Path, sha_type: u16, base64: bool, hash: &str) {
+        let Some(stamp) = Self::stamp(path) else { return };
+        let key: HashKey = (path.to_path_buf(), sha_type, base64);
+        self.0.lock().expect("file hash cache lock").insert(key, (stamp, hash.to_string()));
+    }
+
+    fn stamp(path: &Path) -> Option<Stamp> {
+        Some((get_file_time(path), path.metadata().ok()?.len()))
+    }
+}
 
 fn compute_hash<D>(data: &[u8], as_base64: bool) -> String
 where
@@ -41,6 +87,7 @@ pub struct GetUrl {
     permalinks: HashMap<String, String>,
     output_path: PathBuf,
     colocated_assets: AHashMap<String, (String, String)>,
+    hashes: FileHashes,
 }
 
 impl GetUrl {
@@ -51,7 +98,14 @@ impl GetUrl {
         output_path: PathBuf,
         colocated_assets: AHashMap<String, (String, String)>,
     ) -> Self {
-        Self { base_path, config, permalinks, output_path, colocated_assets }
+        Self {
+            base_path,
+            config,
+            permalinks,
+            output_path,
+            colocated_assets,
+            hashes: FileHashes::default(),
+        }
     }
 }
 
@@ -138,11 +192,16 @@ impl Function<TeraResult<String>> for GetUrl {
                     &self.output_path,
                 )
                 .map_err(|e| Error::message(format!("`get_url`: {}", e)))?
-                .and_then(|(p, _)| fs::File::open(p).ok())
-                .and_then(|mut f| {
+                .and_then(|(p, _)| {
+                    if let Some(hash) = self.hashes.lookup(&p, 256, false) {
+                        return Some(hash);
+                    }
+                    let mut f = fs::File::open(&p).ok()?;
                     let mut contents = Vec::new();
                     f.read_to_end(&mut contents).ok()?;
-                    Some(compute_hash::<Sha256>(&contents, false))
+                    let hash = compute_hash::<Sha256>(&contents, false);
+                    self.hashes.store(&p, 256, false, &hash);
+                    Some(hash)
                 }) {
                     Some(hash) => {
                         let shorthash = &hash[..20]; // 2^-80 chance of false positive
@@ -171,11 +230,12 @@ pub struct GetHash {
     base_path: PathBuf,
     theme: Option<String>,
     output_path: PathBuf,
+    hashes: FileHashes,
 }
 
 impl GetHash {
     pub fn new(base_path: PathBuf, theme: Option<String>, output_path: PathBuf) -> Self {
-        Self { base_path, theme, output_path }
+        Self { base_path, theme, output_path, hashes: FileHashes::default() }
     }
 }
 
@@ -184,7 +244,9 @@ impl Function<TeraResult<String>> for GetHash {
         let path: Option<String> = kwargs.get("path")?;
         let literal: Option<String> = kwargs.get("literal")?;
 
-        let contents = match (path, literal) {
+        // `file_path` is `Some` only for the `path=` form, and is what the hash
+        // gets memoized against; the `literal=` form has nothing to memoize.
+        let (contents, file_path) = match (path, literal) {
             (Some(_), Some(_)) => {
                 return Err(Error::message(
                     "`get_hash`: must have only one of `path` or `literal` argument",
@@ -209,6 +271,14 @@ impl Function<TeraResult<String>> for GetHash {
                         }
                     };
 
+                // Which hash was asked for has to be known before the file is
+                // read, or there is nothing to look the memo up by.
+                let sha_type: u16 = kwargs.get("sha_type")?.unwrap_or(384);
+                let base64: bool = kwargs.get("base64")?.unwrap_or(true);
+                if let Some(hash) = self.hashes.lookup(&file_path, sha_type, base64) {
+                    return Ok(hash);
+                }
+
                 let mut f = fs::File::open(&file_path).map_err(|e| {
                     Error::message(format!("File {} could not be open: {}", path_v, e))
                 })?;
@@ -218,9 +288,9 @@ impl Function<TeraResult<String>> for GetHash {
                     Error::message(format!("File {} could not be read: {}", path_v, e))
                 })?;
 
-                contents
+                (contents, Some(file_path))
             }
-            (None, Some(literal_v)) => literal_v.into_bytes(),
+            (None, Some(literal_v)) => (literal_v.into_bytes(), None),
         };
 
         let sha_type: u16 = kwargs.get("sha_type")?.unwrap_or(384);
@@ -232,6 +302,10 @@ impl Function<TeraResult<String>> for GetHash {
             512 => compute_hash::<Sha512>(&contents, base64),
             _ => return Err(Error::message("`get_hash`: Invalid sha value")),
         };
+
+        if let Some(file_path) = file_path {
+            self.hashes.store(&file_path, sha_type, base64, &hash);
+        }
 
         Ok(hash)
     }
@@ -859,5 +933,84 @@ title = "A title"
         let ctx = Context::new();
         let url = get_url.call(kwargs, &State::new(&ctx)).unwrap();
         assert_eq!(url, "https://remplace-par-ton-url.fr/en/genres");
+    }
+
+    // The hash memo is keyed by the flavour of hash as well as by the path, and
+    // is validated against the file rather than trusted for the whole build.
+    // Both of those are what stops it handing back a wrong answer, so both are
+    // tested here rather than assumed.
+
+    #[test]
+    fn hash_cache_distinguishes_hash_flavours_for_one_file() {
+        let dir = create_temp_dir();
+        let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
+        let ctx = Context::new();
+
+        let call = |sha_type: u16, base64: bool| {
+            let kwargs = Kwargs::from([
+                ("path", tera::Value::from("app.css")),
+                ("sha_type", tera::Value::from(sha_type)),
+                ("base64", tera::Value::from(base64)),
+            ]);
+            get_hash.call(kwargs, &State::new(&ctx)).unwrap()
+        };
+
+        let variants =
+            [call(256, false), call(256, true), call(384, false), call(384, true), call(512, true)];
+        for (i, a) in variants.iter().enumerate() {
+            for b in &variants[i + 1..] {
+                assert_ne!(a, b, "two different hash flavours returned the same value");
+            }
+            // A second call must agree with the first — that is the memo working.
+            assert_eq!(*a, variants[i]);
+        }
+        assert_eq!(call(256, false), variants[0]);
+    }
+
+    #[test]
+    fn hash_cache_notices_the_file_changing() {
+        let dir = create_temp_dir();
+        let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
+        let ctx = Context::new();
+        let call = || {
+            let kwargs = Kwargs::from([("path", tera::Value::from("app.css"))]);
+            get_hash.call(kwargs, &State::new(&ctx)).unwrap()
+        };
+
+        let before = call();
+        assert_eq!(call(), before);
+
+        // A build can hash a file it also writes (`search_for_file` looks in the
+        // output directory), so a stale entry is a real failure mode, not a
+        // hypothetical one.
+        create_file(&dir.path().join("app.css"), "// Hello world, at greater length!")
+            .expect("Failed to rewrite file");
+
+        assert_ne!(call(), before, "the memo served a hash of content that no longer exists");
+    }
+
+    #[test]
+    fn get_url_cachebust_is_stable_across_calls() {
+        let dir = create_temp_dir();
+        let config = Config::parse(CONFIG_DATA).unwrap();
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            config,
+            HashMap::new(),
+            PathBuf::new(),
+            AHashMap::new(),
+        );
+        let ctx = Context::new();
+        let call = || {
+            let kwargs = Kwargs::from([
+                ("path", tera::Value::from("app.css")),
+                ("cachebust", tera::Value::from(true)),
+            ]);
+            get_url.call(kwargs, &State::new(&ctx)).unwrap()
+        };
+
+        let first = call();
+        assert!(first.contains("?h="));
+        assert_eq!(call(), first);
     }
 }
