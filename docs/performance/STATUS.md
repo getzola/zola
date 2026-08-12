@@ -3,7 +3,7 @@
 
 # PERF backlog status
 
-7 done, 5 open, 2 rejected. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
+7 done, 4 open, 3 rejected. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
 
 A *rejected* item is not abandoned: it was measured and the change did
 not pay off. The measurement is in `OPTIMIZATIONS.md` so it is not
@@ -17,7 +17,7 @@ re-litigated.
 | PERF-004 | utils | `utils/src/fs.rs:216 clean_site_output_folder` | — | rejected | not pursued — see OPTIMIZATIONS.md |
 | PERF-005 (PERF-005a) | render | `render/src/cache.rs:59 RenderCache::build` | P1 | done | perf(PERF-005a): reuse cached page values instead of re-serializing them |
 | PERF-006 | site | `site/src/lib.rs:190 discover loop` | P1 | done | perf(PERF-006): read each content directory once during discovery |
-| PERF-007 | utils | `utils/src/fs.rs:107 copy_directory` | P2 | open | — |
+| PERF-007 | utils | `utils/src/fs.rs:107 copy_directory` | — | rejected | not pursued — see OPTIMIZATIONS.md |
 | PERF-008 | render | `render/src/cache.rs:84,151 sibling injection` | P2 | open | — |
 | PERF-009 | templates | `templates/src/functions/load_data.rs:157` | P2 | open | — |
 | PERF-010 | site | `site/src/tpls.rs:5 register_early_global_fns` | P2 | done | perf(PERF-010): share the highlighting registry behind an Arc |

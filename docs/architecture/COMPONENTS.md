@@ -58,7 +58,7 @@ Open `PERF-*` items are derived from `docs/performance/HOTSPOTS.md`.
 
 | Component | Why it matters | Open PERF items |
 | --------- | -------------- | --------------- |
-| `utils` | Owns the output-directory clean and the static-tree copy, both serial today. | PERF-007 |
+| `utils` | Owns the output-directory clean and the static-tree copy, both serial today. | — |
 | `config` | Highlighting registry initialisation is fixed startup cost paid before any page is read. | PERF-011 |
 | `content` | Library construction and page parsing are on the critical path of every build. | — |
 | `render` | RenderCache::build is a dominant CPU and memory phase on large sites. | PERF-008 |
