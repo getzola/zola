@@ -26,6 +26,11 @@ scripts/dev.sh generate                # rewrite generated documents
 scripts/dev.sh perf <cmd>              # forwards to scripts/perf/run.sh
 ```
 
+```bash
+zola build --timings                   # per-phase breakdown of a build (developer diagnostic)
+cargo build --release --features alloc-stats   # + per-phase allocation counts in that report
+```
+
 The underlying cargo commands, which is what CI runs:
 
 ```bash
@@ -59,6 +64,8 @@ regenerate it from this checkout.
 - Development targets the `next` branch. Only documentation fixes for the *current* release go to `master`.
 - User-visible changes are listed in `CHANGELOG.md`, grouped per release with a `### Breaking` section.
 - Syntax highlighting languages/themes live in the separate [Giallo](https://github.com/getzola/giallo) crate, not here.
+  This fork currently builds against `vendor/giallo`, a patched copy pulled in with
+  `[patch.crates-io]`; see `vendor/README.md` for what the patch does and how to drop it.
 - `CONTRIBUTING.md` explicitly restricts LLM usage: generated code must be human-reviewed and tested,
   and LLM-written documentation is not accepted.
 
@@ -100,6 +107,11 @@ renderer-agnostic; `site/src/md_render.rs` bridges them) and `config` →
 - `render::RenderCache` — pages/sections/taxonomies/config pre-serialized to `tera::Value` once,
   so rendering N pages doesn't re-serialize the library N times. Anything added to what templates
   can see must be threaded through here, not just through the `Serializing*` structs.
+  A container (section, taxonomy term) must **not** be serialized with its children inside it:
+  `Value::from_serializable` walks a structure through serde and rebuilds every `Value` it finds,
+  which used to materialise each page once per section and once per taxonomy term it belonged to.
+  Serialize the container with an empty placeholder and splice the existing `Arc`-backed values in
+  (`replace_entry` in `render/src/cache.rs`) — that was 86% of the peak heap.
 - `render::Renderer` — the only place that calls `tera.render`. Missing `page.html`/`section.html`/
   taxonomy templates fall back to `render/src/default_tpl.html` instead of erroring.
 - `site::queue` — the output layer. Every artifact (page, section, paginated page, taxonomy list/term,
@@ -144,6 +156,10 @@ and `serve.rs` matches on it to pick the cheapest rebuild. `--fast` restricts co
 - Filesystem access goes through `fs_err as fs` (or `utils::fs`) so IO errors mention the path.
 - Hash maps in hot paths are `ahash::AHashMap`; parallelism is rayon, not tokio (tokio is only for
   the serve HTTP server).
+- **Anything templates iterate must have a stable order.** `tera` is built with `preserve_order`
+  and `PageFrontMatter.taxonomies` is a `BTreeMap`, because a `HashMap` anywhere on that path makes
+  two runs of the same binary emit different HTML. There is a test for it:
+  `render::cache::tests::taxonomies_serialize_in_a_stable_order`.
 - CLI flags are defined in `src/cli.rs`, which `build.rs` `include!`s to generate man pages and shell
   completions — keep it free of anything that can't be compiled standalone.
 
@@ -190,6 +206,11 @@ The rules that make a result believable — measure first, release builds,
 interleaved A/B, byte-identical output, one hotspot per change, report memory,
 record negative results — are in `.claude/workflows/performance.md`. Read it
 before touching anything in the backlog.
+
+`docs/performance/FINAL-REPORT.md` answers where the time goes today.
+`OPTIMIZATIONS.md` is append-only and includes the **rejected** experiments —
+caching created directories and both ways of speeding up the output clean —
+which is the part worth reading before re-proposing an obvious idea.
 
 ## Where to look
 

@@ -8,6 +8,107 @@ A fast static site generator in a single binary with everything built-in.
 To find out more see the [Zola Documentation](https://www.getzola.org/documentation/getting-started/overview/), look
 in the [docs/content](docs/content) folder of this repository or visit the [Zola community forum](https://zola.discourse.group).
 
+---
+
+## About this fork
+
+This is a fork of [getzola/zola](https://github.com/getzola/zola) carrying a
+**large-site performance program**: an evidence-driven effort to make builds of
+sites with thousands to tens of thousands of pages faster and, above all,
+smaller in memory. Every change here is backed by a before/after measurement and
+by byte-for-byte output equivalence against the version it replaces.
+
+Everything it produces — the harness, the evidence, the rejected experiments —
+lives in [`docs/performance/`](docs/performance/README.md). Start with
+[`FINAL-REPORT.md`](docs/performance/FINAL-REPORT.md).
+
+### What changed, and what it bought
+
+Measured on an Apple M4 Pro (12 cores, 24 GiB), release build, interleaved runs.
+"Before" is upstream 0.23.3 with only the measurement instrumentation added.
+
+| workload | wall time | peak memory |
+| -------- | --------- | ----------- |
+| `mixed-realistic` 4 000 pages | 2.10 s → 1.72 s (−18%) | 1371 MB → **209 MB (−85%)** |
+| `many-taxonomies` 4 000 pages | 2.21 s → 1.65 s (−25%) | 1696 MB → **273 MB (−84%)** |
+| `mixed-realistic` 16 000 pages | 8.67 s → 6.80 s (−22%) | 5152 MB → **742 MB (−86%)** |
+| `markdown-heavy` 4 000 pages | 6.24 s → **2.23 s (−64%)** | 514 MB → 522 MB |
+| a real 3 776-page site | 28.9 s → 24.6 s (−15%) | — |
+
+Memory per page fell from roughly **330 KB to 46 KB**. A 16 000-page site that
+needed 5.1 GB now needs 0.74 GB, which removes the wall that would otherwise
+have stopped such sites somewhere around 50–70k pages.
+
+The individual changes, each with its own measurement:
+
+| | change | effect |
+| --- | ------ | ------ |
+| PERF-005a | `RenderCache` reuses `Arc`-backed page values instead of re-serializing them into every section and taxonomy term | cache phase −94%, peak RSS −72…−86% |
+| PERF-002 | syntax highlighting gets a regset per thread instead of sharing one behind a mutex (in the vendored dependency, see below) | markdown phase −84%, `markdown-heavy` builds −64% |
+| PERF-010 | the highlighting registry is shared behind an `Arc` rather than deep-copied into four Tera functions | flat ~100 MB off every build |
+| PERF-001 | `load_data` releases its cache lock before doing I/O and parsing, instead of holding it throughout | page-render CPU 6.5 s → 1.8 s on a data-driven site |
+| PERF-006 | the content walk reads each directory once instead of twice | discovery −35% on section-dense trees |
+| — | **builds are reproducible**: maps reaching templates iterate in a stable order | −9% wall, −15% RSS as a side effect |
+
+### Behaviour differences from upstream
+
+Two, both deliberate and both in [`CHANGELOG.md`](CHANGELOG.md):
+
+* **Deterministic output.** Upstream produces different bytes on two runs of the
+  same binary for any page with more than one taxonomy, because `page.taxonomies`
+  and Tera's own maps were hash-ordered. Here they iterate in a stable order and
+  `page.taxonomies` is sorted by name. This changes output for templates that
+  iterate a map — by reordering it, never by changing its content.
+* **`zola build --timings`.** A developer diagnostic that prints a hierarchical
+  breakdown of every build phase plus per-item costs inside the parallel ones.
+  Disabled state costs one relaxed atomic load per instrumentation point.
+
+### The vendored dependency
+
+[`vendor/giallo`](vendor/README.md) carries `getzola/giallo@5e19db8` plus one
+patch: giallo shared a single `Mutex<RegSet>` across all worker threads, so
+syntax highlighting did not parallelise at all — the markdown phase was *slower*
+on twelve threads than on one. The patch
+([`docs/performance/giallo-thread-local-regset.patch`](docs/performance/giallo-thread-local-regset.patch))
+gives each thread its own regset.
+
+It is pulled in with `[patch.crates-io]` and belongs upstream; `vendor/README.md`
+records where it came from and the four steps to drop it once a giallo release
+contains the fix.
+
+### Reproducing any of this
+
+```bash
+scripts/perf/run.sh build          # release binary with a pinned profile
+scripts/perf/run.sh quick          # ~1 minute smoke run
+scripts/perf/run.sh baseline       # the full scenario × size matrix
+scripts/perf/run.sh scaling benchmarks/results/<hardware>/<commit>/baseline-matrix.json --markdown
+```
+
+The generator produces byte-identical sites from a seed, results are filed under
+`benchmarks/results/<hardware>/<commit-utc>-<sha>/` so they group by machine and
+sort by commit date, and `scripts/perf/compare_output.py` is the output-equivalence
+gate every change had to pass. [`docs/performance/README.md`](docs/performance/README.md)
+explains the harness.
+
+### Public documentation still to write
+
+The site under `docs/content/` is user-facing prose and is written by humans;
+two pages describe behaviour this fork changed and have **not** been updated:
+
+* `documentation/templates/overview.md` — that iterating a map in a template now
+  has a defined order, and that `page.taxonomies` comes out sorted by name.
+* `documentation/getting-started/cli-usage.md` — the `zola build --timings`
+  flag, if it is to be user-facing rather than a developer diagnostic.
+
+### Working in this fork
+
+`scripts/dev.sh quality` is the one command that answers "is the branch healthy"
+(format, the clippy ratchet, the whole test suite). [`AGENTS.md`](AGENTS.md) has
+the engineering rules, [`CLAUDE.md`](CLAUDE.md) the code map.
+
+---
+
 This tool and its template engine [tera](https://keats.github.io/tera/) were born from an intense dislike of the (insane) Golang template engine and therefore of
 Hugo that I was using before for 6+ sites.
 

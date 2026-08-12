@@ -2,11 +2,43 @@
 
 ## Unreleased
 
+### Breaking
+
 - Builds are now reproducible: maps reaching templates (`page.taxonomies`,
   `page.extra`, `load_data` results, …) iterate in a stable order instead of a
   per-process random one, so two runs of the same binary produce identical
   output. Templates that iterate a map will see a fixed order where they
   previously saw an arbitrary one; `page.taxonomies` is now sorted by name.
+  Only the order changes — never which entries are present.
+
+### Performance
+
+Measured on a 12-core machine, interleaved release builds, with byte-identical
+output verified for each change. Details and the rejected experiments are in
+`docs/performance/OPTIMIZATIONS.md`.
+
+- Much lower memory on large sites: the render cache no longer re-serializes
+  each page's value into its section and into every taxonomy term it belongs
+  to. Peak memory drops 72–86% (a 16 000-page site goes from 5.1 GB to 0.74 GB,
+  ~330 KB per page to ~46 KB) and builds get 18–25% faster.
+- Syntax highlighting is parallel again. It shared one Oniguruma regset behind
+  a mutex, so the markdown phase was slower on twelve threads than on one;
+  each thread now gets its own. Code-heavy sites build up to 64% faster. This
+  lives in the highlighting crate and is carried here as `vendor/giallo` until
+  it is released upstream.
+- `load_data` no longer holds its cache lock while reading and parsing, so
+  sites that load a data file per page stop serialising on it (−23% on a
+  data-heavy site).
+- The highlighting registry is shared rather than deep-copied into four Tera
+  functions: about 100 MB less on every build.
+- The content walk reads each directory once instead of twice (−35% on the
+  discovery phase of section-dense sites).
+
+### Added
+
+- `zola build --timings` prints a per-phase breakdown of the build, with
+  per-item costs for the parallel phases. It is a developer diagnostic; a build
+  without the flag pays one relaxed atomic load per instrumentation point.
 
 ## 0.23.3 (2026-08-11)
 

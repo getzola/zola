@@ -5,6 +5,20 @@ thousands of pages) while preserving exact observable behaviour.
 
 Motivating workload: a ~3.7k-page / ~1.6k-section site that keeps growing.
 
+**Where it stands** — see `STATUS.md` for the live count and `FINAL-REPORT.md`
+for the answers with their evidence:
+
+| workload | wall | peak RSS |
+| -------- | ---- | -------- |
+| `mixed-realistic-4000` | 2.10 s → 1.72 s | 1371 MB → 209 MB |
+| `many-taxonomies-4000` | 2.21 s → 1.65 s | 1696 MB → 273 MB |
+| `mixed-realistic-16000` | 8.67 s → 6.80 s | 5152 MB → 742 MB |
+| `markdown-heavy-4000` | 6.24 s → 2.23 s | 514 MB → 522 MB |
+| the reference site (3776 pages) | 28.9 s → 24.6 s | — |
+
+Time is linear in page count in every scenario, before and after; what changed
+is the constant, and above all the memory: ~330 KB per page → ~46 KB.
+
 ## Documents
 
 | File | Contents |
@@ -14,11 +28,13 @@ Motivating workload: a ~3.7k-page / ~1.6k-section site that keeps growing.
 | `SCALING.md` | T(n) curves, growth exponents, ranked superlinear offenders (M5) |
 | `CPU-PROFILE.md` | Profiler findings, top inclusive/exclusive consumers (M7) |
 | `ALLOCATIONS.md` | Allocation behaviour and dominant sources (M8) |
+| `REAL-SITE.md` | The reference site: migration to 0.23, 0.22-vs-0.23 numbers, and why its own templates dominate its build |
 | `HOTSPOTS.md` | Ranked, evidence-backed `PERF-*` backlog (M10) |
 | `OPTIMIZATIONS.md` | Append-only log of completed `PERF-*` items with real numbers |
 | `STATUS.md` | Backlog state, **generated** from the two files above |
 | `INCREMENTAL-BUILD-DESIGN.md` | Dependency-graph design for incremental builds |
 | `FINAL-REPORT.md` | Summary against the program's success criteria |
+| `giallo-thread-local-regset.patch` | The highlighting fix, applied to the vendored copy in `vendor/giallo` and ready to send upstream |
 
 ## Harness
 
@@ -80,6 +96,13 @@ finished item owes, and when to stop — is in `.claude/workflows/performance.md
 | `markdown-heavy` | pulldown-cmark, highlighting, headings, TOC |
 | `data-heavy` | per-page `load_data()` of JSON view models |
 | `mixed-realistic` | combination calibrated against the reference site |
+
+## Reading the backlog
+
+`OPTIMIZATIONS.md` is append-only and contains the **rejected** experiments as
+well as the accepted ones — caching created directories (two variants), and both
+ways of making the output clean cheaper. They are there because each looked
+obvious, was measured, and did not pay; re-proposing one costs a day.
 
 ## Rules this program follows
 
