@@ -529,7 +529,10 @@ impl Site {
             }
         }
 
-        self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
+        if page.meta.render {
+            self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
+        }
+
         if render_md {
             let insert_anchor =
                 self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
@@ -563,7 +566,9 @@ impl Site {
     /// Add a section to the site
     /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
-        self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
+        if section.meta.render {
+            self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
+        }
         if render_md {
             md_render::render_section(
                 &mut section,
