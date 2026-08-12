@@ -608,6 +608,12 @@ impl Site {
     pub fn add_and_render_page(&mut self, path: &Path) -> Result<()> {
         let page = Page::from_file(path, &self.config, &self.base_path)?;
         self.add_page(page, true)?;
+        // The renderer reads page values out of the `RenderCache`, not out of
+        // the `Library`, so adding the page is not enough: without this the
+        // edit is parsed, the job runs, and the template is handed the copy
+        // that was serialized before the edit. `zola serve --fast` reported
+        // "Done in 0ms" and kept serving the old HTML.
+        self.rebuild_cache();
         let page = self.library.pages.get(path).unwrap();
         Queue::single_page(self, page).process()
     }
@@ -640,6 +646,9 @@ impl Site {
         let old_meta = self.library.sections.get(path).map(|s| s.meta.clone());
         self.add_section(section, true)?;
         self.populate_sections();
+        // Same reason as in `add_and_render_page`: the renderer reads the
+        // section (and its page list) out of the `RenderCache`.
+        self.rebuild_cache();
         let section = self.library.sections.get(path).unwrap();
         let render_pages = old_meta.map(|m| section.needs_pages_render(&m)).unwrap_or(true);
         Queue::single_section(self, section, render_pages).process()

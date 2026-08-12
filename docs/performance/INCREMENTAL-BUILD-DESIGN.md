@@ -4,11 +4,23 @@ A design, not an implementation. Written because the performance program asks
 for it before anyone starts, and because the measurements now say clearly which
 parts of a rebuild are worth skipping and which are not.
 
-**Position: do not build this yet.** `zola serve --fast` already covers the
-inner loop the feature would serve, and the phases a dependency graph could skip
-are no longer where the time goes. The numbers are below; the design is here so
-that when the trade changes, the work starts from evidence rather than from a
-blank page.
+**Position: do not build this yet.** `zola serve --fast` covers the inner loop
+the feature would serve, and the phases a dependency graph could skip are no
+longer where the time goes. The numbers are below; the design is here so that
+when the trade changes, the work starts from evidence rather than from a blank
+page.
+
+> **Correction (2026-08-12).** The first version of this document asserted that
+> `--fast` "already reaches most of that floor" without testing it. It did not:
+> `--fast` detected the change, ran the job, printed `Done in 0ms` and served
+> the *unedited* page, because the renderer reads values out of `RenderCache`
+> and nothing refreshed it. The bug is upstream — the pre-optimization baseline
+> binary behaves identically — and is fixed in this fork
+> (`components/site/tests/fast_rebuild.rs`). A content edit on a 4000-page site
+> now costs 34–41 ms against 447–481 ms for the full rebuild `serve` does
+> without `--fast`. The rest of this document was written on top of a claim that
+> had not been checked; the invalidation analysis below stands, but treat its
+> statements about current behaviour as needing the same treatment.
 
 ## What a rebuild costs today
 
@@ -29,12 +41,14 @@ So on a 4000-page site, a perfect single-page incremental rebuild has about
 (discovery, config, template load, and the writes for whatever did change) put a
 floor of roughly 150–200 ms on any rebuild.
 
-`zola serve --fast` already reaches most of that floor for the common case: a
-content edit re-parses and re-renders one page and runs `Queue::single_page`.
-What it does *not* do is decide which *other* outputs a change invalidates — it
-re-runs `populate_sections()` (which re-sorts every section in the site) and
-leaves anything that embeds the page — its section's page list, taxonomy terms,
-feeds, the sitemap — stale until a full rebuild.
+`zola serve --fast` reaches most of that floor for the common case: a content
+edit re-parses the page, refreshes the render cache and runs
+`Queue::single_page` — 34–41 ms at 4000 pages. What it does *not* do is decide
+which *other* outputs a change invalidates: anything that embeds the page — its
+section's page list, taxonomy terms, feeds, the sitemap — stays stale until a
+full rebuild. That limitation is now asserted by a test
+(`fast_rebuild_of_a_page_updates_its_section_listing`) so that it stays a
+decision rather than a surprise.
 
 That gap is the honest scope of this feature: **not "make rebuilds fast" but
 "make partial rebuilds correct"**.

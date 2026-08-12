@@ -54,6 +54,18 @@ compile the workspace, and release timings stop being comparable.
 `scripts/dev.sh` and `scripts/perf/build.sh` clear `RUSTFLAGS` for that reason.
 `scripts/dev.sh doctor` reports whether yours does this.
 
+## Known flake: `can_check_site`
+
+`site::can_check_site` runs the external link checker against the real internet
+(the `test_site` fixture links to github.com). It fails roughly one run in three
+when the whole `site` target runs — 26 tests hit the network at once and some
+connections are refused. Measured on an unmodified tree: 3 runs → 1 failure, and
+the same binary passes on a re-run.
+
+So: `Found N broken external link(s)` from `can_check_site` is **not** a signal
+about your change. Re-run before investigating it, and never chase it by editing
+the fixture's links. Any *other* failure in that target is real.
+
 ## Optional git hooks
 
 Off by default. `scripts/dev.sh hooks install` points `core.hooksPath` at

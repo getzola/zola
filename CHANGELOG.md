@@ -40,6 +40,17 @@ output verified for each change. Details and the rejected experiments are in
   change either way. Build with `--no-default-features` to keep the platform
   allocator.
 
+### Fixed
+
+- `zola serve --fast` applied nothing. A content change was detected and
+  re-parsed, the render job ran, and the server kept returning the page as it
+  was before the edit — reporting `Done in 0ms` while doing so. Rendering reads
+  its values from the render cache, which the fast path never refreshed. A
+  content edit on a 4000-page site now takes 34–41 ms, against 447–481 ms for
+  the full rebuild `serve` performs without `--fast`. As before, `--fast` only
+  re-renders the changed page or section: listings, taxonomies and feeds that
+  embed it still need a full rebuild.
+
 ### Added
 
 - `zola build --timings` prints a per-phase breakdown of the build, with
