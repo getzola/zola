@@ -2,6 +2,14 @@
 
 The motivating workload, measured for real rather than through a proxy.
 
+> **Update (2026-08-12).** The site has since adopted the migration below into
+> its own repository: it now has no Tera 1 macros, no `{% import %}`, no
+> shortcodes directory, and no `filter()`/`concat()` calls. The benchmark copy
+> is therefore no longer a migrated derivative — it is a straight `rsync` of the
+> site's working tree, and it builds unmodified. Everything from here down
+> records how it got there, and stays because the byte-equivalence verification
+> is the evidence that the migration did not change the site.
+
 ## Getting it to build at all
 
 The site targets Zola 0.22: 39 of its 40 templates use Tera 1 `{% import %}`
@@ -113,9 +121,9 @@ That is what the build spends its time on: rendering 1.5 MB of markup per page
 ## Reproducing
 
 ```bash
-# 1. migrate a copy of the site (never touches the original)
-scripts/perf/run.sh proxy ~/dev/vomaste.cz --with-data --emulate-view-models   # content-faithful proxy
-# or the full migration pipeline in the deliverable directory
+# 1. copy the site (never touches the original); no migration step any more
+rsync -a --delete --exclude node_modules/ --exclude public/ --exclude test-results/ \
+      --exclude .git/ ~/dev/vomaste.cz/ benchmarks/proxies/vomaste-live/
 
 # 2. benchmark
 python3 scripts/perf/bench.py site --path <migrated-copy> --label vomaste --runs 3
