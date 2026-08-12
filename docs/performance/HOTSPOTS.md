@@ -91,10 +91,10 @@ change, ranked by how close they are to the edge.
 | PERF-005 | `render/src/cache.rs:59` `RenderCache::build` | sequential; deep serde re-serialization of every page value into its section and every taxonomy term | once per build | O(P × value size × memberships), single-threaded | timings: 346 ms = 24.3% of wall (mixed-4k); RSS 406 KB/page (many-taxonomies) vs 77 KB/page (simple) | 346 ms wall, ~2.6 GB RSS at 8k | **P1** |
 | PERF-006 | `site/src/lib.rs:190` discover loop | serial `WalkDir` + a second `WalkDir(max_depth=1)` per directory + serial `Section::from_file` | once per build | O(dirs) serial, 2 traversals | timings: 232–357 ms = 13–27% of wall (reference proxy, 1640 sections) | 232 ms wall | **P1** |
 | PERF-007 | `utils/src/fs.rs:107` `copy_directory` | serial copy of the static tree, 2 `stat`s per file | once per build | O(static files) serial | timings: 138–170 ms = 9–10% of wall (989 files / 55 MB) — **but the parallel copy measured 10–30% *slower*, see OPTIMIZATIONS.md** | none recoverable | **rejected** |
-| PERF-008 | `render/src/cache.rs:84`,`151` sibling injection | `Value::into_map()` on a shared `Arc<Map>` forces a map copy per page with siblings | once per page | O(P × map size) | profile: `Value as Serialize` 2.9–4.2% busy CPU; part of PERF-005's memory | included in PERF-005 | P2 |
+| PERF-008 | `render/src/cache.rs:84`,`151` sibling injection | `Value::into_map()` on a shared `Arc<Map>` forces a map copy per page with siblings | once per page | O(P × map size) | profile: `Value as Serialize` 2.9–4.2% busy CPU — **but PERF-005a took the whole cache phase to 2.5% (31 ms on the reference site), so this is a fraction of a fraction** | none worth taking | **closed with PERF-005a** |
 | PERF-009 | `templates/src/functions/load_data.rs:157` | `get_file_time()` `stat` on every cache-key computation | once per `load_data()` | O(calls) syscalls | 4843 calls on the reference workload — **but every `stat` in the whole build is 439 ms of self time, so this is a few ms** | none worth taking | **rejected** |
 | PERF-010 | `site/src/tpls.rs:5` `register_early_global_fns` | clones `Config`, `permalinks`, `colocated_assets` and the whole `Tera` per registration; runs twice | 2× per build | O(P) copies | timings: 44 ms = 3.1% of wall (mixed-4k) | 44 ms wall | P2 |
-| PERF-011 | `config` highlighting registry init | ~170 MB RSS and ~110 ms before any page is processed | once | O(1) | baseline: 100-page build = 128 ms / 174 MB | fixed overhead | P3 |
+| PERF-011 | `config` highlighting registry init | ~170 MB RSS and ~110 ms before any page is processed | once | O(1) | baseline: 100-page build = 128 ms / 174 MB; **now 52 ms / 76 MB, of which the registry is 32 ms** | fixed overhead, mostly already gone | P3, blocked |
 | PERF-012 | the platform allocator | large `String` churn (render → minify → drop) on every worker | once per output | O(outputs × page size) | profile: 34 s of 138 s busy CPU in `_xzm_*`/`_free` (reference site) | **−23.7% CPU on the reference site; shipped as mimalloc** | **done** |
 | PERF-013 | `templates/src/functions/files.rs:133,199` | `get_url(cachebust=true)` and `get_hash(path=…)` re-read and re-hash the file on every call | once per call per page | O(P × file size) | profile: `compute_hash` 2.2 s self CPU; the reference site hashes 3 files (one of them the search index) on all 5601 outputs | **2.2 s CPU, gone from the profile; below the noise floor of a whole-build A/B** | **done** |
 | PERF-014 | `minify_html::parse::element::parse_tag` (dependency) | seeds a new ahash hasher per tag parsed | once per HTML tag | O(tags) | profile: `gen_hasher_seed` 1.9 s self CPU (2.2%), 1825 of its 1898 samples under `parse_tag` | 1.9 s CPU on the reference site | P3, upstream |
@@ -296,6 +296,35 @@ the same discipline `load_data` already uses. Validation is not optional here:
 `search_for_file` also looks in the *output* directory, so a hashed file can be
 one the build itself writes, and a path-only cache could capture it before it is
 written.
+
+### PERF-008 — sibling injection copies each page's map (closed)
+
+Still true as written: the `siblings` pass holds a clone of each neighbour's
+value while it rebuilds a page's map, so the `Arc<Map>` is shared and
+`into_map()` copies the top level. The copy is shallow — every entry in it is an
+`Arc` — and PERF-005a took the whole `build render cache` phase from 24.3% of a
+build to 2.5% (31 ms on the reference site's 3776 pages).
+
+There is nothing here worth a change. Closed as absorbed by PERF-005a rather
+than left open at P2.
+
+### PERF-011 — the fixed cost of loading the highlighting registry (P3, blocked)
+
+`Highlighting::init` calls `Registry::builtin()` while the config is parsed, so
+every build pays for every builtin grammar whether or not it renders a single
+code block.
+
+Most of what this item described is already gone: PERF-005a and PERF-010 took a
+100-page build from 128 ms / 174 MB to **52 ms / 76 MB**. What remains is 32 ms
+of `config` phase — 62% of a 100-page build, and 0.1% of a large one.
+
+Deferring it is blocked on something other than performance. `init` also
+validates that the configured theme names exist, and that check needs the
+registry. Made lazy, the error `Theme ... does not exist` would move from
+config-parse time to the first code block — and on a site with no code blocks it
+would never appear at all. Losing a config error is not a trade this program
+makes for 32 ms. It needs a way to enumerate theme names without building the
+registry, which is a giallo change.
 
 ### PERF-015 — the filesystem probing behind template file lookups (P3)
 
