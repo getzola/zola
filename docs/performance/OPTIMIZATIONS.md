@@ -482,3 +482,47 @@ thread exits, so a process that keeps building registries (`zola serve`
 reloading a config) grows the map. Storing a `thread_local::ThreadLocal<RegSet>`
 inside `PatternSet` would tie the storage to the object's lifetime instead, at
 the cost of one dependency — the maintainer's call.
+
+### PERF-002 without touching giallo — measured, and the trade-off
+
+The same win is reachable from inside Zola: `Registry` is `Clone`, and cloning
+starts a fresh pattern cache while keeping the same `Scope` ids (so the global
+scope repository stays valid — unlike `Registry::load`, which replaces it).
+A `thread_local` clone per worker, made lazily on that worker's first
+highlight, gives every thread its own regsets.
+
+Implemented and measured (three-way, interleaved, medians):
+
+| workload | today | Zola-side per-thread `Registry` | patched giallo |
+| -------- | ----- | ------------------------------- | -------------- |
+| `markdown-heavy-2000` wall | 2.73 s | 1.07 s | 1.02 s |
+| `markdown-heavy-4000` wall | 5.20 s | 1.80 s | 1.83 s |
+| `mixed-realistic-4000` wall | 1.71 s | 1.63 s | 1.55 s |
+| `markdown-heavy-2000` RSS | 291 MB | **600 MB** | 297 MB |
+| `markdown-heavy-4000` RSS | 514 MB | **822 MB** | 521 MB |
+| `mixed-realistic-4000` RSS | 209 MB | **519 MB** | 216 MB |
+
+**It is as fast as the upstream fix and costs ~310 MB.** That is ~26 MB per
+worker: a cloned registry duplicates all the grammars, where the giallo patch
+duplicates only the compiled regsets a thread actually uses.
+
+Freeing the clones after the markdown phase (`rayon::broadcast` of a
+`clear_local_registries`) was also measured: it returns 36 MB of the 310
+(824 → 786 MB, 519 → 483 MB). The peak is reached during highlighting itself and
+the allocator keeps the pages, so the machinery does not pay for itself.
+
+Output is byte-identical either way.
+
+**Not committed**, because handing back 310 MB undoes most of what PERF-005a and
+PERF-010 won and the choice is a trade, not an improvement. The three ways to
+get the fix, in order of preference:
+
+1. **Upstream giallo** — `docs/performance/giallo-thread-local-regset.patch`
+   applies to `getzola/giallo@5e19db8`; Zola then bumps the dependency. Best
+   result, no cost to Zola, needs a release.
+2. **Vendor or fork the patched crate** and point at it with
+   `[patch.crates-io] giallo = { path = … }` or a git revision. Same result
+   today, at the cost of carrying ~10k lines and a 1.2 MB `builtin.zst` in the
+   repository until upstream releases.
+3. **The Zola-side per-thread registry above** — no dependency change, ~30
+   lines, same speed, +310 MB.
