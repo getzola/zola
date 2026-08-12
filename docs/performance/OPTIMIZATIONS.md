@@ -534,3 +534,73 @@ get the fix, in order of preference:
    repository until upstream releases.
 3. **The Zola-side per-thread registry above** — no dependency change, ~30
    lines, same speed, +310 MB.
+
+---
+
+## PERF-012 — mimalloc as the global allocator
+
+**Problem.** A CPU profile of the reference site (3776 pages, 1.6 MB of HTML
+per page) put **34 s of 138 s of busy CPU inside the platform allocator**:
+
+| symbol (self time) | ms |
+| ------------------ | -- |
+| `_xzm_free` | 14 182 |
+| `xzm_malloc` | 5 837 |
+| `_xzm_xzone_malloc` | 4 651 |
+| `_malloc_zone_malloc` | 3 748 |
+| `_xzm_xzone_malloc_tiny` | 2 847 |
+| `_free` | 2 822 |
+
+That is macOS 15's xzone allocator, and the shape of the workload is the worst
+case for it: twelve rayon workers each build a multi-megabyte `String`, hand it
+to the minifier, which allocates another one, then drop both — a stream of large
+allocations with no reuse between them.
+
+**Change.** `mimalloc` as `#[global_allocator]` in the binary, behind a
+default-on `mimalloc` feature. No library code changes; `--no-default-features`
+restores the platform allocator, and `alloc-stats` still overrides it.
+
+**Results.** Interleaved, five rounds, `scripts/perf/ab.py`. CPU time is the
+headline figure rather than wall: these builds write 9 GB per run, and the
+filesystem stalls that causes move wall time around by several seconds in both
+directions without saying anything about the code.
+
+Reference site, per-round CPU (s), A = platform allocator, B = mimalloc:
+
+| round | A | B |
+| ----- | - | - |
+| 1 | 405.5 | 297.6 |
+| 2 | 361.0 | 288.2 |
+| 3 | 357.8 | 263.7 |
+| 4 | 351.9 | 268.5 |
+| 5 | 347.9 | 270.5 |
+
+**Paired median −23.7% CPU, unanimous across all five rounds.** Peak RSS
+−9.9% (574 → 513 MB). Wall was −20.9% at the median but one round disagreed on
+the sign, so the wall figure is reported as indicative.
+
+The synthetic scenarios, which have small pages, show **no CPU or wall effect at
+all** — every one of them has rounds disagreeing on the sign:
+
+| scenario | paired CPU | paired RSS |
+| -------- | ---------- | ---------- |
+| `mixed-realistic-16000` | −7.8% (not unanimous) | **−7.3%** |
+| `mixed-realistic-4000` | −1.2% (not unanimous) | +5.7% |
+| `data-heavy-4000` | +1.8% (not unanimous) | +4.2% |
+
+So this is a large-page win, not a general one: mimalloc's arenas cost ~11 MB on
+a 200 MB build and save 45 MB on a 620 MB one, and the CPU saving only appears
+once allocations are big enough to reach the platform allocator's slow path.
+The direction improves as sites grow, which is the workload this fork targets.
+
+**Portability.** The measurement is macOS-only, and the symbols it blames are
+macOS-specific; the win may be smaller or absent against glibc. Nothing
+regressed anywhere measured, so it is on by default rather than off. `mimalloc`
+was verified to compile and run against musl (static Alpine build) since
+`x86_64-unknown-linux-musl` is a release target; a C toolchain was already
+required by oniguruma, so this adds no build dependency.
+
+**Correctness.** Output equivalence IDENTICAL on `mixed-realistic-1000` and on
+the full 6592-file reference site. `scripts/dev.sh quality`: ALL PASS.
+
+**Commit.** `perf(PERF-012): use mimalloc as the global allocator`

@@ -22,6 +22,14 @@ mod prompt;
 #[global_allocator]
 static GLOBAL: alloc_stats::CountingAllocator = alloc_stats::CountingAllocator;
 
+// Rendering a site is allocation-bound: every page is built as a large `String`,
+// minified into another one, and dropped, on every worker thread at once. On the
+// reference workload that put a quarter of the build's CPU inside the platform
+// allocator. `alloc-stats` wins when both are on, since it exists to measure.
+#[cfg(all(feature = "mimalloc", not(feature = "alloc-stats")))]
+#[global_allocator]
+static GLOBAL_MI: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 fn get_config_file_path(dir: &Path, config_path: Option<&Path>) -> (PathBuf, PathBuf) {
     let (root_dir, config_path) = match config_path {
         Some(path) => {

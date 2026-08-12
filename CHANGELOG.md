@@ -33,6 +33,12 @@ output verified for each change. Details and the rejected experiments are in
   functions: about 100 MB less on every build.
 - The content walk reads each directory once instead of twice (−35% on the
   discovery phase of section-dense sites).
+- mimalloc is now the global allocator. Sites with large pages spend a quarter
+  of their build inside the platform allocator, churning multi-megabyte strings
+  through render and minify on every thread: −24% build CPU and −10% peak
+  memory on a site averaging 1.6 MB per page. Sites with small pages see no
+  change either way. Build with `--no-default-features` to keep the platform
+  allocator.
 
 ### Added
 

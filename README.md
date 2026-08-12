@@ -46,6 +46,7 @@ The individual changes, each with its own measurement:
 | PERF-005a | `RenderCache` reuses `Arc`-backed page values instead of re-serializing them into every section and taxonomy term | cache phase −94%, peak RSS −72…−86% |
 | PERF-002 | syntax highlighting gets a regset per thread instead of sharing one behind a mutex (in the vendored dependency, see below) | markdown phase −84%, `markdown-heavy` builds −64% |
 | PERF-010 | the highlighting registry is shared behind an `Arc` rather than deep-copied into four Tera functions | flat ~100 MB off every build |
+| PERF-012 | mimalloc replaces the platform allocator, which was taking a quarter of the CPU on sites whose pages are megabytes rather than kilobytes | real site: build CPU −24%, peak RSS −10%; no effect on small-page sites |
 | PERF-001 | `load_data` releases its cache lock before doing I/O and parsing, instead of holding it throughout | page-render CPU 6.5 s → 1.8 s on a data-driven site |
 | PERF-006 | the content walk reads each directory once instead of twice | discovery −35% on section-dense trees |
 | — | **builds are reproducible**: maps reaching templates iterate in a stable order | −9% wall, −15% RSS as a side effect |

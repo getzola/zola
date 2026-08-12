@@ -92,6 +92,8 @@ change, ranked by how close they are to the edge.
 | PERF-009 | `templates/src/functions/load_data.rs:157` | `get_file_time()` `stat` on every cache-key computation | once per `load_data()` | O(calls) syscalls | 4843 calls on the reference workload; `stat` visible in self time | small but on the P0 path | P2 |
 | PERF-010 | `site/src/tpls.rs:5` `register_early_global_fns` | clones `Config`, `permalinks`, `colocated_assets` and the whole `Tera` per registration; runs twice | 2× per build | O(P) copies | timings: 44 ms = 3.1% of wall (mixed-4k) | 44 ms wall | P2 |
 | PERF-011 | `config` highlighting registry init | ~170 MB RSS and ~110 ms before any page is processed | once | O(1) | baseline: 100-page build = 128 ms / 174 MB | fixed overhead | P3 |
+| PERF-012 | the platform allocator | large `String` churn (render → minify → drop) on every worker | once per output | O(outputs × page size) | profile: 34 s of 138 s busy CPU in `_xzm_*`/`_free` (reference site) | **−23.7% CPU on the reference site; shipped as mimalloc** | **done** |
+| PERF-013 | `templates/src/functions/files.rs:133,199` | `get_url(cachebust=true)` and `get_hash(path=…)` re-read and re-hash the file on every call | once per call per page | O(P × file size) | profile: `compute_hash` 2.2 s self CPU; the reference site hashes 3 files (one of them the search index) on all 5601 outputs | 2.2 s CPU + the reads behind it | P2 |
 
 ## Detail
 
@@ -262,6 +264,29 @@ preserved.
 destination for each. 989 files / 55 MB costs 138–170 ms of wall time on the
 reference workload. Parallelising with rayon is straightforward; `hard_link_static`
 already exists as a user-side mitigation.
+
+### PERF-012 — the allocator itself (done)
+
+Not a line of Zola code: a quarter of the reference site's busy CPU was inside
+macOS's own `malloc`, because rendering a page allocates a multi-megabyte string,
+minifying it allocates another, and twelve threads do this at once. Replacing the
+global allocator with mimalloc took 23.7% off the build's CPU with byte-identical
+output. Details and the caveat (it does nothing for small-page sites) in
+`OPTIMIZATIONS.md`.
+
+### PERF-013 — file hashes are recomputed per page (P2)
+
+`get_url(cachebust=true)` and `get_hash(path=…)` each open, read and SHA the
+target file on every call. A cachebusted `<link>` in `base.html` therefore hashes
+the same stylesheet once per output. On the reference site that is three files
+(including the multi-megabyte generated search index) hashed 5601 times, 2.2 s of
+`compute_hash` self CPU plus the reads feeding it.
+
+The fix is a build-scoped memo keyed by path and validated by `(mtime, len)` —
+the same discipline `load_data` already uses. Validation is not optional here:
+`search_for_file` also looks in the *output* directory, so a hashed file can be
+one the build itself writes, and a path-only cache could capture it before it is
+written.
 
 ## What is explicitly *not* a hotspot
 

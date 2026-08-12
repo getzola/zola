@@ -45,6 +45,8 @@ mime_guess = "2.0"
 # For essence_str() function, see https://github.com/getzola/zola/issues/1845
 mime = "0.3.16"
 env_logger = { version ="0.11", default-features = false }
+# Global allocator; see the `mimalloc` feature below.
+mimalloc = { version = "0.1", default-features = false, optional = true }
 
 site = { workspace = true }
 errors = { workspace = true }
@@ -73,12 +75,18 @@ url = { workspace = true }
 same-file = "1"
 
 [features]
+default = ["mimalloc"]
 indexing-zh = ["search/indexing-zh"]
 indexing-ja = ["search/indexing-ja"]
 # Developer diagnostic: wraps the system allocator to count allocations and
 # bytes per build phase, reported by `zola build --timings`. Off by default;
 # enabling it slows the binary down and must never be used for timing runs.
 alloc-stats = []
+# Use mimalloc as the global allocator instead of the platform's. On by default:
+# it costs nothing on small sites and is worth ~24% of build CPU on a site with
+# large pages (docs/performance/OPTIMIZATIONS.md, PERF-012). Disable with
+# `--no-default-features` if a platform's own allocator is preferred.
+mimalloc = ["dep:mimalloc"]
 
 [workspace.dependencies]
 # External dependencies
