@@ -5,10 +5,44 @@
 
 A fast static site generator in a single binary with everything built-in.
 
-> **Curriculo fork** (`curriculo-tech/zola`): adds `zola translate` and
-> `zola graph migrate|refresh`. See [CURRICULO.md](CURRICULO.md) and
-> [docs/curriculo/graph.md](docs/curriculo/graph.md). Release tags look like
-> `v0.23.2-curriculo.N`.
+---
+
+## Curriculo fork
+
+This is Curriculo's fork of [getzola/zola](https://github.com/getzola/zola).
+Upstream behaviour is unchanged — we add two subcommands that back
+`curriculo.me` (`curriculo-tech/landing-website`, ADR-008 files-as-truth:
+content is committed markdown under the site root, no CMS).
+
+| Command | What it does | Network |
+|---|---|---|
+| `zola translate [--max N] [--dry-run]` | Generate/refresh co-located `index.<lang>.md` siblings via OpenRouter, hash-gated on `extra.source_hash`. | OpenRouter |
+| `zola graph migrate --from <url> [--max N] [--force] [--dry-run]` | **Once per origin.** Firecrawl-crawl a live site into markdown + a topical KG under `data/graph/`. Guarded by `meta.source_origin`. | Firecrawl + OpenRouter |
+| `zola graph refresh [--max N] [--dry-run]` | **Forever after.** Re-topic stale local markdown into `data/graph/`. Never crawls. | OpenRouter |
+
+**Hard rule:** Firecrawl is `migrate`-only. `refresh` and `build` never crawl.
+
+```bash
+# one-time bootstrap from a live site
+zola --root <site> graph migrate --from https://curriculo.me
+
+# steady state, after editing content/**
+zola --root <site> graph refresh
+zola --root <site> build --base-url https://curriculo-me.pages.dev/
+# consumers then run enrich_jsonld + parity gates (see landing-website)
+```
+
+Secrets: `OPENROUTER_API_KEY` (translate + graph), `FIRECRAWL_API_KEY`
+(`graph migrate` only). Consumers pin the binary by release tag
+(`v0.23.2-curriculo.N`) via `ZOLA_VERSION` / `ZOLA_BIN_URL` — never `latest`.
+
+Full docs: **[CURRICULO.md](CURRICULO.md)** ·
+[docs/curriculo/graph.md](docs/curriculo/graph.md) ·
+[CLI reference](docs/content/documentation/getting-started/cli-usage.md).
+Issues are disabled — propose changes as PRs against `master`, then cut a new
+`v0.23.2-curriculo.N` release for consumers to pin.
+
+---
 
 To find out more see the [Zola Documentation](https://www.getzola.org/documentation/getting-started/overview/), look
 in the [docs/content](docs/content) folder of this repository or visit the [Zola community forum](https://zola.discourse.group).
