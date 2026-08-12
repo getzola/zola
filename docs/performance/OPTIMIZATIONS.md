@@ -354,7 +354,7 @@ reference proxy. `scripts/dev.sh quality`: ALL PASS.
 
 ---
 
-## Cumulative effect so far
+## Cumulative effect so far (superseded — see "The whole program, measured in one session" at the end)
 
 Measured with the binary from the start of this round of work (PERF-001 and the
 `--timings` instrumentation, commit `71be7609`) against the current tree
@@ -707,3 +707,76 @@ first, not a review.
 The `file_type()` micro-fix went back with the revert: it removes a `stat` per
 entry, which is real but far below what this phase's noise can resolve, and it
 is not worth carrying a change no measurement supports.
+
+---
+
+## The whole program, measured in one session
+
+Every table above compares one change against the tree that preceded it. This
+one compares **the binary this program started from against the binary it ended
+with**, in a single interleaved session, on the same machine, at the same time —
+which is the only comparison that can honestly be called "what the program
+bought".
+
+It exists because the previous headline table did not meet that standard: its
+"before" and "after" columns came from measurements taken in different sessions,
+weeks apart, some of them on a loaded machine. That is exactly the sequential
+comparison this program condemns everywhere else, and it was understating the
+result by roughly half.
+
+* **A** = commit `9ec4407a`, upstream 0.23.3 with only the `--timings`
+  instrumentation added. Upstream giallo, hash-ordered maps, platform allocator.
+* **B** = the current tree.
+* Three interleaved rounds per site, order flipped each round, one discarded
+  warmup per side, `scripts/perf/ab.py`. Every wall figure below is unanimous
+  across rounds.
+
+| workload | wall | peak RSS | CPU |
+| -------- | ---- | -------- | --- |
+| `simple-pages-4000` | 1.07 s → **0.84 s** (−22%) | 366 MB → **144 MB** (−60%) | −7.6% |
+| `mixed-realistic-4000` | 1.92 s → **1.08 s** (−46%) | 1307 MB → **217 MB** (−83%) | −8.0% |
+| `many-taxonomies-4000` | 1.93 s → **0.94 s** (−51%) | 1618 MB → **180 MB** (−89%) | −19.4% |
+| `markdown-heavy-4000` | 7.18 s → **1.91 s** (−74%) | 1297 MB → **505 MB** (−61%) | −42.4% |
+| `data-heavy-4000` | 2.70 s → **1.31 s** (−52%) | 909 MB → **549 MB** (−40%) | −8.2% |
+| `dense-internal-links-4000` | 2.25 s → **1.15 s** (−43%) | 860 MB → **306 MB** (−64%) | −15.1% |
+| `deep-sections-4000` | 1.10 s → **0.95 s** (−14%) | 383 MB → **160 MB** (−58%) | +0.1% (not unanimous) |
+| `template-heavy-4000` | 1.20 s → **1.08 s** (−23%) | 406 MB → **169 MB** (−58%) | −9.9% (not unanimous) |
+| `mixed-realistic-16000` | 9.57 s → **4.22 s** (−56%) | 4913 MB → **574 MB** (−88%) | −4.1% (not unanimous) |
+| the reference site (3776 pages, 9 GB output) | 44.3 s → **32.2 s** (−33%) | 676 MB → **504 MB** (−26%) | **−35.1%** |
+
+The reference-site row was measured while the machine carried a load average of
+~26 from unrelated work, so its absolute seconds are inflated — the same binary
+builds that site in 30.2 s on an idle machine. The paired delta is unaffected and
+was unanimous across all three rounds; it is quoted, the absolutes are not.
+
+### What the CPU column says
+
+Wall time halves on most scenarios while total CPU barely moves. That is not a
+contradiction and it is the most useful thing in the table: **this program did
+not make Zola execute fewer instructions — it made Zola stop waiting and stop
+allocating.**
+
+The wins came from a mutex that serialised twelve threads onto one
+(PERF-002), a serial phase that materialised a copy of every page for every
+container it belonged to (PERF-005a), a lock held across file I/O (PERF-001),
+and an allocator that could not keep up with megabyte-sized strings (PERF-012).
+Two workloads do show a large CPU drop: `markdown-heavy` (−42%), which is
+highlighting no longer contending on a lock, and the reference site (−35%),
+which is mostly the allocator (PERF-012) — its pages are megabytes, and that is
+the shape the platform allocator handled worst.
+
+The corollary is a limit: **on a machine with twelve cores there is not much
+parallelism left to unlock.** Further gains have to come from doing less work,
+and the profile says the remaining work is real — Tera interpreting templates
+(28%) and minify-html parsing what those templates produced (23%).
+
+### The memory result
+
+Peak memory falls on every scenario, by 40–89%, and the effect grows with the
+site: **4913 MB → 574 MB at 16 000 pages**. Per-page memory went from roughly
+307 KB to 36 KB.
+
+This is the part that changes what is possible rather than what is pleasant. At
+the old rate, a 50 000-page site needed about 15 GB and a 100 000-page site
+about 30 GB; at the new rate they need 1.8 GB and 3.6 GB. The wall that would
+have stopped large sites is gone, and it was never a CPU wall.

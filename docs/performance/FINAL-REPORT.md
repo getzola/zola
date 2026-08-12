@@ -121,6 +121,14 @@ the 8.5 s of CPU in that phase.
 | PERF-001 — release the `load_data` lock during I/O | page-render CPU 6.5 s → 1.8–2.7 s on the reference workload; −23% wall on `data-heavy` |
 | determinism fix | −9% wall, −15% RSS as a side effect of replacing hash maps with order-preserving ones |
 | PERF-006 — one directory read per directory | discovery −35% on section-dense trees, ~1% of the build |
+| PERF-012 — mimalloc as the global allocator | −24% build CPU on a site whose pages are megabytes; nothing on small-page sites |
+
+Measured end to end — the binary this program started from against the binary it
+ended with, in one interleaved session — the result is **−14% to −74% wall and
+−40% to −89% peak memory** across the nine scenarios. The full table is in
+`OPTIMIZATIONS.md` under "The whole program, measured in one session"; it
+supersedes the earlier cumulative table, whose before/after columns came from
+different sessions and understated the result by about half.
 
 ## 16. Full-build speedup on the representative ~4k-page site
 
@@ -130,20 +138,28 @@ targets Zola 0.22 — so it was migrated first (`REAL-SITE.md`). With that:
 * Zola 0.22, original templates: **252 s**
 * Zola 0.23 + this work, migrated templates: **~25 s**
 
-Within this program alone (its own starting binary → now), the same site is
-28.9 s → 24.6 s (−15%); the rest of the gap is the 0.22 → 0.23 engine work.
+Within this program alone — its own starting binary against the current one, in
+one interleaved session — the same site is **44.3 s → 32.2 s (−33% wall), 383 s
+→ 247 s CPU (−35%), 676 MB → 504 MB (−26%)**, unanimous across rounds. Those
+seconds were measured on a machine carrying unrelated load; idle, the current
+binary builds the site in **30.2 s**. The rest of the gap to 252 s is the
+0.22 → 0.23 engine work and the template migration.
 
 ## 17. Behaviour at 8k and 16k pages
 
-`mixed-realistic`: 8000 pages 3.4 s, 16 000 pages 6.8 s — still linear, and
-16k now needs 742 MB instead of 5152 MB. The memory wall that would have hit
-around 50–70k pages is gone.
+`mixed-realistic`: 16 000 pages **9.57 s → 4.22 s** and **4913 MB → 574 MB**,
+still linear in page count. The memory wall that would have hit around 50–70k
+pages is gone: at the old rate a 100 000-page site needed ~30 GB, at the new one
+it needs ~3.6 GB.
 
 ## 18. Has peak memory improved or regressed?
 
-Improved substantially: 1371 MB → 209 MB at 4000 pages, 5152 MB → 742 MB at
-16 000 pages, 184 MB → 86 MB at 1000 pages. Per-page cost fell from ~330 KB to
-~46 KB.
+Improved on every scenario measured, by 40–89%, and the improvement grows with
+the site: 1307 MB → 217 MB at 4000 pages (`mixed-realistic`), 4913 MB → 574 MB
+at 16 000. Per-page cost fell from ~307 KB to ~36 KB.
+
+Memory, not CPU, is where this program moved the needle furthest — and it is
+the axis that decides whether a site can be built at all.
 
 ## 19. Are generated outputs equivalent?
 

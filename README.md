@@ -24,20 +24,39 @@ lives in [`docs/performance/`](docs/performance/README.md). Start with
 
 ### What changed, and what it bought
 
-Measured on an Apple M4 Pro (12 cores, 24 GiB), release build, interleaved runs.
-"Before" is upstream 0.23.3 with only the measurement instrumentation added.
+Measured on an Apple M4 Pro (12 cores, 24 GiB), release builds, in a single
+interleaved session: the two binaries alternate within every round and swap
+order between rounds, and each figure is the paired per-round delta. "Before" is
+upstream 0.23.3 with only the measurement instrumentation added. Every wall
+figure below is unanimous across rounds.
 
 | workload | wall time | peak memory |
 | -------- | --------- | ----------- |
-| `mixed-realistic` 4 000 pages | 2.10 s → 1.72 s (−18%) | 1371 MB → **209 MB (−85%)** |
-| `many-taxonomies` 4 000 pages | 2.21 s → 1.65 s (−25%) | 1696 MB → **273 MB (−84%)** |
-| `mixed-realistic` 16 000 pages | 8.67 s → 6.80 s (−22%) | 5152 MB → **742 MB (−86%)** |
-| `markdown-heavy` 4 000 pages | 6.24 s → **2.23 s (−64%)** | 514 MB → 522 MB |
-| a real 3 776-page site | 28.9 s → 24.6 s (−15%) | — |
+| `mixed-realistic` 4 000 pages | 1.92 s → **1.08 s (−46%)** | 1307 MB → **217 MB (−83%)** |
+| `mixed-realistic` 16 000 pages | 9.57 s → **4.22 s (−56%)** | 4913 MB → **574 MB (−88%)** |
+| `many-taxonomies` 4 000 pages | 1.93 s → **0.94 s (−51%)** | 1618 MB → **180 MB (−89%)** |
+| `markdown-heavy` 4 000 pages | 7.18 s → **1.91 s (−74%)** | 1297 MB → **505 MB (−61%)** |
+| `data-heavy` 4 000 pages | 2.70 s → **1.31 s (−52%)** | 909 MB → **549 MB (−40%)** |
+| `dense-internal-links` 4 000 pages | 2.25 s → **1.15 s (−43%)** | 860 MB → **306 MB (−64%)** |
+| `template-heavy` 4 000 pages | 1.20 s → **1.08 s (−23%)** | 406 MB → **169 MB (−58%)** |
+| `simple-pages` 4 000 pages | 1.07 s → **0.84 s (−22%)** | 366 MB → **144 MB (−60%)** |
+| `deep-sections` 4 000 pages | 1.10 s → **0.95 s (−14%)** | 383 MB → **160 MB (−58%)** |
+| a real 3 776-page site, 9 GB of output | 44.3 s → **32.2 s (−33%)** | 676 MB → **504 MB (−26%)** |
 
-Memory per page fell from roughly **330 KB to 46 KB**. A 16 000-page site that
-needed 5.1 GB now needs 0.74 GB, which removes the wall that would otherwise
+Memory per page fell from roughly **307 KB to 36 KB**. A 16 000-page site that
+needed 4.9 GB now needs 0.57 GB, which removes the wall that would otherwise
 have stopped such sites somewhere around 50–70k pages.
+
+(The real site's absolute seconds are inflated — the machine was busy with
+unrelated work during that pair of runs, and the same binary builds it in 30.2 s
+on an idle machine. Interleaving is what makes the −33% trustworthy anyway.)
+
+Total CPU time barely moves in most of those rows, and that is the honest summary
+of what this work was: it did not make Zola execute fewer instructions, it made
+Zola **stop waiting and stop allocating** — a mutex that serialised twelve
+threads onto one, a serial phase that copied every page into every container it
+belonged to, a lock held across file I/O, and an allocator that could not keep up
+with megabyte-sized strings.
 
 The individual changes, each with its own measurement:
 
@@ -64,6 +83,12 @@ Two, both deliberate and both in [`CHANGELOG.md`](CHANGELOG.md):
   breakdown of every build phase plus per-item costs inside the parallel ones.
   Disabled state costs one relaxed atomic load per instrumentation point.
 
+Not a behaviour difference but worth knowing when you build it: the binary uses
+**mimalloc** as its global allocator, via a default-on `mimalloc` feature.
+`cargo build --release --no-default-features` restores the platform allocator.
+No new build dependency — oniguruma already required a C toolchain — and it was
+verified against musl, which is a release target.
+
 ### The vendored dependency
 
 [`vendor/giallo`](vendor/README.md) carries `getzola/giallo@5e19db8` plus one
@@ -84,7 +109,11 @@ scripts/perf/run.sh build          # release binary with a pinned profile
 scripts/perf/run.sh quick          # ~1 minute smoke run
 scripts/perf/run.sh baseline       # the full scenario × size matrix
 scripts/perf/run.sh scaling benchmarks/results/<hardware>/<commit>/baseline-matrix.json --markdown
+scripts/perf/run.sh ab <a-bin> <b-bin> <site>...   # interleaved A/B, paired per-round verdict
 ```
+
+The table above is reproduced by building the binary at commit `9ec4407a` and
+running `run.sh ab` against the current one.
 
 The generator produces byte-identical sites from a seed, results are filed under
 `benchmarks/results/<hardware>/<commit-utc>-<sha>/` so they group by machine and
