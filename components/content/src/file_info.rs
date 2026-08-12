@@ -154,14 +154,9 @@ impl FileInfo {
         // We can document that
         let mut parts: Vec<String> = self.name.splitn(2, '.').map(|s| s.to_string()).collect();
 
-        // If language code is same as default language, go for default
-        if default_language == parts[1].as_str() {
-            return Ok(default_language.to_owned());
-        }
-
-        // The language code is not present in the config: typo or the user forgot to add it to the
-        // config
-        if !other_languages.contains(&parts[1].as_ref()) {
+        // The language code is not the default and is not present in the config: typo or the user
+        // forgot to add it to the config
+        if default_language != parts[1].as_str() && !other_languages.contains(&parts[1].as_ref()) {
             bail!(
                 "File {:?} has a language code of {} which isn't present in the config.toml `languages`",
                 self.path,
@@ -249,6 +244,8 @@ mod tests {
         let res = file.find_language("en", &["fr"]);
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), "en");
+        // https://github.com/getzola/zola/issues/1437
+        assert_eq!(file.name, "python");
     }
 
     #[test]

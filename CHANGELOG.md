@@ -3,6 +3,7 @@
 ## 0.23.4 (unreleased)
 
 - Fix another `get_url` bug adding a trailing slash for non default language
+- Fix `index.<default_language>.md` paths collision
 
 ## 0.23.3 (2026-08-11)
 
