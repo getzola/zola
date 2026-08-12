@@ -107,6 +107,9 @@ fn can_parse_site() {
         .find(|e| e.permalink.ends_with("tutorials/programming/"))
         .expect("expected to find programming section in sitemap");
     assert_eq!(Some(prog_section.meta.extra.clone()), sitemap_entry.extra);
+
+    // https://github.com/getzola/zola/issues/1596
+    assert!(!site.permalinks.contains_key("posts/render.md"));
 }
 
 #[test]
