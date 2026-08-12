@@ -106,6 +106,19 @@ fn make_reload_message(path: &str) -> String {
     .to_string()
 }
 
+// https://github.com/getzola/zola/issues/2170
+fn strip_base_path<'a>(path_str: &'a str, base_path: &str) -> Option<&'a str> {
+    let base = base_path.trim_end_matches('/');
+    if base == "/" {
+        return Some(path_str);
+    }
+    if path_str == base {
+        return Some("/");
+    }
+
+    path_str.strip_prefix(base).filter(|rest| rest.starts_with('/'))
+}
+
 async fn handle_request(
     State(state): State<Arc<AppState>>,
     req: axum::extract::Request,
@@ -115,11 +128,10 @@ async fn handle_request(
     let mut root = state.static_root.clone();
     let original_root = root.clone();
 
-    if !path_str.starts_with(base_path) {
-        return not_found();
-    }
-
-    let trimmed_path = &path_str[base_path.len() - 1..];
+    let trimmed_path = match strip_base_path(path_str, base_path) {
+        Some(path) => path,
+        None => return not_found(),
+    };
 
     let mut path = RelativePathBuf::new();
     // https://zola.discourse.group/t/percent-encoding-for-slugs/736
@@ -128,14 +140,7 @@ async fn handle_request(
         Err(_) => return not_found(),
     };
 
-    let decoded_path = if *base_path != "/" && decoded.starts_with(base_path) {
-        // Remove the base_path from the request path before processing
-        decoded[base_path.len()..].to_string()
-    } else {
-        decoded.to_string()
-    };
-
-    for c in decoded_path.split('/') {
+    for c in decoded.split('/') {
         path.push(c);
     }
 
@@ -899,7 +904,7 @@ pub fn serve(
 
 #[cfg(test)]
 mod tests {
-    use super::{construct_url, create_new_site};
+    use super::{construct_url, create_new_site, strip_base_path};
     use crate::get_config_file_path;
     use std::net::{IpAddr, SocketAddr};
     use std::path::Path;
@@ -1062,5 +1067,23 @@ mod tests {
             false,
             String::from("https://example.com:1111/path/to/site"),
         );
+    }
+
+    #[test]
+    fn can_strip_base_paths() {
+        let inputs = vec![
+            (("/", "/"), Some("/")),
+            (("/foo", "/"), Some("/foo")),
+            (("/foo", "/foo"), Some("/")),
+            (("/foo/bar", "/foo"), Some("/bar")),
+            (("/foo", "/bar"), None),
+            (("/foobar", "/foo"), None),
+            (("/foo/", "/foo/"), Some("/")),
+            (("/foo", "/foo/"), Some("/")),
+        ];
+
+        for ((a, b), expected) in inputs {
+            assert_eq!(strip_base_path(a, b), expected);
+        }
     }
 }
