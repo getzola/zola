@@ -21,18 +21,22 @@ all post titles ordered by year). However, this can be accomplished directly in 
 ```
 
 This snippet assumes that posts are sorted by date and that you want to display the archive
-in descending order. If you want to show articles in ascending order, you need to further
+in descending order. If those conditions are not true, you need to further
 process the list of pages:
 ```jinja
 {% raw -%}
-{% set posts_by_year = section.pages | group_by(attribute="year") %}
-{% set_global years = [] %}
-{% for year, ignored in posts_by_year %}
-    {% set_global years = years | concat(with=year) %}
-{% endfor %}
-{% for year in years | reverse %}
-    {% set posts = posts_by_year[year] %}
-    {# (same as the previous snippet) #}
+{% for year, posts in section.pages | sort(attribute="year") | group_by(attribute="year") %}
+    <h2>{{ year }}</h2>
+
+    <ul>
+    {% for post in posts | sort(attribute="date") %}
+        <li><a href="{{ post.permalink }}">{{ post.title }}</a></li>
+    {% endfor %}
+    </ul>
 {% endfor %}
 {%- endraw %}
 ```
+You may then invert the ordering of `year` or `date` with the `reverse` filter,
+like `{% for post in posts | sort(attribute="date") | reverse %}`.
+
+Note the need for all posts to have `date` defined.
