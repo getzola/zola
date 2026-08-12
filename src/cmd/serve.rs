@@ -47,10 +47,11 @@ use time::macros::format_description;
 use time::{OffsetDateTime, UtcOffset};
 use tokio::sync::broadcast;
 
+use notify_debouncer_full::notify::ErrorKind;
 use notify_debouncer_full::{new_debouncer, notify::RecursiveMode};
 use relative_path::{RelativePath, RelativePathBuf};
 
-use errors::{Context, Error, Result, anyhow};
+use errors::{Error, Result, anyhow};
 use serde_json::json;
 use site::sass::compile_sass;
 use site::{BuildMode, SITE_CONTENT, Site};
@@ -605,7 +606,15 @@ pub fn serve(
         if should_watch {
             debouncer
                 .watch(root_dir.join(entry), recursive_mode)
-                .with_context(|| format!("Can't watch `{}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", entry, root_dir.display()))?;
+                .map_err(|e| {
+                    match e.kind {
+                        ErrorKind::MaxFilesWatch => {
+                            // https://github.com/getzola/zola/issues/1803
+                            anyhow!("Can't watch `{entry}`: OS file watch limit reached. Check how to raise it for your OS.")
+                        }
+                        _ => anyhow!("Can't watch `{entry}` for changes in folder `{}`. Does it exist, and do you have correct permissions?", root_dir.display())
+                    }
+                })?;
             watchers.push(entry.to_string());
         }
     }
