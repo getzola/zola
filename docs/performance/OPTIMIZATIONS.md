@@ -241,3 +241,72 @@ would parallelise now takes 22 ms.
 * `scripts/dev.sh quality`: ALL PASS (fmt, clippy ratchet, 461 tests).
 
 **Commit.** `perf(PERF-005a): reuse cached page values instead of re-serializing them`
+
+---
+
+## Rejected experiment: parallel output cleaning (hotspot PERF-004)
+
+**Hypothesis.** `clean_site_output_folder` deletes the previous output with a
+single-threaded `remove_dir_all`; it is 36% of wall time on the reference
+workload (663 ms for 6544 files / 73 MB, and 1.3 s once the site grew to 9 GB).
+The top-level entries are independent subtrees, so deleting them with rayon
+should shorten the phase.
+
+**Result — slower.** `clean output dir` phase, interleaved (the first round of
+each pair cleans an empty directory and is excluded):
+
+| site | serial | parallel |
+| ---- | ------ | -------- |
+| reference proxy | 3.889 s | 6.784 s |
+| reference proxy | 3.457 s | 2.797 s |
+| `mixed-realistic-8000` | 978.9 ms | 1.856 s |
+
+Whole-build wall on the reference proxy was 26.5–33.8 s serial against
+31.6–35.1 s parallel. Two of three phase samples and all three whole-build
+samples were worse.
+
+**Why.** APFS serialises directory-metadata mutations; concurrent `unlink`
+storms contend rather than overlap. Parallelism is not the lever here.
+
+**Not committed.** The hotspot is real and still open. The approach worth
+measuring next does not try to delete faster but to take the delete off the
+critical path: rename the output tree aside (an O(1) operation) and delete it
+on a background thread while the build proceeds. That changes what exists on
+disk during a build, so it needs a decision before it is written.
+
+---
+
+## PERF-006 — one directory read per directory during discovery
+
+**Problem.** The content walk visited every directory twice. The outer
+`WalkDir` yielded each entry, and then for every directory a *second*
+`WalkDir` with `max_depth(1)` was started just to find its `_index.*` files.
+Each file also paid a `path.is_dir()` `stat` that the directory read had
+already answered.
+
+**Change.** `components/site/src/lib.rs`: use the `file_type` the walk already
+carries instead of `path.is_dir()`, and replace the nested `WalkDir` with a
+plain `read_dir` that only stats the handful of `_index.*` candidates (kept, so
+a symlinked index file still resolves — issue #1244). `read_dir` order is
+filesystem-defined while the previous walk was sorted, and section insertion
+order is observable through error ordering, so the candidates are sorted
+explicitly.
+
+**Results.** `discover + parse sections` phase, interleaved:
+
+| site | before (median) | after (median) | change |
+| ---- | --------------- | -------------- | ------ |
+| `deep-sections-8000` (4000 sections) | 82.0 ms | 53.7 ms | **−35%** |
+| reference proxy (1640 sections, 5416 files) | 195.5 ms | 200.4 ms | no change |
+
+The reference proxy sees nothing: its discovery cost is reading and parsing
+1640 `_index.md` files, not walking directories. On a section-dense tree the
+saving is real and reproducible (3 of 3 rounds), but it is ~1% of that build's
+wall time — this is a syscall reduction, not a headline win, and it is recorded
+as such.
+
+**Correctness.** Output equivalence IDENTICAL on `deep-sections-1000`,
+`mixed-realistic-1000`, `simple-pages-1000`, `many-taxonomies-2000` and the
+reference proxy. `scripts/dev.sh quality`: ALL PASS.
+
+**Commit.** `perf(PERF-006): read each content directory once during discovery`

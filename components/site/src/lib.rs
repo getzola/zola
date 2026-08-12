@@ -245,37 +245,47 @@ impl Site {
                 continue;
             }
 
+            // `file_type` comes from the directory read that produced this entry
+            // (WalkDir already resolved it, since we follow links), so it costs
+            // nothing; `path.is_dir()` would be another `stat` per file.
+            let is_dir = entry.file_type().is_dir();
+
             // skip hidden files and non md files
-            if !path.is_dir() && (!file_name.ends_with(".md") || file_name.starts_with('.')) {
+            if !is_dir && (!file_name.ends_with(".md") || file_name.starts_with('.')) {
                 continue;
             }
 
             // is it a section or not?
-            if path.is_dir() {
+            if is_dir {
                 // if we are processing a section we have to collect
                 // index files for all languages and process them simultaneously
                 // before any of the pages
-                let index_files = WalkDir::new(path)
-                    .follow_links(true)
-                    .max_depth(1)
-                    .into_iter()
-                    .filter_map(|e| match e {
-                        Err(_) => None,
-                        Ok(f) => {
-                            let path_str = f.path().file_name().unwrap().to_str().unwrap();
-                            // https://github.com/getzola/zola/issues/1244
-                            if f.path().is_file() && allowed_index_filenames.contains(path_str) {
-                                Some(f)
-                            } else {
-                                None
-                            }
-                        }
-                    })
-                    .collect::<Vec<DirEntry>>();
+                // A plain `read_dir` rather than a second `WalkDir`: the outer
+                // walk already visits every one of these entries, and WalkDir
+                // adds its own bookkeeping on top of the directory read. Only
+                // the handful of `_index.*` candidates are stat'ed, and
+                // `path.is_file()` is kept for them so a symlinked index file
+                // still resolves (https://github.com/getzola/zola/issues/1244).
+                let mut index_files: Vec<PathBuf> = match std::fs::read_dir(path) {
+                    Ok(entries) => entries
+                        .filter_map(|e| e.ok())
+                        .map(|e| e.path())
+                        .filter(|p| {
+                            p.file_name()
+                                .and_then(|n| n.to_str())
+                                .is_some_and(|n| allowed_index_filenames.contains(n))
+                                && p.is_file()
+                        })
+                        .collect(),
+                    Err(_) => Vec::new(),
+                };
+                // `read_dir` order is filesystem-defined; the previous WalkDir
+                // walk was sorted, and section insertion order is observable
+                // through error ordering, so keep it deterministic.
+                index_files.sort();
 
                 for index_file in index_files {
-                    let section =
-                        Section::from_file(index_file.path(), &self.config, &self.base_path)?;
+                    let section = Section::from_file(&index_file, &self.config, &self.base_path)?;
                     sections.insert(section.components.join("/"));
 
                     // if the section is drafted we can skip the entire dir

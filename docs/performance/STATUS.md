@@ -3,7 +3,7 @@
 
 # PERF backlog status
 
-2 done, 9 open. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
+3 done, 8 open. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
 
 | ID | Component | Location | Priority | Status | Commit |
 | -- | --------- | -------- | -------- | ------ | ------ |
@@ -12,7 +12,7 @@
 | PERF-003 | site | `site/src/queue.rs write_output` | P1 | open | — |
 | PERF-004 | utils | `utils/src/fs.rs:216 clean_site_output_folder` | P1 | open | — |
 | PERF-005 (PERF-005a) | render | `render/src/cache.rs:59 RenderCache::build` | P1 | done | perf(PERF-005a): reuse cached page values instead of re-serializing them |
-| PERF-006 | site | `site/src/lib.rs:190 discover loop` | P1 | open | — |
+| PERF-006 | site | `site/src/lib.rs:190 discover loop` | P1 | done | perf(PERF-006): read each content directory once during discovery |
 | PERF-007 | utils | `utils/src/fs.rs:107 copy_directory` | P2 | open | — |
 | PERF-008 | render | `render/src/cache.rs:84,151 sibling injection` | P2 | open | — |
 | PERF-009 | templates | `templates/src/functions/load_data.rs:157` | P2 | open | — |

@@ -64,4 +64,4 @@ Open `PERF-*` items are derived from `docs/performance/HOTSPOTS.md`.
 | `render` | RenderCache::build is a dominant CPU and memory phase on large sites. | PERF-008 |
 | `markdown` | Syntax highlighting dominates this crate's cost on sites with code blocks. | PERF-002 |
 | `templates` | load_data and get_* functions run once per page; registration clones site state. | PERF-009 |
-| `site` | Owns discovery, the output queue, output-directory cleaning and the static copy. | PERF-003, PERF-006, PERF-010 |
+| `site` | Owns discovery, the output queue, output-directory cleaning and the static copy. | PERF-003, PERF-010 |
