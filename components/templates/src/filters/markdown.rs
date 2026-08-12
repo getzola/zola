@@ -183,7 +183,7 @@ mod tests {
             extra_grammars: vec![],
             extra_themes: vec![],
             data_attr_position: DataAttrPosition::default(),
-            registry: get_test_registry(),
+            registry: std::sync::Arc::new(get_test_registry()),
             add_color_scheme: None,
         });
         config.markdown.smart_punctuation = true;

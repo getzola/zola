@@ -3,7 +3,7 @@
 
 # PERF backlog status
 
-3 done, 8 open. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
+4 done, 7 open. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
 
 | ID | Component | Location | Priority | Status | Commit |
 | -- | --------- | -------- | -------- | ------ | ------ |
@@ -16,5 +16,5 @@
 | PERF-007 | utils | `utils/src/fs.rs:107 copy_directory` | P2 | open | — |
 | PERF-008 | render | `render/src/cache.rs:84,151 sibling injection` | P2 | open | — |
 | PERF-009 | templates | `templates/src/functions/load_data.rs:157` | P2 | open | — |
-| PERF-010 | site | `site/src/tpls.rs:5 register_early_global_fns` | P2 | open | — |
+| PERF-010 | site | `site/src/tpls.rs:5 register_early_global_fns` | P2 | done | perf(PERF-010): share the highlighting registry behind an Arc |
 | PERF-011 | config | `config highlighting registry init` | P3 | open | — |

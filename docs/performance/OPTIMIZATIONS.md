@@ -338,3 +338,48 @@ comparison also includes the 0.22→0.23 engine work and the template migration
 PERF-004 (output cleaning; parallel deletion was measured and rejected, the
 rename-aside approach needs a decision), PERF-003 (the thread-local variant),
 PERF-007, PERF-009, PERF-010.
+
+---
+
+## PERF-010 — share the highlighting registry instead of deep-copying it
+
+**Problem.** `register_early_global_fns` clones `Config` into four Tera
+functions (`get_url`, `trans`, `text_direction`, the `markdown` filter).
+`Config` owns the giallo `Registry`, and `Registry::clone` deep-copies every
+grammar, theme and injection — `ALLOCATIONS.md` measured the registry at ~23 MB
+retained, and the phase at 1.1 M allocations / 132 MB with ~92 MB of that never
+released. None of the copies is ever used to highlight anything: highlighting
+goes through the `Config` the markdown renderer borrows.
+
+**Change.** `components/config/src/config/markup.rs`: `Highlighting.registry`
+becomes `Arc<Registry>`. Cloning a `Config` is then a refcount bump. Nothing
+else changes — `Registry`'s methods are reached through `Deref`, and the
+registry is still built (and mutated with extra grammars and themes) before it
+is wrapped.
+
+**Results.**
+
+`register tera fns (early)` phase, `mixed-realistic-4000`, interleaved:
+
+| round | before | after |
+| ----- | ------ | ----- |
+| 1 | 40.3 ms | 0.6 ms |
+| 2 | 41.1 ms | 0.6 ms |
+| 3 | 41.5 ms | 0.6 ms |
+
+Peak RSS:
+
+| site | before | after | change |
+| ---- | ------ | ----- | ------ |
+| `simple-pages-1000` | 184 MB | 86 MB | **−53%** |
+| `mixed-realistic-4000` | 312 MB | 209 MB | **−33%** |
+| `markdown-heavy-2000` | 392 MB | 291 MB | **−26%** |
+
+A flat ~100 MB saving on every build, which is most of the remaining baseline
+footprint on small sites.
+
+**Correctness.** Output equivalence IDENTICAL on `mixed-realistic-1000` and
+`markdown-heavy-1000` (the scenario that actually highlights).
+`scripts/dev.sh quality`: ALL PASS.
+
+**Commit.** `perf(PERF-010): share the highlighting registry behind an Arc`

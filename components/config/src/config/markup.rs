@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use giallo::{DataAttrPosition, HighlightOptions, Registry, ThemeVariant};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -37,8 +39,11 @@ pub struct Highlighting {
     pub extra_themes: Vec<String>,
     #[serde(default)]
     pub data_attr_position: DataAttrPosition,
+    /// Behind an `Arc` because `Config` is cloned into several Tera functions
+    /// and `Registry::clone` deep-copies every grammar and theme — about 23 MB
+    /// a time, for copies that are never used to highlight anything.
     #[serde(skip, default)]
-    pub registry: Registry,
+    pub registry: Arc<Registry>,
 }
 
 impl Highlighting {
@@ -81,7 +86,7 @@ impl Highlighting {
             }
         }
 
-        self.registry = registry;
+        self.registry = Arc::new(registry);
 
         Ok(())
     }

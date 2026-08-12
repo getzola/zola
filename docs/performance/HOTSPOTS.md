@@ -159,11 +159,39 @@ gap *is* the serialization.
 does not affect it — but it affects the majority of Zola sites, and it is the
 single largest CPU item across the synthetic suite.
 
-**Proposed change (needs design).** Options, in increasing order of intrusiveness:
-1. per-thread `Registry` clones so each worker owns its `RegSet` (memory cost:
-   one grammar set per thread — must be measured against the 170 MB baseline);
-2. group code blocks by language and highlight them in one batch per worker;
-3. upstream fix in giallo (thread-local regsets, or a pool).
+**Investigated 2026-08-12 — the fix belongs upstream.** Reading giallo:
+
+* `PatternSet { rule_refs, regset: Option<Mutex<RegSet>> }`
+  (`grammars/pattern_set.rs:21`) is the only lock on the hot path.
+* Pattern sets are shared: `Registry::get_or_create_pattern_set` hands out
+  `Arc<PatternSet>` from a registry-wide cache, so every worker highlighting the
+  same language contends on one mutex.
+* `Scope::new` also takes a global lock (`scope.rs:216`) but only during grammar
+  compilation, not per token — it is not part of this problem.
+
+A Zola-side workaround would mean a per-thread `Registry`, rebuilt from
+`Registry::dump()` bytes with `Registry::load()`. That was rejected without
+implementing it:
+
+* memory: the registry retains ~23 MB (measured in `ALLOCATIONS.md`, the
+  `config` phase), so 12 workers would add ~270 MB — comparable to the entire
+  peak heap after PERF-005a;
+* correctness: `Registry::load` calls `replace_global_scope_repo`, documented
+  as "only the first call succeeds". Scope values are indices into that
+  repository, so several registries sharing one repo is safe only as long as
+  every thread loads a byte-identical dump. That is true today and would be an
+  invisible trap tomorrow.
+
+**Ceiling of a proper fix.** The phase costs 3.37 s single-threaded and 3.96 s
+on 12 threads (`markdown-heavy-2000`). If matching parallelised like the rest of
+the markdown work, the phase should approach 3.37/12 ≈ 0.3 s — roughly 3.6 s per
+2000 code-heavy pages.
+
+**Upstream ask.** giallo needs the `RegSet` to be per-thread (a thread-local or
+a small pool of regsets per pattern set) rather than one mutex per pattern set.
+`onig_regset_search` writes to internal region storage, which is why the mutex
+exists, so the fix is to give each searcher its own storage rather than to
+remove the lock.
 
 **Correctness risk.** Medium — highlighting output must be byte-identical, which
 the output-equivalence gate checks directly.
