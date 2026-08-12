@@ -1,0 +1,8 @@
+---
+source: src/grammars/injections.rs
+description: "L:(source.ts, source.js, source.coffee)"
+expression: result
+---
+[
+    "L:(source.ts | source.js | source.coffee)",
+]

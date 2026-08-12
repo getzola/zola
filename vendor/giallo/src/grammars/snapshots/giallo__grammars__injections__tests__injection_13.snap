@@ -1,0 +1,18 @@
+---
+source: src/grammars/injections.rs
+description: "L:source.js -comment -string, L:source.js -comment -string, L:source.jsx -comment -string,  L:source.js.jsx -comment -string, L:source.ts -comment -string, L:source.tsx -comment -string, L:source.rescript -comment -string, L:source.vue -comment -string, L:source.svelte -comment -string, L:source.php -comment -string, L:source.rescript -comment -string"
+expression: result
+---
+[
+    "L:source.js -comment -string",
+    "L:source.js -comment -string",
+    "L:source.jsx -comment -string",
+    "L:source.js.jsx -comment -string",
+    "L:source.ts -comment -string",
+    "L:source.tsx -comment -string",
+    "L:source.rescript -comment -string",
+    "L:source.vue -comment -string",
+    "L:source.svelte -comment -string",
+    "L:source.php -comment -string",
+    "L:source.rescript -comment -string",
+]

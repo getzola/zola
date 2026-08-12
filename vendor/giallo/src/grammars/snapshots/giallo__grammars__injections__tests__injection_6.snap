@@ -1,0 +1,8 @@
+---
+source: src/grammars/injections.rs
+description: "L:(meta.script.svelte | meta.style.svelte) (meta.lang.js | meta.lang.javascript) - (meta source)"
+expression: result
+---
+[
+    "L:(meta.script.svelte | meta.style.svelte) (meta.lang.js | meta.lang.javascript) -meta source",
+]

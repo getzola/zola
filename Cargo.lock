@@ -1715,8 +1715,6 @@ dependencies = [
 [[package]]
 name = "giallo"
 version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "019550a7656d0e9fd71fe163b491ae053ee252d8761f0c55787bdfb393aca7c9"
 dependencies = [
  "bitcode",
  "onig-regset",

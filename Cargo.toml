@@ -14,6 +14,8 @@ include = ["src/**/*", "LICENSE", "README.md"]
 
 [workspace]
 members = ["components/*"]
+# Patched dependency carried in-tree until the fix is released; see vendor/README.md.
+exclude = ["vendor/giallo"]
 
 [workspace.package]
 version = "0.23.3"
@@ -160,3 +162,9 @@ strip = false
 [package.metadata.winres]
 OriginalFilename = "zola.exe"
 InternalName = "zola"
+
+# giallo serialises all syntax highlighting on one mutex; the copy in vendor/
+# gives each thread its own regset. Remove this once a release contains the
+# fix - vendor/README.md has the steps.
+[patch.crates-io]
+giallo = { path = "vendor/giallo" }

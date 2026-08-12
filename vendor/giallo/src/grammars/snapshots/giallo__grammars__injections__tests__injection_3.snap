@@ -1,0 +1,8 @@
+---
+source: src/grammars/injections.rs
+description: "L:meta.decorator.ts -comment -text.html"
+expression: result
+---
+[
+    "L:meta.decorator.ts -comment -text.html",
+]

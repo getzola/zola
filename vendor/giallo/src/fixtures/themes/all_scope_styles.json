@@ -1,0 +1,46 @@
+{
+  "colors": {
+    "foreground": "#111111",
+    "background": "#222222"
+  },
+  "displayName": "test",
+  "name": "test",
+  "tokenColors": [
+    {
+      "settings": {
+        "background": "#23262E",
+        "foreground": "#D5CED9"
+      }
+    },
+    {
+      "scope": [
+        "comment",
+        "markup.quote.markdown"
+      ],
+      "settings": {
+        "foreground": "#A0A1A7cc"
+      }
+    },
+    {
+      "scope": "variable.language.this, variable.language.self, variable.language.super",
+      "settings": {
+        "foreground": "#d699b6"
+      }
+    },
+    {
+      "scope": [
+        "string > source",
+        "string embedded"
+      ],
+      "settings": {
+        "foreground": "#383A42"
+      }
+    },
+    {
+      "scope": "string > source, string embedded",
+      "settings": {
+        "foreground": "#383A42"
+      }
+    }
+  ]
+}

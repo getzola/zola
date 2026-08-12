@@ -1,0 +1,125 @@
+---
+source: src/registry.rs
+expression: out
+---
+#DBD7CACC       // --- Demonstration of imports ---
+#DBD7CACC       // Importing named exports and the default export
+#DBD7CACC       import defaultAnimal, { person, add } from './module.js';
+#DBD7CACC       // Importing everything from the module as an alias
+#DBD7CACC       import * as Module from './module.js';
+#DBD7CACC       // --- Demonstration of exports ---
+#DBD7CACC       // Named exports
+#DBD7CACC       export const person = { name: "Alice", age: 30 };
+#DBD7CACC       export function add(x, y = 0) {
+#DBD7CACC         return x + y;
+#DBD7CACC       }
+#DBD7CACC       // Default export
+#DBD7CACC       const defaultAnimal = { name: "Default Animal" };
+#DBD7CACC       export default defaultAnimal;
+#DBD7CACC       // Generator function
+#DBD7CACC       export function* idGenerator() {
+#DBD7CACC         let id = 0;
+#DBD7CACC         while (true) {
+#DBD7CACC           yield id++;
+#DBD7CACC         }
+#DBD7CACC       }
+#DBD7CACC       // Using typeof for runtime type checks
+#DBD7CACC       console.log(typeof person);  // object
+#DBD7CACC       console.log(add(2, 3));      // 5
+#DBD7CACC       console.log(defaultAnimal);  // { name: "Default Animal" }
+#DBD7CACC       // Emulating 'satisfies' behavior using runtime checks
+#DBD7CACC       function createAnimal(animal) {
+#DBD7CACC         if (typeof animal.name === 'string') {
+#DBD7CACC           return animal;  // Ensures the animal has a 'name' property
+#DBD7CACC         }
+#DBD7CACC         throw new Error("Animal must have a name");
+#DBD7CACC       }
+#DBD7CACC       const dog = createAnimal({ name: "Buddy", breed: "Golden Retriever" });
+#DBD7CACC       console.log(dog);  // { name: 'Buddy', breed: 'Golden Retriever' }
+#DBD7CACC       // Generator usage
+#DBD7CACC       const generator = Module.idGenerator();
+#DBD7CACC       console.log(generator.next().value);  // 0
+#DBD7CACC       console.log(generator.next().value);  // 1
+#DBD7CACC       console.log(generator.next().value);  // 2
+#DBD7CACC       // Handling a generic-like behavior by allowing any type and runtime checks
+#DBD7CACC       function identity(arg) {
+#DBD7CACC         return arg;
+#DBD7CACC       }
+#DBD7CACC       let str = identity("Hello");
+#DBD7CACC       let num = identity(42);
+#DBD7CACC       console.log(str, num);  // "Hello", 42
+#DBD7CACC       // Emulating default generics by using default parameters
+#DBD7CACC       function wrapInArray(value = "") {
+#DBD7CACC         return [value];
+#DBD7CACC       }
+#DBD7CACC       const stringArray = wrapInArray();  // Default is empty string
+#DBD7CACC       const numberArray = wrapInArray(42);  // Passes 42 explicitly
+#DBD7CACC       console.log(stringArray, numberArray);  // [""] , [42]
+#DBD7CACC       // --- for-of and for-in loops ---
+#DBD7CACC       // for-of: Iterates over iterable objects like arrays, strings, maps, etc.
+#DBD7CACC       const fruits = ["apple", "banana", "cherry"];
+#DBD7CACC       for (const fruit of fruits) {
+#DBD7CACC         console.log(fruit);  // Outputs: apple, banana, cherry
+#DBD7CACC       }
+#DBD7CACC       // for-in: Iterates over enumerable properties of an object
+#DBD7CACC       const car = { make: "Tesla", model: "Model S", year: 2021 };
+#DBD7CACC       for (const key in car) {
+#DBD7CACC         if (car.hasOwnProperty(key)) {
+#DBD7CACC           console.log(`${key}: ${car[key]}`);  // Outputs key-value pairs of car object
+#DBD7CACC         }
+#DBD7CACC       }
+#DBD7CACC       // --- IIFE (Immediately Invoked Function Expression) ---
+#DBD7CACC       (function () {
+#DBD7CACC         console.log("This IIFE runs immediately after it's defined.");
+#DBD7CACC         const privateVar = "I'm private inside the IIFE!";
+#DBD7CACC         console.log(privateVar);  // Accessing the private variable inside the IIFE
+#DBD7CACC       })();
+#DBD7CACC       // --- Using a generator to loop indefinitely ---
+#DBD7CACC       function* infiniteGenerator() {
+#DBD7CACC         let i = 0;
+#DBD7CACC         while (true) {
+#DBD7CACC           yield i++;
+#DBD7CACC         }
+#DBD7CACC       }
+#DBD7CACC       const gen = infiniteGenerator();
+#DBD7CACC       console.log(gen.next().value);  // 0
+#DBD7CACC       console.log(gen.next().value);  // 1
+#DBD7CACC       // --- Async and Await ---
+#DBD7CACC       async function fetchData(url) {
+#DBD7CACC         try {
+#DBD7CACC           const response = await fetch(url);
+#DBD7CACC           if (!response.ok) {
+#DBD7CACC             throw new Error('Network response was not ok');
+#DBD7CACC           }
+#DBD7CACC           const data = await response.json();
+#DBD7CACC           return data;
+#DBD7CACC         } catch (error) {
+#DBD7CACC           console.error('There has been a problem with your fetch operation:', error);
+#DBD7CACC         }
+#DBD7CACC       }
+#DBD7CACC       // Example usage of async function
+#DBD7CACC       fetchData('https://jsonplaceholder.typicode.com/todos/1')
+#DBD7CACC         .then(data => console.log(data))  // Outputs fetched data
+#DBD7CACC         .catch(error => console.error(error));
+#DBD7CACC       // JSDoc type annotations
+#DBD7CACC       /**
+#DBD7CACC        * @typedef {Object} Task
+#DBD7CACC        * @property {string} title
+#DBD7CACC        * @property {boolean} completed
+#DBD7CACC        */
+#DBD7CACC       /**
+#DBD7CACC        * Create a task
+#DBD7CACC        * @param {Task} task
+#DBD7CACC        * @returns {Task}
+#DBD7CACC        */
+#DBD7CACC       function createTask(task) {
+#DBD7CACC         return task;
+#DBD7CACC       }
+#DBD7CACC       const myTask = createTask({
+#DBD7CACC         title: "Learn JavaScript",
+#DBD7CACC         completed: false,
+#DBD7CACC       });
+#DBD7CACC       console.log(myTask);
+#DBD7CACC       // Importing everything as a namespace (simulated for demonstration)
+#DBD7CACC       console.log(Module.person);  // { name: "Alice", age: 30 }
+#DBD7CACC       console.log(Module.add(10, 20));  // 30

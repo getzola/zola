@@ -1,0 +1,10 @@
+---
+source: src/grammars/injections.rs
+description: "text.html.php.blade - (meta.embedded | meta.tag | comment.block.blade), L:(text.html.php.blade meta.tag - (comment.block.blade | meta.embedded.block.blade)), L:(source.js.embedded.html - (comment.block.blade | meta.embedded.block.blade))"
+expression: result
+---
+[
+    "text.html.php.blade -(meta.embedded | meta.tag | comment.block.blade)",
+    "L:text.html.php.blade meta.tag -(comment.block.blade | meta.embedded.block.blade)",
+    "L:source.js.embedded.html -(comment.block.blade | meta.embedded.block.blade)",
+]

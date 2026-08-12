@@ -1,0 +1,8 @@
+---
+source: src/grammars/injections.rs
+description: "L:meta.tag -meta.attribute -meta.ng-binding -entity.name.tag.pug"
+expression: result
+---
+[
+    "L:meta.tag -meta.attribute -meta.ng-binding -entity.name.tag.pug",
+]

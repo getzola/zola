@@ -1,0 +1,31 @@
+[package]
+name = "giallo"
+version = "0.5.2"
+edition = "2024"
+license = "EUPL-1.2"
+description = "A code highlighter giving the same output as VSCode"
+repository = "https://github.com/getzola/giallo"
+
+
+
+[dependencies]
+onig = { package = "onig-regset", version = "6", default-features = false }
+papaya = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Optional dependencies for serialization
+bitcode = { version = "0.6.9", optional = true, features = ["serde"] }
+zstd = { version = "0.13.3", optional = true }
+
+log = { version = "0.4", optional = true }
+
+[features]
+tools = ["dump"]
+debug = ["dep:log"]
+dump = ["dep:bitcode", "dep:zstd"]
+
+# This copy is not part of Zola's workspace; it is pulled in through
+# `[patch.crates-io]` in the root Cargo.toml.
+[workspace]
+

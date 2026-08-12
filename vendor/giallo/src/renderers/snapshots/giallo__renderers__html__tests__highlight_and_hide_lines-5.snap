@@ -1,0 +1,9 @@
+---
+source: src/renderers/html.rs
+expression: html
+---
+<pre class="giallo" style="color: #DBD7CACC; background-color: #000000;" ><span><span>javascript</span><button>Copy</button></span><code data-lang="javascript" data-copy="true" data-name="Hello world" data-name-with-space1="other"><span class="giallo-l"><span aria-hidden="true" class="giallo-ln" style="color: #DEDCD550;">10</span><span style="color: #CB7676;">let</span><span style="color: #BD976A;"> a</span><span style="color: #444444;"> =</span><span style="color: #4C9A91;"> 1</span><span style="color: #444444;">;</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln" style="color: #DEDCD550;">11</span></span>
+<span class="giallo-l" style="background-color: #121212;"><span aria-hidden="true" class="giallo-ln" style="color: #DEDCD550;">12</span><span style="color: #CB7676;">let</span><span style="color: #BD976A;"> b</span><span style="color: #444444;"> =</span><span style="color: #4C9A91;"> 2</span><span style="color: #444444;">;</span></span>
+<span class="giallo-l" style="background-color: #121212;"><span aria-hidden="true" class="giallo-ln" style="color: #DEDCD550;">14</span><span style="color: #CB7676;">let</span><span style="color: #BD976A;"> d</span><span style="color: #444444;"> =</span><span style="color: #4C9A91;"> 4</span><span style="color: #444444;">;</span></span>
+<span class="giallo-l"><span aria-hidden="true" class="giallo-ln" style="color: #DEDCD550;">15</span><span style="color: #CB7676;">let</span><span style="color: #BD976A;"> e</span><span style="color: #444444;"> =</span><span style="color: #4C9A91;"> 5</span><span style="color: #444444;">;</span></span></code><span>index.js</span></pre>

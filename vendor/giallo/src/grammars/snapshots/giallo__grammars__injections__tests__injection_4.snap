@@ -1,0 +1,9 @@
+---
+source: src/grammars/injections.rs
+description: "L:text.pug -comment -string.comment, L:text.html.derivative -comment.block"
+expression: result
+---
+[
+    "L:text.pug -comment -string.comment",
+    "L:text.html.derivative -comment.block",
+]

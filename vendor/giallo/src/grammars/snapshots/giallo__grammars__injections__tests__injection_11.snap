@@ -1,0 +1,8 @@
+---
+source: src/grammars/injections.rs
+description: "R:text.html - (comment.block, text.html meta.embedded, meta.tag.*.*.html, meta.tag.*.*.*.html, meta.tag.*.*.*.*.html)"
+expression: result
+---
+[
+    "R:text.html -(comment.block | text.html meta.embedded | meta.tag)",
+]

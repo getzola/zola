@@ -475,13 +475,21 @@ giallo's own test suite is unchanged by the patch: 46 pass and 11 fail both
 before and after, all 11 for missing grammar/theme fixtures that the repository
 does not ship.
 
-**Not committed to Zola** — there is nothing to commit here. The fix is one file
-in a dependency; Zola picks it up by bumping `giallo` once it is released.
-Known limitation, stated in the patch: thread-local entries live until the
+**Shipped by vendoring.** `vendor/giallo` carries `getzola/giallo@5e19db8` plus
+this patch, pulled in through `[patch.crates-io]` in the root `Cargo.toml`;
+`vendor/README.md` records where it came from and how to remove it. Confirmed
+with that copy in place: `markdown-heavy-4000` 6.24 s → 2.23 s (−64%), peak RSS
+514 → 522 MB, output IDENTICAL on `markdown-heavy-1000`,
+`mixed-realistic-1000` and `template-heavy-1000`.
+
+The patch still wants to go upstream — vendoring is how the fix is available
+now, not where it belongs. Known limitation, stated in the patch: thread-local entries live until the
 thread exits, so a process that keeps building registries (`zola serve`
 reloading a config) grows the map. Storing a `thread_local::ThreadLocal<RegSet>`
 inside `PatternSet` would tie the storage to the object's lifetime instead, at
 the cost of one dependency — the maintainer's call.
+
+**Commit.** `perf(PERF-002): vendor giallo with a RegSet per thread`
 
 ### PERF-002 without touching giallo — measured, and the trade-off
 

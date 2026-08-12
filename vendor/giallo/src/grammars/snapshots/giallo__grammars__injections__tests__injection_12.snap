@@ -1,0 +1,11 @@
+---
+source: src/grammars/injections.rs
+description: "L:source.css -comment, L:source.postcss -comment, L:source.sass -comment, L:source.stylus -comment"
+expression: result
+---
+[
+    "L:source.css -comment",
+    "L:source.postcss -comment",
+    "L:source.sass -comment",
+    "L:source.stylus -comment",
+]
