@@ -169,11 +169,24 @@ Whole-build wall time was likewise indistinguishable (median 1.31 s vs 1.39 s,
 with a 1.03–1.37 s spread on the *same* binary). The mutex costs roughly what
 the skipped `mkdir` calls save.
 
-**Not committed.** The doctrine rejects optimizations whose benefit cannot be
-demonstrated. The hotspot itself is real; what is disproven is this particular
-fix. The next variant worth measuring is a **thread-local** set of created
-directories: it keeps the syscall saving without any shared lock, at the cost
-of a few duplicate `mkdir` calls across worker threads.
+**Second variant, also rejected.** The thread-local set (no shared lock, a few
+duplicate `mkdir` calls across workers) was implemented and measured after
+PERF-005a and PERF-010 had made the write path the largest remaining item —
+`out: write file` was then 7.0 s of CPU across 4804 writes, 1.4 ms each:
+
+| round | `out: write file`, without | with | wall without | wall with |
+| ----- | -------------------------- | ---- | ------------ | --------- |
+| 1 | 6.989 s | 7.107 s | 1.55 s | 1.63 s |
+| 2 | 7.116 s | 6.935 s | 1.68 s | 1.65 s |
+| 3 | 7.079 s | 7.440 s | 1.73 s | 1.65 s |
+| median | 7.079 s | 7.107 s | 1.68 s | 1.65 s |
+
+No effect either. **PERF-003 is closed as rejected**: the cost in the write
+path is the file creation and write themselves, not the redundant `mkdir`
+calls, and `mkdir` returning `EEXIST` on APFS is cheap enough that removing it
+is unmeasurable. The CPU profile's 18.9% attribution to `create_dir_all` on
+`simple-pages-1000` counted samples in the kernel while other workers were
+parked, and overstated the share of wall time it could return.
 
 ---
 

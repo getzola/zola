@@ -9,7 +9,7 @@
 | -- | --------- | -------- | -------- | ------ | ------ |
 | PERF-001 | templates | `templates/src/functions/load_data.rs:317` | P0 | done | perf(PERF-001): don't hold the load_data cache lock across I/O |
 | PERF-002 | markdown | `giallo-0.5.2 pattern_set.rs:21 via markdown::render_content` | P0 | open | — |
-| PERF-003 | site | `site/src/queue.rs write_output` | P1 | open | — |
+| PERF-003 | site | `site/src/queue.rs write_output` | rejected | open | — |
 | PERF-004 | utils | `utils/src/fs.rs:216 clean_site_output_folder` | P1 | open | — |
 | PERF-005 (PERF-005a) | render | `render/src/cache.rs:59 RenderCache::build` | P1 | done | perf(PERF-005a): reuse cached page values instead of re-serializing them |
 | PERF-006 | site | `site/src/lib.rs:190 discover loop` | P1 | done | perf(PERF-006): read each content directory once during discovery |
