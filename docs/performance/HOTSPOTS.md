@@ -71,7 +71,7 @@ change, ranked by how close they are to the edge.
    instead of a nested `WalkDir`.
 7. **PERF-002** — per-thread highlighting registries, or an upstream giallo fix
    so `RegSet` is not shared.
-8. **PERF-007** — parallelise the static copy.
+8. **PERF-007** — parallelise the static copy. *(tried; rejected — slower.)*
 9. **PERF-010** — register Tera functions once, and share `Config`/`permalinks`
    behind `Arc` instead of cloning per function.
 10. **PERF-009** — avoid the `stat` per `load_data` cache-key computation once
@@ -87,7 +87,7 @@ change, ranked by how close they are to the edge.
 | PERF-004 | `utils/src/fs.rs:216` `clean_site_output_folder` | single-threaded recursive delete of previous output | once per build | O(output files) serial | timings: 663 ms = 36.3% of wall — **but parallel deletion and rename-aside both measured no wall gain, see OPTIMIZATIONS.md** | none recoverable | **rejected** |
 | PERF-005 | `render/src/cache.rs:59` `RenderCache::build` | sequential; deep serde re-serialization of every page value into its section and every taxonomy term | once per build | O(P × value size × memberships), single-threaded | timings: 346 ms = 24.3% of wall (mixed-4k); RSS 406 KB/page (many-taxonomies) vs 77 KB/page (simple) | 346 ms wall, ~2.6 GB RSS at 8k | **P1** |
 | PERF-006 | `site/src/lib.rs:190` discover loop | serial `WalkDir` + a second `WalkDir(max_depth=1)` per directory + serial `Section::from_file` | once per build | O(dirs) serial, 2 traversals | timings: 232–357 ms = 13–27% of wall (reference proxy, 1640 sections) | 232 ms wall | **P1** |
-| PERF-007 | `utils/src/fs.rs:107` `copy_directory` | serial copy of the static tree, 2 `stat`s per file | once per build | O(static files) serial | timings: 138–170 ms = 9–10% of wall (989 files / 55 MB) | 170 ms wall | **P2** |
+| PERF-007 | `utils/src/fs.rs:107` `copy_directory` | serial copy of the static tree, 2 `stat`s per file | once per build | O(static files) serial | timings: 138–170 ms = 9–10% of wall (989 files / 55 MB) — **but the parallel copy measured 10–30% *slower*, see OPTIMIZATIONS.md** | none recoverable | **rejected** |
 | PERF-008 | `render/src/cache.rs:84`,`151` sibling injection | `Value::into_map()` on a shared `Arc<Map>` forces a map copy per page with siblings | once per page | O(P × map size) | profile: `Value as Serialize` 2.9–4.2% busy CPU; part of PERF-005's memory | included in PERF-005 | P2 |
 | PERF-009 | `templates/src/functions/load_data.rs:157` | `get_file_time()` `stat` on every cache-key computation | once per `load_data()` | O(calls) syscalls | 4843 calls on the reference workload; `stat` visible in self time | small but on the P0 path | P2 |
 | PERF-010 | `site/src/tpls.rs:5` `register_early_global_fns` | clones `Config`, `permalinks`, `colocated_assets` and the whole `Tera` per registration; runs twice | 2× per build | O(P) copies | timings: 44 ms = 3.1% of wall (mixed-4k) | 44 ms wall | P2 |
@@ -259,12 +259,16 @@ parallel; replace the nested `WalkDir` with a single `read_dir` per directory.
 The draft-section `skip_current_dir` behaviour and the error ordering must be
 preserved.
 
-### PERF-007 — static copy is serial (P2)
+### PERF-007 — static copy is serial (rejected)
 
 `copy_directory` walks and copies file by file, doing `metadata()` on source and
 destination for each. 989 files / 55 MB costs 138–170 ms of wall time on the
-reference workload. Parallelising with rayon is straightforward; `hard_link_static`
-already exists as a user-side mitigation.
+reference workload.
+
+Parallelising it with rayon made it **10–30% slower** on the case it should have
+helped most (5000 files of 1 KB), and did nothing on the reference site, where
+the phase is disk-throughput bound at ~290 MB/s. Measurements in
+`OPTIMIZATIONS.md`. `hard_link_static` remains the user-side mitigation.
 
 ### PERF-012 — the allocator itself (done)
 
@@ -323,3 +327,8 @@ Recorded so future work does not re-litigate these:
 5. **PERF-006** — unlocks the remaining sequential chunk of `load`.
 6. **PERF-002** — largest CPU item overall, but needs dependency-level design.
 7. **PERF-007**, then re-profile before touching anything in P2/P3.
+
+That order was followed. PERF-003, PERF-004 and PERF-007 were all rejected on
+measurement; the wins came from PERF-005a, PERF-002, PERF-010, PERF-001,
+PERF-006, and then from two things this list did not predict — output
+determinism and the allocator (PERF-012).

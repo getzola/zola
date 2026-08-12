@@ -655,3 +655,55 @@ the key, and that a rewritten file is noticed. The second was confirmed to fail
 when the `(timestamp, length)` check is removed.
 
 **Commit.** `perf(PERF-013): memoize file hashes for cachebust and get_hash`
+
+---
+
+## Rejected experiment: parallelising the static copy (hotspot PERF-007)
+
+**Hypothesis.** `copy_directory` walks and copies `static/` one file at a time.
+The reference site's tree is 989 files / 55 MB and the phase costs 170–190 ms of
+serial wall time. Copying the files with rayon after the (serial) walk should
+turn that into a fraction.
+
+**Change tried.** Collect the walk into a list of files, create the directories
+serially in walk order, then `par_iter()` the copies; collect all results and
+report the first failure in walk order so the error a user sees does not depend
+on scheduling. Also switched `entry.path().is_dir()` to `entry.file_type()` to
+drop a `stat` per entry.
+
+**Result: rejected — it is slower.**
+
+Reference site, `copy static` phase, alternating binaries:
+
+| round | serial | parallel |
+| ----- | ------ | -------- |
+| 1 | 191.0 ms | 193.6 ms |
+| 2 | 196.6 ms | 211.6 ms |
+| 3 | 211.0 ms | 170.9 ms |
+
+Nothing there: 55 MB in ~190 ms is ~290 MB/s, which is the disk, not the loop.
+
+So the experiment was repeated on the case parallelism should win — 5000 files
+of 1 KB each, where per-file syscall latency dominates and throughput does not:
+
+| round | serial | parallel |
+| ----- | ------ | -------- |
+| 1 | 640.1 ms | 837.6 ms |
+| 2 | 813.6 ms | 899.0 ms |
+| 3 | 841.9 ms | 1023 ms |
+
+**Unanimously worse, by 10–30%.** Twelve threads creating files in the same
+handful of directories contend on directory metadata — and each copy calls
+`create_parent`, so they also hammer `exists()` on the same paths at once.
+
+This is the third filesystem experiment in this program to fail this way, after
+caching created directories (PERF-003) and parallel output cleaning (PERF-004).
+The pattern is now established well enough to state as a rule: **on this
+platform, filesystem metadata operations do not parallelise — they
+anti-parallelise.** Bulk data throughput is the disk's business, and the loop
+around it is not what costs. Future proposals of this shape need a measurement
+first, not a review.
+
+The `file_type()` micro-fix went back with the revert: it removes a `stat` per
+entry, which is real but far below what this phase's noise can resolve, and it
+is not worth carrying a change no measurement supports.
