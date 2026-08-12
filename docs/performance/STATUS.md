@@ -3,7 +3,7 @@
 
 # PERF backlog status
 
-6 done, 5 open, 2 rejected. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
+7 done, 5 open, 2 rejected. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
 
 A *rejected* item is not abandoned: it was measured and the change did
 not pay off. The measurement is in `OPTIMIZATIONS.md` so it is not
@@ -23,4 +23,5 @@ re-litigated.
 | PERF-010 | site | `site/src/tpls.rs:5 register_early_global_fns` | P2 | done | perf(PERF-010): share the highlighting registry behind an Arc |
 | PERF-011 | config | `config highlighting registry init` | P3 | open | — |
 | PERF-012 | — | `the platform allocator` | — | done | perf(PERF-012): use mimalloc as the global allocator |
-| PERF-013 | templates | `templates/src/functions/files.rs:133,199` | P2 | open | — |
+| PERF-013 | templates | `templates/src/functions/files.rs:133,199` | — | done | perf(PERF-013): memoize file hashes for cachebust and get_hash |
+| PERF-014 | — | `minify_html::parse::element::parse_tag (dependency)` | P3, upstream | open | — |
