@@ -310,3 +310,31 @@ as such.
 reference proxy. `scripts/dev.sh quality`: ALL PASS.
 
 **Commit.** `perf(PERF-006): read each content directory once during discovery`
+
+---
+
+## Cumulative effect so far
+
+Measured with the binary from the start of this round of work (PERF-001 and the
+`--timings` instrumentation, commit `71be7609`) against the current tree
+(determinism fix + PERF-005a + PERF-006). Interleaved, on a machine with free
+disk — an earlier attempt at this table was invalidated when 9 GB output trees
+filled the disk and builds began failing, which is recorded here because the
+numbers looked spectacular and were meaningless.
+
+| workload | before (median) | after (median) | wall | peak RSS before → after |
+| -------- | --------------- | -------------- | ---- | ----------------------- |
+| `mixed-realistic-4000` | 2.10 s | 1.72 s | **−18%** | 1371 MB → 311 MB (**−77%**) |
+| `many-taxonomies-4000` | 2.21 s | 1.65 s | **−25%** | 1696 MB → 273 MB (**−84%**) |
+| `mixed-realistic-16000` | 8.67 s | 6.80 s | **−22%** | 5152 MB → 742 MB (**−86%**) |
+| reference proxy (3776 pages, 9 GB output) | 28.9 s | 24.6 s | **−15%** | — |
+
+Against Zola 0.22 the reference site went from 252 s to ~25 s, though that
+comparison also includes the 0.22→0.23 engine work and the template migration
+(see `REAL-SITE.md`).
+
+**Open, in priority order:** PERF-002 (highlighting serialized on giallo's
+`RegSet` mutex — the largest remaining CPU item on sites with code blocks),
+PERF-004 (output cleaning; parallel deletion was measured and rejected, the
+rename-aside approach needs a decision), PERF-003 (the thread-local variant),
+PERF-007, PERF-009, PERF-010.
