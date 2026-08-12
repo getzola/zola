@@ -23,7 +23,7 @@
 
 use std::cell::Cell;
 use std::ffi::OsStr;
-use std::net::{IpAddr, SocketAddr, TcpListener};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, TcpListener};
 use std::path::{MAIN_SEPARATOR, Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
@@ -468,8 +468,19 @@ fn create_new_site(
     // if no base URL provided, use socket address
     let base_url = base_url.map_or_else(
         || {
+            // Handle the 0.0.0.0 case and replace it with localhost for the URLs
+            let host = if interface.is_unspecified() {
+                if interface.is_ipv4() {
+                    Ipv4Addr::LOCALHOST.into()
+                } else {
+                    Ipv6Addr::LOCALHOST.into()
+                }
+            } else {
+                interface
+            };
+
             no_port_append = true;
-            address.to_string()
+            SocketAddr::new(host, interface_port).to_string()
         },
         |u| u.to_string(),
     );
