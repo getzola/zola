@@ -76,6 +76,9 @@ change, ranked by how close they are to the edge.
    behind `Arc` instead of cloning per function.
 10. **PERF-009** — avoid the `stat` per `load_data` cache-key computation once
     PERF-001 lands (it becomes the remaining serial syscall on that path).
+    *(Re-profiled after PERF-001: rejected. Every `stat` in the build together
+    is 439 ms of self time, so this one is a few milliseconds, and the mtime it
+    reads is what keeps the cache from serving stale data.)*
 
 ## Summary table
 
@@ -89,12 +92,13 @@ change, ranked by how close they are to the edge.
 | PERF-006 | `site/src/lib.rs:190` discover loop | serial `WalkDir` + a second `WalkDir(max_depth=1)` per directory + serial `Section::from_file` | once per build | O(dirs) serial, 2 traversals | timings: 232–357 ms = 13–27% of wall (reference proxy, 1640 sections) | 232 ms wall | **P1** |
 | PERF-007 | `utils/src/fs.rs:107` `copy_directory` | serial copy of the static tree, 2 `stat`s per file | once per build | O(static files) serial | timings: 138–170 ms = 9–10% of wall (989 files / 55 MB) — **but the parallel copy measured 10–30% *slower*, see OPTIMIZATIONS.md** | none recoverable | **rejected** |
 | PERF-008 | `render/src/cache.rs:84`,`151` sibling injection | `Value::into_map()` on a shared `Arc<Map>` forces a map copy per page with siblings | once per page | O(P × map size) | profile: `Value as Serialize` 2.9–4.2% busy CPU; part of PERF-005's memory | included in PERF-005 | P2 |
-| PERF-009 | `templates/src/functions/load_data.rs:157` | `get_file_time()` `stat` on every cache-key computation | once per `load_data()` | O(calls) syscalls | 4843 calls on the reference workload; `stat` visible in self time | small but on the P0 path | P2 |
+| PERF-009 | `templates/src/functions/load_data.rs:157` | `get_file_time()` `stat` on every cache-key computation | once per `load_data()` | O(calls) syscalls | 4843 calls on the reference workload — **but every `stat` in the whole build is 439 ms of self time, so this is a few ms** | none worth taking | **rejected** |
 | PERF-010 | `site/src/tpls.rs:5` `register_early_global_fns` | clones `Config`, `permalinks`, `colocated_assets` and the whole `Tera` per registration; runs twice | 2× per build | O(P) copies | timings: 44 ms = 3.1% of wall (mixed-4k) | 44 ms wall | P2 |
 | PERF-011 | `config` highlighting registry init | ~170 MB RSS and ~110 ms before any page is processed | once | O(1) | baseline: 100-page build = 128 ms / 174 MB | fixed overhead | P3 |
 | PERF-012 | the platform allocator | large `String` churn (render → minify → drop) on every worker | once per output | O(outputs × page size) | profile: 34 s of 138 s busy CPU in `_xzm_*`/`_free` (reference site) | **−23.7% CPU on the reference site; shipped as mimalloc** | **done** |
 | PERF-013 | `templates/src/functions/files.rs:133,199` | `get_url(cachebust=true)` and `get_hash(path=…)` re-read and re-hash the file on every call | once per call per page | O(P × file size) | profile: `compute_hash` 2.2 s self CPU; the reference site hashes 3 files (one of them the search index) on all 5601 outputs | **2.2 s CPU, gone from the profile; below the noise floor of a whole-build A/B** | **done** |
 | PERF-014 | `minify_html::parse::element::parse_tag` (dependency) | seeds a new ahash hasher per tag parsed | once per HTML tag | O(tags) | profile: `gen_hasher_seed` 1.9 s self CPU (2.2%), 1825 of its 1898 samples under `parse_tag` | 1.9 s CPU on the reference site | P3, upstream |
+| PERF-015 | `templates/src/helpers.rs` `search_for_file` | up to 5 `exists()` probes, and 2 `canonicalize` calls when the file sits directly under the site root, on every `get_url`/`get_hash`/`load_data`/image call | once per call per page | O(P × calls) syscalls | profile: `canonicalize` 360 ms, `stat` 439 ms self CPU — 0.9% of the build between them | ~0.8 s CPU on the reference site | P3 |
 
 ## Detail
 
@@ -292,6 +296,24 @@ the same discipline `load_data` already uses. Validation is not optional here:
 `search_for_file` also looks in the *output* directory, so a hashed file can be
 one the build itself writes, and a path-only cache could capture it before it is
 written.
+
+### PERF-015 — the filesystem probing behind template file lookups (P3)
+
+`search_for_file` resolves a path by probing up to five locations, and
+`is_path_in_directory` canonicalizes *both* the candidate and the site root —
+the site root being a constant it re-resolves on every call. Every
+`get_url(cachebust=…)`, `get_hash`, `load_data` and image function goes through
+it, so on the reference site this is thousands of `stat`s and `realpath`s.
+
+Together they are 0.9% of the build (`canonicalize` 360 ms, `stat` 439 ms of
+self time, and the latter includes every other stat in the build). Memoizing the
+resolution is not free of risk — the output directory is one of the search
+locations, so a resolution can legitimately change during a build, which is the
+same trap PERF-013's `(timestamp, length)` validation exists to avoid.
+
+Recorded, not implemented: sub-1% for a change that has to reason about
+correctness. Caching the canonicalized site root alone would be safe and is the
+part to do first if this is ever picked up.
 
 ### PERF-014 — minify-html seeds a hasher per tag (P3, upstream)
 
