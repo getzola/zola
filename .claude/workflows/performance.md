@@ -18,8 +18,22 @@ file is the discipline around them.
    not milliseconds on your laptop. Absolute numbers are only comparable within
    one interleaved measurement session.
 5. **Interleave A/B runs.** Sequential "all baseline then all candidate" has
-   produced a fake 3.2× on this machine because of thermal state. Alternate
-   baseline and candidate in the same loop and report the per-round pairs.
+   produced a fake 3.2× on this machine because of thermal state. Use
+   `scripts/perf/run.sh ab <a-bin> <b-bin> <site>...`, which alternates the two
+   within each round and flips their order between rounds.
+
+   Judge on the **paired per-round delta and whether every round agrees on its
+   sign** — not on the difference between two medians. Comparing medians of
+   absolute numbers threw away a unanimous −24% on the reference site because
+   filesystem stalls made the absolutes noisier than the effect.
+5b. **Watch CPU as well as wall.** A build that writes gigabytes stalls on the
+   filesystem in ways that move wall time by seconds in both directions and say
+   nothing about the change. When the two disagree, say so and quote both.
+5c. **Measure at the level where the effect is visible.** If a change is worth
+   1% and the build's noise floor is 5%, a whole-build A/B cannot resolve it:
+   measure the phase (`--timings`) or the symbol (a profile). Report which one
+   was measured, and report an unresolved effect as unresolved — never round it
+   up into a win.
 6. **Correctness is a gate, not a caveat.** Output must be byte-identical unless
    the change is explicitly about output. `scripts/perf/run.sh equivalence` must
    report IDENTICAL.
