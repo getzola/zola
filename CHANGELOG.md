@@ -4,6 +4,7 @@
 
 - Fix another `get_url` bug adding a trailing slash for non default language
 - Fix `index.<default_language>.md` paths collision
+- Fix sitemap `<lastmod>` emitting invalid dates (eg a datetime without a timezone) for sitemap validation
 
 ## 0.23.3 (2026-08-11)
 

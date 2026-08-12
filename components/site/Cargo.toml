@@ -17,6 +17,7 @@ relative-path = { workspace = true }
 tera = { workspace = true }
 url = { workspace = true }
 walkdir = { workspace = true }
+time = { workspace = true, features = ["formatting"] }
 
 errors = { workspace = true }
 config = { workspace = true }
