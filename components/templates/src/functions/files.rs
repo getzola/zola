@@ -120,8 +120,12 @@ impl Function<TeraResult<String>> for GetUrl {
                     segments.push(lang.clone());
                 }
             }
-
-            segments.push(path.clone());
+            if segments.is_empty() {
+                segments.push(path.clone());
+            } else {
+                // We've pushed a {lang}/ so remove the / first
+                segments.push(path.trim_start_matches('/').to_string());
+            }
 
             let path_with_lang = segments.join("/");
 
@@ -842,7 +846,7 @@ title = "A title"
 
     // https://github.com/getzola/zola/issues/2621
     #[test]
-    fn does_not_drop_lang_() {
+    fn does_not_drop_lang() {
         let dir = create_temp_dir();
         let config = Config::parse(CONFIG_DATA).unwrap();
         let get_url = GetUrl::new(
@@ -859,5 +863,21 @@ title = "A title"
         let ctx = Context::new();
         let url = get_url.call(kwargs, &State::new(&ctx)).unwrap();
         assert_eq!(url, "https://remplace-par-ton-url.fr/en/genres");
+
+        // https://github.com/getzola/zola/issues/2216
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("/")),
+            ("lang", tera::Value::from("en")),
+        ]);
+        let url = get_url.call(kwargs, &State::new(&ctx)).unwrap();
+        assert_eq!(url, "https://remplace-par-ton-url.fr/en");
+
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("/")),
+            ("lang", tera::Value::from("en")),
+            ("trailing_slash", tera::Value::from(true)),
+        ]);
+        let url = get_url.call(kwargs, &State::new(&ctx)).unwrap();
+        assert_eq!(url, "https://remplace-par-ton-url.fr/en/");
     }
 }
