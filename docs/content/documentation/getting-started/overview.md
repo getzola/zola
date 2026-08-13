@@ -14,6 +14,8 @@ The goal of this library is 100% compliance with the CommonMark spec. It adds a 
 SSGs use dynamic templates to transform content into static HTML pages. Static sites are thus very fast and require no databases, making them easy to host. 
 A comparison between static and dynamic sites, such as WordPress, Drupal, and Django, can be found [here](https://dev.to/ashenmaster/static-vs-dynamic-sites-61f).
 
+If you're updating from a previous version, see the [CHANGELOG](https://github.com/getzola/zola/blob/master/CHANGELOG.md) for all the changes.
+
 To get a taste of Zola, please see the quick overview below.
 
 ## First Steps with Zola
