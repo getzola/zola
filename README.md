@@ -20,7 +20,6 @@ Hugo that I was using before for 6+ sites.
 - [Multilingual site support](https://www.getzola.org/documentation/content/multilingual/) (Basic currently)
 - [Image processing](https://www.getzola.org/documentation/content/image-processing/)
 - [Themes](https://www.getzola.org/documentation/themes/overview/)
-- [Shortcodes](https://www.getzola.org/documentation/content/shortcodes/)
 - [Internal links](https://www.getzola.org/documentation/content/linking/)
 - [External link checker](https://www.getzola.org/documentation/getting-started/cli-usage/#check)
 - [Table of contents automatic generation](https://www.getzola.org/documentation/content/table-of-contents/)
