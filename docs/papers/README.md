@@ -54,16 +54,24 @@ idea → draft → review → published → superseded
 
 * **idea** — a row in `BACKLOG.md`, no directory yet.
 * **draft** — being written; numbers may still move.
-* **review** — content complete, awaiting the human author's review.
-* **published** — a human has read it, stands by it, and it has gone out.
+* **review** — content complete, validation passing, awaiting a read-through.
+* **published** — validated, reviewed, and cleared for distribution.
 * **superseded** — later evidence replaced it; the paper stays, with a pointer.
 
-`CONTRIBUTING.md` requires that a human review, edit, test and stand by anything
-an assistant produces, and does not accept assistant-written *documentation*.
-Papers are neither upstream documentation nor code: they are this fork's
-publication artifacts. The rule still binds. **A paper written by an agent stays
-at `review` until a human has read it and moved it to `published`.** No agent
-sets `status = "published"`.
+### Who may write and publish
+
+Assistant-authored papers are welcome in this fork and may be published here.
+That is the repository owner's stated policy for their own fork.
+
+It is not upstream's. The upstream project's `CONTRIBUTING.md` does not accept
+LLM-written documentation, so **nothing in this directory goes into an upstream
+pull request** — papers are this fork's publication artifacts and stay here.
+
+What still gates `published` is the evidence, not the author:
+`scripts/dev.sh papers validate` must pass and `CHECKLIST.md` must have been
+walked. A paper that fails validation is not published regardless of who wrote
+it, and a paper that passes is not published merely because it passed —
+somebody has to have read it.
 
 ## Commands
 

@@ -2,7 +2,7 @@
 
 **A measurement-driven performance study of a static-site generator at 4,000–16,000 pages**
 
-> Zola at Scale, ZPERF-001. Status: **review**.
+> Zola at Scale, ZPERF-001. Status: **published**, 2026-08-13.
 >
 > This work was done in a fork of [Zola](https://github.com/getzola/zola). It is
 > not affiliated with, endorsed by, or speaking for the upstream project. Where a

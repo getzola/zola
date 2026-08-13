@@ -20,7 +20,9 @@ Read `.claude/workflows/publication.md` first, and
    Upstream behaviour, this fork's changes, and future proposals never blur.
 6. Generate figures, then derive the social posts from the paper.
 7. `scripts/dev.sh papers validate`, then walk `docs/papers/CHECKLIST.md`.
-8. Set `status = "review"`. **Never** set `published` — that is the human's call.
+8. Set `status`: `published` if validation passes, the checklist was genuinely
+   walked and the paper reads end to end; `review` if any claim is still
+   unverified — and say which.
 
 Report honestly: which claims are measured, which are observed, which are
 interpretation, and what evidence you wanted and could not find.

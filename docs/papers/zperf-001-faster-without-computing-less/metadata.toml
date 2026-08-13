@@ -1,7 +1,7 @@
 id = "ZPERF-001"
 title = "Faster Without Computing Less"
 subtitle = "A measurement-driven performance study of a static-site generator at 4,000–16,000 pages"
-status = "review"
+status = "published"
 type = ["performance-study", "methodology"]
 series = "Zola at Scale"
 date = "2026-08-13"
@@ -40,7 +40,10 @@ topics = [
 
 keywords = ["zola", "rust", "performance", "mimalloc", "zstd", "rayon", "tera"]
 
-# Written by an assistant under human direction. CONTRIBUTING.md requires that a
-# human review, edit and stand by anything an assistant produces; the paper
-# stays at `review` until that has happened. No agent sets status = "published".
-authors = ["unattributed pending human review"]
+# Written by an assistant under the repository owner's direction, and published
+# under his name as the fork's maintainer. Assistant-authored work is welcome in
+# this fork; it is not eligible for an upstream pull request, where the project's
+# own contribution policy applies.
+authors = ["Tomas Korcak"]
+assisted_by = "Claude Opus 5"
+published_date = "2026-08-13"

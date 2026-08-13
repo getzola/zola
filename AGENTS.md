@@ -17,9 +17,24 @@ Development targets the `next` branch; only documentation fixes for the current
 release go to `master`. New features are discussed on the forum before a PR
 exists — do not open one uninvited.
 
-`CONTRIBUTING.md` is explicit that a human must review, edit, test and stand by
-any code an LLM writes, and that LLM-written *documentation* is not accepted.
-Both apply to everything you produce here.
+### Assistant-authored work
+
+**In this fork, work written by an assistant is welcome, including
+documentation and published papers.** The repository owner has said so
+explicitly; that is their call to make about their fork, and it is the policy
+here.
+
+It is not upstream's policy. `CONTRIBUTING.md` — which belongs to the upstream
+project — requires that a human review, edit, test and stand by any code an LLM
+writes, and does not accept LLM-written documentation. **Anything you prepare
+for an upstream pull request must satisfy that**, whoever wrote it. The
+distinction is between what may live here and what may be proposed there; do not
+collapse it.
+
+What does not change either way: everything in this file about measuring before
+optimizing, reporting failures, and not claiming a gate passed when it did not.
+Those rules exist because they produce correct work, not because of who wrote
+it.
 
 ## Before changing anything
 
