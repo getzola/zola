@@ -63,7 +63,7 @@ procedure: CPU −35.6% (against −35.1%), peak RSS −22.0% (against −25.5%)
 **Class.** `measured`
 
 **Source.**
-`benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json`
+`benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-session2.json`
 
 **Method.** As E-001. This artifact is the first to carry its own provenance —
 SHA-256 of both binaries, the repository commit, and the machine — because

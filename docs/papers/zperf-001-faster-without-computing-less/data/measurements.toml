@@ -91,6 +91,7 @@ json_path = "sites.mixed-realistic-16000.cpu_s.median_pct"
 id = "M-010"
 claim = "reference site paired wall delta, baseline vs current"
 class = "measured"
+replication = "did-not-reproduce"
 text = "−33.3%"
 value = -33.3
 tolerance = 0.2
@@ -101,6 +102,7 @@ json_path = "sites.vomaste-live.wall_s.median_pct"
 id = "M-011"
 claim = "reference site paired CPU delta"
 class = "measured"
+replication = "reproduced"
 text = "−35.1%"
 value = -35.1
 tolerance = 0.2
@@ -336,7 +338,7 @@ class = "measured"
 text = "−35.6%"
 value = -35.6
 tolerance = 0.2
-source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json"
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-session2.json"
 json_path = "sites.vomaste-live.cpu_s.median_pct"
 
 [[measurement]]
@@ -346,7 +348,7 @@ class = "measured"
 text = "−26.1%"
 value = -26.1
 tolerance = 0.2
-source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json"
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-session2.json"
 json_path = "sites.vomaste-live.wall_s.median_pct"
 
 [[measurement]]
@@ -356,7 +358,7 @@ class = "measured"
 text = "−22.0%"
 value = -22.0
 tolerance = 0.2
-source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json"
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-session2.json"
 json_path = "sites.vomaste-live.peak_rss_mb.median_pct"
 
 [[measurement]]
@@ -366,5 +368,5 @@ class = "measured"
 text = "35.1 s"
 value = 35.14
 tolerance = 0.05
-source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json"
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-session2.json"
 json_path = "sites.vomaste-live.wall_s.a_spread"

@@ -2,7 +2,7 @@
 
 We profiled a static-site generator at 4,000–16,000 pages instead of guessing at
 it: wall time down 14% to 74%, peak memory down 40% to 89%, and on a real
-3776-page site −33.3% wall and −35.1% CPU. The interesting part is that total CPU
+3776-page site −35.1% CPU. The interesting part is that total CPU
 barely moved on most workloads — the work wasn't reduced, the waiting and the
 allocating were. The largest single win wasn't in the codebase at all: 34 s of
 138 s of busy CPU was inside the platform allocator. Four optimizations were

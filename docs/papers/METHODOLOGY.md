@@ -40,7 +40,18 @@ is interpretation, and needs the reasoning that gets you there.
 
 Every figure printed in a paper is declared in `data/measurements.toml`, and any
 figure derived from a committed benchmark artifact carries the path into that
-artifact so the validator can re-extract it. Numbers that no artifact holds —
+artifact so the validator can re-extract it. A figure that has been measured more
+than once also declares `replication`: `reproduced`, `single-session`, or
+`did-not-reproduce`. **A figure marked `did-not-reproduce` may not appear in a
+social derivative at all**, and the validator enforces that — a post has no room
+for the caveat that makes such a number honest, so it would travel stripped of
+the one thing a reader needs. The paper may still print it, next to the repeat
+that contradicts it.
+
+That field exists because binding a figure's *value* is not the same as binding
+its *confidence*. A number can be identical in the paper, the table, and three
+derivatives and still be dishonest in four of those places, because what failed
+to propagate was the caveat rather than the digits. Numbers that no artifact holds —
 values read off a terminal, profiler symbol totals, memory footprints — are
 declared with `source_note` describing exactly how they were obtained, and are
 classed `observed` rather than `measured` unless a committed file backs them.

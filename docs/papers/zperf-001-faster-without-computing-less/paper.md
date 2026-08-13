@@ -18,7 +18,9 @@ instrumented it, profiled it, and measured a matrix of synthetic workloads from
 then optimized only what the measurements identified. Against the same binary
 plus instrumentation, in a single interleaved session, wall time fell by 14% to
 74% depending on workload and peak memory by 40% to 89%; the real site improved
-33.3% in wall time and 35.1% in CPU. Total CPU barely moved on most synthetic
+35.1% in CPU and 33.3% in wall time — though a second session reproduced the CPU
+figure to within half a point and did not reproduce the wall figure at all, which
+is itself one of the results. Total CPU barely moved on most synthetic
 workloads while wall time halved, which is the paper's central finding: the
 program did not compute less, it stopped waiting and stopped allocating. Four
 attractive optimizations were rejected on measurement, three of them for the
@@ -216,7 +218,8 @@ generated file.
 
 Baseline `9ec4407a` against the current tree, one interleaved session, three
 rounds per site, order flipped each round. **Every wall figure below is
-unanimous across rounds.**
+unanimous across rounds** — within a session. The one workload measured in two
+sessions had its wall figure fail to reproduce across them; see below.
 
 | Workload | Wall | Peak RSS | CPU |
 | -------- | ---- | -------- | --- |
@@ -229,9 +232,12 @@ unanimous across rounds.**
 | `template-heavy-4000` | 1.20 s → 1.08 s (−23%) | 406 → 169 MB (−58%) | −9.9% ‡ |
 | `simple-pages-4000` | 1.07 s → 0.84 s (−22%) | 366 → 144 MB (−60%) | −7.6% |
 | `deep-sections-4000` | 1.10 s → 0.95 s (**−14%**) | 383 → 160 MB (−58%) | +0.1% ‡ |
-| the real site, 9.03 GB out | 44.3 s → 32.2 s (−33.3%) | 676 → 504 MB (−25.5%) | **−35.1%** |
+| the real site, 9.03 GB out | 44.3 s → 32.2 s (−33.3%) † | 676 → 504 MB (−25.5%) | **−35.1%** |
 
 ‡ the CPU rounds disagreed on the sign; treat those three as unresolved.
+† this wall figure **did not reproduce** in a second session, which measured
+−26.1%. The CPU figure on the same row reproduced to within half a point. Both
+sessions are below.
 
 ![Wall time, baseline against current](figures/wall-time.svg)
 
@@ -257,10 +263,16 @@ rounds. Set side by side they say something the individual numbers cannot:
 | peak RSS | −25.5% | **−22.0%** | 3.5 points |
 | wall | −33.3% | **−26.1%** | 7.2 points |
 
-**The CPU result replicates to half a point. The wall result does not replicate
-at all.** In the second session the baseline side's wall times spread across
+**The CPU figure reproduced to within half a point; the wall figure did not
+reproduce at all.** Two sessions agreeing is consistent with replication and does
+not establish it — same machine, same OS, same binaries, same harness, same day —
+so the absolute claim here is "reproduced once, under similar conditions", not
+"replicates". The *comparative* claim needs no such hedge and does not depend on
+having two sessions: in the second session the baseline side's wall times spread across
 **35.1 s** — one round took 70 s while spending a perfectly ordinary 280 s of
 CPU — and two consecutive runs of the *same* binary produced 31.8 s and 36.8 s.
+Each of those three observations is on its own sufficient to show that wall time
+here measures the machine's mood, and none of them needs a second session.
 
 This is the paper's methodology arguing with its own headline figure, and the
 figure loses. Wall time on a shared desktop measures the desktop. Where this

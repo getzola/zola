@@ -13,7 +13,8 @@ Against the same binary plus instrumentation, in one interleaved session:
 
 • wall time down 14% to 74%, depending on workload
 • peak memory down 40% to 89% — a 16,000-page build went from 4913 MB to 574 MB
-• the real site: −33.3% wall, −35.1% CPU
+• the real site: −35.1% CPU — and re-running it in a second session reproduced
+  that to within half a point while the wall-time figure did not reproduce at all
 
 But the number that taught us the most was the one that barely moved. On most
 workloads **total CPU stayed roughly flat while wall time halved**. We hadn't

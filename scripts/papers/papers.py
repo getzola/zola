@@ -203,6 +203,14 @@ def check_measurements(d: Path, paper_text: str, f: Failures) -> None:
         for key in ("id", "claim", "class", "text"):
             if not e.get(key):
                 f.add(where, f"missing `{key}`")
+        # A figure's *value* is bound by `source`/`json_path`; its *confidence*
+        # is not, and that is a separate way a derivative goes wrong. A number
+        # can be identical in all five places and still be dishonest in four of
+        # them, because the caveat that makes it honest did not travel with it.
+        rep = e.get("replication")
+        if rep and rep not in {"reproduced", "did-not-reproduce", "single-session"}:
+            f.add(where, f"unknown replication `{rep}`")
+
         cls = e.get("class")
         if cls and cls not in {
             "measured",
@@ -253,16 +261,44 @@ def check_measurements(d: Path, paper_text: str, f: Failures) -> None:
             f.add(where, f"source does not exist: {src}")
 
 
+def unreproduced_figures(d: Path) -> list[tuple[str, str]]:
+    """Figures a repeat measurement failed to confirm, as (text, id)."""
+    path = d / "data" / "measurements.toml"
+    if not path.is_file():
+        return []
+    with path.open("rb") as fh:
+        doc = tomllib.load(fh)
+    return [
+        (e["text"], e.get("id", "?"))
+        for e in doc.get("measurement", [])
+        if e.get("replication") == "did-not-reproduce" and e.get("text")
+    ]
+
+
 def check_derivatives(d: Path, paper_text: str, f: Failures) -> None:
-    """No number may appear in a derivative that the paper does not contain."""
+    """No number may appear in a derivative that the paper does not contain.
+
+    And no figure that failed to reproduce may appear in one at all: a social
+    post has no room for the caveat that makes such a number honest, so it
+    travels stripped of the one thing a reader needs.
+    """
     social = d / "social"
     if not social.is_dir():
         return
+    unreproduced = unreproduced_figures(d)
     paper_numbers = set(NUMBER_RE.findall(paper_text))
     # Numbers structurally part of a post rather than a claim.
     allowed = paper_numbers | {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "0"}
     for post in sorted(social.glob("*.md")):
         head = post.read_text(encoding="utf-8")
+        for text, mid in unreproduced:
+            if text in head:
+                f.add(
+                    f"{d.name}/social/{post.name}",
+                    f"carries `{text}` ({mid}), which a repeat measurement did not "
+                    "reproduce — a derivative cannot carry the caveat that makes that "
+                    "figure honest, so it must not carry the figure",
+                )
         for num in NUMBER_RE.findall(head):
             if num not in allowed:
                 f.add(
