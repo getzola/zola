@@ -14,6 +14,7 @@
 #   scripts/dev.sh session <cmd>   start | show | end  (see .claude/README.md)
 #   scripts/dev.sh hooks <cmd>     install | uninstall | status
 #   scripts/dev.sh perf [args]     forwards to scripts/perf/run.sh
+#   scripts/dev.sh papers <cmd>    engineering papers: validate | index | new | figures
 #
 # None of this is required to contribute to Zola: `cargo build --all` and
 # `cargo test --all` remain the whole story. This script exists so that "is my
@@ -111,12 +112,31 @@ cmd_quality_full() {
   if has_python; then
     step "generated files up to date" "$ROOT/scripts/dev.sh" generate --check
     step "tooling tests" "$ROOT/scripts/dev.sh" test-tooling
+    step "papers" "$ROOT/scripts/dev.sh" papers validate
     printf '\n=== change impact (informational)\n'
     python3 scripts/dev/impact.py || true
   else
     printf '\n=== generated files / tooling tests: SKIPPED (python3 not installed)\n'
   fi
   summary
+}
+
+# Figures belong to a paper, so they are regenerated per paper directory.
+papers_figures_check() {
+  local rc=0 d
+  for d in docs/papers/zperf-*/; do
+    [ -f "$d/figures/figures.toml" ] || continue
+    python3 scripts/papers/figures.py "$d" --check || rc=1
+  done
+  return $rc
+}
+
+papers_figures_generate() {
+  local d
+  for d in docs/papers/zperf-*/; do
+    [ -f "$d/figures/figures.toml" ] || continue
+    python3 scripts/papers/figures.py "$d" >/dev/null || return 1
+  done
 }
 
 cmd_generate() {
@@ -126,10 +146,14 @@ cmd_generate() {
     local rc=0
     python3 scripts/dev/repo_map.py check || rc=1
     python3 scripts/dev/perf_index.py check || rc=1
+    python3 scripts/papers/papers.py index --check || rc=1
+    papers_figures_check || rc=1
     return $rc
   fi
   python3 scripts/dev/perf_index.py generate || return 1
   python3 scripts/dev/repo_map.py generate || return 1
+  python3 scripts/papers/papers.py index || return 1
+  papers_figures_generate || return 1
 }
 
 cmd_session() {
@@ -230,6 +254,16 @@ cmd_hooks() {
   esac
 }
 
+# Engineering papers (docs/papers/). `figures` takes a paper directory; every
+# other subcommand is forwarded to papers.py as-is.
+cmd_papers() {
+  require_python papers || return 1
+  case "${1:-validate}" in
+    figures) shift; exec python3 scripts/papers/figures.py "$@" ;;
+    *)       exec python3 scripts/papers/papers.py "$@" ;;
+  esac
+}
+
 CMD="${1:-help}"
 shift || true
 
@@ -247,6 +281,7 @@ case "$CMD" in
   session)      cmd_session "$@" ;;
   hooks)        cmd_hooks "$@" ;;
   perf)         exec scripts/perf/run.sh "$@" ;;
+  papers)       cmd_papers "$@" ;;
   help|--help|-h) usage ;;
   *)
     echo "unknown command: $CMD" >&2
