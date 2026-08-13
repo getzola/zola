@@ -1,0 +1,326 @@
+# Every figure printed in paper.md is declared here.
+#
+# A figure taken from a committed benchmark artifact carries `source` and
+# `json_path`, and `scripts/dev.sh papers validate` re-extracts it and compares.
+# A figure read off a terminal or a profiler carries `source_note` instead and is
+# classed `observed`: the number is real, but no committed artifact holds it, and
+# the paper says so.
+#
+# `text` is the exact string the paper prints. If the paper's prose drifts from
+# the artifact, validation fails on the string, not on a rounding argument.
+
+# --------------------------------------------------------------------------- #
+# Cumulative result: baseline (9ec4407a) vs current, one interleaved session
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-001"
+claim = "mixed-realistic-4000 wall time, baseline median"
+class = "measured"
+text = "1.92 s"
+value = 1.9215
+tolerance = 0.01
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-synthetic.json"
+json_path = "sites.mixed-realistic-4000.wall_s.a_median"
+
+[[measurement]]
+id = "M-002"
+claim = "mixed-realistic-4000 wall time, current median"
+class = "measured"
+text = "1.08 s"
+value = 1.0839
+tolerance = 0.01
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-synthetic.json"
+json_path = "sites.mixed-realistic-4000.wall_s.b_median"
+
+[[measurement]]
+id = "M-003"
+claim = "mixed-realistic-16000 peak RSS, baseline"
+class = "measured"
+text = "4913 MB"
+value = 4913.3
+tolerance = 0.5
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-synthetic.json"
+json_path = "sites.mixed-realistic-16000.peak_rss_mb.a_median"
+
+[[measurement]]
+id = "M-004"
+claim = "mixed-realistic-16000 peak RSS, current"
+class = "measured"
+text = "574 MB"
+value = 574.1
+tolerance = 0.5
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-synthetic.json"
+json_path = "sites.mixed-realistic-16000.peak_rss_mb.b_median"
+
+[[measurement]]
+id = "M-005"
+claim = "markdown-heavy-4000 paired wall delta"
+class = "measured"
+text = "−74%"
+value = -74.2
+tolerance = 0.5
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-synthetic.json"
+json_path = "sites.markdown-heavy-4000.wall_s.median_pct"
+
+[[measurement]]
+id = "M-006"
+claim = "deep-sections-4000 paired wall delta, the smallest in the matrix"
+class = "measured"
+text = "−14%"
+value = -14.1
+tolerance = 0.5
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-synthetic.json"
+json_path = "sites.deep-sections-4000.wall_s.median_pct"
+
+[[measurement]]
+id = "M-007"
+claim = "mixed-realistic-16000 paired CPU delta — small, and the rounds disagreed"
+class = "measured"
+text = "−4.1%"
+value = -4.1
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-synthetic.json"
+json_path = "sites.mixed-realistic-16000.cpu_s.median_pct"
+
+# --------------------------------------------------------------------------- #
+# Reference site, same session
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-010"
+claim = "reference site paired wall delta, baseline vs current"
+class = "measured"
+text = "−33.3%"
+value = -33.3
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site.json"
+json_path = "sites.vomaste-live.wall_s.median_pct"
+
+[[measurement]]
+id = "M-011"
+claim = "reference site paired CPU delta"
+class = "measured"
+text = "−35.1%"
+value = -35.1
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site.json"
+json_path = "sites.vomaste-live.cpu_s.median_pct"
+
+[[measurement]]
+id = "M-012"
+claim = "reference site paired peak RSS delta"
+class = "measured"
+text = "−25.5%"
+value = -25.5
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site.json"
+json_path = "sites.vomaste-live.peak_rss_mb.median_pct"
+
+[[measurement]]
+id = "M-013"
+claim = "reference site wall, baseline median (machine was loaded)"
+class = "measured"
+text = "44.3 s"
+value = 44.28
+tolerance = 0.05
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site.json"
+json_path = "sites.vomaste-live.wall_s.a_median"
+
+[[measurement]]
+id = "M-014"
+claim = "reference site wall, current median (same loaded machine)"
+class = "measured"
+text = "32.2 s"
+value = 32.21
+tolerance = 0.05
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site.json"
+json_path = "sites.vomaste-live.wall_s.b_median"
+
+# --------------------------------------------------------------------------- #
+# PERF-012, the allocator
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-020"
+claim = "mimalloc paired CPU delta on the reference site, five rounds"
+class = "measured"
+text = "−23.7%"
+value = -23.7
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/perf012-mimalloc-real-site.json"
+json_path = "sites.vomaste-live.cpu_s.median_pct"
+
+[[measurement]]
+id = "M-021"
+claim = "mimalloc paired peak RSS delta on the reference site"
+class = "measured"
+text = "−9.9%"
+value = -9.9
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/perf012-mimalloc-real-site.json"
+json_path = "sites.vomaste-live.peak_rss_mb.median_pct"
+
+[[measurement]]
+id = "M-022"
+claim = "mimalloc CPU on the 4000-page mixed fixture: no effect, rounds disagreed"
+class = "measured"
+text = "−1.2%"
+value = -1.2
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/perf012-mimalloc-synthetic.json"
+json_path = "sites.mixed-realistic-4000.cpu_s.median_pct"
+
+[[measurement]]
+id = "M-023"
+claim = "time inside the platform allocator on the reference site, profiler self time"
+class = "observed"
+text = "34 s of 138 s"
+source_note = """samply CPU profile of a release build with debug symbols, summarised
+with scripts/perf/analyze_profile.py. Sum of self time in _xzm_free, xzm_malloc,
+_xzm_xzone_malloc, _malloc_zone_malloc, _xzm_xzone_malloc_tiny and _free, against
+non-idle CPU. The profile itself is not committed: it is 3 MB of machine-specific
+symbol data. The per-symbol table is transcribed in
+docs/performance/OPTIMIZATIONS.md, PERF-012."""
+
+# --------------------------------------------------------------------------- #
+# PERF-013, hashing
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-030"
+claim = "hash memoization, whole-build A/B: unresolved"
+class = "measured"
+text = "−0.4%"
+value = -0.4
+tolerance = 0.15
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/perf013-hash-memo-real-site.json"
+json_path = "sites.vomaste-live.cpu_s.median_pct"
+
+[[measurement]]
+id = "M-031"
+claim = "compute_hash self time before the memo"
+class = "observed"
+text = "2217 ms"
+source_note = """Same profiling method as M-023; the figure is the self time of
+templates::functions::files::compute_hash. After the change the symbol does not
+appear in the top 40 by self time, whose fortieth entry is 667 ms."""
+
+# --------------------------------------------------------------------------- #
+# PERF-007, rejected
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-040"
+claim = "parallel static copy on 5000 files of 1 KB, serial vs parallel, three rounds"
+class = "rejected"
+text = "640/814/842 ms serial against 838/899/1023 ms parallel"
+source_note = """Phase timings from `zola build --timings`, `copy static`
+accumulator, binaries alternated. Transcribed in docs/performance/OPTIMIZATIONS.md
+under the rejected-experiment entry for PERF-007."""
+
+# --------------------------------------------------------------------------- #
+# PERF-016, serve
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-050"
+claim = "zola serve physical footprint on the reference site, before compression"
+class = "observed"
+text = "9371 / 9368 / 9405 MB"
+source_note = """macOS `footprint -p <pid>`, phys_footprint, three interleaved
+rounds against the same site. `ps -o rss` reports 8–20 MB for the same process
+and is the wrong metric: an idle process's pages are compressed out of resident
+memory."""
+
+[[measurement]]
+id = "M-051"
+claim = "zola serve physical footprint after compressing the in-memory map"
+class = "observed"
+text = "882 / 870 / 878 MB"
+source_note = "Same method as M-050, same session, binaries alternated."
+
+[[measurement]]
+id = "M-052"
+claim = "zola serve --store-html physical footprint, serving from disk"
+class = "observed"
+text = "289 MB"
+source_note = "Same method as M-050."
+
+[[measurement]]
+id = "M-053"
+claim = "zola build peak RSS on the same site"
+class = "measured"
+text = "493 MB"
+value = 516521984
+tolerance = 1
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/20260812T184616Z-68d5e8a9/site-vomaste.json"
+json_path = "results.0.resources.peak_rss_bytes"
+
+[[measurement]]
+id = "M-054"
+claim = "reference site output size"
+class = "measured"
+text = "9.03 GB"
+value = 9029471738
+tolerance = 1
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/20260812T184616Z-68d5e8a9/site-vomaste.json"
+json_path = "results.0.output.bytes"
+
+[[measurement]]
+id = "M-055"
+claim = "reference site page count"
+class = "measured"
+text = "3776"
+value = 3776
+tolerance = 0.0
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/20260812T184616Z-68d5e8a9/site-vomaste.json"
+json_path = "results.0.input.page_files"
+
+[[measurement]]
+id = "M-056"
+claim = "reference site output file count"
+class = "measured"
+text = "6592"
+value = 6592
+tolerance = 0.0
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/20260812T184616Z-68d5e8a9/site-vomaste.json"
+json_path = "results.0.output.files"
+
+[[measurement]]
+id = "M-057"
+claim = "per-output zstd level 1 ratio on the reference site's HTML"
+class = "observed"
+text = "29×"
+source_note = """25 outputs sampled at random (seed 7) from a full build, each
+compressed individually with `zstd -1`, ratio of summed raw to summed compressed
+bytes. Level 3 gives 32.1× and level 6 gives 33.3× on the same sample."""
+
+[[measurement]]
+id = "M-058"
+claim = "serve startup cost of compression, eight interleaved rounds"
+class = "observed"
+text = "+13%"
+source_note = """Median of paired per-round deltas of the `Done in Ns` figure
+zola serve prints after its initial build; six rounds slower, two faster, one
+27.2 s outlier on a machine under load. Reported as unresolved in sign."""
+
+# --------------------------------------------------------------------------- #
+# Fixed startup cost
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-060"
+claim = "100-page build, baseline"
+class = "observed"
+text = "128 ms / 174 MB"
+source_note = "docs/performance/BASELINE.md, simple-pages-100."
+
+[[measurement]]
+id = "M-061"
+claim = "100-page build, current"
+class = "observed"
+text = "52 ms / 76 MB"
+source_note = """`/usr/bin/time -l zola build --force` on benchmarks/sites/simple-pages-100,
+three runs, best of; `--timings` attributes 32 ms of it to the config phase, which
+is the highlighting registry."""

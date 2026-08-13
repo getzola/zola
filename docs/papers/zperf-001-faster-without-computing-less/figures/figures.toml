@@ -1,0 +1,52 @@
+# Figure specifications. `scripts/dev.sh papers figures <paper-dir>` renders
+# these to SVG; `--check` fails if a rendered file has drifted from its source.
+#
+# Charts backed by a benchmark artifact name the artifact. The one chart whose
+# numbers no artifact holds — process footprints read with `footprint -p` —
+# declares its values inline, and each of them is also declared in
+# data/measurements.toml with the method that produced it.
+
+[[figure]]
+name = "wall-time"
+kind = "grouped-bars"
+title = "Wall time per build: baseline (9ec4407a) against current"
+metric = "wall_s"
+unit = " s"
+series = ["a_median", "b_median"]
+labels = ["baseline", "current"]
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-synthetic.json"
+note = "Median of three interleaved rounds, order flipped each round. Apple M4 Pro, 12 cores, 24 GiB."
+
+[[figure]]
+name = "peak-memory"
+kind = "grouped-bars"
+title = "Peak resident memory per build: baseline against current"
+metric = "peak_rss_mb"
+unit = " MB"
+series = ["a_median", "b_median"]
+labels = ["baseline", "current"]
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-synthetic.json"
+note = "Same runs as the wall-time figure. The effect grows with site size."
+
+[[figure]]
+name = "serve-memory"
+kind = "simple-bars"
+title = "Memory to build the reference site, and to serve it (9.03 GB of output)"
+unit = " MB"
+note = "phys_footprint via `footprint -p`. Build peak from the committed benchmark artifact."
+
+[[figure.rows]]
+label = "zola build"
+value = 493
+
+[[figure.rows]]
+label = "zola serve, before"
+value = 9371
+
+[[figure.rows]]
+label = "zola serve, compressed"
+value = 878
+
+[[figure.rows]]
+label = "zola serve --store-html"
+value = 289

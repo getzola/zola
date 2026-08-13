@@ -1,0 +1,46 @@
+id = "ZPERF-001"
+title = "Faster Without Computing Less"
+subtitle = "A measurement-driven performance study of a static-site generator at 4,000–16,000 pages"
+status = "review"
+type = ["performance-study", "methodology"]
+series = "Zola at Scale"
+date = "2026-08-13"
+canonical_slug = "faster-without-computing-less"
+
+# What was compared. The baseline is upstream 0.23.3 with only the --timings
+# instrumentation added; everything the paper attributes to this fork is the
+# difference between these two commits.
+baseline_commit = "9ec4407a"
+repository_commit = "c712c29d"
+
+perf_items = [
+  "PERF-001",
+  "PERF-002",
+  "PERF-003",
+  "PERF-004",
+  "PERF-005",
+  "PERF-006",
+  "PERF-007",
+  "PERF-009",
+  "PERF-010",
+  "PERF-012",
+  "PERF-013",
+  "PERF-016",
+]
+
+topics = [
+  "profiling",
+  "benchmark methodology",
+  "memory",
+  "allocators",
+  "parallelism",
+  "negative results",
+  "static site generators",
+]
+
+keywords = ["zola", "rust", "performance", "mimalloc", "zstd", "rayon", "tera"]
+
+# Written by an assistant under human direction. CONTRIBUTING.md requires that a
+# human review, edit and stand by anything an assistant produces; the paper
+# stays at `review` until that has happened. No agent sets status = "published".
+authors = ["unattributed pending human review"]
