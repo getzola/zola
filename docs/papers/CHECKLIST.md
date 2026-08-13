@@ -74,3 +74,6 @@ the gate is the evidence, not the author. `status = "published"` requires:
 * [ ] somebody has read the paper end to end.
 
 If any quantitative claim is still unverified, the paper stays at `review`.
+
+Setting `published` clears the paper for distribution; it does not distribute it.
+Posting is a separate, human, outward-facing act.

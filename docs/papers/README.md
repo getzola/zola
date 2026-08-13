@@ -58,6 +58,14 @@ idea → draft → review → published → superseded
 * **published** — validated, reviewed, and cleared for distribution.
 * **superseded** — later evidence replaced it; the paper stays, with a pointer.
 
+**`published` is a repository state, not an external one.** It means the paper is
+finished and cleared: validated, checked, and ready for its author to put
+somewhere. It does not mean anything has been posted, and nothing in this
+directory posts anything — the files under `social/` are drafts sitting on disk
+until a human sends them. If you need to know whether a paper has actually gone
+out, that is not recorded here; ask the author. An agent must never post one, and
+must never report `published` as though it had.
+
 ### Who may write and publish
 
 Assistant-authored papers are welcome in this fork and may be published here.
