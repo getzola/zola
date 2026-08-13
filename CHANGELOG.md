@@ -43,6 +43,57 @@ Instead, you can now completely template the content of a page/section from the 
 components. No more weird separation of shortcode/macros, just use Tera, the same components you can use elsewhere in your site.
 This means you will need to rewrite your shortcodes into components most likely, see [Tera documentation](https://keats.github.io/tera/#components) for
 more details.
+
+For example, a macro before 0.22:
+
+```jinja2
+{# templates/macros.html #}
+{% macro youtube(id, autoplay=false) %}
+<iframe src="https://www.youtube.com/embed/{{ id }}{% if autoplay %}?autoplay=1{% endif %}"></iframe>
+{% endmacro youtube %}
+
+{# in a template #}
+{% import "macros.html" as macros %}
+{{ macros::youtube(id="dQw4w9WgXcQ", autoplay=true) }}
+```
+
+becomes this component after 0.23:
+
+```jinja2
+{# in any template file, eg templates/components.html #}
+{% component youtube(id, autoplay=false) %}
+<iframe src="https://www.youtube.com/embed/{{ id }}{% if autoplay %}?autoplay=1{% endif %}"></iframe>
+{% endcomponent youtube %}
+
+{# in a template or in markdown content, no import needed #}
+{{ <youtube id="dQw4w9WgXcQ" autoplay={true} /> }}
+```
+
+And a shortcode taking a body:
+
+```md
+{% quote(author="Vincent") %}
+A quote
+{% end %}
+```
+
+becomes a component invoked with the block syntax, the body being available as the `body` variable inside it:
+
+```jinja2
+{# in any template file, eg templates/components.html #}
+{% component quote(author) %}
+<blockquote>{{ body }}<footer>{{ author }}</footer></blockquote>
+{% endcomponent quote %}
+
+{# in markdown content (or in a normal template) #}
+{% <quote author="Vincent"> %}
+A quote
+{% </quote> %}
+```
+
+Components are hygienic and only have access to the parameters you pass explicitly, eg if you need `lang` you have to pass 
+it as a parameter.
+
 If you use a theme, it will most likely need to be updated to work with Zola 0.23 before you can update.
 
 Follow the Tera migration guide (<https://github.com/Keats/tera/blob/master/MIGRATION.md>) for the changes in the template itself.
