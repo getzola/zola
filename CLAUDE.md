@@ -207,8 +207,7 @@ and social post** — declare it once in the paper's `data/measurements.toml`,
 which `scripts/dev.sh papers validate` checks against the artifact it came from.
 Procedure: `.claude/workflows/publication.md`. Assistant-authored papers are
 welcome here and may be published; what gates `published` is validation passing
-and the checklist walked, not who wrote it. Nothing in `docs/papers/` is
-upstream-bound — upstream does not accept LLM-written documentation.
+and the checklist walked, not who wrote it.
 
 ## Performance work
 

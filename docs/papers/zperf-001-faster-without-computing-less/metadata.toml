@@ -42,8 +42,7 @@ keywords = ["zola", "rust", "performance", "mimalloc", "zstd", "rayon", "tera"]
 
 # Written by an assistant under the repository owner's direction, and published
 # under his name as the fork's maintainer. Assistant-authored work is welcome in
-# this fork; it is not eligible for an upstream pull request, where the project's
-# own contribution policy applies.
+# this fork.
 authors = ["Tomas Korcak"]
 assisted_by = "Claude Opus 5"
 published_date = "2026-08-13"

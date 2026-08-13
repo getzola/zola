@@ -24,14 +24,12 @@ documentation and published papers.** The repository owner has said so
 explicitly; that is their call to make about their fork, and it is the policy
 here.
 
-It is not upstream's policy. `CONTRIBUTING.md` — which belongs to the upstream
-project — requires that a human review, edit, test and stand by any code an LLM
-writes, and does not accept LLM-written documentation. **Anything you prepare
-for an upstream pull request must satisfy that**, whoever wrote it. The
-distinction is between what may live here and what may be proposed there; do not
-collapse it.
+`CONTRIBUTING.md` is upstream's file and states upstream's position. This fork
+does not send work there and has its own guard against an accidental merge, so
+read that file as describing another project rather than as a rule binding this
+one.
 
-What does not change either way: everything in this file about measuring before
+What authorship does not change: everything in this file about measuring before
 optimizing, reporting failures, and not claiming a gate passed when it did not.
 Those rules exist because they produce correct work, not because of who wrote
 it.

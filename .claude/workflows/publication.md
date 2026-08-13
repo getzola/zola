@@ -101,10 +101,6 @@ Assistant-authored papers are welcome in this fork and may be published here.
 checklist genuinely walked, and the paper read end to end. If a quantitative
 claim is still unverified, leave it at `review` and say which one.
 
-These artifacts are not upstream-bound: the upstream project does not accept
-LLM-written documentation, so a paper never becomes part of an upstream pull
-request.
-
 ## 8. When the numbers later change
 
 In this order, no shortcuts:

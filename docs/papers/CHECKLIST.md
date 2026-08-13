@@ -73,6 +73,4 @@ the gate is the evidence, not the author. `status = "published"` requires:
 * [ ] every box above has actually been walked, not assumed;
 * [ ] somebody has read the paper end to end.
 
-If any quantitative claim is still unverified, the paper stays at `review`. Note
-that nothing here is eligible for an upstream pull request: upstream does not
-accept LLM-written documentation, and these are this fork's artifacts.
+If any quantitative claim is still unverified, the paper stays at `review`.
