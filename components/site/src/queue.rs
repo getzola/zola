@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
-use crate::{BuildMode, SITE_CONTENT, Site, feeds, minify, sitemap};
+use crate::{BuildMode, Site, feeds, minify, site_content_insert, sitemap};
 use content::{Page, Section, Taxonomy, TaxonomyTerm};
 use errors::Result;
 use fs_err as fs;
@@ -314,7 +314,7 @@ impl<'a> Queue<'a> {
                     RelativePathBuf::from_path(relative_path).unwrap()
                 };
 
-                SITE_CONTENT.write().unwrap().insert(site_path, content);
+                site_content_insert(site_path, &content);
             }
             _ => (),
         }

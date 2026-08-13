@@ -98,7 +98,7 @@ change, ranked by how close they are to the edge.
 | PERF-012 | the platform allocator | large `String` churn (render → minify → drop) on every worker | once per output | O(outputs × page size) | profile: 34 s of 138 s busy CPU in `_xzm_*`/`_free` (reference site) | **−23.7% CPU on the reference site; shipped as mimalloc** | **done** |
 | PERF-013 | `templates/src/functions/files.rs:133,199` | `get_url(cachebust=true)` and `get_hash(path=…)` re-read and re-hash the file on every call | once per call per page | O(P × file size) | profile: `compute_hash` 2.2 s self CPU; the reference site hashes 3 files (one of them the search index) on all 5601 outputs | **2.2 s CPU, gone from the profile; below the noise floor of a whole-build A/B** | **done** |
 | PERF-014 | `minify_html::parse::element::parse_tag` (dependency) | seeds a new ahash hasher per tag parsed | once per HTML tag | O(tags) | profile: `gen_hasher_seed` 1.9 s self CPU (2.2%), 1825 of its 1898 samples under `parse_tag` | 1.9 s CPU on the reference site | P3, upstream |
-| PERF-016 | `site/src/lib.rs` `SITE_CONTENT` + `BuildMode::Memory` | `zola serve` retains every rendered page in memory for the life of the process | once per output | O(total output size) | `footprint`: 9248 MB resident serving the reference site, against **493 MB** to build it | **`--store-html` now serves from disk: 9248 → 289 MB. The default mode is unchanged** | **partly done** |
+| PERF-016 | `site/src/lib.rs` `SITE_CONTENT` + `BuildMode::Memory` | `zola serve` retains every rendered page in memory for the life of the process | once per output | O(total output size) | `footprint`: 9248 MB resident serving the reference site, against **493 MB** to build it | **compressed in memory: 9.4 GB → 0.88 GB, and `--store-html` serves from disk at 0.29 GB** | **done for now** |
 | PERF-015 | `templates/src/helpers.rs` `search_for_file` | up to 5 `exists()` probes, and 2 `canonicalize` calls when the file sits directly under the site root, on every `get_url`/`get_hash`/`load_data`/image call | once per call per page | O(P × calls) syscalls | profile: `canonicalize` 360 ms, `stat` 439 ms self CPU — 0.9% of the build between them | ~0.8 s CPU on the reference site | P3 |
 
 ## Detail
@@ -394,9 +394,40 @@ The costs, which are real and are why the default did not change:
 * responses gain `Access-Control-Allow-Origin: *`, which the disk path has
   always sent and the memory path never did.
 
-The default `zola serve` still holds the whole site in memory, so PERF-016 stays
-open for the render-on-demand work above. What changed is that a site too large
-to serve now has a supported way to be served.
+**And then the default, which is the part that matters.** Serving from disk needs
+a flag and changes what serve does; compressing the map needs neither. Pages of
+a template-driven site are mostly the same bytes *as themselves* — the reference
+site's navigation is 88% of every page — so zstd at level 1 gets **29×** on this
+data, measured per output because that is how the map stores them.
+
+`SITE_CONTENT` now holds zstd-compressed bytes behind `site_content_get/insert/
+clear`, so whether they are compressed is not the caller's business. Three
+interleaved rounds, same site:
+
+| | resident |
+| --- | -------- |
+| before | 9371 / 9368 / 9405 MB |
+| after | **882 / 870 / 878 MB** |
+
+**10.7×, unanimous, with under 40 MB of spread on either side.** Responses stay
+byte-identical — eight paths checked against a server serving the same site from
+disk — and a 0.5–3.4 MB page is returned in 0.7–6.8 ms.
+
+The cost is startup, and it is worth stating carefully because it is the side
+that argues against the change. Eight interleaved rounds gave a median of
+**+13%** (≈2 s on a 17–20 s startup) with six rounds slower, two faster, and one
+27 s outlier on a machine under load. The sign is not unanimous, so the honest
+figure is "about two seconds", not a percentage — and it agrees with the
+arithmetic: 9 GB at zstd-1 across eleven usable cores is ~2 s. On a 4000-page
+site with 200 MB of output there is no measurable cost at all (296/288/324 ms
+against 305/450/296 ms) and memory goes 220 → 208 MB.
+
+Two seconds once, against 8.5 GB held for the life of the process.
+
+PERF-016 is marked done for now rather than closed: **render-on-demand is still
+the right answer** and would take the map to nothing at all. Compression moved
+the wall from ~20k pages to ~200k on a 24 GB machine, which buys enough room
+that the architectural change can wait for someone who needs it.
 
 ### PERF-015 — the filesystem probing behind template file lookups (P3)
 

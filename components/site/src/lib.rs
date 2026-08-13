@@ -22,7 +22,7 @@ use crate::queue::Queue;
 use config::{Config, IndexFormat, get_config};
 use content::{Library, Page, Section, Taxonomy};
 use errors::{Result, anyhow, bail};
-use relative_path::RelativePathBuf;
+use relative_path::{RelativePath, RelativePathBuf};
 use render::{RenderCache, Renderer};
 use templates::load_tera;
 use utils::fs::{
@@ -32,8 +32,53 @@ use utils::net::get_available_port;
 use utils::timings;
 use utils::types::InsertAnchor;
 
-pub static SITE_CONTENT: LazyLock<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
+/// Rendered HTML/XML held for `zola serve`, compressed.
+///
+/// `serve` keeps every rendered page here instead of writing it to disk, which
+/// costs as much memory as the site's entire output — 9.4 GB on a site with
+/// 9 GB of HTML, against 493 MB to build it (PERF-016). Pages of a
+/// template-driven site are mostly the same bytes as each other, and each page
+/// is mostly the same bytes as itself: the reference site's navigation is 88%
+/// of every page. zstd at level 1 gets 29× on that shape, so the map costs
+/// hundreds of megabytes rather than gigabytes.
+///
+/// Private, because whether the bytes are compressed is nobody else's business:
+/// go through `site_content_*`.
+type CompressedOutputs = HashMap<RelativePathBuf, Vec<u8>>;
+
+static SITE_CONTENT: LazyLock<Arc<RwLock<CompressedOutputs>>> =
     LazyLock::new(|| Arc::new(RwLock::new(HashMap::new())));
+
+/// Level 1: on this data levels 3 and 6 buy 11% and 16% more compression for
+/// proportionally more time, on a path that runs once per output on every
+/// rebuild. The ratio is dominated by the repetition inside a page, which even
+/// level 1 finds.
+const SITE_CONTENT_LEVEL: i32 = 1;
+
+/// Store a rendered output for `serve` to hand back.
+pub fn site_content_insert(path: RelativePathBuf, content: &str) {
+    let compressed = zstd::encode_all(content.as_bytes(), SITE_CONTENT_LEVEL)
+        .expect("compressing rendered output cannot fail: the input is in memory");
+    SITE_CONTENT.write().unwrap().insert(path, compressed);
+}
+
+/// The rendered output at `path`, if `serve` has one.
+pub fn site_content_get(path: &RelativePath) -> Option<String> {
+    let compressed = SITE_CONTENT.read().unwrap().get(path).cloned()?;
+    let bytes = zstd::decode_all(compressed.as_slice()).ok()?;
+    String::from_utf8(bytes).ok()
+}
+
+pub fn site_content_clear() {
+    SITE_CONTENT.write().unwrap().clear();
+}
+
+/// How many outputs are held, and how many bytes they occupy compressed.
+/// Only used by tests and diagnostics.
+pub fn site_content_stats() -> (usize, usize) {
+    let map = SITE_CONTENT.read().unwrap();
+    (map.len(), map.values().map(|v| v.len()).sum())
+}
 
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -134,7 +179,7 @@ impl Site {
 
     /// Enable some `zola serve` related options
     pub fn enable_serve_mode(&mut self, build_mode: BuildMode) {
-        SITE_CONTENT.write().unwrap().clear();
+        site_content_clear();
         self.config.enable_serve_mode();
         self.build_mode = build_mode;
     }

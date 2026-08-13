@@ -53,7 +53,7 @@ use relative_path::{RelativePath, RelativePathBuf};
 use errors::{Context, Error, Result, anyhow};
 use serde_json::json;
 use site::sass::compile_sass;
-use site::{BuildMode, SITE_CONTENT, Site};
+use site::{BuildMode, Site, site_content_clear, site_content_get};
 use utils::fs::{clean_site_output_folder, copy_file, create_directory};
 
 use crate::fs_utils::{ChangeKind, SimpleFileSystemEventKind, filter_events};
@@ -139,8 +139,8 @@ async fn handle_request(
         path.push(c);
     }
 
-    if let Some(content) = SITE_CONTENT.read().unwrap().get(&path) {
-        return in_memory_content(&path, content);
+    if let Some(content) = site_content_get(&path) {
+        return in_memory_content(&path, &content);
     }
 
     // Handle only `GET`/`HEAD` requests
@@ -375,11 +375,7 @@ fn io_error(err: std::io::Error, root: &Path) -> Response {
 
 fn not_found(root: &Path) -> Response {
     let not_found_path = RelativePath::new("404.html");
-    let content = SITE_CONTENT
-        .read()
-        .unwrap()
-        .get(not_found_path)
-        .cloned()
+    let content = site_content_get(not_found_path)
         // With `--store-html` nothing is held in memory, so the site's own 404
         // page has to be read from the output directory or every miss would
         // answer with the plain-text fallback below.
@@ -463,7 +459,7 @@ fn create_new_site(
     store_html: bool,
     mut no_port_append: bool,
 ) -> Result<(Site, SocketAddr, String)> {
-    SITE_CONTENT.write().unwrap().clear();
+    site_content_clear();
 
     let mut site = Site::new(root_dir, config_file)?;
     let address = SocketAddr::new(interface, interface_port);

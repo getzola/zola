@@ -130,6 +130,7 @@ unic-langid = "0.9"
 unicode-segmentation = "1.2"
 url = "2"
 walkdir = "2"
+zstd = "0.13"
 webp = "0.3"
 giallo = {version = "0.5", features = ["dump"]}
 insta = "1"

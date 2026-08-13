@@ -58,6 +58,13 @@ output verified for each change. Details and the rejected experiments are in
 
 ### Changed
 
+- `zola serve` compresses the rendered pages it holds in memory. Serving a site
+  cost as much RAM as its entire output — 9.4 GB on a site with 9 GB of HTML,
+  against 493 MB to build the same site. Pages of a template-driven site are
+  mostly the same bytes as themselves, so this costs **0.88 GB instead of
+  9.4 GB** (10.7×) with byte-identical responses and no change in behaviour. A
+  0.5–3.4 MB page is served in 0.7–6.8 ms. The cost is about two seconds of
+  startup on a site that size, and nothing measurable on a 4000-page one.
 - `zola serve --store-html` now serves the HTML from the output folder instead of
   also keeping a copy in memory. Serving from memory costs as much RAM as the
   site's entire output: 9248 MB on a site with 9 GB of HTML, against 289 MB with
