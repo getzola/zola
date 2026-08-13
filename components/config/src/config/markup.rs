@@ -1,6 +1,7 @@
 use giallo::{DataAttrPosition, HighlightOptions, Registry, ThemeVariant};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use std::sync::Arc;
 
 use errors::{Result, bail};
 use utils::types::InsertAnchor;
@@ -37,8 +38,9 @@ pub struct Highlighting {
     pub extra_themes: Vec<String>,
     #[serde(default)]
     pub data_attr_position: DataAttrPosition,
+    // We pass the whole config around for some Tera functions and this is big
     #[serde(skip, default)]
-    pub registry: Registry,
+    pub registry: Arc<Registry>,
 }
 
 impl Highlighting {
@@ -81,7 +83,7 @@ impl Highlighting {
             }
         }
 
-        self.registry = registry;
+        self.registry = Arc::new(registry);
 
         Ok(())
     }

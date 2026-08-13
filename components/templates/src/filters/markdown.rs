@@ -88,6 +88,7 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
+    use std::sync::Arc;
 
     use ahash::AHashMap;
     use config::{Config, HighlightStyle, Highlighting, Registry};
@@ -179,7 +180,7 @@ mod tests {
             extra_grammars: vec![],
             extra_themes: vec![],
             data_attr_position: DataAttrPosition::default(),
-            registry: get_test_registry(),
+            registry: Arc::new(get_test_registry()),
             add_color_scheme: None,
         });
         config.markdown.smart_punctuation = true;
