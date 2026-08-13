@@ -44,6 +44,7 @@ Both apply to everything you produce here.
 | the state of the performance backlog | `docs/performance/STATUS.md` (generated) |
 | why an architectural choice was made | `docs/architecture/decisions/` |
 | what users are told | `docs/content/documentation/` |
+| what we have published about this work, and its evidence | `docs/papers/` |
 
 Do not restate these in new documents. Link to them.
 

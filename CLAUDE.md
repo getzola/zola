@@ -24,6 +24,7 @@ scripts/dev.sh impact                  # changed components, risk class, docs af
 scripts/dev.sh clippy --list           # current lint debt (ratchet baseline)
 scripts/dev.sh generate                # rewrite generated documents
 scripts/dev.sh perf <cmd>              # forwards to scripts/perf/run.sh
+scripts/dev.sh papers <cmd>            # engineering papers: validate | index | new | figures
 ```
 
 ```bash
@@ -196,6 +197,17 @@ These exist because each one has cost a session here.
   that describe what you changed. Saying "no documentation change needed" is
   fine; ignoring it is not.
 
+## Publishing
+
+A completed `PERF-*` epic, an architectural discovery or a correctness bug with a
+story may become a paper in `docs/papers/`. Papers consume performance reports;
+they never replace them, and a fact must exist in `docs/performance/` before a
+paper cites it. **Never duplicate a benchmark number by hand across paper, figure
+and social post** — declare it once in the paper's `data/measurements.toml`,
+which `scripts/dev.sh papers validate` checks against the artifact it came from.
+Procedure: `.claude/workflows/publication.md`. An agent leaves a paper at
+`status = "review"`; only a human publishes.
+
 ## Performance work
 
 There is an active program: `docs/performance/README.md` for the harness and
@@ -219,6 +231,7 @@ which is the part worth reading before re-proposing an obvious idea.
 | what a crate owns | `docs/architecture/COMPONENTS.md` |
 | why an architectural choice was made | `docs/architecture/decisions/` |
 | what is slow, with evidence | `docs/performance/HOTSPOTS.md` |
-| session, investigation, implementation, quality, performance procedures | `.claude/workflows/` |
+| session, investigation, implementation, quality, performance, publication procedures | `.claude/workflows/` |
+| published technical narratives built from that evidence | `docs/papers/` |
 | the tooling itself | `scripts/dev.sh`, `scripts/dev/`, `scripts/perf/` |
 </content>

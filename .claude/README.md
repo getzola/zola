@@ -27,6 +27,7 @@ point at.
 | `workflows/implement.md` | you know what to change and need it to land safely |
 | `workflows/performance.md` | anything touching a `PERF-*` item or build cost |
 | `workflows/quality.md` | proving a branch is healthy |
+| `workflows/publication.md` | turning completed work into a paper in `docs/papers/` |
 
 ## Commands
 
@@ -38,6 +39,7 @@ point at.
 | `/implement` | plan at file level, change one thing, run the required gates |
 | `/quality` | run a gate tier and report each result truthfully |
 | `/perf` | work a `PERF-*` item under the measurement doctrine |
+| `/paper` | write or update an engineering paper, evidence first |
 
 ## Tooling this points at
 
@@ -59,6 +61,7 @@ scripts/dev.sh test-tooling    tests for the scripts above
 scripts/dev.sh session ...     start | show | end
 scripts/dev.sh hooks ...       install | uninstall | status  (opt-in)
 scripts/dev.sh perf ...        forwards to scripts/perf/run.sh
+scripts/dev.sh papers ...      engineering papers: validate | index | new | figures
 ```
 
 ## Generated files
@@ -69,6 +72,8 @@ Never edit these by hand; edit the source and run `scripts/dev.sh generate`.
 | --------- | ------ | --------- |
 | `docs/architecture/COMPONENTS.md` | crate manifests + `scripts/dev/components.toml` | `scripts/dev/repo_map.py` |
 | `docs/performance/STATUS.md` | `docs/performance/HOTSPOTS.md`, `OPTIMIZATIONS.md` | `scripts/dev/perf_index.py` |
+| `docs/papers/INDEX.md` | each paper's `metadata.toml` | `scripts/papers/papers.py` |
+| `docs/papers/*/figures/*.svg` | `figures.toml` + benchmark artifacts | `scripts/papers/figures.py` |
 | man pages, shell completions | `src/cli.rs` | `build.rs`, at build time |
 
 CI fails if a generated file is out of date.
