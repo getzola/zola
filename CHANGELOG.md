@@ -42,6 +42,11 @@ output verified for each change. Details and the rejected experiments are in
 
 ### Fixed
 
+- `zola serve --output-dir <dir>` failed every rebuild after the first with
+  `Directory '<dir>' already exists. Use --force to overwrite.`, while still
+  reporting `Done in 23ms` and serving the previous build. The startup guard
+  against clobbering a directory was being re-asked on every rebuild, by which
+  point the server itself had filled it.
 - `zola serve --fast` applied nothing. A content change was detected and
   re-parsed, the render job ran, and the server kept returning the page as it
   was before the edit — reporting `Done in 0ms` while doing so. Rendering reads

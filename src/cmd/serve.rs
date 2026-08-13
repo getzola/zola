@@ -723,7 +723,12 @@ pub fn serve(
         interface,
         interface_port,
         output_dir,
-        force,
+        // `force` guards against clobbering a directory the user did not mean
+        // to hand over; that question is settled once the server has started
+        // and filled it. Re-asking it on every rebuild made `serve --output-dir`
+        // fail every rebuild after the first, while still printing "Done in
+        // 23ms" and serving the previous build.
+        true,
         base_url,
         config_file,
         include_drafts,
