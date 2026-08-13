@@ -54,6 +54,35 @@ the delta usable; the absolutes are quoted only to identify what was compared.
 
 ---
 
+## E-002b — The reference-site comparison, replicated
+
+**Claim.** Run a second time in a later session with the same binaries and
+procedure: CPU −35.6% (against −35.1%), peak RSS −22.0% (against −25.5%), wall
+−26.1% (against −33.3%). Both sessions unanimous across rounds.
+
+**Class.** `measured`
+
+**Source.**
+`benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json`
+
+**Method.** As E-001. This artifact is the first to carry its own provenance —
+SHA-256 of both binaries, the repository commit, and the machine — because
+`ab.py` was extended to record it after the first session's provenance had to be
+written into this manifest by hand.
+
+**Caveat.** "Quiet" describes the machine at the start: it did not stay that way.
+The baseline side's wall times spread across 35.1 s and one round took 70 s while
+spending an ordinary 280 s of CPU. That is why the paper presents the two
+sessions side by side rather than replacing one with the other — the disagreement
+is the finding.
+
+**Note on the binaries.** The baseline binary's hash differs from the one used in
+the first session because it was rebuilt from the same commit; the current
+binary's hash corresponds to the Rust tree at `c712c29d`, which is unchanged at
+the repository commit recorded in the artifact (`f0d351a1`). The artifact records
+both the hashes and the commit precisely so a reader can check that for
+themselves rather than trust this paragraph.
+
 ## E-003 — Site shape and build cost of the reference workload
 
 **Claim.** 3776 pages, 1640 sections, 6592 output files, 9.03 GB of HTML,

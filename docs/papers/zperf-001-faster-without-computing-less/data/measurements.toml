@@ -324,3 +324,47 @@ text = "52 ms / 76 MB"
 source_note = """`/usr/bin/time -l zola build --force` on benchmarks/sites/simple-pages-100,
 three runs, best of; `--timings` attributes 32 ms of it to the config phase, which
 is the highlighting registry."""
+
+# --------------------------------------------------------------------------- #
+# Replication: the reference-site comparison, run again in a later session
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-070"
+claim = "reference site paired CPU delta, second independent session"
+class = "measured"
+text = "−35.6%"
+value = -35.6
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json"
+json_path = "sites.vomaste-live.cpu_s.median_pct"
+
+[[measurement]]
+id = "M-071"
+claim = "reference site paired wall delta, second session — does not replicate"
+class = "measured"
+text = "−26.1%"
+value = -26.1
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json"
+json_path = "sites.vomaste-live.wall_s.median_pct"
+
+[[measurement]]
+id = "M-072"
+claim = "reference site paired RSS delta, second session"
+class = "measured"
+text = "−22.0%"
+value = -22.0
+tolerance = 0.2
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json"
+json_path = "sites.vomaste-live.peak_rss_mb.median_pct"
+
+[[measurement]]
+id = "M-073"
+claim = "spread of the baseline side's wall time in the second session"
+class = "measured"
+text = "35.1 s"
+value = 35.14
+tolerance = 0.05
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/ab/baseline-vs-current-real-site-quiet.json"
+json_path = "sites.vomaste-live.wall_s.a_spread"

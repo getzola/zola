@@ -96,6 +96,18 @@ reading that under-reported a process's memory by a factor of 400. Publishing
 those costs nothing and tells the reader what kind of measurement discipline
 produced the rest of the numbers.
 
+## 6b. Both sides must be measured against the same state
+
+The rule and the three cases that produced it live in
+`.claude/workflows/investigate.md`, step 6 — one canonical statement, not two
+that can drift. It is repeated here only as a pointer because it is the mistake
+most likely to reach a paper: two correct measurements taken of different states
+support no conclusion, and the artifact never records which state it came from,
+so the result looks exactly like a real one.
+
+For a paper specifically: a figure taken before an edit you have since made is
+not evidence for the current tree. Re-measure, or say which revision it describes.
+
 ## 7. Reproduction
 
 Every paper carries commands that exist in this repository and were run. If a

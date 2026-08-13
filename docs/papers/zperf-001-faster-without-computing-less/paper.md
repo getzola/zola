@@ -245,6 +245,28 @@ pairing; the absolutes are quoted only to show what was compared.
 Fixed startup fell too, which matters disproportionately for small sites: a
 100-page build went from **128 ms / 174 MB** to **52 ms / 76 MB**.
 
+### The reference-site comparison, run twice
+
+The reference-site row was measured a second time, in a later session, with the
+same two binaries and the same procedure. Both runs were unanimous across their
+rounds. Set side by side they say something the individual numbers cannot:
+
+| | first session | second session | apart by |
+| --- | ------------- | -------------- | -------- |
+| CPU | −35.1% | **−35.6%** | 0.5 points |
+| peak RSS | −25.5% | **−22.0%** | 3.5 points |
+| wall | −33.3% | **−26.1%** | 7.2 points |
+
+**The CPU result replicates to half a point. The wall result does not replicate
+at all.** In the second session the baseline side's wall times spread across
+**35.1 s** — one round took 70 s while spending a perfectly ordinary 280 s of
+CPU — and two consecutive runs of the *same* binary produced 31.8 s and 36.8 s.
+
+This is the paper's methodology arguing with its own headline figure, and the
+figure loses. Wall time on a shared desktop measures the desktop. Where this
+paper quotes a wall number it is because that is what a user experiences, but
+where wall and CPU disagree, CPU is the one that describes the change.
+
 ### What the CPU column means
 
 Wall time halves on most rows while total CPU barely moves. That is the finding.
@@ -416,7 +438,10 @@ not built.
   duplicated navigation. Several findings only appear on it, which is the point
   of including it, but it is not representative of "a Zola site".
 * **A loaded machine.** Several runs competed with unrelated work. Pairing makes
-  the deltas trustworthy; the absolute seconds in those rows are not.
+  the deltas trustworthy; the absolute seconds in those rows are not. The
+  reference site is the only workload measured twice, and only its CPU delta
+  replicated closely; treat every single-session wall figure in the table above
+  as having the same 7-point uncertainty the repeat exposed.
 * **Not every figure has a committed artifact.** The profiler results and the
   process footprints were read from terminals; the numbers are transcribed in
   `docs/performance/` and in this paper's evidence manifest with the method that

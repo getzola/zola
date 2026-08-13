@@ -1,0 +1,131 @@
+{
+  "a": "/private/tmp/zola-BASE",
+  "b": "/Users/korczis/dev/zola/target/release/zola",
+  "rounds": 3,
+  "binaries": {
+    "a": {
+      "path": "/private/tmp/zola-BASE",
+      "resolved_path": "/private/tmp/zola-BASE",
+      "size_bytes": 39126144,
+      "mtime_utc": "2026-08-12T14:33:17Z",
+      "sha256": "f6fe0f71d3c28446d9ea524476048f769d21b39aed5d239b3230226c1f83a552",
+      "zola_version": "zola 0.23.3"
+    },
+    "b": {
+      "path": "/Users/korczis/dev/zola/target/release/zola",
+      "resolved_path": "/Users/korczis/dev/zola/target/release/zola",
+      "size_bytes": 39790576,
+      "mtime_utc": "2026-08-13T13:24:56Z",
+      "sha256": "585ef2d7be80506dd450c85e9062f32483fa4cc90800ce966a978a030943af0d",
+      "zola_version": "zola 0.23.3"
+    }
+  },
+  "machine": {
+    "hardware_slug": "m4-pro-12c-24gb-mac16-8",
+    "hw_model": "Mac16,8",
+    "commit_slug": "20260813T145221Z-f0d351a1",
+    "commit_date": "2026-08-13T16:52:21+02:00",
+    "os": "macOS-26.2-arm64-arm-64bit",
+    "arch": "arm64",
+    "cpu": "Apple M4 Pro",
+    "physical_cores": "12",
+    "logical_cores": "12",
+    "memory_bytes": "25769803776",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)",
+    "git_commit": "f0d351a1",
+    "git_branch": "feature/engineering-system",
+    "git_dirty": false,
+    "timestamp": "2026-08-13T17:26:17+0200"
+  },
+  "timestamp_utc": "2026-08-13T15:26:17Z",
+  "sites": {
+    "vomaste-live": {
+      "a": [
+        {
+          "wall_s": 34.95461187500041,
+          "peak_rss_mb": 657.203125,
+          "user_s": 299.29,
+          "sys_s": 8.89,
+          "cpu_s": 308.18
+        },
+        {
+          "wall_s": 49.82873645902146,
+          "peak_rss_mb": 638.21875,
+          "user_s": 273.8,
+          "sys_s": 10.6,
+          "cpu_s": 284.40000000000003
+        },
+        {
+          "wall_s": 70.09433491691016,
+          "peak_rss_mb": 622.828125,
+          "user_s": 269.22,
+          "sys_s": 11.02,
+          "cpu_s": 280.24
+        }
+      ],
+      "b": [
+        {
+          "wall_s": 31.78640962508507,
+          "peak_rss_mb": 483.28125,
+          "user_s": 174.28,
+          "sys_s": 8.41,
+          "cpu_s": 182.69
+        },
+        {
+          "wall_s": 36.844930583029054,
+          "peak_rss_mb": 498.03125,
+          "user_s": 174.44,
+          "sys_s": 8.82,
+          "cpu_s": 183.26
+        },
+        {
+          "wall_s": 35.458896124968305,
+          "peak_rss_mb": 526.6875,
+          "user_s": 201.9,
+          "sys_s": 9.21,
+          "cpu_s": 211.11
+        }
+      ],
+      "wall_s": {
+        "a_median": 49.82873645902146,
+        "a_spread": 35.13972304190975,
+        "b_median": 35.458896124968305,
+        "b_spread": 5.058520957943983,
+        "deltas_pct": [
+          -9.063760345115552,
+          -26.05686356640836,
+          -49.41260778492115
+        ],
+        "median_pct": -26.05686356640836,
+        "unanimous": true
+      },
+      "cpu_s": {
+        "a_median": 284.40000000000003,
+        "a_spread": 27.939999999999998,
+        "b_median": 183.26,
+        "b_spread": 28.420000000000016,
+        "deltas_pct": [
+          -40.7197092608216,
+          -35.562587904360065,
+          -24.66814159292035
+        ],
+        "median_pct": -35.562587904360065,
+        "unanimous": true
+      },
+      "peak_rss_mb": {
+        "a_median": 638.21875,
+        "a_spread": 34.375,
+        "b_median": 498.03125,
+        "b_spread": 43.40625,
+        "deltas_pct": [
+          -26.463945222415063,
+          -21.96543113156735,
+          -15.436140588545195
+        ],
+        "median_pct": -21.96543113156735,
+        "unanimous": true
+      }
+    }
+  }
+}
