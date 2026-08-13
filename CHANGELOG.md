@@ -56,6 +56,17 @@ output verified for each change. Details and the rejected experiments are in
   re-renders the changed page or section: listings, taxonomies and feeds that
   embed it still need a full rebuild.
 
+### Changed
+
+- `zola serve --store-html` now serves the HTML from the output folder instead of
+  also keeping a copy in memory. Serving from memory costs as much RAM as the
+  site's entire output: 9248 MB on a site with 9 GB of HTML, against 289 MB with
+  this flag — and the request handler already fell back to the output directory,
+  so the second copy bought nothing. Responses are byte-identical. The trade is
+  that a full rebuild pays for writing the files (1.3–1.5 s against 0.45 s at
+  4000 pages) and that responses carry `Access-Control-Allow-Origin: *`, as
+  everything served from disk always has. Plain `zola serve` is unchanged.
+
 ### Added
 
 - `zola build --timings` prints a per-phase breakdown of the build, with

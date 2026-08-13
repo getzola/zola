@@ -98,7 +98,7 @@ change, ranked by how close they are to the edge.
 | PERF-012 | the platform allocator | large `String` churn (render → minify → drop) on every worker | once per output | O(outputs × page size) | profile: 34 s of 138 s busy CPU in `_xzm_*`/`_free` (reference site) | **−23.7% CPU on the reference site; shipped as mimalloc** | **done** |
 | PERF-013 | `templates/src/functions/files.rs:133,199` | `get_url(cachebust=true)` and `get_hash(path=…)` re-read and re-hash the file on every call | once per call per page | O(P × file size) | profile: `compute_hash` 2.2 s self CPU; the reference site hashes 3 files (one of them the search index) on all 5601 outputs | **2.2 s CPU, gone from the profile; below the noise floor of a whole-build A/B** | **done** |
 | PERF-014 | `minify_html::parse::element::parse_tag` (dependency) | seeds a new ahash hasher per tag parsed | once per HTML tag | O(tags) | profile: `gen_hasher_seed` 1.9 s self CPU (2.2%), 1825 of its 1898 samples under `parse_tag` | 1.9 s CPU on the reference site | P3, upstream |
-| PERF-016 | `site/src/lib.rs` `SITE_CONTENT` + `BuildMode::Memory` | `zola serve` retains every rendered page in memory for the life of the process | once per output | O(total output size) | `footprint`: 9242 MB resident serving the reference site, against **493 MB** to build it | 19× the build's peak; the largest memory number in this program | **P1** |
+| PERF-016 | `site/src/lib.rs` `SITE_CONTENT` + `BuildMode::Memory` | `zola serve` retains every rendered page in memory for the life of the process | once per output | O(total output size) | `footprint`: 9248 MB resident serving the reference site, against **493 MB** to build it | **`--store-html` now serves from disk: 9248 → 289 MB. The default mode is unchanged** | **partly done** |
 | PERF-015 | `templates/src/helpers.rs` `search_for_file` | up to 5 `exists()` probes, and 2 `canonicalize` calls when the file sits directly under the site root, on every `get_url`/`get_hash`/`load_data`/image call | once per call per page | O(P × calls) syscalls | profile: `canonicalize` 360 ms, `stat` 439 ms self CPU — 0.9% of the build between them | ~0.8 s CPU on the reference site | P3 |
 
 ## Detail
@@ -366,6 +366,37 @@ outside everything in `BASELINE.md`. Three directions, none of them measured yet
 The first is the interesting one and it interacts with the incremental-build
 design; it is not a change to make casually inside a performance program whose
 gate is byte-identical `zola build` output.
+
+**What was done (2026-08-13): the second one, because it was already half-built.**
+`--store-html` selected `BuildMode::Both`, which wrote every page to disk *and*
+kept it in memory. The request handler already falls back to the output
+directory when the in-memory map misses — it is how assets have always been
+served — so the second copy bought nothing but memory. `--store-html` now
+selects `BuildMode::Disk`.
+
+Measured on the reference site, both servers running at the same moment:
+
+| | resident | peak |
+| --- | -------- | ---- |
+| `zola serve` | 9248 MB | 9431 MB |
+| `zola serve --store-html` | **289 MB** | **503 MB** |
+
+**32× less resident memory, 19× less peak**, and responses are byte-identical:
+ten paths compared between the two servers — pages, the sitemap, the search
+index, a CSS and a JS asset, and a 404 — all matched once the port each server
+embeds in `base_url` is normalized.
+
+The costs, which are real and are why the default did not change:
+
+* a full rebuild now pays for writing the files — 1.3–1.5 s against 0.45 s on a
+  4000-page site;
+* requests read from the filesystem rather than a map;
+* responses gain `Access-Control-Allow-Origin: *`, which the disk path has
+  always sent and the memory path never did.
+
+The default `zola serve` still holds the whole site in memory, so PERF-016 stays
+open for the render-on-demand work above. What changed is that a site too large
+to serve now has a supported way to be served.
 
 ### PERF-015 — the filesystem probing behind template file lookups (P3)
 

@@ -50,7 +50,7 @@ component end to end.
 | --------- | ----------------- | ---------- |
 | `imageproc` | `cargo test -p imageproc --test resize_image` | — |
 | `markdown` | `cargo test -p markdown --test img`, `cargo test -p markdown --test links`, `cargo test -p markdown --test markdown`, `cargo test -p markdown --test summary`, `cargo test -p markdown --test toc` | `all.rs` |
-| `site` | `cargo test -p site --test fast_rebuild`, `cargo test -p site --test invalid`, `cargo test -p site --test site`, `cargo test -p site --test site_i18n` | `load.rs` |
+| `site` | `cargo test -p site --test fast_rebuild`, `cargo test -p site --test invalid`, `cargo test -p site --test serve_modes`, `cargo test -p site --test site`, `cargo test -p site --test site_i18n` | `load.rs` |
 
 ## Performance-sensitive components
 

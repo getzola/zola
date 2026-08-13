@@ -95,7 +95,10 @@ pub enum Command {
         #[clap(short = 'O', long)]
         open: bool,
 
-        /// Also store HTML in the public/ folder (by default HTML is only stored in-memory)
+        /// Write HTML to the output folder and serve it from there instead of keeping it in
+        /// memory. Needed for large sites: serving from memory costs as much RAM as the site's
+        /// total output, which on a 9 GB site is 9 GB against 0.5 GB from disk. The cost is that
+        /// a full rebuild pays for writing the files.
         #[clap(long)]
         store_html: bool,
 
