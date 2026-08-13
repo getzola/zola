@@ -3,7 +3,7 @@
 
 # PERF backlog status
 
-8 done, 3 open, 1 partial, 4 rejected. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
+8 done, 2 open, 1 partial, 5 rejected. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
 
 A *rejected* item is not abandoned: it was measured and the change did
 not pay off. The measurement is in `OPTIMIZATIONS.md` so it is not
@@ -26,5 +26,5 @@ rest; it is listed as open work until the remainder lands.
 | PERF-012 | — | `the platform allocator` | — | done | perf(PERF-012): use mimalloc as the global allocator |
 | PERF-013 | templates | `templates/src/functions/files.rs:133,199` | — | done | perf(PERF-013): memoize file hashes for cachebust and get_hash |
 | PERF-014 | — | `minify_html::parse::element::parse_tag (dependency)` | P3, upstream | open | — |
-| PERF-015 | templates | `templates/src/helpers.rs search_for_file` | P3 | open | — |
+| PERF-015 | templates | `templates/src/helpers.rs search_for_file` | — | rejected | not pursued — see OPTIMIZATIONS.md |
 | PERF-016 | site | `site/src/lib.rs SITE_CONTENT + BuildMode::Memory` | — | partial | c712c29d` (compression), `57802477` (`--store-html` serves from disk) (remainder open) |

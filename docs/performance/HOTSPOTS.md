@@ -99,7 +99,7 @@ change, ranked by how close they are to the edge.
 | PERF-013 | `templates/src/functions/files.rs:133,199` | `get_url(cachebust=true)` and `get_hash(path=…)` re-read and re-hash the file on every call | once per call per page | O(P × file size) | profile: `compute_hash` 2.2 s self CPU; the reference site hashes 3 files (one of them the search index) on all 5601 outputs | **2.2 s CPU, gone from the profile; below the noise floor of a whole-build A/B** | **done** |
 | PERF-014 | `minify_html::parse::element::parse_tag` (dependency) | seeds a new ahash hasher per tag parsed | once per HTML tag | O(tags) | profile: `gen_hasher_seed` 1.9 s self CPU (2.2%), 1825 of its 1898 samples under `parse_tag` | 1.9 s CPU on the reference site | P3, upstream |
 | PERF-016 | `site/src/lib.rs` `SITE_CONTENT` + `BuildMode::Memory` | `zola serve` retains every rendered page in memory for the life of the process | once per output | O(total output size) | `footprint`: 9248 MB resident serving the reference site, against **493 MB** to build it | **compressed in memory: 9.4 GB → 0.88 GB, and `--store-html` serves from disk at 0.29 GB** | **partial** |
-| PERF-015 | `templates/src/helpers.rs` `search_for_file` | up to 5 `exists()` probes, and 2 `canonicalize` calls when the file sits directly under the site root, on every `get_url`/`get_hash`/`load_data`/image call | once per call per page | O(P × calls) syscalls | profile: `canonicalize` 360 ms, `stat` 439 ms self CPU — 0.9% of the build between them | ~0.8 s CPU on the reference site | P3 |
+| PERF-015 | `templates/src/helpers.rs` `search_for_file` | up to 5 `exists()` probes, and 2 `canonicalize` calls — but **only** when the file sits directly under the site root | once per call per page | O(P × calls) syscalls | profile: `canonicalize` 360 ms, `stat` 439 ms self CPU — 0.9% of the build between them — **but the provably safe subset is worth ~0.5%, below this machine's noise floor** | none worth taking | **rejected** |
 
 ## Detail
 
@@ -429,23 +429,74 @@ the right answer** and would take the map to nothing at all. Compression moved
 the wall from ~20k pages to ~200k on a 24 GB machine, which buys enough room
 that the architectural change can wait for someone who needs it.
 
-### PERF-015 — the filesystem probing behind template file lookups (P3)
+### PERF-015 — the filesystem probing behind template file lookups (rejected)
 
 `search_for_file` resolves a path by probing up to five locations, and
 `is_path_in_directory` canonicalizes *both* the candidate and the site root —
-the site root being a constant it re-resolves on every call. Every
-`get_url(cachebust=…)`, `get_hash`, `load_data` and image function goes through
-it, so on the reference site this is thousands of `stat`s and `realpath`s.
+the site root being a constant it re-resolves on every call. Together they are
+0.9% of the build: `canonicalize` 360 ms and `stat` 439 ms of self time, the
+latter covering every stat in the build.
 
-Together they are 0.9% of the build (`canonicalize` 360 ms, `stat` 439 ms of
-self time, and the latter includes every other stat in the build). Memoizing the
-resolution is not free of risk — the output directory is one of the search
-locations, so a resolution can legitimately change during a build, which is the
-same trap PERF-013's `(timestamp, length)` validation exists to avoid.
+**Rejected on analysis, without writing the change.** Three findings from reading
+the code closed it:
 
-Recorded, not implemented: sub-1% for a change that has to reason about
-correctness. Caching the canonicalized site root alone would be safe and is the
-part to do first if this is ever picked up.
+1. **The original entry misattributed the cost.** The containment check runs
+   *only* when the requested path exists directly under the site root
+   (`helpers.rs:39`, guarded by the direct probe; the fallback loop at `:43-53`
+   has no containment check at all). So `get_url(path='css/main.css',
+   cachebust=true)` canonicalizes **nothing** — `css/` resolves out of `static/`
+   at location 2. What actually pays is `load_data`, because Zola's convention
+   puts `data/` at the site root: 55 of the reference site's 61 `load_data` call
+   sites resolve on the direct probe, three of them in `base.html`, so ~11 300
+   invocations and ~22 600 `realpath` walks from that one template.
+2. **The safe subset is unmeasurable.** Caching the canonicalized root is safe —
+   per instance and lazily, never a process-global, because the site tests build
+   many roots concurrently and some construct `LoadData` with an empty
+   `PathBuf` that `canonicalize` would reject. But in the CLI the base path is
+   *already canonical* before `Site::new` sees it (`src/main.rs:126`), so that
+   call resolves an already-resolved path: it is the cheap half of the two. The
+   change is worth at most ~0.5% of CPU, and PERF-013 established that ~1% is
+   below the noise floor of a whole-build A/B on this machine.
+3. **A resolution memo would be wrong, not just risky.** `ChangeKind::StaticFiles`
+   copies a changed file without calling `recreate_site()`
+   (`src/cmd/serve.rs:857-861`), so the function instances outlive additions to
+   `static/` during a serve session. A memoized *negative* result would stay
+   wrong until an unrelated full rebuild.
+
+The one change that would show in a profile — deleting both `canonicalize` calls
+in favour of a lexical containment check — is worth ~1% and is a semantics change
+to symlink handling. It should be argued on correctness grounds, not smuggled in
+under a perf item. See the note below on why that guard is weaker than it looks.
+
+### The containment guard does not hold (not a performance item)
+
+Found while analysing PERF-015, verified by running it, and recorded here because
+it bears on any attempt to "optimize" the guard.
+
+`search_for_file` checks that a resolved path is inside the site directory —
+`"{:?} is not inside the base site directory"` — but only on the direct probe.
+The four fallback locations are unchecked, so a `..` path that misses the direct
+probe and hits a fallback escapes. Reproduced on a scratch site: with the root at
+`<tmp>/a/b/site` and a file at `<tmp>/a/b/secret`,
+
+```
+{{ load_data(path="../../secret", format="plain") }}
+```
+
+resolves `<root>/static/../../secret`, reads the file and renders its contents
+into the output. No error.
+
+**This is upstream behaviour**, reproduced identically on the baseline binary
+`9ec4407a` (upstream 0.23.3 + instrumentation) and on this fork. It is not a
+remote-attacker vector — it needs control of the site's templates — but it is a
+boundary Zola states it enforces, and it matters for third-party themes and for
+anything that builds untrusted sites. Two other routes bypass it as well: the
+fallback locations are unchecked for symlinks, and `copy_directory` follows
+symlinks when publishing `static/` (`utils/src/fs.rs:107-110`).
+
+Not filed anywhere public and not published in a paper: that is the repository
+owner's decision to make, and the appropriate route is a private report upstream
+rather than a blog post.
 
 ### PERF-014 — minify-html seeds a hasher per tag (P3, upstream)
 
