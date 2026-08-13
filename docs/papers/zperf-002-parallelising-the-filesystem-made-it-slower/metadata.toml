@@ -1,0 +1,34 @@
+id = "ZPERF-002"
+title = "Parallelising the Filesystem Made It Slower"
+subtitle = "Four optimizations rejected on measurement, and the platform rule three of them found"
+status = "review"
+type = ["negative-result"]
+series = "Zola at Scale"
+date = "2026-08-13"
+canonical_slug = "parallelising-the-filesystem-made-it-slower"
+
+# There is no single baseline commit. Each of the four experiments compared the
+# tree immediately before the change against the same tree with the change
+# applied, as two alternated binaries; the rejected code was reverted in every
+# case and is not in this repository. `repository_commit` is the tree the paper
+# was written against, not a tree any of these experiments ran on.
+repository_commit = "fb27e421"
+
+perf_items = ["PERF-003", "PERF-004", "PERF-007", "PERF-009"]
+
+topics = [
+  "negative results",
+  "parallelism",
+  "filesystems",
+  "benchmark methodology",
+  "profiling",
+  "static site generators",
+]
+
+keywords = ["zola", "rust", "performance", "rayon", "apfs", "macos", "create_dir_all"]
+
+# Written by an assistant under the repository owner's direction, and published
+# under his name as the fork's maintainer. Assistant-authored work is welcome in
+# this fork; the gate is the evidence, not the author.
+authors = ["Tomas Korcak"]
+assisted_by = "Claude Opus 5"

@@ -1,0 +1,345 @@
+# Every figure printed in paper.md is declared here.
+#
+# ZPERF-002 is unusual in the series: none of the four experiments it describes
+# produced a committed benchmark artifact. The rejected code was reverted, and
+# what survives is the round-level phase timings transcribed into
+# `docs/performance/OPTIMIZATIONS.md` and `docs/performance/HOTSPOTS.md` at the
+# time the experiments ran. Every entry therefore carries `source_note` naming
+# the instrument and the transcription, and is classed `rejected` (a measured
+# result that killed a change) or `observed` (a reading with no committed file
+# behind it) — never `measured`, which in this series means re-extractable from
+# `benchmarks/results/`.
+#
+# `text` is the exact string paper.md prints. `scripts/dev.sh papers validate`
+# fails if the prose and this manifest disagree.
+#
+# Machine for all of them: Apple M4 Pro, 12 cores, 24 GiB, macOS 26.2, APFS on
+# the internal SSD; release builds with the profile pinned by
+# `scripts/perf/build.sh`.
+
+# --------------------------------------------------------------------------- #
+# PERF-003 — caching created directories. Two variants, both rejected.
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-001"
+claim = "the hypothesis: create_dir_all's share of busy CPU on simple-pages-1000"
+class = "observed"
+text = "18.9% of busy CPU"
+source_note = """samply CPU profile, share of busy samples under
+std::fs::DirBuilder::create_dir_all. Transcribed in
+docs/performance/CPU-PROFILE.md (call-tree table) and repeated in
+docs/performance/HOTSPOTS.md under PERF-003. The profile is not committed."""
+
+[[measurement]]
+id = "M-002"
+claim = "the hypothesis: mkdir CPU on mixed-realistic-4000"
+class = "observed"
+text = "1237 ms"
+source_note = """Same profile family as M-001: self time in the `mkdir` syscall
+summed across threads on mixed-realistic-4000. Transcribed in
+docs/performance/CPU-PROFILE.md."""
+
+[[measurement]]
+id = "M-003"
+claim = "shared-set directory cache, `out: write file` phase CPU, three interleaved rounds"
+class = "rejected"
+text = "8.84 s | 7.00 s"
+source_note = """`zola build --timings`, `out: write file` accumulator (CPU summed
+across worker threads) on simple-pages-4000, binaries alternated within each
+round. Rounds without the cache 8.84 / 7.71 / 7.71 s, with it 7.00 / 7.67 /
+7.98 s; medians 7.71 s and 7.67 s. The paper prints all three rounds as a table;
+this entry pins round 1, the only round that looks like a win. Transcribed in
+docs/performance/OPTIMIZATIONS.md, rejected-experiment entry for PERF-003."""
+
+[[measurement]]
+id = "M-004"
+claim = "shared-set directory cache, whole-build wall time — indistinguishable"
+class = "rejected"
+text = "1.31 s against 1.39 s"
+source_note = """Whole-build wall medians on simple-pages-4000, same session as
+M-003, cache-less binary first. Transcribed in
+docs/performance/OPTIMIZATIONS.md, PERF-003."""
+
+[[measurement]]
+id = "M-004a"
+claim = "the run-to-run spread that swamps M-004"
+class = "observed"
+text = "1.03–1.37 s spread on the same binary"
+source_note = """Range of whole-build wall times observed across runs of a single
+binary in the same session as M-004 — wider than the difference between the two
+binaries. Transcribed in docs/performance/OPTIMIZATIONS.md, PERF-003."""
+
+[[measurement]]
+id = "M-005"
+claim = "thread-local directory cache, `out: write file` phase CPU medians"
+class = "rejected"
+text = "7.079 s against 7.107 s"
+source_note = """Same instrument as M-003, measured later — after PERF-005a and
+PERF-010 had made the write path the largest remaining item. Rounds without
+6.989 / 7.116 / 7.079 s, with 7.107 / 6.935 / 7.440 s. Transcribed in
+docs/performance/OPTIMIZATIONS.md, PERF-003, second variant."""
+
+[[measurement]]
+id = "M-006"
+claim = "thread-local directory cache, whole-build wall medians"
+class = "rejected"
+text = "1.68 s against 1.65 s"
+source_note = """Same session as M-005. Rounds without 1.55 / 1.68 / 1.73 s, with
+1.63 / 1.65 / 1.65 s."""
+
+[[measurement]]
+id = "M-007"
+claim = "what the write path actually costs, once the other fixes had landed"
+class = "observed"
+text = "7.0 s of CPU across 4804 writes, 1.4 ms each"
+source_note = """`zola build --timings`, `out: write file` accumulator on
+mixed-realistic-4000, divided by the number of outputs written. Transcribed in
+docs/performance/OPTIMIZATIONS.md (PERF-003, second variant) and
+docs/performance/FINAL-REPORT.md section 8."""
+
+# --------------------------------------------------------------------------- #
+# PERF-004 — output cleaning. Parallel delete, then rename-aside. Both rejected.
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-010"
+claim = "the hypothesis: the serial clean's share of a build on the reference proxy"
+class = "observed"
+text = "663 ms — 36.3% of wall"
+source_note = """`zola build --timings`, `clean output dir` phase against a
+pre-populated output directory of 6544 files / 73 MB. Transcribed in
+docs/performance/CPU-PROFILE.md and docs/performance/HOTSPOTS.md, PERF-004."""
+
+[[measurement]]
+id = "M-011"
+claim = "the same phase once the reference site's output grew to about 9 GB"
+class = "observed"
+text = "1.3 s"
+source_note = "Same instrument as M-010. Transcribed in docs/performance/OPTIMIZATIONS.md, PERF-004."
+
+[[measurement]]
+id = "M-012"
+claim = "parallel delete, `clean output dir` phase, reference proxy, first pair"
+class = "rejected"
+text = "| reference proxy | 3.889 s | 6.784 s |"
+source_note = """`zola build --timings`, `clean output dir`, binaries alternated;
+the first round of each pair cleans an empty directory and is excluded. Second
+pair 3.457 s serial against 2.797 s parallel; mixed-realistic-8000 978.9 ms
+against 1.856 s. Two of the three phase samples were worse. Transcribed in
+docs/performance/OPTIMIZATIONS.md, rejected-experiment entry for PERF-004."""
+
+[[measurement]]
+id = "M-013"
+claim = "parallel delete, whole-build wall on the reference proxy — all samples worse"
+class = "rejected"
+text = "26.5–33.8 s serial against 31.6–35.1 s parallel"
+source_note = """Whole-build wall times observed in the same session as M-012,
+reported as ranges because that is how they were recorded. All three whole-build
+samples were worse with the parallel delete."""
+
+[[measurement]]
+id = "M-014"
+claim = "rename-aside: the phase does disappear from the timeline"
+class = "observed"
+text = "929.8 ms → 0.2 ms"
+source_note = """`zola build --timings`, `clean output dir` on the reference
+workload before and after the rename-aside change; the added `wait for background
+clean` phase measured 0.0 ms. Transcribed in docs/performance/OPTIMIZATIONS.md,
+PERF-004, second variant."""
+
+[[measurement]]
+id = "M-015"
+claim = "rename-aside: wall time on the reference proxy, unchanged"
+class = "rejected"
+text = "| reference proxy (9 GB output) | 24.42 s | 24.55 s |"
+source_note = """Interleaved whole-build wall medians, binaries alternated.
+mixed-realistic-8000 in the same session: 3.19 s before against 3.33 s after.
+Transcribed in docs/performance/OPTIMIZATIONS.md, PERF-004, second variant."""
+
+[[measurement]]
+id = "M-016"
+claim = "rename-aside on the case that should have shown it best, eight rounds"
+class = "rejected"
+text = "| `markdown-heavy-4000`, 8 rounds | 4.275 s | 4.350 s |"
+source_note = """Eight interleaved rounds on markdown-heavy-4000, whole-build wall
+medians. The clean is 301 ms of that 4.3 s build (7.1%) and the run spread was
+4.22–4.40 s. Transcribed in docs/performance/OPTIMIZATIONS.md, PERF-004."""
+
+[[measurement]]
+id = "M-017"
+claim = "rename-aside, median paired delta over those eight rounds"
+class = "rejected"
+text = "**+1.8%**"
+source_note = """Median of the paired per-round deltas for M-016. Transcribed in
+docs/performance/OPTIMIZATIONS.md, PERF-004, second variant."""
+
+[[measurement]]
+id = "M-018"
+claim = "rename-aside, the best of those eight rounds"
+class = "rejected"
+text = "**−0.7%**"
+source_note = """The single best paired round of M-016 — the change was faster in
+no round by more than this. Transcribed in docs/performance/OPTIMIZATIONS.md as
+`min −0.7%`."""
+
+[[measurement]]
+id = "M-019"
+claim = "how much of the markdown-heavy-4000 build the clean phase is"
+class = "observed"
+text = "301 ms of a 4.3 s build"
+source_note = """`zola build --timings`, `clean output dir` against a pre-populated
+output directory on markdown-heavy-4000; 7.1% of that build's wall time, whose
+run spread was 4.22–4.40 s. Transcribed in docs/performance/OPTIMIZATIONS.md,
+PERF-004."""
+
+# --------------------------------------------------------------------------- #
+# PERF-007 — parallelising the static copy. The richest of the four.
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-020"
+claim = "file count of the static tree on the reference site"
+class = "measured"
+text = "989 files"
+value = 989
+tolerance = 0.0
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/20260812T184616Z-68d5e8a9/site-vomaste.json"
+json_path = "results.0.input.static_files"
+
+[[measurement]]
+id = "M-020a"
+claim = "size of that static tree"
+class = "observed"
+text = "55 MB"
+source_note = """Size of the site's `static/` directory as recorded in
+docs/performance/HOTSPOTS.md, PERF-007, and in the OPTIMIZATIONS.md entry. The
+committed artifact carries the file count (M-020) but not the byte total."""
+
+[[measurement]]
+id = "M-021"
+claim = "the hypothesis: serial cost of the `copy static` phase"
+class = "observed"
+text = "170–190 ms"
+source_note = """`zola build --timings`, `copy static` phase on the reference
+site. HOTSPOTS.md quotes 138–170 ms = 9–10% of wall from the earlier baseline
+matrix; the experiment's own rounds (M-022) are the range used here. Transcribed
+in docs/performance/OPTIMIZATIONS.md, PERF-007."""
+
+[[measurement]]
+id = "M-022"
+claim = "parallel static copy on the real tree: no effect"
+class = "rejected"
+text = "191.0 / 196.6 / 211.0 ms serial against 193.6 / 211.6 / 170.9 ms parallel"
+source_note = """`zola build --timings`, `copy static` accumulator, three rounds
+with the binaries alternated. Transcribed in docs/performance/OPTIMIZATIONS.md,
+rejected-experiment entry for PERF-007."""
+
+[[measurement]]
+id = "M-023"
+claim = "why the real tree shows nothing: the phase is at disk throughput"
+class = "interpretation"
+text = "~290 MB/s"
+source_note = """55 MB divided by ~190 ms, from M-020 and M-022. An arithmetic
+consequence of the two, not an independent measurement; stated as such in
+docs/performance/OPTIMIZATIONS.md."""
+
+[[measurement]]
+id = "M-024"
+claim = "parallel static copy on 5000 files of 1 KB — slower in every round"
+class = "rejected"
+text = "| 1 | 640.1 ms | 837.6 ms |"
+source_note = """`zola build --timings`, `copy static` accumulator, binaries
+alternated, three rounds on a synthetic tree of 5000 files of 1 KB. Full rounds:
+640.1 / 813.6 / 841.9 ms serial against 837.6 / 899.0 / 1023 ms parallel; the
+paper prints all three as a table and this entry pins the first. Transcribed in
+docs/performance/OPTIMIZATIONS.md, PERF-007."""
+
+[[measurement]]
+id = "M-025"
+claim = "the size of that regression"
+class = "rejected"
+text = "**Unanimously worse, by 10–30%.**"
+source_note = """Round-wise comparison of the pairs in M-024: +30.9%, +10.5%,
++21.5%. The paper quotes the range as OPTIMIZATIONS.md records it rather than
+the per-round percentages, which were not written down at the time."""
+
+# --------------------------------------------------------------------------- #
+# PERF-009 — the stat per load_data cache key. Rejected on re-profiling.
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-030"
+claim = "how often the cache key is computed on the reference workload"
+class = "observed"
+text = "4843 calls"
+source_note = """Call count for load_data's cache-key path on the reference
+workload, from the CPU profile summarised by scripts/perf/analyze_profile.py.
+Transcribed in docs/performance/HOTSPOTS.md, PERF-009 row."""
+
+[[measurement]]
+id = "M-031"
+claim = "self time of every stat in the whole build, after the load_data lock fix"
+class = "observed"
+text = "439 ms"
+source_note = """samply CPU profile of the reference site after PERF-001 landed;
+self time of the `stat` syscall summed across all callers, not just load_data.
+Transcribed in docs/performance/HOTSPOTS.md, PERF-009 and PERF-015 rows."""
+
+[[measurement]]
+id = "M-032"
+claim = "self time of canonicalize in the same profile"
+class = "observed"
+text = "360 ms"
+source_note = "Same profile as M-031. Transcribed in docs/performance/HOTSPOTS.md, PERF-015."
+
+[[measurement]]
+id = "M-033"
+claim = "the two together as a share of the build"
+class = "observed"
+text = "0.9% of the build"
+source_note = """M-031 and M-032 against the profile's busy CPU total, as stated
+in docs/performance/HOTSPOTS.md, PERF-015. PERF-009 is a fraction of this, since
+439 ms covers every stat in the build and load_data's is one caller of it."""
+
+# --------------------------------------------------------------------------- #
+# Context figures
+# --------------------------------------------------------------------------- #
+
+[[measurement]]
+id = "M-040"
+claim = "reference workload page count"
+class = "measured"
+text = "3776 pages"
+value = 3776
+tolerance = 0.0
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/20260812T184616Z-68d5e8a9/site-vomaste.json"
+json_path = "results.0.input.page_files"
+
+[[measurement]]
+id = "M-040a"
+claim = "reference workload section count"
+class = "measured"
+text = "1640 sections"
+value = 1640
+tolerance = 0.0
+source = "benchmarks/results/m4-pro-12c-24gb-mac16-8/20260812T184616Z-68d5e8a9/site-vomaste.json"
+json_path = "results.0.input.section_files"
+
+[[measurement]]
+id = "M-041"
+claim = "the output tree the earliest of these experiments cleaned"
+class = "observed"
+text = "6544 files / 73 MB"
+source_note = """Output of the reference proxy at the time of the PERF-004
+baseline measurement, before the site's template migration grew it to about 9 GB.
+Transcribed in docs/performance/CPU-PROFILE.md."""
+
+[[measurement]]
+id = "M-042"
+claim = "the measurement mistake that set this program's interleaving rule"
+class = "observed"
+text = "−69%"
+source_note = """A sequential 'all runs of A, then all runs of B' comparison early
+in the program, later shown to be thermal drift. Recorded in
+docs/performance/README.md, in the rule that every comparison is interleaved."""
