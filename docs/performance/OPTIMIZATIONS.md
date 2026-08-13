@@ -780,3 +780,68 @@ This is the part that changes what is possible rather than what is pleasant. At
 the old rate, a 50 000-page site needed about 15 GB and a 100 000-page site
 about 30 GB; at the new rate they need 1.8 GB and 3.6 GB. The wall that would
 have stopped large sites is gone, and it was never a CPU wall.
+
+---
+
+## PERF-016 — `zola serve` held the entire rendered site in memory
+
+**Problem.** `zola serve` runs in `BuildMode::Memory`: rendered HTML goes into the
+`SITE_CONTENT` global map instead of to disk, and stays there for the life of the
+process. On the reference site that is 6592 files and 9.03 GB of HTML held in a
+map — **9371 / 9368 / 9405 MB** of physical footprint against **493 MB** to build
+the same site. Nineteen times the build, and the largest memory figure this
+program has produced.
+
+The whole program had measured `zola build` and never `serve`, so this sat
+outside everything in `BASELINE.md`. It was also nearly missed: `ps -o rss`
+reports 8–20 MB for that process, because macOS compresses an idle process's
+pages out of resident memory. `footprint -p` is the metric that answers the
+question.
+
+**What landed.** Two changes, both measured on the reference site:
+
+| | resident | peak |
+| --- | -------- | ---- |
+| before | 9371 / 9368 / 9405 MB | 9431 MB |
+| compressed map | **882 / 870 / 878 MB** | 860 MB |
+| `--store-html`, served from disk | **289 MB** | 503 MB |
+
+1. **Compress what the map holds** (`c712c29d`). Pages of a template-driven site
+   are mostly the same bytes as themselves — the reference site's navigation is
+   88% of every page — so zstd at level 1 gets 29× on this data, measured per
+   output because that is how the map stores them. 10.7×, unanimous across three
+   interleaved rounds, byte-identical responses, no new flag, no new dependency
+   (zstd was already in the tree via giallo). The cost is startup: eight
+   interleaved rounds gave a median +13%, six slower and two faster, which is
+   unresolved in sign and consistent with the arithmetic — about two seconds for
+   9 GB at that level across eleven usable cores. On a 4000-page site with 200 MB
+   of output there is no measurable cost and memory goes 220 → 208 MB.
+2. **Let `--store-html` serve from disk** (`57802477`). It selected
+   `BuildMode::Both`, writing every page to disk *and* keeping it in memory,
+   although the request handler has always fallen back to the output directory on
+   a miss. It now selects `Disk`. Ten paths compared between a disk-backed and a
+   memory-backed server were byte-identical once the port each embeds in
+   `base_url` is normalised. The costs: a full rebuild pays for writing the files
+   (1.3–1.5 s against 0.45 s at 4000 pages), requests read the filesystem, and
+   responses carry `Access-Control-Allow-Origin: *`, which the disk path has
+   always sent.
+
+**What remains.** Render-on-demand serving is **not built**. `serve` already
+holds the `Library` and the `RenderCache`, so a request could render its page
+then — the same work `--fast` does for a whole rebuild in 34–41 ms — which would
+take the map to nothing at all. The map exists to make requests fast, and a
+preview server does not obviously need a page rendered before anyone asks for it.
+That change interacts with the incremental-build design and is not one to make
+casually inside a program whose gate is byte-identical `zola build` output.
+
+Compression moved the wall from roughly 20k pages to roughly 200k on a 24 GiB
+machine, which buys enough room that the architectural change can wait for
+someone who needs it. Hence `partial` rather than `done`.
+
+**Correctness.** Responses byte-identical on ten paths including the 404;
+`components/site/tests/serve_modes.rs` asserts what each `BuildMode` holds and
+that the held bytes are compressed — it reports 1014‰ of the uncompressed page
+when compression is removed, so it fails for the right reason.
+`scripts/dev.sh quality`: ALL PASS.
+
+**Commit.** `c712c29d` (compression), `57802477` (`--store-html` serves from disk)

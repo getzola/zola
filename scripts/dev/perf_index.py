@@ -12,8 +12,14 @@ Source of truth:
 
 The priority column in HOTSPOTS.md doubles as a status column once an item
 closes: `rejected` means the change was measured and did not pay off, `done`
-mirrors a completed entry here. A rejected item needs no entry in
+mirrors a completed entry here, and `partial` means part of the item shipped and
+the rest is specified but not built. A rejected item needs no entry in
 OPTIMIZATIONS.md, but the measurement that rejected it must be there.
+
+`partial` exists because a binary done/rejected loses the state most likely to be
+forgotten between sessions: work that is half delivered. Such an item must say
+both what landed and what remains, and it keeps appearing in `open`, because the
+remainder is open work.
 
 Everything else (this index, cross-references in other documents) is derived.
 
@@ -90,10 +96,11 @@ def parse_hotspots(text: str) -> dict[str, Item]:
         location = cells[1].replace("`", "").strip()
         priority = cells[-1].strip("*")
         # The priority column doubles as a status column once an item closes:
-        # it holds `rejected` (measured, did not pay off) or `done` instead of
-        # a P-level. Read those as status and leave the priority unknown.
+        # it holds `rejected` (measured, did not pay off), `done`, or `partial`
+        # (part shipped, remainder specified) instead of a P-level. Read those as
+        # status and leave the priority unknown.
         word = priority.lower()
-        status = word if word in ("rejected", "done") else "open"
+        status = word if word in ("rejected", "done", "partial") else "open"
         items[ident] = Item(
             id=ident,
             location=location,
@@ -179,7 +186,12 @@ def build() -> tuple[dict[str, Item], list[str]]:
             continue
         if ident != target.id:
             target.subitems.append(ident)
-        target.status = "done"
+        # A `partial` row in HOTSPOTS.md outranks the presence of a section here:
+        # the section records what shipped, and the row records that something
+        # did not. Overriding it to `done` would hide the remainder, which is the
+        # whole reason the status exists.
+        if target.status != "partial":
+            target.status = "done"
         target.commit = evidence or target.commit
         target.resolution = kind or target.resolution
         if not kind:
@@ -188,6 +200,30 @@ def build() -> tuple[dict[str, Item], list[str]]:
                 "`**Upstream.**`.\n"
                 "    A completed item must name what delivered the fix: a commit in\n"
                 "    this repository, or the upstream release that carries it."
+            )
+
+    # A partial item has to say what landed and what is left, or the state it
+    # exists to record is not actually recorded.
+    optimizations = OPTIMIZATIONS.read_text(encoding="utf-8") if OPTIMIZATIONS.is_file() else ""
+    for ident, item in items.items():
+        if item.status != "partial":
+            continue
+        section = re.search(
+            rf"^##\s+{re.escape(ident)}\b.*?(?=^##\s|\Z)", optimizations, re.M | re.S
+        )
+        if section is None:
+            errors.append(
+                f"{ident} is marked `partial` but {OPTIMIZATIONS.name} has no `## {ident}` "
+                "section.\n"
+                "    A partially delivered item must record what shipped."
+            )
+            continue
+        body = section.group(0).lower()
+        if "remain" not in body and "not built" not in body and "still open" not in body:
+            errors.append(
+                f"{ident} is marked `partial` but its {OPTIMIZATIONS.name} section does not "
+                "say what remains.\n"
+                "    Name the part that is not built, or change the status."
             )
 
     for ident, where in sorted(collect_references().items()):
@@ -204,7 +240,7 @@ def build() -> tuple[dict[str, Item], list[str]]:
 
 
 def render(items: dict[str, Item]) -> str:
-    counts = {k: 0 for k in ("done", "open", "rejected")}
+    counts = {k: 0 for k in ("done", "open", "rejected", "partial")}
     for i in items.values():
         counts[i.status] = counts.get(i.status, 0) + 1
     lines = [
@@ -213,12 +249,13 @@ def render(items: dict[str, Item]) -> str:
         "# PERF backlog status",
         "",
         f"{counts['done']} done, {counts['open']} open, "
-        f"{counts['rejected']} rejected. "
+        f"{counts['partial']} partial, {counts['rejected']} rejected. "
         "Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.",
         "",
         "A *rejected* item is not abandoned: it was measured and the change did",
         "not pay off. The measurement is in `OPTIMIZATIONS.md` so it is not",
-        "re-litigated.",
+        "re-litigated. A *partial* item shipped part of its fix and specifies the",
+        "rest; it is listed as open work until the remainder lands.",
         "",
         "| ID | Component | Location | Priority | Status | Delivered by |",
         "| -- | --------- | -------- | -------- | ------ | ------------ |",
@@ -230,6 +267,8 @@ def render(items: dict[str, Item]) -> str:
         delivered = item.commit or "—"
         if item.status == "rejected":
             delivered = "not pursued — see OPTIMIZATIONS.md"
+        elif item.status == "partial":
+            delivered = f"{item.commit or '—'} (remainder open)"
         elif item.resolution == "upstream":
             delivered = f"upstream: {item.commit}"
         lines.append(
@@ -255,8 +294,11 @@ def main(argv: list[str]) -> int:
 
     if command == "open":
         for item in sorted(items.values(), key=lambda i: i.id):
-            if item.status == "open":
-                print(f"* {item.id} ({item.priority}, {item.component}) {item.location}")
+            if item.status in ("open", "partial"):
+                suffix = " — partial, remainder open" if item.status == "partial" else ""
+                print(
+                    f"* {item.id} ({item.priority}, {item.component}) {item.location}{suffix}"
+                )
         return 0
 
     if command == "generate":

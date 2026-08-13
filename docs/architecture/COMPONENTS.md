@@ -61,7 +61,7 @@ Open `PERF-*` items are derived from `docs/performance/HOTSPOTS.md`.
 | `utils` | Owns the output-directory clean and the static-tree copy, both serial today. | — |
 | `config` | Highlighting registry initialisation is fixed startup cost paid before any page is read. | PERF-011 |
 | `content` | Library construction and page parsing are on the critical path of every build. | — |
-| `render` | RenderCache::build is a dominant CPU and memory phase on large sites. | PERF-008 |
+| `render` | RenderCache::build is a dominant CPU and memory phase on large sites. | — |
 | `markdown` | Syntax highlighting dominates this crate's cost on sites with code blocks. | — |
 | `templates` | load_data and get_* functions run once per page; registration clones site state. | PERF-015 |
-| `site` | Owns discovery, the output queue, output-directory cleaning and the static copy. | PERF-016 |
+| `site` | Owns discovery, the output queue, output-directory cleaning and the static copy. | — |
