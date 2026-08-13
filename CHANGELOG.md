@@ -41,7 +41,7 @@ and it was mostly because it contains a lot of Tera syntax (as we will see later
 As mentioned, shortcodes have been completely removed.
 Instead, you can now completely template the content of a page/section from the .md file, as well as use the new Tera
 components. No more weird separation of shortcode/macros, just use Tera, the same components you can use elsewhere in your site.
-This means you will need to rewrite your shortcodes into components most likely, see [Tera documentation](https://keats.github.io/tera/) for
+This means you will need to rewrite your shortcodes into components most likely, see [Tera documentation](https://keats.github.io/tera/#components) for
 more details.
 If you use a theme, it will most likely need to be updated to work with Zola 0.23 before you can update.
 
