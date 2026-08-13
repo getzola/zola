@@ -424,10 +424,20 @@ against 305/450/296 ms) and memory goes 220 → 208 MB.
 
 Two seconds once, against 8.5 GB held for the life of the process.
 
-PERF-016 is marked done for now rather than closed: **render-on-demand is still
-the right answer** and would take the map to nothing at all. Compression moved
+PERF-016 is marked partial rather than closed: **render-on-demand is still the
+right answer** and would take the map to nothing at all — though see the
+decomposition below for what that is actually worth. Compression moved
 the wall from ~20k pages to ~200k on a 24 GB machine, which buys enough room
 that the architectural change can wait for someone who needs it.
+
+**What that leaves for render-on-demand, stated properly.** The two serve figures
+decompose it: the compressed map costs **878 − 289 = 589 MB**, and the remaining
+289 MB is the `Library`, the `RenderCache`, Tera and the runtime, which a request
+still needs. So rendering on demand would remove 67% of what `serve` holds and
+land at roughly **289 MB — which is where `--store-html` already is today**. The
+remaining prize is getting that figure without writing the site to disk, not
+taking `serve` to nothing. Worth saying because "would take the map to nothing"
+is true of the map and misleading about the process.
 
 ### PERF-015 — the filesystem probing behind template file lookups (rejected)
 

@@ -14,7 +14,12 @@ repository: *what was measured, against what baseline, and what did it show?*
 `PERF-016` is only half addressed. Compressing the in-memory map and letting
 `--store-html` serve from disk both landed and are measured; **render-on-demand
 is not built**. A paper here needs that work, or an honest account of why the
-cheaper fixes were enough.
+cheaper fixes were enough — and the second is currently the better story. The
+compressed map is 589 MB of the 878 MB `serve` holds; the other 289 MB is the
+`Library`, `RenderCache`, Tera and runtime that a request needs anyway. So
+rendering on demand lands where `--store-html` already lands, and the question a
+paper would have to answer is whether avoiding the disk write is worth an
+architectural change to the serving path.
 
 Type: `architecture`, `performance-study`. Depends on: PERF-016.
 

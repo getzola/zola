@@ -831,6 +831,13 @@ holds the `Library` and the `RenderCache`, so a request could render its page
 then — the same work `--fast` does for a whole rebuild in 34–41 ms — which would
 take the map to nothing at all. The map exists to make requests fast, and a
 preview server does not obviously need a page rendered before anyone asks for it.
+
+What that is worth is bounded, and the two figures above bound it: the compressed
+map is 878 − 289 = 589 MB, and the other 289 MB is the `Library`, the
+`RenderCache`, Tera and the runtime, which serving a request still needs. Render
+on demand therefore lands at roughly 289 MB — where `--store-html` already is.
+The prize is reaching that without writing the site to disk, not taking `serve`
+to nothing.
 That change interacts with the incremental-build design and is not one to make
 casually inside a program whose gate is byte-identical `zola build` output.
 
