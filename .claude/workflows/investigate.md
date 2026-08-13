@@ -37,6 +37,18 @@ measurement has not finished.
 6. **Measure, if the question is about cost.** Never optimise from a reading of
    the code. See `performance.md` for the harness. Attach numbers to the claim.
 
+   **Both sides of a comparison must be measured against the same state.** Two
+   correct measurements taken on different states support no conclusion at all,
+   and the artifact never says which state it came from. Record the commit — and
+   whether the tree was dirty — next to every number, and re-measure rather than
+   reuse a figure taken before an edit you have since made.
+
+   This is the most common way a comparison goes wrong here. It has produced a
+   "the bug does not reproduce" that was a build made after the fix, a page-count
+   disagreement between two trees a content edit apart, and two correct word
+   counts of the same file one revision apart. In each case both measurements
+   were right and the conclusion drawn across them was wrong.
+
 7. **Write the findings.** Into the session record. Every finding names its
    source: `file:line`, a profile, a result file, or a test run.
 
