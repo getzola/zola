@@ -161,6 +161,12 @@ at 16 000. Per-page cost fell from ~307 KB to ~36 KB.
 Memory, not CPU, is where this program moved the needle furthest — and it is
 the axis that decides whether a site can be built at all.
 
+**With one large caveat, found late and not addressed**: all of the above is
+`zola build`. `zola serve` keeps every rendered page in memory and needs
+**9242 MB** for the same site that builds in 493 MB — 19× more, and the largest
+memory figure anywhere in this program. See PERF-016 in `HOTSPOTS.md`. Nothing
+here improved it, because nothing here measured it.
+
 ## 19. Are generated outputs equivalent?
 
 Yes, and the gate is now meaningful. Every optimization commit was verified

@@ -98,6 +98,7 @@ change, ranked by how close they are to the edge.
 | PERF-012 | the platform allocator | large `String` churn (render → minify → drop) on every worker | once per output | O(outputs × page size) | profile: 34 s of 138 s busy CPU in `_xzm_*`/`_free` (reference site) | **−23.7% CPU on the reference site; shipped as mimalloc** | **done** |
 | PERF-013 | `templates/src/functions/files.rs:133,199` | `get_url(cachebust=true)` and `get_hash(path=…)` re-read and re-hash the file on every call | once per call per page | O(P × file size) | profile: `compute_hash` 2.2 s self CPU; the reference site hashes 3 files (one of them the search index) on all 5601 outputs | **2.2 s CPU, gone from the profile; below the noise floor of a whole-build A/B** | **done** |
 | PERF-014 | `minify_html::parse::element::parse_tag` (dependency) | seeds a new ahash hasher per tag parsed | once per HTML tag | O(tags) | profile: `gen_hasher_seed` 1.9 s self CPU (2.2%), 1825 of its 1898 samples under `parse_tag` | 1.9 s CPU on the reference site | P3, upstream |
+| PERF-016 | `site/src/lib.rs` `SITE_CONTENT` + `BuildMode::Memory` | `zola serve` retains every rendered page in memory for the life of the process | once per output | O(total output size) | `footprint`: 9242 MB resident serving the reference site, against **493 MB** to build it | 19× the build's peak; the largest memory number in this program | **P1** |
 | PERF-015 | `templates/src/helpers.rs` `search_for_file` | up to 5 `exists()` probes, and 2 `canonicalize` calls when the file sits directly under the site root, on every `get_url`/`get_hash`/`load_data`/image call | once per call per page | O(P × calls) syscalls | profile: `canonicalize` 360 ms, `stat` 439 ms self CPU — 0.9% of the build between them | ~0.8 s CPU on the reference site | P3 |
 
 ## Detail
@@ -325,6 +326,46 @@ config-parse time to the first code block — and on a site with no code blocks 
 would never appear at all. Losing a config error is not a trade this program
 makes for 32 ms. It needs a way to enumerate theme names without building the
 registry, which is a giallo change.
+
+### PERF-016 — `zola serve` holds the entire rendered site in memory (P1)
+
+Found by accident, and it is the largest memory number this program has
+produced. `zola serve` runs in `BuildMode::Memory`: rendered HTML goes into the
+`SITE_CONTENT` global map instead of to disk, and stays there.
+
+For the reference site:
+
+| | peak memory |
+| --- | ----------- |
+| `zola build` | 493 MB |
+| `zola serve` | **9242 MB** (peak 9386 MB) |
+
+That is 19× the build, and it is simply the output — 6592 files, 9.03 GB of
+HTML — held in a map. On a 24 GB machine this site already occupies 39% of RAM
+just to be served; a site twice its size could not be served at all, while
+building it would still cost well under a gigabyte.
+
+Worth noting how easy this is to mismeasure: `ps -o rss` reports 8–20 MB for the
+same process, because macOS compresses the pages of an idle process out of
+resident memory and they fault back in as they are touched. Use `footprint -p`
+or `phys_footprint`; RSS answers a different question.
+
+The whole program measured `zola build` and never looked at `serve`, so this sits
+outside everything in `BASELINE.md`. Three directions, none of them measured yet:
+
+* **render on demand** — `serve` already holds the `Library` and the
+  `RenderCache`; a request could render its page then, which is the same work
+  `--fast` does in 34–41 ms for a whole rebuild. Retaining rendered HTML buys
+  request latency that a static-site preview server does not obviously need.
+* **a disk-backed serve mode** — `BuildMode` has `Disk`, `Memory` and `Both`,
+  and `serve` can only pick the latter two (`--store-html` selects `Both`, which
+  writes *and* retains). There is no way to serve a large site without paying
+  full-output RAM.
+* **evict or compress** — smallest change, and the least satisfying.
+
+The first is the interesting one and it interacts with the incremental-build
+design; it is not a change to make casually inside a performance program whose
+gate is byte-identical `zola build` output.
 
 ### PERF-015 — the filesystem probing behind template file lookups (P3)
 

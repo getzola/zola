@@ -50,7 +50,7 @@ component end to end.
 | --------- | ----------------- | ---------- |
 | `imageproc` | `cargo test -p imageproc --test resize_image` | — |
 | `markdown` | `cargo test -p markdown --test img`, `cargo test -p markdown --test links`, `cargo test -p markdown --test markdown`, `cargo test -p markdown --test summary`, `cargo test -p markdown --test toc` | `all.rs` |
-| `site` | `cargo test -p site --test invalid`, `cargo test -p site --test site`, `cargo test -p site --test site_i18n` | `load.rs` |
+| `site` | `cargo test -p site --test fast_rebuild`, `cargo test -p site --test invalid`, `cargo test -p site --test site`, `cargo test -p site --test site_i18n` | `load.rs` |
 
 ## Performance-sensitive components
 
@@ -64,4 +64,4 @@ Open `PERF-*` items are derived from `docs/performance/HOTSPOTS.md`.
 | `render` | RenderCache::build is a dominant CPU and memory phase on large sites. | PERF-008 |
 | `markdown` | Syntax highlighting dominates this crate's cost on sites with code blocks. | — |
 | `templates` | load_data and get_* functions run once per page; registration clones site state. | PERF-015 |
-| `site` | Owns discovery, the output queue, output-directory cleaning and the static copy. | — |
+| `site` | Owns discovery, the output queue, output-directory cleaning and the static copy. | PERF-016 |

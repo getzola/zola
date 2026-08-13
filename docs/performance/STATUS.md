@@ -3,7 +3,7 @@
 
 # PERF backlog status
 
-7 done, 4 open, 4 rejected. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
+7 done, 5 open, 4 rejected. Definitions live in `HOTSPOTS.md`, results in `OPTIMIZATIONS.md`.
 
 A *rejected* item is not abandoned: it was measured and the change did
 not pay off. The measurement is in `OPTIMIZATIONS.md` so it is not
@@ -26,3 +26,4 @@ re-litigated.
 | PERF-013 | templates | `templates/src/functions/files.rs:133,199` | — | done | perf(PERF-013): memoize file hashes for cachebust and get_hash |
 | PERF-014 | — | `minify_html::parse::element::parse_tag (dependency)` | P3, upstream | open | — |
 | PERF-015 | templates | `templates/src/helpers.rs search_for_file` | P3 | open | — |
+| PERF-016 | site | `site/src/lib.rs SITE_CONTENT + BuildMode::Memory` | P1 | open | — |
