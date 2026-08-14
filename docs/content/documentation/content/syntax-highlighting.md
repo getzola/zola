@@ -94,7 +94,7 @@ to have the renderer use CSS classes instead and generate one CSS file for each 
 - single theme -> `giallo.css`
 - dual themes: light -> `giallo-light.css`, dark -> `giallo-dark.css`
 
-The HTML will look like `<span class="z-support z-type z-property-name z-css">  user-select</span>`.
+The HTML will look like `<span class="z-1">  user-select</span>`.
 
 You can then support light and dark mode like so:
 
