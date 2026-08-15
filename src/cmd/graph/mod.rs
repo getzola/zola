@@ -7,9 +7,10 @@
 //!   writes `content/<slug>/index.md`, enriches topics via OpenRouter, and
 //!   commits `data/graph/*.json`. Refuses a second crawl for the same origin
 //!   unless `--force`.
-//! - `graph refresh`: **local only**. Walks default-language markdown, re-topics
-//!   pages whose `content_hash` changed, updates `meta.last_refresh`. Never
-//!   imports the firecrawl module.
+//! - `graph refresh`: **local only**. Walks markdown (all langs, including
+//!   `_index.md` section pages), fills node fields, re-topics default-language
+//!   pages whose `content_hash` changed, writes pillar overviews, updates
+//!   `meta.last_refresh`. Never imports the firecrawl module.
 //!
 //! Network lives only in migrate/refresh — `zola build` stays offline.
 
@@ -97,15 +98,13 @@ fn walk_md(dir: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-/// True if `file_name` is a default-language, non-section page (mirror of
-/// `translate.rs`).
+/// True if `file_name` is a default-language page, including section
+/// `_index.md` (the ATS homepage pillar). `_index.fr.md` / `index.fr.md`
+/// are translations.
 fn is_default_page(file_name: &str, lang_set: &HashSet<&str>) -> bool {
     let Some(stem) = file_name.strip_suffix(".md") else {
         return false;
     };
-    if stem.starts_with("_index") {
-        return false;
-    }
     !lang_set.iter().any(|l| stem.ends_with(&format!(".{l}")))
 }
 

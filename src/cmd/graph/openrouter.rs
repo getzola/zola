@@ -47,6 +47,11 @@ pub struct TopicExtract {
 /// Extraction client. Trait so tests inject a mock.
 pub trait TopicClient {
     fn extract(&self, input: &TopicInput, key: &str) -> Result<TopicExtract>;
+    /// Pillar overview (134–167 words). Default: unsupported.
+    fn overview(&self, title: &str, body: &str, key: &str) -> Result<String> {
+        let _ = (title, body, key);
+        bail!("overview not implemented")
+    }
 }
 
 /// Live OpenRouter client (blocking reqwest).
@@ -75,27 +80,52 @@ impl TopicClient for OpenRouterTopicClient {
                 }).to_string()},
             ],
         });
-        let bytes = serde_json::to_vec(&payload)?;
-        let resp = reqwest::blocking::Client::builder()
-            .timeout(Duration::from_secs(120))
-            .build()?
-            .post(OPENROUTER_URL)
-            .bearer_auth(key)
-            .header(reqwest::header::CONTENT_TYPE, "application/json")
-            .body(bytes)
-            .send()?;
-        let status = resp.status();
-        let text = resp.text()?;
-        if !status.is_success() {
-            bail!("OpenRouter HTTP {status}: {}", take200(&text));
-        }
-        let data: Value = serde_json::from_str(&text)
-            .map_err(|e| anyhow!("OpenRouter non-JSON response: {e}"))?;
-        let content = data["choices"][0]["message"]["content"].as_str().ok_or_else(|| {
-            anyhow!("OpenRouter: unexpected shape: {}", take160(&data.to_string()))
-        })?;
-        parse_extract(content)
+        let content = chat_content(key, payload)?;
+        parse_extract(&content)
     }
+
+    fn overview(&self, title: &str, body: &str, key: &str) -> Result<String> {
+        let body = truncate(body, 4000);
+        let user = format!(
+            "Write 134 to 167 words, inclusive, plain prose, no heading, no bullets.\n\
+             Describe this Curriculo page for an AI citation. Product is one platform:\n\
+             ATS for recruiters and a free resume builder. Do not invent metrics.\n\
+             Title: {title}\n\
+             Body: {body}"
+        );
+        let payload = json!({
+            "model": MODEL,
+            "max_tokens": MAX_TOKENS,
+            "messages": [
+                {"role": "user", "content": user},
+            ],
+        });
+        let content = chat_content(key, payload)?;
+        Ok(content.trim().to_string())
+    }
+}
+
+fn chat_content(key: &str, payload: Value) -> Result<String> {
+    let bytes = serde_json::to_vec(&payload)?;
+    let resp = reqwest::blocking::Client::builder()
+        .timeout(Duration::from_secs(120))
+        .build()?
+        .post(OPENROUTER_URL)
+        .bearer_auth(key)
+        .header(reqwest::header::CONTENT_TYPE, "application/json")
+        .body(bytes)
+        .send()?;
+    let status = resp.status();
+    let text = resp.text()?;
+    if !status.is_success() {
+        bail!("OpenRouter HTTP {status}: {}", take200(&text));
+    }
+    let data: Value =
+        serde_json::from_str(&text).map_err(|e| anyhow!("OpenRouter non-JSON response: {e}"))?;
+    data["choices"][0]["message"]["content"]
+        .as_str()
+        .map(|s| s.to_string())
+        .ok_or_else(|| anyhow!("OpenRouter: unexpected shape: {}", take160(&data.to_string())))
 }
 
 /// Parse the model's JSON-object content into [`TopicExtract`]. Pure — used by
