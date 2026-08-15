@@ -183,4 +183,15 @@ pub enum GraphCommand {
         #[clap(long)]
         dry_run: bool,
     },
+
+    /// Offline SEO merge gate over graph JSON + optional `public/`.
+    Check {
+        /// Built site directory (default: `<root>/public`). Ignored with `--json-only`.
+        #[clap(long)]
+        public: Option<PathBuf>,
+
+        /// Skip HTML/sitemap scans; graph JSON only.
+        #[clap(long)]
+        json_only: bool,
+    },
 }

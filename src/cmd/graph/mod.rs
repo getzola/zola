@@ -1,21 +1,26 @@
 //! `zola graph` — build and maintain a topical knowledge graph.
 //!
-//! Two subcommands (see `cli.rs::GraphCommand`):
+//! Three subcommands (see `cli.rs::GraphCommand`):
 //!
 //! - `graph migrate --from <origin>`: **once-per-origin**. Fetches the origin's
 //!   sitemap, crawls each page via Firecrawl (**the only Firecrawl entrypoint**),
 //!   writes `content/<slug>/index.md`, enriches topics via OpenRouter, and
 //!   commits `data/graph/*.json`. Refuses a second crawl for the same origin
 //!   unless `--force`.
-//! - `graph refresh`: **local only**. Walks default-language markdown, re-topics
-//!   pages whose `content_hash` changed, updates `meta.last_refresh`. Never
-//!   imports the firecrawl module.
+//! - `graph refresh`: **local only**. Walks markdown (all langs, including
+//!   `_index.md` section pages), fills node fields, re-topics default-language
+//!   pages whose `content_hash` changed, writes pillar overviews, updates
+//!   `meta.last_refresh`. Never imports the firecrawl module.
+//! - `graph check`: **offline merge gate**. Rules over committed JSON + optional
+//!   `public/` (canonical host, hreflang reverse, AggregateRating). No network.
 //!
-//! Network lives only in migrate/refresh — `zola build` stays offline.
+//! Network lives only in migrate/refresh — `zola build` and `graph check` stay offline.
 
+pub mod check;
 pub mod clean;
 pub mod firecrawl;
 pub mod html_to_md;
+pub mod ids;
 pub mod migrate;
 pub mod openrouter;
 pub mod refresh;
@@ -46,6 +51,9 @@ pub fn run(root_dir: &Path, config_file: &Path, command: GraphCommand) -> Result
         }
         GraphCommand::Refresh { max, dry_run } => {
             refresh::refresh(root_dir, config_file, max, dry_run)
+        }
+        GraphCommand::Check { public, json_only } => {
+            check::run(root_dir, public.as_deref(), json_only)
         }
     }
 }
@@ -96,15 +104,13 @@ fn walk_md(dir: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-/// True if `file_name` is a default-language, non-section page (mirror of
-/// `translate.rs`).
+/// True if `file_name` is a default-language page, including section
+/// `_index.md` (the ATS homepage pillar). `_index.fr.md` / `index.fr.md`
+/// are translations.
 fn is_default_page(file_name: &str, lang_set: &HashSet<&str>) -> bool {
     let Some(stem) = file_name.strip_suffix(".md") else {
         return false;
     };
-    if stem.starts_with("_index") {
-        return false;
-    }
     !lang_set.iter().any(|l| stem.ends_with(&format!(".{l}")))
 }
 

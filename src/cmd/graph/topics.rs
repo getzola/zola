@@ -64,7 +64,7 @@ pub fn merge_page_topics(store: &mut GraphStore, page_url: &str, extract: &Topic
             topic.page_ids.push(page_url.to_string());
         }
         // attach topic to page (dedup)
-        if let Some(page) = store.pages.iter_mut().find(|p| p.url == page_url) {
+        if let Some(page) = store.pages.iter_mut().find(|p| p.id == page_url) {
             if !page.topic_ids.iter().any(|t| *t == id) {
                 page.topic_ids.push(id.clone());
             }
@@ -155,12 +155,13 @@ mod tests {
     fn store_with_page(url: &str) -> GraphStore {
         GraphStore {
             pages: vec![super::super::schema::Page {
-                url: url.into(),
+                id: url.into(),
+                canonical_path: "/".into(),
                 path: "p/index.md".into(),
                 title: "T".into(),
                 summary: String::new(),
                 content_hash: "h".into(),
-                topic_ids: vec![],
+                ..Default::default()
             }],
             ..Default::default()
         }
