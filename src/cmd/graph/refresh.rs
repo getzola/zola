@@ -95,6 +95,7 @@ fn refresh_with_inner<C: TopicClient>(
     // collect (page_id, input) for stale/new default-lang pages that need topics
     let mut todo: Vec<(String, TopicInput)> = Vec::new();
     let mut failures = 0usize;
+    let mut seen: HashSet<String> = HashSet::new();
 
     for file in &files {
         let name = file.file_name().unwrap().to_string_lossy().into_owned();
@@ -112,6 +113,7 @@ fn refresh_with_inner<C: TopicClient>(
             .to_string_lossy()
             .replace('\\', "/");
         let id = page_id_from_rel(&rel);
+        seen.insert(id.clone());
         let body_trim = body.trim();
         let hash = content_hash(body_trim);
         let lang = lang_from_filename(&name, default_lang);
@@ -152,6 +154,8 @@ fn refresh_with_inner<C: TopicClient>(
             }
         }
     }
+
+    prune_store(&mut store, &seen);
 
     if store.organizations.is_empty() {
         store.organizations.push(Organization {
@@ -356,6 +360,49 @@ fn fetch_overview<C: TopicClient>(
         "overview word count {} still outside {OVERVIEW_MIN}–{OVERVIEW_MAX}; leaving unset",
         text.split_whitespace().count()
     )
+}
+
+/// Drop pages absent from this refresh walk, scrub their edges, and emit
+/// reciprocal `translation` relations from `translation_of`.
+fn prune_store(store: &mut super::schema::GraphStore, seen: &HashSet<String>) {
+    store.pages.retain(|p| seen.contains(&p.id));
+
+    store.relations.retain(|r| {
+        if r.from.starts_with("content/") && !seen.contains(&r.from) {
+            return false;
+        }
+        if r.to.starts_with("content/") && !seen.contains(&r.to) {
+            return false;
+        }
+        true
+    });
+
+    for t in store.topics.iter_mut() {
+        t.page_ids.retain(|id| seen.contains(id));
+    }
+
+    let translations: Vec<(String, String)> = store
+        .pages
+        .iter()
+        .filter_map(|p| p.translation_of.as_ref().map(|base| (p.id.clone(), base.clone())))
+        .collect();
+    for (a, b) in translations {
+        upsert_relation(
+            &mut store.relations,
+            &super::schema::Relation { from: a.clone(), to: b.clone(), kind: "translation".into() },
+        );
+        upsert_relation(
+            &mut store.relations,
+            &super::schema::Relation { from: b, to: a, kind: "translation".into() },
+        );
+    }
+}
+
+fn upsert_relation(rels: &mut Vec<super::schema::Relation>, rel: &super::schema::Relation) {
+    let exists = rels.iter().any(|r| r.from == rel.from && r.to == rel.to && r.kind == rel.kind);
+    if !exists {
+        rels.push(rel.clone());
+    }
 }
 
 /// Remove all `page_topic` edges for `url` and drop `url` from every topic's
@@ -671,6 +718,143 @@ mod tests {
         let ov = home.overview.as_ref().expect("overview set after retry");
         assert_eq!(ov.split_whitespace().count(), 140);
         assert_eq!(client.calls.load(Ordering::SeqCst), 2);
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn refresh_prunes_ghost_pages_and_topic_links() {
+        let root = tmp_root();
+        let ghost = "content/gone/index.md";
+        let home = "content/_index.md";
+        let topic_id = "gone-topic";
+        let store = super::super::schema::GraphStore {
+            pages: vec![
+                Page {
+                    id: home.into(),
+                    canonical_path: "/".into(),
+                    path: home.into(),
+                    title: "Home".into(),
+                    summary: "s".into(),
+                    content_hash: "h".into(),
+                    ..Default::default()
+                },
+                Page {
+                    id: ghost.into(),
+                    canonical_path: "/gone/".into(),
+                    path: ghost.into(),
+                    title: "Gone".into(),
+                    summary: "ghost".into(),
+                    content_hash: "ghost".into(),
+                    topic_ids: vec![topic_id.into()],
+                    ..Default::default()
+                },
+            ],
+            topics: vec![super::super::schema::Topic {
+                id: topic_id.into(),
+                label: "Gone topic".into(),
+                aliases: vec![],
+                page_ids: vec![ghost.into(), home.into()],
+            }],
+            relations: vec![super::super::schema::Relation {
+                from: ghost.into(),
+                to: topic_id.into(),
+                kind: "page_topic".into(),
+            }],
+            meta: super::super::schema::Meta {
+                source_origin: "https://x".into(),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        store.save(&root.join("data/graph")).unwrap();
+        fs::create_dir_all(root.join("content")).unwrap();
+        fs::write(
+            root.join("content/_index.md"),
+            "+++\ntitle = \"Home\"\n+++\n\n# Home\n\nEnglish home.\n",
+        )
+        .unwrap();
+
+        refresh_with(&root, None, false, &FixedTopics, "k").unwrap();
+        let after = super::super::schema::GraphStore::load(&root.join("data/graph")).unwrap();
+        assert!(
+            after.pages.iter().all(|p| p.id != ghost),
+            "ghost page must be dropped"
+        );
+        assert!(
+            !after.relations.iter().any(|r| r.from == ghost || r.to == ghost),
+            "ghost page_topic edges must be dropped"
+        );
+        let topic = after.topics.iter().find(|t| t.id == topic_id).unwrap();
+        assert!(
+            !topic.page_ids.iter().any(|id| id == ghost),
+            "ghost must be removed from topic.page_ids"
+        );
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn refresh_emits_reciprocal_translation_relations() {
+        let root = tmp_root();
+        seed_migrated(&root);
+        fs::create_dir_all(root.join("content")).unwrap();
+        fs::write(
+            root.join("content/_index.md"),
+            "+++\ntitle = \"AI ATS\"\n+++\n\n# Home\n\nEnglish home.\n",
+        )
+        .unwrap();
+        fs::write(root.join("content/_index.fr.md"), "+++\ntitle = \"ATS IA\"\n+++\n\nAccueil.\n")
+            .unwrap();
+        refresh_with(&root, None, false, &FixedTopics, "k").unwrap();
+        let after = super::super::schema::GraphStore::load(&root.join("data/graph")).unwrap();
+        let en = "content/_index.md";
+        let fr = "content/_index.fr.md";
+        assert!(after.relations.iter().any(|r| r.kind == "translation" && r.from == fr && r.to == en));
+        assert!(after.relations.iter().any(|r| r.kind == "translation" && r.from == en && r.to == fr));
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn refresh_prunes_ghost_even_when_max_zero() {
+        let root = tmp_root();
+        let ghost = "content/gone/index.md";
+        let store = super::super::schema::GraphStore {
+            pages: vec![
+                Page {
+                    id: "content/_index.md".into(),
+                    canonical_path: "/".into(),
+                    path: "content/_index.md".into(),
+                    title: "Home".into(),
+                    summary: "s".into(),
+                    content_hash: "old".into(),
+                    ..Default::default()
+                },
+                Page {
+                    id: ghost.into(),
+                    canonical_path: "/gone/".into(),
+                    path: ghost.into(),
+                    title: "Gone".into(),
+                    summary: "ghost".into(),
+                    content_hash: "ghost".into(),
+                    ..Default::default()
+                },
+            ],
+            meta: super::super::schema::Meta {
+                source_origin: "https://x".into(),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        store.save(&root.join("data/graph")).unwrap();
+        fs::create_dir_all(root.join("content")).unwrap();
+        fs::write(
+            root.join("content/_index.md"),
+            "+++\ntitle = \"Home\"\n+++\n\n# Home\n\nFresh body for retopic.\n",
+        )
+        .unwrap();
+
+        refresh_with(&root, Some(0), false, &FixedTopics, "k").unwrap();
+        let after = super::super::schema::GraphStore::load(&root.join("data/graph")).unwrap();
+        assert!(after.pages.iter().all(|p| p.id != ghost));
         fs::remove_dir_all(&root).unwrap();
     }
 
