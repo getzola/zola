@@ -13,6 +13,7 @@ use std::path::Path;
 use errors::{Result, anyhow, bail};
 
 use super::firecrawl::{FirecrawlFetcher, PageFetcher};
+use super::ids::{canonical_path_from_rel, page_id_from_rel};
 use super::openrouter::{OpenRouterTopicClient, TopicClient, TopicInput};
 use super::schema::{GraphStore, Meta, Page};
 use super::sitemap;
@@ -183,17 +184,19 @@ where
             log::error!("migrate: write {}: {e}", disk_path.display());
             continue;
         }
+        let id = page_id_from_rel(&rel);
         let page = Page {
-            url: fetched.url.clone(),
-            path: rel,
+            id: id.clone(),
+            canonical_path: canonical_path_from_rel(&rel, "en"),
+            path: id.clone(),
             title: fetched.title.clone(),
             summary,
             content_hash: hash,
-            topic_ids: vec![],
+            ..Default::default()
         };
         store.pages.push(page);
         let input = TopicInput { title: fetched.title, description, body: cleaned };
-        let page_url = fetched.url.clone();
+        let page_url = id;
         match super::topics::enrich_one(
             &mut store,
             &page_url,

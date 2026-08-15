@@ -16,6 +16,7 @@
 pub mod clean;
 pub mod firecrawl;
 pub mod html_to_md;
+pub mod ids;
 pub mod migrate;
 pub mod openrouter;
 pub mod refresh;

@@ -12,6 +12,7 @@ use std::path::Path;
 
 use errors::{Result, anyhow, bail};
 
+use super::ids::{canonical_path_from_rel, page_id_from_rel};
 use super::openrouter::{OpenRouterTopicClient, TopicClient, TopicInput};
 use super::schema::Page;
 use super::{content_hash, is_default_page, now_iso, parse_page, read_langs, summarize, walk_md};
@@ -99,12 +100,6 @@ fn refresh_with_inner<C: TopicClient>(
             .map_err(|e| anyhow!("strip prefix {}: {e}", file.display()))?
             .to_string_lossy()
             .replace('\\', "/");
-        let url = fm
-            .get("extra")
-            .and_then(|e| e.get("source_url"))
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string())
-            .unwrap_or_else(|| format!("local:{rel}"));
 
         let pos = store.pages.iter().position(|p| p.path == rel);
         match pos {
@@ -113,28 +108,30 @@ fn refresh_with_inner<C: TopicClient>(
             }
             Some(i) => {
                 // stale: detach old topic edges, will re-merge
-                let url = store.pages[i].url.clone();
-                detach_page_topics(&mut store, &url);
+                let id = store.pages[i].id.clone();
+                detach_page_topics(&mut store, &id);
                 store.pages[i].title = title.clone();
                 store.pages[i].summary = summarize(body_trim);
                 store.pages[i].content_hash = hash;
                 store.pages[i].topic_ids.clear();
                 let input = TopicInput { title, description, body: body_trim.to_string() };
-                todo.push((url, input));
+                todo.push((id, input));
             }
             None => {
                 // new page since migrate
+                let id = page_id_from_rel(&rel);
                 let page = Page {
-                    url: url.clone(),
-                    path: rel,
+                    id: id.clone(),
+                    canonical_path: canonical_path_from_rel(&rel, "en"),
+                    path: id.clone(),
                     title: title.clone(),
                     summary: summarize(body_trim),
                     content_hash: hash,
-                    topic_ids: vec![],
+                    ..Default::default()
                 };
                 store.pages.push(page);
                 let input = TopicInput { title, description, body: body_trim.to_string() };
-                todo.push((url, input));
+                todo.push((id, input));
             }
         }
     }
@@ -224,12 +221,13 @@ mod tests {
         // minimal prior graph: one page, meta.source_origin set
         let store = super::super::schema::GraphStore {
             pages: vec![Page {
-                url: "https://x/a".into(),
+                id: "content/a/index.md".into(),
+                canonical_path: "/a/".into(),
                 path: "content/a/index.md".into(),
                 title: "A".into(),
                 summary: "s".into(),
                 content_hash: "oldhash".into(),
-                topic_ids: vec![],
+                ..Default::default()
             }],
             meta: super::super::schema::Meta {
                 source_origin: "https://x".into(),
