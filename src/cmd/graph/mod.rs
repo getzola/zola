@@ -1,6 +1,6 @@
 //! `zola graph` — build and maintain a topical knowledge graph.
 //!
-//! Two subcommands (see `cli.rs::GraphCommand`):
+//! Three subcommands (see `cli.rs::GraphCommand`):
 //!
 //! - `graph migrate --from <origin>`: **once-per-origin**. Fetches the origin's
 //!   sitemap, crawls each page via Firecrawl (**the only Firecrawl entrypoint**),
@@ -11,9 +11,12 @@
 //!   `_index.md` section pages), fills node fields, re-topics default-language
 //!   pages whose `content_hash` changed, writes pillar overviews, updates
 //!   `meta.last_refresh`. Never imports the firecrawl module.
+//! - `graph check`: **offline merge gate**. Rules over committed JSON + optional
+//!   `public/` (canonical host, hreflang reverse, AggregateRating). No network.
 //!
-//! Network lives only in migrate/refresh — `zola build` stays offline.
+//! Network lives only in migrate/refresh — `zola build` and `graph check` stay offline.
 
+pub mod check;
 pub mod clean;
 pub mod firecrawl;
 pub mod html_to_md;
@@ -48,6 +51,9 @@ pub fn run(root_dir: &Path, config_file: &Path, command: GraphCommand) -> Result
         }
         GraphCommand::Refresh { max, dry_run } => {
             refresh::refresh(root_dir, config_file, max, dry_run)
+        }
+        GraphCommand::Check { public, json_only } => {
+            check::run(root_dir, public.as_deref(), json_only)
         }
     }
 }
