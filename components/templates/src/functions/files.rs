@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fmt::Write as _;
 use std::io::Read;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
 use sha2::{Sha256, Sha384, Sha512, digest};
@@ -41,6 +42,7 @@ pub struct GetUrl {
     permalinks: HashMap<String, String>,
     output_path: PathBuf,
     colocated_assets: AHashMap<String, (String, String)>,
+    result_cache: Arc<Mutex<HashMap<String, String>>>,
 }
 
 impl GetUrl {
@@ -51,7 +53,14 @@ impl GetUrl {
         output_path: PathBuf,
         colocated_assets: AHashMap<String, (String, String)>,
     ) -> Self {
-        Self { base_path, config, permalinks, output_path, colocated_assets }
+        Self {
+            base_path,
+            config,
+            permalinks,
+            output_path,
+            colocated_assets,
+            result_cache: Arc::new(Mutex::new(HashMap::new())),
+        }
     }
 }
 
@@ -142,15 +151,21 @@ impl Function<TeraResult<String>> for GetUrl {
                     &self.output_path,
                 )
                 .map_err(|e| Error::message(format!("`get_url`: {}", e)))?
-                .and_then(|(p, _)| fs::File::open(p).ok())
-                .and_then(|mut f| {
+                .and_then(|(file_path, unified_path)| {
+                    let mut cache = self.result_cache.lock().expect("result cache lock");
+                    if let Some(hash) = cache.get(&unified_path) {
+                        return Some(hash.clone());
+                    }
+                    let mut f = fs::File::open(file_path).ok()?;
                     let mut contents = Vec::new();
                     f.read_to_end(&mut contents).ok()?;
-                    Some(compute_hash::<Sha256>(&contents, false))
+                    let mut hash = compute_hash::<Sha256>(&contents, false);
+                    cache.insert(unified_path, hash.clone());
+                    Some(hash)
                 }) {
                     Some(hash) => {
-                        let shorthash = &hash[..20]; // 2^-80 chance of false positive
-                        permalink = format!("{}?h={}", permalink, shorthash);
+                        let short_hash = &hash[..20]; // 2^-80 chance of false positive
+                        permalink = format!("{permalink}?h={short_hash}");
                     }
                     None => {
                         return Err(Error::message(format!(
