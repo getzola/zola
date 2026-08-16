@@ -8,6 +8,7 @@
 - Fix `get_url` returning links to pages/sections with `render = false`
 - Various fixes with `zola serve` -u/-i flags
 - Date sorting is now using descending permalink as tie breaker instead of ascending to match date sorting
+- Cache result of `get_url(..., cachebust=true)`
 
 ## 0.23.3 (2026-08-11)
 
