@@ -68,6 +68,23 @@ pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> 
     copy_file_if_needed(src, &target_path, hard_link)
 }
 
+/// https://github.com/getzola/zola/issues/1599
+/// Error on Windows only when creating/setting mtime maybe? Something is locking the file.
+/// Rust does not expose the error code 32 as an enum so we have to match manually.
+/// It looks like retries is the way to fix that error?
+fn with_windows_retries<T>(mut op: impl FnMut() -> std::io::Result<T>) -> std::io::Result<T> {
+    let mut attempt = 0;
+    loop {
+        attempt += 1;
+        match op() {
+            Err(e) if cfg!(windows) && attempt < 4 && e.raw_os_error() == Some(32) => {
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+            res => return res,
+        }
+    }
+}
+
 /// No copy occurs if all of the following conditions are satisfied:
 /// 1. A file with the same name already exists in the dest path.
 /// 2. Its modification timestamp is identical to that of the src file.
@@ -89,16 +106,18 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
             let target_metadata = fs::metadata(dest)?;
             let target_mtime = FileTime::from_last_modification_time(&target_metadata);
             if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
-                fs::copy(src, dest).with_context(|| {
+                with_windows_retries(|| std::fs::copy(src, dest)).with_context(|| {
                     format!("Was not able to copy file {} to {}", src.display(), dest.display())
                 })?;
-                set_file_mtime(dest, src_mtime)?;
+                with_windows_retries(|| set_file_mtime(dest, src_mtime))
+                    .with_context(|| format!("Was not able to set mtime of {}", dest.display()))?;
             }
         } else {
-            fs::copy(src, dest).with_context(|| {
+            with_windows_retries(|| std::fs::copy(src, dest)).with_context(|| {
                 format!("Was not able to copy directory {} to {}", src.display(), dest.display())
             })?;
-            set_file_mtime(dest, src_mtime)?;
+            with_windows_retries(|| set_file_mtime(dest, src_mtime))
+                .with_context(|| format!("Was not able to set mtime of {}", dest.display()))?;
         }
     }
     Ok(())
