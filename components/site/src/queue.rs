@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 use crate::{BuildMode, SITE_CONTENT, Site, feeds, minify, sitemap};
@@ -74,18 +75,27 @@ pub struct Queue<'a> {
 }
 
 impl<'a> Queue<'a> {
-    fn add_section_jobs(&mut self, section: &'a Section, render_pages: bool) {
+    fn add_section_jobs(
+        &mut self,
+        section: &'a Section,
+        render_pages: bool,
+        seen_pages: &mut HashSet<&'a Path>,
+    ) {
         let pages: Vec<_> =
             section.pages.iter().map(|k| self.site.library.pages.get(k).unwrap()).collect();
+
+        // With `transparent`, pages can belong to multiple sections and be processed
+        // multiple times in parallel, which causes issues on Windows when copying files.
+        // https://github.com/getzola/zola/issues/1599
         if render_pages {
             for page in &pages {
-                if page.meta.render {
+                if page.meta.render && seen_pages.insert(&page.file.path) {
                     self.jobs.push(Job::Page(page));
                 }
             }
             for key in &section.hidden_pages {
                 let page = self.site.library.pages.get(key).unwrap();
-                if page.meta.render {
+                if page.meta.render && seen_pages.insert(&page.file.path) {
                     self.jobs.push(Job::Page(page));
                 }
             }
@@ -134,7 +144,7 @@ impl<'a> Queue<'a> {
 
     pub fn single_section(site: &'a Site, section: &'a Section, render_pages: bool) -> Self {
         let mut queue = Self { jobs: vec![], site, paginators: vec![] };
-        queue.add_section_jobs(section, render_pages);
+        queue.add_section_jobs(section, render_pages, &mut HashSet::new());
         queue
     }
 
@@ -162,8 +172,9 @@ impl<'a> Queue<'a> {
         }
 
         // Pages + sections
+        let mut seen_pages = HashSet::new();
         for (_, section) in &site.library.sections {
-            queue.add_section_jobs(section, true);
+            queue.add_section_jobs(section, true, &mut seen_pages);
         }
 
         // Orphan pages

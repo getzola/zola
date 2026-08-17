@@ -159,7 +159,7 @@ impl Function<TeraResult<String>> for GetUrl {
                     let mut f = fs::File::open(file_path).ok()?;
                     let mut contents = Vec::new();
                     f.read_to_end(&mut contents).ok()?;
-                    let mut hash = compute_hash::<Sha256>(&contents, false);
+                    let hash = compute_hash::<Sha256>(&contents, false);
                     cache.insert(unified_path, hash.clone());
                     Some(hash)
                 }) {
