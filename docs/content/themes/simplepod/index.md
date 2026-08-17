@@ -3,14 +3,14 @@
 title = "SimplePod"
 description = "A simple podcast theme with an iTunes-compatible RSS feed, a built-in audio player, and client-side search. No build step required."
 template = "theme.html"
-date = 2026-08-11T12:04:26-04:00
+date = 2026-08-14T13:21:05-04:00
 
 [taxonomies]
 theme-tags = ['podcast', 'rss', 'audio', 'search', 'responsive', 'minimal']
 
 [extra]
-created = 2026-08-11T12:04:26-04:00
-updated = 2026-08-11T12:04:26-04:00
+created = 2026-08-14T13:21:05-04:00
+updated = 2026-08-14T13:21:05-04:00
 repository = "https://github.com/cbrake/simplepod"
 homepage = "https://github.com/cbrake/simplepod"
 minimum_version = "0.20.0"
@@ -158,6 +158,21 @@ The rest of the configuration goes in the `[extra]` section.
 - `nav_links` - Array of navigation links, each with `name` and `url` fields
 - `call_to_action` - Text that can optionally be displayed at the top of each
   page, typically one line.
+
+### Newsletter Signup
+
+Setting `newsletter_form_action` adds an email signup form to the footer of
+every page, and a second copy on the home page below the hero. The form posts an
+`email_address` field, which matches what hosted newsletter services such as
+Kit, Buttondown, and Mailchimp expect, so the value is the POST endpoint given
+by your provider. Leave the key out and the form is not rendered.
+
+- `newsletter_form_action` - POST endpoint for the signup form, for example
+  `https://app.kit.com/forms/1234567/subscriptions`
+- `newsletter_title` - Heading above the form (optional, defaults to "Subscribe
+  to the newsletter")
+- `newsletter_description` - A sentence describing what subscribers receive
+  (optional)
 
 ### Analytics
 

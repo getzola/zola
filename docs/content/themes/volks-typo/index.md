@@ -3,17 +3,17 @@
 title = "volks-typo"
 description = "Minimalist blog theme with bold industrial typography and an 8-point grid (Zola port of the Astro Volks-Typo theme)."
 template = "theme.html"
-date = 2026-08-03T21:29:26Z
+date = 2026-08-14T17:54:03+02:00
 
 [taxonomies]
 theme-tags = ['blog', 'minimal', 'dark-mode', 'search', 'responsive', 'bauhaus']
 
 [extra]
-created = 2026-08-03T21:29:26Z
-updated = 2026-08-03T21:29:26Z
+created = 2026-08-14T17:54:03+02:00
+updated = 2026-08-14T17:54:03+02:00
 repository = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
 homepage = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
-minimum_version = "0.19.0"
+minimum_version = "0.23.0"
 license = "MIT"
 demo = "https://tisgoud.gitlab.io/zola-volks-typo-theme/"
 
@@ -51,7 +51,8 @@ A Zola port of the Astro **Volks-Typo** theme: a blog theme with bold, industria
 - Self-Hosted Fonts - No external dependencies for privacy.
 - Git-"Star" - From the original Astro theme, now configurable/optional.
 
-Minimum Zola version: **0.19.0** (developed and tested on Zola 0.22.1).
+Minimum Zola version: **0.23.0** (developed and tested on Zola 0.23.3).
+For Zola versions < 0.23 use release v1.2.1 of this theme.
 
 ## Screenshots
 
@@ -72,12 +73,12 @@ Minimum Zola version: **0.19.0** (developed and tested on Zola 0.22.1).
 The easiest way to install this theme is to clone this repository in the themes directory:
 
 ```shell
-git clone https://gitlab.com/tisgoud/zola-volks-typo-theme.git
+git clone https://gitlab.com/tisgoud/zola-volks-typo-theme.git themes/volks-typo
 ```
 
 or use it as a submodule:
 
-```
+```shell
 git submodule add https://gitlab.com/tisgoud/zola-volks-typo-theme.git themes/volks-typo
 ```
 

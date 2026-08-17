@@ -3,17 +3,17 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2026-01-21T18:04:10+08:00
+date = 2026-08-15T11:29:36-07:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-01-21T18:04:10+08:00
-updated = 2026-01-21T18:04:10+08:00
+created = 2026-08-15T11:29:36-07:00
+updated = 2026-08-15T11:29:36-07:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
-minimum_version = "0.19.1"
+minimum_version = "0.23.3"
 license = "MIT"
 demo = "https://abridge.pages.dev/"
 
@@ -27,7 +27,7 @@ homepage = "https://github.com/jieiku/"
 
 # Abridge Zola Theme
 
-A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing [abridge.css](https://github.com/Jieiku/abridge.css) (a class-light semantic HTML CSS Framework). Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.netlify.app) scores. Here is a [Zola Themes Benchmarks](https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md) Page.
+A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing class-light semantic HTML with modular CSS. Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.pages.dev) scores. Here is a [Zola Themes Benchmarks](https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md) Page.
 
 ![Lighthouse Score](https://raw.githubusercontent.com/Jieiku/abridge/master/content/overview-abridge/lighthouse.png)
 
@@ -38,15 +38,11 @@ Maintenance of this project is made possible by all the <a href="https://github.
 ---
 
 **[View Abridge demo](https://abridge.pages.dev/overview-abridge/)**
-
-**[View Abridge.css demo](https://abridge-css.pages.dev/overview-abridge/)** [[abridge.css framework](https://github.com/Jieiku/abridge.css/tree/master/dist)]
-
-The Abridge.css demo is simply using Abridge theme as a submodule: [config.toml](https://github.com/Jieiku/abridge.css/blob/master/config.toml), [sass/abridge.scss](https://github.com/Jieiku/abridge.css/blob/master/sass/abridge.scss)
 </div>
 
 ## Features
 
-- Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.netlify.app) scores.
+- Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.pages.dev) scores.
 - [PWA support](https://abridge.pages.dev/overview-abridge/#pwa-progressive-web-app) (Progressive Web Application).
 - All JavaScript can be [fully disabled](https://abridge.pages.dev/overview-abridge/#javascript-files).
 - Dark, Light, Auto, and Switcher themes. (colors can be customized, css variables)
@@ -71,9 +67,9 @@ The Abridge.css demo is simply using Abridge theme as a submodule: [config.toml]
 - Categories. (similar to Tags, disabled/commented out by default)
 - Social icon links in footer.
 - Responsive design. (mobile first)
-- Video Shortcodes: [Youtube](https://abridge.pages.dev/video-streaming-sites/overview-embed-youtube/), [Vimeo](https://abridge.pages.dev/video-streaming-sites/overview-embed-vimeo/), [Streamable](https://abridge.pages.dev/video-streaming-sites/overview-embed-streamable/).
-- Media Shortcodes: [video](https://abridge.pages.dev/overview-rich-content/#video), [img](https://abridge.pages.dev/overview-images/#img-shortcode), [imgswap](https://abridge.pages.dev/overview-images/#imgswap-shortcode), [image](https://abridge.pages.dev/overview-rich-content/#image), [gif](https://abridge.pages.dev/overview-rich-content/#gif), [audio](https://abridge.pages.dev/overview-rich-content/#audio).
-- Other Shortcodes: [showdata](https://abridge.pages.dev/overview-showdata/), [katex](https://abridge.pages.dev/overview-math/#usage-1).
+- Video Components: [Youtube](https://abridge.pages.dev/video-streaming-sites/overview-embed-youtube/), [Vimeo](https://abridge.pages.dev/video-streaming-sites/overview-embed-vimeo/), [Streamable](https://abridge.pages.dev/video-streaming-sites/overview-embed-streamable/).
+- Media Components: [video](https://abridge.pages.dev/overview-rich-content/#video), [img](https://abridge.pages.dev/overview-images/#img-component), [imgswap](https://abridge.pages.dev/overview-images/#imgswap-component), [image](https://abridge.pages.dev/overview-rich-content/#image), [gif](https://abridge.pages.dev/overview-rich-content/#gif), [audio](https://abridge.pages.dev/overview-rich-content/#audio).
+- Other Components: [showdata](https://abridge.pages.dev/overview-showdata/), [katex](https://abridge.pages.dev/overview-math/#usage-1).
 
 **[Complete Documentation is available here](https://abridge.pages.dev/overview-abridge/)**
 
