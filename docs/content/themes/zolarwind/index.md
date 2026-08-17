@@ -3,14 +3,14 @@
 title = "Zolarwind"
 description = "A GDPR-friendly Zola blog theme: no third-party requests, Tailwind CSS, KaTeX, Mermaid, localization"
 template = "theme.html"
-date = 2026-08-09T16:33:18+02:00
+date = 2026-08-12T12:59:32+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-08-09T16:33:18+02:00
-updated = 2026-08-09T16:33:18+02:00
+created = 2026-08-12T12:59:32+02:00
+updated = 2026-08-12T12:59:32+02:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
 minimum_version = "0.23.2"
@@ -325,13 +325,13 @@ image = "banner.jpg"
   Tags are shown on posts and tag index pages, series are shown on series pages and the series navigation at the bottom of series posts.
 
 - **extra.math**: either `false` (default) or `true`.
-  If set to `true`, the post will be rendered with KaTeX support for displaying math formulas.
+  If set to `true`, the post will be rendered with KaTeX support for inline and display math formulas.
   If the entry is omitted or set to `false`, the post will not have KaTeX support.
-  Use `$...$` for inline math. Because Markdown processes backslashes first, write `\\%` when KaTeX must receive `\%` for a percent sign.
-  Use the KaTeX component for display math and omit `$$` delimiters inside its body:
+  Use the KaTeX component and omit `$`, `$$`, `\(`, and `\[` delimiters inside its body. Use `inline={true}` for inline math:
 
   ```text
   {%/* <katex> */%} a^2 + b^2 {%/* </katex> */%}
+  {%/* <katex inline={true}> */%} E = mc^2 {%/* </katex> */%}
   ```
 
 - **extra.diagram**: either `false` (default) or `true`.
@@ -386,7 +386,7 @@ Note: If no posts use the `series` taxonomy, Zola does not generate `/series/`, 
 Zolarwind provides Markdown-facing components, stored in `templates/shortcodes/`. Use them when you want the feature, not as formatting helpers.
 Full documentation with parameters and examples: `docs/shortcodes.md`.
 
-- **katex**: render display KaTeX math.
+- **katex**: render inline or display KaTeX math.
 - **diagram**: render Mermaid diagrams from fenced text blocks.
 - **image**: render local images with captions and optional light/dark variants.
 - **audio_simple**: native `<audio>` player in a themed card.

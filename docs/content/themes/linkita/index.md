@@ -3,17 +3,17 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2026-08-08T16:15:07+03:00
+date = 2026-08-16T19:28:31+03:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2026-08-08T16:15:07+03:00
-updated = 2026-08-08T16:15:07+03:00
+created = 2026-08-16T19:28:31+03:00
+updated = 2026-08-16T19:28:31+03:00
 repository = "https://codeberg.org/salif/linkita.git"
 homepage = "https://github.com/salif/linkita"
-minimum_version = "0.19.0"
+minimum_version = "0.23.3"
 license = "MIT"
 demo = "https://salif.github.io/linkita/"
 
@@ -35,30 +35,25 @@ and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual a
 ## Features
 
 - Responsive design
-- Dark mode
-- Inject support
+- SEO friendly
 - Social icons
+- Dark mode
+- Table of Contents
+- Inject support
 - Taxonomy support
 - Projects page
 - Archive page
-- Table of Contents
-- Admonition shortcode
-- SEO friendly
+- Admonition component
 - Comments using [Giscus](https://giscus.app/)
 - Mathematical notations using [KaTeX](https://katex.org/)
 - Diagrams and charts using [Mermaid](https://mermaid.js.org/)
 - Search support (elasticlunr_javascript)
 - Relative URLs support
 - Multilingual support
-- Projects shortcode
 - Author profiles
 - Keyboard shortcuts
 
 ## Installation
-
-> [!NOTE]
-> Linkita currently supports Zola up to v0.22.1. Zola v0.23 is not supported yet due to breaking changes in the template engine.
-> Follow [issue #61](https://codeberg.org/salif/linkita/issues/61) for updates.
 
 The fastest way to create a new site is to use the
 [linkita-start template](https://github.com/salif/linkita-start).
@@ -77,13 +72,13 @@ git init
 1. Add the theme as a git submodule:
 
 ```sh
-git submodule add -b tera1 https://github.com/salif/linkita.git themes/linkita
+git submodule add -b main https://github.com/salif/linkita.git themes/linkita
 ```
 
 If you don't want to use git submodules, you can clone the repository instead:
 
 ```sh
-git clone -b tera1 https://github.com/salif/linkita.git themes/linkita
+git clone -b main https://github.com/salif/linkita.git themes/linkita
 ```
 
 2. Enable the theme in your `zola.toml` or `config.toml` file:
@@ -96,25 +91,32 @@ Place it near the `base_url` variable, not under `[extra]`.
 
 ## Managing versions
 
-If you installed it as a submodule, you can update by running this:
+If you installed it as a submodule, you can update by running this command:
 
 ```sh
 git submodule update --remote themes/linkita
 ```
 
 There may be breaking changes that require manual involvement.  
-If you use the `main` branch of the submodule, check the
-[main CHANGELOG.md](https://github.com/salif/linkita/blob/main/CHANGELOG.md) file.  
-If you use the `tera1` branch, check
-[this CHANGELOG.md](https://github.com/salif/linkita/blob/tera1/CHANGELOG.md) file.
+If you use the `main` repo branch, check the
+[CHANGELOG.md](https://github.com/salif/linkita/blob/main/CHANGELOG.md) file.
 
 Use the `main` branch for Zola versions newer than `0.23.0`, and the `tera1` branch for older versions.
-If you want to switch to another branch, for example to `main`, run the following:
+If you want to switch to another branch, e.g. to `main`, run these commands:
 
 ```sh
 git submodule set-branch --branch main themes/linkita
 git submodule update --remote themes/linkita
 ```
+
+> [!NOTE]
+> Linkita was previously hosted on Codeberg.
+> If you are using the Codeberg repository, read the instructions to
+> [switch to the new repository](https://github.com/salif/linkita/blob/tera1/CHANGELOG.md#tera1).
+> Additionally, the theme has been ported to a newer Zola version,
+> which introduces breaking changes in the template engine.
+> If you are using Zola v0.22.1 or older, read the instructions to
+> [switch to v0.23.3](https://salif.github.io/linkita/update-2/).
 
 ## Usage
 
@@ -165,8 +167,11 @@ comment = false
 math = false
 # Enable Mermaid support
 mermaid = false
+
 [extra.cover]
-# Path to the cover image
+# Path to the cover image.
+# Use the filename of a page asset
+# or a valid path for the get_url function
 image = ""
 # A description of the cover image
 alt = ""
@@ -212,7 +217,7 @@ description = ""
 template = "archive.html"
 transparent = true
 [extra]
-date_format = "%m-%d"
+date_format = "%b %d"
 +++
 ```
 
@@ -256,7 +261,7 @@ path = "about"
 ## Hello, world!
 ```
 
-If you want, you can also create [a page for your projects](https://salif.github.io/linkita/shortcodes/#projects).
+If you want, you can also create [a page for your projects](https://salif.github.io/linkita/components/#projects).
 
 ### Setting page authors
 
@@ -430,11 +435,6 @@ menu_i18n = false
 # Default value: false
 disable_default_favicon = false
 
-# If you want to implement the JS code
-# yourself, set to true and use the inject support.
-# Default value: false
-disable_javascript = false
-
 # Use a CDN for libraries like KaTeX.
 # Default value: false
 use_cdn = false
@@ -457,6 +457,12 @@ page_summary_on_paginator = false
 # Default value: false
 invert_page_navigation = false
 
+# Enable table of contents on all pages.
+# If not set, toc is enabled only on posts.
+# If set to false, toc is disabled on all pages.
+# Type: boolean or object
+toc = true
+
 # Header buttons.
 # Valid values:
 #  "site_title", "home_button", "theme_select", "theme_button",
@@ -473,12 +479,6 @@ invert_page_navigation = false
 
 # Information shown for posts on paginators.
 # page_info_on_paginator = [{ when="date" }, { when="reading_time" }]
-
-# Enable table of contents on all pages.
-# If not set, toc is enabled only on posts.
-# If set to false, toc is disabled on all pages.
-# Type: boolean or object
-# toc = true
 ```
 
 ### Style config
@@ -506,28 +506,28 @@ header_dark_color = "#27272a"
 ```toml ,name=zola.toml
 [extra.menus]
 menu_name = [
-  { url = "$BASE_URL/blog/", name = "Archive" },
-  { url = "$BASE_URL/categories/", name = "Categories" },
-  { url = "$BASE_URL/tags/", name = "Tags" },
-  { url = "$BASE_URL/about/", name = "About" },
+  { url = "@base/blog/", name = "Archive" },
+  { url = "@base/categories/", name = "Categories" },
+  { url = "@base/tags/", name = "Tags" },
+  { url = "@base/about/", name = "About" },
 ]
 
 # Example multilingual menu using `names`.
 multilingual_menu_name = [
-  { url = "$BASE_URL/about/", names = { en = "About", fr = "About in French" } },
-  { url = "$BASE_URL/projects/", names = { en = "Projects", fr = "Projects in French" } },
-  { url = "$BASE_URL/blog/", names = { en = "Archive", fr = "Archive in French" } },
-  { url = "$BASE_URL/categories/", names = { en = "Categories", fr = "Categories in French" } },
-  { url = "$BASE_URL/tags/", names = { en = "Tags", fr = "Tags in French" } },
-  { url = "$BASE_URL/authors/", names = { en = "Authors", fr = "Authors in French" } },
+  { url = "@base/about/", names = { en = "About", fr = "About in French" } },
+  { url = "@base/projects/", names = { en = "Projects", fr = "Projects in French" } },
+  { url = "@base/blog/", names = { en = "Archive", fr = "Archive in French" } },
+  { url = "@base/categories/", names = { en = "Categories", fr = "Categories in French" } },
+  { url = "@base/tags/", names = { en = "Tags", fr = "Tags in French" } },
+  { url = "@base/authors/", names = { en = "Authors", fr = "Authors in French" } },
 ]
 ```
 
-To use a menu, set `extra.header_menu_name`.
+To use a menu defined here, set `extra.header_menu_name`.
 
-`$BASE_URL` in `url` will be automatically replaced with the language specific base URL.
+`@base` in `url` will be automatically replaced with the language specific base URL.
 You can use [Internal links](https://www.getzola.org/documentation/content/linking/#internal-links)
-instead of `$BASE_URL`.
+instead of `@base`.
 
 If your site is multilingual, you can choose one of the following options or combine them:
 1. Set `names` as in the `multilingual_menu_name` example.
@@ -562,14 +562,31 @@ bio = ""
 # Social icons.
 # "name" should be the file name of "static/icons/*.svg" or
 # the icon name of https://simpleicons.org/
-# "url" supports "$BASE_URL".
+# "url" supports "@base".
 # Other variables: "urls", "title", "titles".
 social = [
     { name = "bluesky", url = "https://bsky.app/profile/username" },
     { name = "github", url = "https://github.com/username" },
     { name = "email", url = "mailto:example@example.com" },
-    { name = "rss", url = "$BASE_URL/atom.xml" },
+    { name = "rss", url = "@base/atom.xml" },
 ]
+
+# Set if you have a Fediverse account.
+#  handle – Your Fediverse handle.
+#  domain – Your Fediverse instance.
+#  url – Your Fediverse account URL. Optional.
+# Example for @me@mastodon.social:
+# { handle = "me", domain = "mastodon.social" }
+fediverse_creator = { handle = "", domain = "" }
+
+# The URL for Open Graph image.
+# Uses the get_url function, does not support @base.
+og_image = ""
+
+# A description of what is in the Open Graph image.
+# Default value: ""
+og_image_alt = ""
+
 ```
 
 ### Profile translations
@@ -594,56 +611,6 @@ bio = ""
 social = []
 ```
 
-### Open Graph for profiles
-
-See [the Open Graph protocol](https://ogp.me/).
-
-```toml ,name=zola.toml
-# Replace "your_username" with your username.
-[extra.profiles.your_username.open_graph]
-
-# The URL of the social image.
-image = ""
-
-# A description of what is in the social image.
-# Default value: ""
-image_alt = ""
-
-# Your first name. No default value.
-first_name = ""
-# Your last name. No default value.
-last_name = ""
-# Your username. No default value.
-username = ""
-# e.g. "female" or "male". No default value.
-gender = ""
-
-# fb_app_id = "Your fb app ID"
-# fb_admins = ["YOUR_USER_ID"]
-
-# Set if you have a Fediverse account.
-#  handle – Your Fediverse handle.
-#  domain – Your Fediverse instance.
-#  url – Your Fediverse account URL. Optional.
-# Example for @me@mastodon.social:
-# { handle = "me", domain = "mastodon.social" }
-fediverse_creator = { handle = "", domain = "" }
-```
-
-`image` and `image_alt` of the default author's profile will be used
-as a fallback Open Graph image for all pages.
-
-#### Open Graph translations
-
-Skip if your site is not multilingual.
-
-```toml ,name=zola.toml
-# For French. Replace "your_username" with your username.
-[extra.profiles.your_username.open_graph.languages.fr]
-# A description of what is in the social image.
-image_alt = ""
-```
-
 ### The page footer
 
 ```toml ,name=zola.toml
@@ -653,41 +620,38 @@ image_alt = ""
 since = 2025
 
 # Replace with the URL of the license you want.
-# No default value. Supports "$BASE_URL".
+# No default value. Supports "@base".
 license_url = "https://creativecommons.org/licenses/by-sa/4.0/deed"
 
 # Replace "Your Name" with your name and "CC BY-SA 4.0" with the name of the license you want.
 copyright = "&copy; $YEAR Your Name &vert; [CC BY-SA 4.0]($LICENSE_URL)"
 
 # Not used yet.
-# Supports "$BASE_URL".
-# privacy_policy_url = "$BASE_URL/privacy-policy/"
+# Supports "@base".
+# privacy_policy_url = "@base/privacy-policy/"
 
 # Not used yet.
-# Supports "$BASE_URL".
-# terms_of_service_url = "$BASE_URL/terms-of-service/"
+# Supports "@base".
+# terms_of_service_url = "@base/terms-of-service/"
 
 # Not used yet.
-# Supports "$BASE_URL".
-# search_page_url = "$BASE_URL/search/"
+# Supports "@base".
+# search_page_url = "@base/search/"
 ```
 
-The `copyright` variable supports Markdown,
+The `copyright` variable supports Markdown and these variables:
 `$BASE_URL`, `$YEAR` (uses `since`), and `$LICENSE_URL` (uses `license_url`).
 
 ### Language specific options
 
-For date format, see [chrono docs](https://docs.rs/chrono/0.4/chrono/format/strftime/index.html).
+For date format, see [docs](https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html).
 
 ```toml ,name=zola.toml
 # For English
 [extra.languages.en]
 
-# No default value.
-locale = "en_US"
-
 # Default value: "%F"
-date_format = "%x"
+date_format = "%Y %b %-d"
 
 # Default value: extra.page_info
 # page_info = []
@@ -726,8 +690,8 @@ authors = "Browse articles written by $NAME. Start exploring!"
 ```toml ,name=zola.toml
 # For French
 [extra.languages.fr]
-locale = "fr_FR"
-date_format = "%x"
+date_format = "%F"
+num_format = "fr"
 ```
 
 ### Web analytics
