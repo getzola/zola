@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 use std::path::PathBuf;
 
 use ahash::AHashMap;
@@ -38,7 +37,7 @@ impl<'a> SerializedTaxonomyTerm<'a> {
 }
 
 /// A taxonomy with all its pages
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TaxonomyTerm {
     pub name: String,
     pub slug: String,
@@ -73,19 +72,7 @@ impl TaxonomyTerm {
         pages.extend(ignored_pages);
         Ok(TaxonomyTerm { name: name.to_string(), permalink, path, slug, pages })
     }
-
-    pub fn merge(&mut self, other: Self) {
-        self.pages.extend(other.pages);
-    }
 }
-
-impl PartialEq for TaxonomyTerm {
-    fn eq(&self, other: &Self) -> bool {
-        self.permalink == other.permalink
-    }
-}
-
-impl Eq for TaxonomyTerm {}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct SerializedTaxonomy<'a> {
@@ -123,34 +110,27 @@ pub struct Taxonomy {
 
 impl Taxonomy {
     pub(crate) fn new(tax_found: TaxonomyFound, config: &Config) -> Result<Self> {
-        let mut sorted_items = vec![];
         let slug = tax_found.slug;
+        let mut by_slug: AHashMap<String, (&str, Vec<&Page>)> = AHashMap::new();
         for (name, pages) in tax_found.terms {
-            sorted_items.push(TaxonomyTerm::new(
-                name,
-                tax_found.lang,
-                tax_found.config,
-                &pages,
-                config,
-            )?);
+            let slug = slugify_paths(name, config.slugify.taxonomies);
+            let (canonical_name, all_pages) = by_slug.entry(slug).or_insert((name, Vec::new()));
+            // We just need to pick a deterministic choice, so we pick the lesser one
+            if name < *canonical_name {
+                *canonical_name = name;
+            }
+            all_pages.extend(pages);
         }
 
-        sorted_items.sort_by(|a, b| match a.slug.cmp(&b.slug) {
-            Ordering::Less => Ordering::Less,
-            Ordering::Greater => Ordering::Greater,
-            Ordering::Equal => a.name.cmp(&b.name),
-        });
-        sorted_items.dedup_by(|a, b| {
-            // custom Eq impl checks for equal permalinks
-            // here we make sure all pages from a get copied to b
-            // before dedup gets rid of it
-            if a == b {
-                b.merge(a.to_owned());
-                true
-            } else {
-                false
-            }
-        });
+        let mut sorted_items = by_slug
+            .into_values()
+            .map(|(name, pages)| {
+                TaxonomyTerm::new(name, tax_found.lang, tax_found.config, &pages, config)
+            })
+            .collect::<Result<Vec<_>>>()?;
+
+        sorted_items.sort_by(|a, b| a.slug.cmp(&b.slug));
+
         let path = config.get_taxonomy_path(tax_found.lang, tax_found.config);
         let permalink = config.make_permalink(&path);
 
@@ -246,25 +226,31 @@ mod tests {
         let mut tax_conf = TaxonomyConfig::default();
         tax_conf.slug = "games".to_string();
 
-        fn create_page(name: &str) -> Page {
-            let front_matter =
-                PageFrontMatter { date: Some("2026-08-05".to_string()), ..Default::default() };
+        fn create_page(name: &str, date: &str) -> Page {
+            let mut front_matter =
+                PageFrontMatter { date: Some(date.to_string()), ..Default::default() };
+            front_matter.date_to_datetime();
             Page::new(format!("content/{name}.md"), front_matter, &PathBuf::new())
         }
-        let page1 = create_page("a");
-        let page2 = create_page("b");
+        let page1 = create_page("a", "2026-08-01");
+        let page2 = create_page("b", "2026-08-03");
+        let page3 = create_page("c", "2026-08-02");
 
         let mut tax_found = TaxonomyFound::new("games".into(), &conf.default_language, &tax_conf);
         // different capitalization of legends
-        tax_found.terms.insert("League of legends", vec![&page1]);
-        tax_found.terms.insert("League of Legends", vec![&page2]);
+        tax_found.terms.insert("League of legends", vec![&page1, &page2]);
+        tax_found.terms.insert("League of Legends", vec![&page3]);
 
         let tax = Taxonomy::new(tax_found, &conf).unwrap();
 
-        // Only one item in the end, with the 2 pages
+        // Only one item in the end, with the 3 pages
         assert_eq!(tax.items.len(), 1);
         assert_eq!(tax.items[0].slug, "league-of-legends");
-        assert_eq!(tax.items[0].pages.len(), 2);
+        assert_eq!(tax.items[0].pages.len(), 3);
+        assert_eq!(
+            tax.items[0].pages,
+            vec![page2.file.path.clone(), page3.file.path.clone(), page1.file.path.clone()]
+        );
     }
 
     // https://github.com/getzola/zola/issues/2338
