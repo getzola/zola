@@ -804,16 +804,18 @@ impl Site {
         create_directory(&self.output_path)?;
         // TODO: add those to the SITE_CONTENT map
 
+        let mut langs = Vec::new();
         // index first
         if self.config.build_search_index {
-            self.index_for_lang(&self.config.default_language)?;
+            langs.push(self.config.default_language.as_str());
         }
 
         for (code, language) in &self.config.other_languages() {
             if code != &self.config.default_language && language.build_search_index {
-                self.index_for_lang(code)?;
+                langs.push(code);
             }
         }
+        langs.into_par_iter().try_for_each(|lang| self.index_for_lang(lang))?;
 
         match self.config.search.index_format {
             IndexFormat::ElasticlunrJavascript | IndexFormat::ElasticlunrJson => {
