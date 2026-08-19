@@ -4969,6 +4969,7 @@ dependencies = [
  "minify-html",
  "path-slash",
  "rayon",
+ "regex",
  "relative-path",
  "render",
  "search",

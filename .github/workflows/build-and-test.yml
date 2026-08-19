@@ -52,3 +52,6 @@ jobs:
 
       - name: Cargo test
         run: cargo test --all
+
+      - name: Build the zola docs
+        run: cd docs && cargo run -- build
