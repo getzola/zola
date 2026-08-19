@@ -4,13 +4,15 @@ use pulldown_cmark::Options;
 use tera::Tera;
 use utils::types::InsertAnchor;
 
+use crate::WikilinkResolver;
+
 /// All the information from the zola site that is needed to render HTML from markdown
 pub struct MarkdownContext<'a> {
     pub tera: &'a Tera,
     pub config: &'a Config,
     pub permalinks: &'a AHashMap<String, String>,
     pub colocated_assets: &'a AHashMap<String, (String, String)>,
-    pub wikilinks: &'a AHashMap<String, String>,
+    pub wikilinks: &'a WikilinkResolver,
     pub lang: &'a str,
     pub current_permalink: &'a str,
     pub current_path: &'a str,

@@ -1,6 +1,6 @@
 use ahash::AHashMap;
 use config::Config;
-use markdown::{MarkdownContext, render_content};
+use markdown::{MarkdownContext, WikilinkResolver, render_content};
 use templates::ZOLA_TERA;
 use utils::slugs::SlugifyStrategy;
 use utils::types::InsertAnchor;
@@ -110,7 +110,7 @@ fn can_customise_anchor_template() {
     let permalinks_ctx = AHashMap::new();
     let config = Config::default_for_test();
     let colocated_assets = AHashMap::new();
-    let wikilinks_ctx = AHashMap::new();
+    let wikilinks_ctx = WikilinkResolver::default();
     let context = MarkdownContext {
         tera: &tera,
         config: &config,
@@ -131,7 +131,7 @@ fn can_customise_summary_template() {
     let mut tera = ZOLA_TERA.clone();
     tera.add_raw_template("summary-cutoff.html", " (in {{ lang }})").unwrap();
     let permalinks_ctx = AHashMap::new();
-    let wikilinks_ctx = AHashMap::new();
+    let wikilinks_ctx = WikilinkResolver::default();
     let config = Config::default_for_test();
     let colocated_assets = AHashMap::new();
     let context = MarkdownContext {
@@ -501,6 +501,7 @@ fn wikilink_resolution() {
         "[[quickstart|Get Started]]",
         "[[#details]]",
         "[[#details|Details]]",
+        "[[start|Start alias]]",
     ];
 
     let markdown = format!("{}\n\n## Details", cases.join("\n"));
@@ -511,7 +512,7 @@ fn wikilink_resolution() {
 }
 
 #[test]
-fn wikilink_nonexistent() {
+fn wikilink_errors() {
     // warn level: renders with raw link
     let mut config = Config::default_for_test();
     config.markdown.wikilinks = true;
@@ -523,5 +524,11 @@ fn wikilink_nonexistent() {
     let mut config = Config::default_for_test();
     config.markdown.wikilinks = true;
     config.link_checker.internal_level = config::LinkCheckerLevel::Error;
-    assert!(common::render_with_config("[[nope]]", config).is_err());
+    assert!(common::render_with_config("[[nope]]", config.clone()).is_err());
+
+    let message = common::render_with_config("[[duplicate]]", config).unwrap_err().to_string();
+    assert_eq!(
+        message,
+        "Broken wikilink `[[duplicate]]` in my_page.md; target is ambiguous; candidates: archive/duplicate, guides/duplicate"
+    );
 }
