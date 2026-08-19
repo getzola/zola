@@ -89,7 +89,7 @@ fn escape_href_string(s: &str) -> String {
 /// for example an article could have several titles named Example
 /// We add a counter after the slug if the slug is already present, which
 /// means we will have example, example-1, example-2 etc
-fn find_anchor(anchors: &[String], name: String, level: u16) -> String {
+fn find_anchor(anchors: &HashSet<String>, name: String, level: u16) -> String {
     if level == 0 && !anchors.contains(&name) {
         return name;
     }
@@ -271,7 +271,7 @@ pub struct State<'a> {
     /// name -> (number, count)
     footnote_numbers: HashMap<String, (usize, usize)>,
     /// All heading IDs we've generated so far, for collision detection.
-    anchors: Vec<String>,
+    anchors: HashSet<String>,
     /// Explicit heading IDs we've already processed (for collision detection)
     seen_explicit_ids: HashSet<String>,
     toc: Vec<Heading>,
@@ -319,7 +319,7 @@ impl<'a> State<'a> {
         // Pre-scan for explicit heading IDs to reserve them
         for event in &events {
             if let Event::Start(Tag::Heading { id: Some(explicit_id), .. }) = event {
-                self.anchors.push(explicit_id.to_string());
+                self.anchors.insert(explicit_id.to_string());
             }
         }
 
@@ -344,7 +344,7 @@ impl<'a> State<'a> {
         } else {
             let id =
                 find_anchor(&self.anchors, slugify_anchors(&title, ctx.config.slugify.anchors), 0);
-            self.anchors.push(id.clone());
+            self.anchors.insert(id.clone());
             id
         };
 
