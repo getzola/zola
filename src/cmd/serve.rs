@@ -654,8 +654,8 @@ pub fn serve(
 
             log::info!(
                 "Web server is available at {} (bound to {})\n",
-                &constructed_base_url.replace(&bind_address.to_string(), &local_addr.to_string()),
-                &local_addr
+                constructed_base_url.replace(&bind_address.to_string(), &local_addr.to_string()),
+                local_addr
             );
             if open && let Err(err) = open::that(&constructed_base_url) {
                 log::error!("Failed to open URL in your browser: {err}");

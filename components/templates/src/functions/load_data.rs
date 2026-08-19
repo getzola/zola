@@ -299,7 +299,7 @@ impl Function<TeraResult<Value>> for LoadData {
                 // source is None only with path_arg (not URL), so path_arg is safely unwrap
                 return Err(Error::message(format!(
                     "`load_data`: {} doesn't exist",
-                    &self.base_path.join(path_arg.unwrap()).display()
+                    self.base_path.join(path_arg.unwrap()).display()
                 )));
             }
             (Ok(Some(data_source)), _) => data_source,
@@ -343,7 +343,7 @@ impl Function<TeraResult<Value>> for LoadData {
                                 Err(_) => {
                                     return Err(Error::message(format!(
                                         "`load_data`: {} is an illegal content type",
-                                        &content_type
+                                        content_type
                                     )));
                                 }
                             }

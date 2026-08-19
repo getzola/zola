@@ -208,7 +208,7 @@ impl Config {
     }
 
     pub fn slugify_taxonomies(&mut self) {
-        for (_, lang_options) in self.languages.iter_mut() {
+        for lang_options in self.languages.values_mut() {
             for tax_def in lang_options.taxonomies.iter_mut() {
                 tax_def.slug = slugify_paths(&tax_def.name, self.slugify.taxonomies);
             }

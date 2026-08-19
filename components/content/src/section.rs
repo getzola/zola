@@ -138,7 +138,7 @@ impl Section {
             section.colocated_assets = get_colocated_assets(
                 &section.assets,
                 section.file.path.parent().unwrap(),
-                &colocated_path,
+                colocated_path,
                 &format!("{}_index.md", colocated_path),
             );
         }

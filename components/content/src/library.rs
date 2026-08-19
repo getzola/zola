@@ -502,7 +502,7 @@ impl Library {
             }
         }
 
-        translations.sort_by(|a, b| a.lang.cmp(&b.lang));
+        translations.sort_by(|a, b| a.lang.cmp(b.lang));
         translations
     }
 

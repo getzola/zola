@@ -164,7 +164,7 @@ impl CodeBlock {
                     .markdown
                     .highlighting
                     .as_ref()
-                    .map(|x| x.data_attr_position.clone())
+                    .map(|x| x.data_attr_position)
                     .unwrap_or_default(),
                 extra_html_content: ExtraHtmlContent::default(),
                 add_color_scheme: ctx
@@ -451,7 +451,7 @@ impl<'a> State<'a> {
                 self.internal_links
                     .push((ctx.current_path.to_owned(), Some(stripped_link.to_owned())));
             }
-            format!("{}{}", ctx.current_permalink, &link)
+            format!("{}{}", ctx.current_permalink, link)
         } else {
             link.to_string()
         };

@@ -193,7 +193,7 @@ impl Page {
                 page.colocated_assets = get_colocated_assets(
                     &page.assets,
                     page.file.path.parent().unwrap(),
-                    &colocated_path,
+                    colocated_path,
                     &format!("{}index.md", colocated_path),
                 );
             }

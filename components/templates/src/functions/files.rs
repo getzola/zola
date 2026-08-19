@@ -90,13 +90,13 @@ impl Function<TeraResult<String>> for GetUrl {
         let explicit_lang: Option<String> = kwargs.get("lang")?;
 
         // if it starts with @/, resolve it as an internal link
-        if path.starts_with("@/") {
+        if let Some(stripped) = path.strip_prefix("@/") {
             let lang: String = explicit_lang
                 .or(state.get("lang")?)
                 .unwrap_or_else(|| self.config.default_language.clone());
 
             // Check if it's a colocated asset first
-            if let Some((owner_md, rel)) = self.colocated_assets.get(&path[2..]) {
+            if let Some((owner_md, rel)) = self.colocated_assets.get(stripped) {
                 let owner_with_lang =
                     make_path_with_lang(format!("@/{}", owner_md), &lang, &self.config)?;
                 return match resolve_internal_link(&owner_with_lang, &self.permalinks) {
