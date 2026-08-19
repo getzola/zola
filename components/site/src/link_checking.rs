@@ -27,28 +27,28 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
         .library
         .pages
         .values()
-        .flat_map(|p| p.internal_links.iter().map(move |l| (p.file.path.clone(), l)));
+        .flat_map(|p| p.internal_links.iter().map(move |l| (&p.file.path, l)));
     let section_links = site
         .library
         .sections
         .values()
-        .flat_map(|p| p.internal_links.iter().map(move |l| (p.file.path.clone(), l)));
+        .flat_map(|p| p.internal_links.iter().map(move |l| (&p.file.path, l)));
     let all_links = page_links.chain(section_links);
 
-    // Only keep links with anchor fragments, and count them too.
+    // Only keep links with anchor fragments.
     // Bare files have already been checked elsewhere, thus they are not interesting here.
-    let mut anchors_total = 0usize;
-    let links_with_anchors = all_links
+    let links_with_anchors: Vec<_> = all_links
         .filter_map(|(page_path, link)| match link {
             (md_path, Some(anchor)) => Some((page_path, md_path, anchor)),
             _ => None,
         })
         .filter(|(_, _, anchor)| !is_special_anchor(anchor))
-        .inspect(|_| anchors_total = anchors_total.saturating_add(1));
+        .collect();
+    let anchors_total = links_with_anchors.len();
 
     // Check for targets existence (including anchors), then keep only the faulty
     // entries for error reporting purposes.
-    let missing_targets = links_with_anchors.filter(|(page, md_path, anchor)| {
+    let missing_targets = links_with_anchors.par_iter().filter(|(page, md_path, anchor)| {
         // There are a few `expect` here since the presence of the .md file will
         // already have been checked in the markdown rendering
         let mut full_path = site.base_path.clone();
@@ -82,7 +82,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
     });
 
     // Format faulty entries into error messages, and collect them.
-    let messages = missing_targets
+    let mut messages = missing_targets
         .map(|(page_path, md_path, anchor)| {
             format!(
                 "The anchor in the link `@/{}#{}` in {} does not exist.",
@@ -92,6 +92,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
             )
         })
         .collect::<Vec<_>>();
+    messages.sort_by(|a, b| b.cmp(&a));
 
     // Finally emit a summary, and return overall anchors-checking result.
     if messages.is_empty() {
