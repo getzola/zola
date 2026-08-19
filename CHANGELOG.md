@@ -9,6 +9,7 @@
 - Various fixes with `zola serve` -u/-i flags
 - Date sorting is now using descending permalink as tie breaker instead of ascending to match date sorting
 - Cache result of `get_url(..., cachebust=true)`
+- Do not error when setting heading ids in content with a Tera error
 
 ## 0.23.3 (2026-08-11)
 

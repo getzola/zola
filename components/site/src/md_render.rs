@@ -2,8 +2,10 @@
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 use ahash::AHashMap;
+use regex::Regex;
 use tera::Tera;
 
 use config::Config;
@@ -14,11 +16,45 @@ use render::Renderer;
 use utils::net::is_external_link;
 use utils::types::InsertAnchor;
 
+/// We will replace the starting `{` of a heading id with this string which
+/// shouldn't be found in real content (hopefully?).
+const SENTINEL: &str = "『』@@ZOLA_HEADING_START@@『』";
+
+/// A regex getting headers with a pulldown-cmark id and that are NOT a tera comment
+static HEADING_ATTR_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?m)^( {0,3}#{1,6} .*?)\{#([^\s{}#](?:[^{}\n]*[^#{}\n])?)}([^\n]*)$").unwrap()
+});
+
+static HEADING_ID_REPLACEMENT: LazyLock<String> =
+    LazyLock::new(|| format!("${{1}}{SENTINEL}#${{2}}}}${{3}}"));
+
+/// What we are looking for to check if we need to render via Tera
+const TERA_DELIMITERS: [(&[u8], &[u8]); 3] = [(b"{{", b"}}"), (b"{%", b"%}"), (b"{#", b"#}")];
+
+#[inline]
+fn protect_heading_ids(content: &str) -> Cow<'_, str> {
+    // If we actually see it, well we don't do anything since it would change the actual content
+    // but I really want to see that content now.
+    if content.contains(SENTINEL) {
+        return Cow::Borrowed(content);
+    }
+
+    HEADING_ATTR_RE.replace_all(content, HEADING_ID_REPLACEMENT.as_str())
+}
+
+#[inline]
+fn restore_heading_ids(rendered: String) -> String {
+    // fast path: no sentinel → return unchanged
+    if rendered.contains(SENTINEL) { rendered.replace(SENTINEL, "{") } else { rendered }
+}
+
 #[inline]
 fn needs_templating(s: &str) -> bool {
     let bytes = s.as_bytes();
-    memchr::memchr_iter(b'{', bytes)
-        .any(|i| i + 1 < bytes.len() && (bytes[i + 1] == b'{' || bytes[i + 1] == b'%'))
+    TERA_DELIMITERS.iter().any(|(open, close)| {
+        memchr::memmem::find(bytes, open)
+            .is_some_and(|i| memchr::memmem::find(&bytes[i + open.len()..], close).is_some())
+    })
 }
 
 /// We need access to all pages url to render links relative to content
@@ -37,8 +73,17 @@ pub fn render_page(
         .as_ref()
         .is_some_and(|gs| gs.is_match(&page.file.relative));
 
-    let input = if !skip_templating && needs_templating(&page.raw_content) {
-        Cow::Owned(renderer.render_page_content(&page.raw_content, page)?)
+    let input = if !skip_templating {
+        let protected = protect_heading_ids(&page.raw_content);
+        if !needs_templating(protected.as_ref()) {
+            Cow::Borrowed(&page.raw_content)
+        } else {
+            let rendered = renderer.render_page_content(&protected, page)?;
+            Cow::Owned(match protected {
+                Cow::Owned(_) => restore_heading_ids(rendered),
+                Cow::Borrowed(_) => rendered,
+            })
+        }
     } else {
         Cow::Borrowed(&page.raw_content)
     };
@@ -78,11 +123,21 @@ pub fn render_section(
         .as_ref()
         .is_some_and(|gs| gs.is_match(&section.file.relative));
 
-    let input = if !skip_templating && needs_templating(&section.raw_content) {
-        Cow::Owned(renderer.render_section_content(&section.raw_content, section)?)
+    let input = if !skip_templating {
+        let protected = protect_heading_ids(&section.raw_content);
+        if !needs_templating(protected.as_ref()) {
+            Cow::Borrowed(&section.raw_content)
+        } else {
+            let rendered = renderer.render_section_content(&protected, section)?;
+            Cow::Owned(match protected {
+                Cow::Owned(_) => restore_heading_ids(rendered),
+                Cow::Borrowed(_) => rendered,
+            })
+        }
     } else {
         Cow::Borrowed(&section.raw_content)
     };
+
     let context = MarkdownContext {
         tera,
         config,
@@ -114,6 +169,7 @@ pub fn render_section(
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::Cow;
     use std::collections::HashMap;
     use std::path::Path;
     use std::path::PathBuf;
@@ -126,7 +182,7 @@ mod tests {
     use templates::ZOLA_TERA;
     use utils::types::InsertAnchor;
 
-    use super::render_page;
+    use super::{protect_heading_ids, render_page, restore_heading_ids};
 
     fn make_renderer<'a>(
         config: &'a Config,
@@ -259,6 +315,75 @@ And here's another. [^3]
         </li>
         </ol>
         </section>
+        "#);
+    }
+
+    #[test]
+    fn can_protect_valid_heading_ids() {
+        let inputs = vec![
+            ("## Mermaid {#mermaid-header}", true),
+            ("## Mermaid {#mermaid-header #another}", true),
+            ("## Mermaid { #mermaid-header }", false),
+            ("## Mermaid {#mermaid-header .some-class}", true),
+            ("## Mermaid {#mermaid-header} {#some comments#}", true),
+            ("## Mermaid {#some comments#} {#mermaid-header}", true),
+            ("## Mermaid {#some comments#}", false),
+            ("## Mermaid {# some comments#}", false),
+        ];
+
+        for (input, should_be_owned) in inputs {
+            println!("{input}");
+            let res = protect_heading_ids(input);
+            if should_be_owned {
+                assert!(matches!(res, Cow::Owned(_)));
+            } else {
+                assert!(matches!(res, Cow::Borrowed(_)));
+            }
+            assert_eq!(input, restore_heading_ids(res.to_string()));
+        }
+    }
+
+    // https://github.com/getzola/zola/issues/3234
+    #[test]
+    fn can_keep_heading_ids() {
+        let config = Config::default_for_test();
+        let library = Library::default();
+        let mut cache = RenderCache::new(&config);
+        cache.build(&library, &[], &ZOLA_TERA);
+        let content = r##"
++++
++++
+# Mermaid {#mermaid-header}
+# Mermaid { #mermaid-header2}
+# Mermaid { #mermaid-header3 .class}
+# Mermaid {#comments#}
+# Mermaid {#comments#} {#mermaid-header4}
+# Mermaid {#mermaid-header5}{#comments#}
+
+{{ 0 }}
+"##;
+        let res = Page::parse(Path::new("hello.md"), content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let mut page = res.unwrap();
+        let renderer = make_renderer(&config, &library, &cache);
+        render_page(
+            &mut page,
+            renderer,
+            &HashMap::default(),
+            &AHashMap::default(),
+            &ZOLA_TERA,
+            &config,
+            InsertAnchor::None,
+        )
+        .unwrap();
+        insta::assert_snapshot!(page.content, @r#"
+        <h1 id="mermaid-header">Mermaid</h1>
+        <h1 id="mermaid-header2">Mermaid</h1>
+        <h1 id="mermaid-header3" class="class">Mermaid</h1>
+        <h1 id="mermaid">Mermaid</h1>
+        <h1 id="mermaid-header4">Mermaid</h1>
+        <h1 id="mermaid-header5">Mermaid</h1>
+        <p>0</p>
         "#);
     }
 }
