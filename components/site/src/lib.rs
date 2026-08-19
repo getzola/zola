@@ -24,6 +24,7 @@ use crate::wikilinks::build_wikilinks;
 use config::{Config, IndexFormat, get_config};
 use content::{Library, Page, Section, Taxonomy};
 use errors::{Result, anyhow, bail};
+use markdown::WikilinkResolver;
 use relative_path::RelativePathBuf;
 use render::{RenderCache, Renderer};
 use templates::load_tera;
@@ -66,10 +67,8 @@ pub struct Site {
     /// A map of all .md files (section and pages) and their permalink
     /// We need that if there are relative links in the content that need to be resolved
     pub permalinks: AHashMap<String, String>,
-    /// A map of filename stems (with the full relative path and also without when possible)
-    /// to relative path for wikilink resolution
-    /// Built from the permalinks field
-    pub wikilinks: AHashMap<String, String>,
+    /// Resolves content wikilinks by source path, alias, or unambiguous stem.
+    pub wikilinks: WikilinkResolver,
     /// Contains all pages and sections of the site
     pub library: Arc<Library>,
     /// Pre-serialized render cache
@@ -116,7 +115,7 @@ impl Site {
             templates_path,
             taxonomies: Vec::new(),
             permalinks: AHashMap::new(),
-            wikilinks: AHashMap::new(),
+            wikilinks: WikilinkResolver::default(),
             include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(Library::default()),
@@ -639,9 +638,9 @@ impl Site {
 
     fn build_wikilinks(&mut self) {
         if self.config.markdown.wikilinks {
-            self.wikilinks = build_wikilinks(&self.permalinks);
+            self.wikilinks = build_wikilinks(&self.library);
         } else {
-            self.wikilinks.clear();
+            self.wikilinks = WikilinkResolver::default();
         }
     }
 

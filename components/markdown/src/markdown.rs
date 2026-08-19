@@ -15,7 +15,7 @@ use utils::slugs::slugify_anchors;
 use utils::table_of_contents::{Heading, make_table_of_contents};
 use utils::types::InsertAnchor;
 
-use crate::MarkdownContext;
+use crate::{MarkdownContext, WikilinkError};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 static EMOJI_REPLACER: LazyLock<EmojiReplacer> = LazyLock::new(EmojiReplacer::new);
@@ -429,20 +429,30 @@ impl<'a> State<'a> {
                 }
                 return Ok(format!("{}#{anchor}", ctx.current_permalink));
             }
-            if let Some(md_path) = ctx.wikilinks.get(key) {
-                let permalink = &ctx.permalinks[md_path];
-                self.internal_links.push((md_path.clone(), anchor.clone()));
-                match anchor {
-                    Some(a) => format!("{}#{}", permalink, a),
-                    None => permalink.clone(),
+            match ctx.wikilinks.resolve(key) {
+                Ok(md_path) => {
+                    let permalink = &ctx.permalinks[md_path];
+                    self.internal_links.push((md_path.to_string(), anchor.clone()));
+                    match anchor {
+                        Some(a) => format!("{}#{}", permalink, a),
+                        None => permalink.clone(),
+                    }
                 }
-            } else {
-                let msg = format!("Broken wikilink `[[{}]]` in {}", link, ctx.current_path);
-                match ctx.config.link_checker.internal_level {
-                    config::LinkCheckerLevel::Error => bail!(msg),
-                    config::LinkCheckerLevel::Warn => {
-                        log::warn!("{msg}");
-                        link.to_string()
+                Err(error) => {
+                    let detail = match error {
+                        WikilinkError::Missing => String::new(),
+                        WikilinkError::Ambiguous { candidates } => {
+                            format!("; target is ambiguous; candidates: {}", candidates.join(", "))
+                        }
+                    };
+                    let msg =
+                        format!("Broken wikilink `[[{}]]` in {}{detail}", link, ctx.current_path);
+                    match ctx.config.link_checker.internal_level {
+                        config::LinkCheckerLevel::Error => bail!(msg),
+                        config::LinkCheckerLevel::Warn => {
+                            log::warn!("{msg}");
+                            link.to_string()
+                        }
                     }
                 }
             }
@@ -756,6 +766,8 @@ mod tests {
     use insta::assert_snapshot;
     use templates::ZOLA_TERA;
 
+    use crate::WikilinkResolver;
+
     static EMPTY_ASSETS: LazyLock<AHashMap<String, (String, String)>> =
         LazyLock::new(AHashMap::new);
 
@@ -763,7 +775,7 @@ mod tests {
         config: &'a Config,
         tera: &'a tera::Tera,
         permalinks: &'a AHashMap<String, String>,
-        wikilinks: &'a AHashMap<String, String>,
+        wikilinks: &'a WikilinkResolver,
     ) -> MarkdownContext<'a> {
         MarkdownContext {
             tera,
@@ -808,7 +820,7 @@ mod tests {
             "blog/english-only/img.png".to_string(),
             ("blog/english-only/index.md".to_string(), "img.png".to_string()),
         );
-        let wikilinks = AHashMap::new();
+        let wikilinks = WikilinkResolver::default();
         let mut context = make_context(&config, &tera, &permalinks, &wikilinks);
         context.colocated_assets = &colocated_assets;
         context.lang = "fr";
@@ -830,7 +842,7 @@ mod tests {
         let config = Config::default();
         let tera = ZOLA_TERA.clone();
         let permalinks = AHashMap::new();
-        let wikilinks = AHashMap::new();
+        let wikilinks = WikilinkResolver::default();
         let context = make_context(&config, &tera, &permalinks, &wikilinks);
         for more in mores {
             let content = format!("{top}\n\n{more}\n\n{bottom}");
@@ -853,7 +865,7 @@ mod tests {
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
         let permalinks = AHashMap::new();
-        let wikilinks = AHashMap::new();
+        let wikilinks = WikilinkResolver::default();
         let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "Some text *without* footnotes.\n\nOnly ~~fancy~~ formatting.";
@@ -867,7 +879,7 @@ mod tests {
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
         let permalinks = AHashMap::new();
-        let wikilinks = AHashMap::new();
+        let wikilinks = WikilinkResolver::default();
         let mut context = make_context(&config, &tera, &permalinks, &wikilinks);
         // https://github.com/getzola/zola/issues/2613
         context.current_permalink = "https://example.com/post/";
@@ -882,7 +894,7 @@ mod tests {
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
         let permalinks = AHashMap::new();
-        let wikilinks = AHashMap::new();
+        let wikilinks = WikilinkResolver::default();
         let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "This text has two[^2] footnotes[^1]\n[^1]: not sorted.\n[^2]: But they are";
@@ -896,7 +908,7 @@ mod tests {
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
         let permalinks = AHashMap::new();
-        let wikilinks = AHashMap::new();
+        let wikilinks = WikilinkResolver::default();
         let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "[^1]:It's before the reference.\n\n There is footnote definition?[^1]";
@@ -910,7 +922,7 @@ mod tests {
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
         let permalinks = AHashMap::new();
-        let wikilinks = AHashMap::new();
+        let wikilinks = WikilinkResolver::default();
         let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "This text has two[^1] identical footnotes[^1]\n[^1]: So one is present.\n[^2]: But another in not.";
@@ -924,7 +936,7 @@ mod tests {
         config.markdown.bottom_footnotes = true;
         let tera = ZOLA_TERA.clone();
         let permalinks = AHashMap::new();
-        let wikilinks = AHashMap::new();
+        let wikilinks = WikilinkResolver::default();
         let context = make_context(&config, &tera, &permalinks, &wikilinks);
 
         let content = "This text has a footnote[^1]\n[^1]: But the footnote has another footnote[^2].\n[^2]: That's it.";

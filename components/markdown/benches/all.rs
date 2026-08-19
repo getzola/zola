@@ -1,7 +1,7 @@
 use ahash::AHashMap;
 use config::{Config, Highlighting};
 use criterion::{Criterion, criterion_group, criterion_main};
-use markdown::{MarkdownContext, render_content};
+use markdown::{MarkdownContext, WikilinkResolver, render_content};
 use std::hint::black_box;
 use templates::ZOLA_TERA;
 use utils::types::InsertAnchor;
@@ -72,7 +72,7 @@ fn bench_without_highlighting(c: &mut Criterion) {
     let mut tera = ZOLA_TERA.clone();
     tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
     let permalinks = AHashMap::new();
-    let wikilinks = AHashMap::new();
+    let wikilinks = WikilinkResolver::default();
     let config = Config::default_for_test();
 
     let colocated_assets = AHashMap::new();
@@ -97,7 +97,7 @@ fn bench_with_highlighting(c: &mut Criterion) {
     let mut tera = ZOLA_TERA.clone();
     tera.set_fallback_prefixes(vec!["__zola_builtins/".to_string()]);
     let permalinks = AHashMap::new();
-    let wikilinks = AHashMap::new();
+    let wikilinks = WikilinkResolver::default();
     let mut config = Config::default_for_test();
 
     let mut highlighting = Highlighting {
