@@ -5,4 +5,7 @@ expression: res.body
 <p><a href="https://getzola.org/guides/quickstart/">quickstart</a>
 <a href="https://getzola.org/guides/quickstart/">guides/quickstart</a>
 <a href="https://getzola.org/guides/quickstart/#install">quickstart#install</a>
-<a href="https://getzola.org/guides/quickstart/">Get Started</a></p>
+<a href="https://getzola.org/guides/quickstart/">Get Started</a>
+<a href="https://www.getzola.org/test/#details">#details</a>
+<a href="https://www.getzola.org/test/#details">Details</a></p>
+<h2 id="details">Details</h2>
