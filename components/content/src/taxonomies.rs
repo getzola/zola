@@ -67,8 +67,9 @@ impl TaxonomyTerm {
         // Taxonomy are almost always used for blogs so we filter by dates
         // and it's not like we can sort things across sections by anything other
         // than dates
-        let (mut pages, ignored_pages) = sort_pages(taxo_pages, SortBy::Date);
-        // We still append pages without dates at the end
+        let (mut pages, mut ignored_pages) = sort_pages(taxo_pages, SortBy::Date);
+        // Sorting for determinism
+        ignored_pages.sort();
         pages.extend(ignored_pages);
         Ok(TaxonomyTerm { name: name.to_string(), permalink, path, slug, pages })
     }

@@ -213,6 +213,7 @@ mod tests {
     use super::*;
     use config::TaxonomyConfig;
     use content::{Page, SectionFrontMatter};
+    use tera::value::Key;
 
     fn create_section(is_index: bool, paginate_reversed: bool) -> Section {
         let f = SectionFrontMatter {
@@ -339,42 +340,42 @@ mod tests {
 
         let context = paginator.build_context(&paginator.pagers[0], &cache);
         let context = context.as_map().unwrap();
-        assert_eq!(context.get(&"paginate_by".into()).unwrap(), &Value::from(2));
+        assert_eq!(context.get(&Key::from("paginate_by")).unwrap(), &Value::from(2));
         assert_eq!(
-            context.get(&"first".into()).unwrap(),
+            context.get(&Key::from("first")).unwrap(),
             &Value::from("https://vincent.is/posts/")
         );
         assert_eq!(
-            context.get(&"last".into()).unwrap(),
+            context.get(&Key::from("last")).unwrap(),
             &Value::from("https://vincent.is/posts/page/2/")
         );
-        assert_eq!(context.get(&"previous".into()).unwrap(), &Value::none());
+        assert_eq!(context.get(&Key::from("previous")).unwrap(), &Value::none());
         assert_eq!(
-            context.get(&"next".into()).unwrap(),
+            context.get(&Key::from("next")).unwrap(),
             &Value::from("https://vincent.is/posts/page/2/")
         );
-        assert_eq!(context.get(&"current_index".into()).unwrap(), &Value::from(1));
-        assert_eq!(context.get(&"pages".into()).unwrap().as_array().unwrap().len(), 2);
+        assert_eq!(context.get(&Key::from("current_index")).unwrap(), &Value::from(1));
+        assert_eq!(context.get(&Key::from("pages")).unwrap().as_array().unwrap().len(), 2);
 
         let context = paginator.build_context(&paginator.pagers[1], &cache);
         let context = context.as_map().unwrap();
-        assert_eq!(context.get(&"paginate_by".into()).unwrap(), &Value::from(2));
+        assert_eq!(context.get(&Key::from("paginate_by")).unwrap(), &Value::from(2));
         assert_eq!(
-            context.get(&"first".into()).unwrap(),
+            context.get(&Key::from("first")).unwrap(),
             &Value::from("https://vincent.is/posts/")
         );
         assert_eq!(
-            context.get(&"last".into()).unwrap(),
+            context.get(&Key::from("last")).unwrap(),
             &Value::from("https://vincent.is/posts/page/2/")
         );
-        assert_eq!(context.get(&"next".into()).unwrap(), &Value::none());
+        assert_eq!(context.get(&Key::from("next")).unwrap(), &Value::none());
         assert_eq!(
-            context.get(&"previous".into()).unwrap(),
+            context.get(&Key::from("previous")).unwrap(),
             &Value::from("https://vincent.is/posts/")
         );
-        assert_eq!(context.get(&"current_index".into()).unwrap(), &Value::from(2));
-        assert_eq!(context.get(&"total_pages".into()).unwrap(), &Value::from(3));
-        assert_eq!(context.get(&"pages".into()).unwrap().as_array().unwrap().len(), 1);
+        assert_eq!(context.get(&Key::from("current_index")).unwrap(), &Value::from(2));
+        assert_eq!(context.get(&Key::from("total_pages")).unwrap(), &Value::from(3));
+        assert_eq!(context.get(&Key::from("pages")).unwrap().as_array().unwrap().len(), 1);
     }
 
     #[test]
@@ -440,7 +441,7 @@ mod tests {
         let context = paginator.build_context(&paginator.pagers[0], &cache);
         let context = context.as_map().unwrap();
         assert_eq!(
-            context.get(&"base_url".into()).unwrap(),
+            context.get(&Key::from("base_url")).unwrap(),
             &Value::from("https://vincent.is/posts/")
         );
     }
@@ -477,7 +478,7 @@ mod tests {
         cache.build(&library, &[], &tera);
         let context = paginator.build_context(&paginator.pagers[0], &cache);
         let context = context.as_map().unwrap();
-        assert_eq!(context.get(&"total_pages".into()).unwrap(), &Value::from(3));
+        assert_eq!(context.get(&Key::from("total_pages")).unwrap(), &Value::from(3));
     }
 
     #[test]

@@ -5,7 +5,7 @@ pub mod search;
 pub mod slugify;
 pub mod taxonomies;
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use globset::GlobSet;
@@ -53,9 +53,9 @@ pub struct Config {
     /// The language used in the site. Defaults to "en"
     pub default_language: String,
     /// The list of supported languages outside of the default one
-    pub languages: HashMap<String, languages::LanguageOptions>,
+    pub languages: BTreeMap<String, languages::LanguageOptions>,
     /// The translations strings for the default language
-    translations: HashMap<String, String>,
+    translations: BTreeMap<String, String>,
 
     /// Whether to generate feeds. Defaults to false.
     pub generate_feeds: bool,
@@ -113,7 +113,7 @@ pub struct Config {
     /// The config for the Markdown rendering: syntax highlighting and everything
     pub markdown: markup::Markdown,
     /// All user params set in `[extra]` in the config
-    pub extra: HashMap<String, Toml>,
+    pub extra: BTreeMap<String, Toml>,
     /// Enables the generation of Sitemap.xml
     pub generate_sitemap: bool,
     /// Enables the generation of robots.txt
@@ -128,7 +128,7 @@ pub struct SerializedConfig<'a> {
     mode: Mode,
     title: &'a Option<String>,
     description: &'a Option<String>,
-    languages: HashMap<&'a String, &'a languages::LanguageOptions>,
+    languages: BTreeMap<&'a String, &'a languages::LanguageOptions>,
     default_language: &'a str,
     generate_feed: bool,
     generate_feeds: bool,
@@ -136,7 +136,7 @@ pub struct SerializedConfig<'a> {
     taxonomies: &'a [taxonomies::TaxonomyConfig],
     author: &'a Option<String>,
     build_search_index: bool,
-    extra: &'a HashMap<String, Toml>,
+    extra: &'a BTreeMap<String, Toml>,
     markdown: &'a markup::Markdown,
     search: search::SerializedSearch<'a>,
     generate_sitemap: bool,
@@ -325,8 +325,8 @@ impl Config {
     }
 
     /// Returns all the languages settings for languages other than the default one
-    pub fn other_languages(&self) -> HashMap<&str, &languages::LanguageOptions> {
-        let mut others = HashMap::new();
+    pub fn other_languages(&self) -> BTreeMap<&str, &languages::LanguageOptions> {
+        let mut others = BTreeMap::new();
         for (k, v) in &self.languages {
             if k == &self.default_language {
                 continue;
@@ -459,7 +459,7 @@ impl Default for Config {
             description: None,
             theme: None,
             default_language: "en".to_string(),
-            languages: HashMap::new(),
+            languages: BTreeMap::new(),
             generate_feeds: false,
             feed_limit: None,
             feed_filenames: vec!["atom.xml".to_string()],
@@ -477,14 +477,14 @@ impl Default for Config {
             ignored_static_globset: None,
             skip_content_templating: Vec::new(),
             skip_content_templating_globset: None,
-            translations: HashMap::new(),
+            translations: BTreeMap::new(),
             output_dir: "public".to_string(),
             preserve_dotfiles_in_output: false,
             link_checker: link_checker::LinkChecker::default(),
             slugify: slugify::Slugify::default(),
             search: search::Search::default(),
             markdown: markup::Markdown::default(),
-            extra: HashMap::new(),
+            extra: BTreeMap::new(),
             generate_sitemap: true,
             generate_robots_txt: true,
             exclude_paginated_pages_in_sitemap: ExcludePaginatedPagesInSitemap::None,
