@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use errors::{Result, bail};
 use serde::{Deserialize, Serialize};
@@ -27,7 +27,7 @@ pub struct LanguageOptions {
     /// A toml crate `Table` with String key representing term and value
     /// another `String` representing its translation.
     /// Use `get_translation()` method for translating key into different languages.
-    pub translations: HashMap<String, String>,
+    pub translations: BTreeMap<String, String>,
 }
 
 impl LanguageOptions {
@@ -114,7 +114,7 @@ impl Default for LanguageOptions {
             taxonomies: vec![],
             build_search_index: false,
             search: search::Search::default(),
-            translations: HashMap::new(),
+            translations: BTreeMap::new(),
         }
     }
 }
@@ -145,7 +145,7 @@ mod tests {
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
-            translations: HashMap::new(),
+            translations: BTreeMap::new(),
         };
 
         let section_default_language_options = LanguageOptions {
@@ -156,7 +156,7 @@ mod tests {
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
-            translations: HashMap::new(),
+            translations: BTreeMap::new(),
         };
 
         base_default_language_options.merge(&section_default_language_options).unwrap();
@@ -172,7 +172,7 @@ mod tests {
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
-            translations: HashMap::new(),
+            translations: BTreeMap::new(),
         };
 
         let section_default_language_options = LanguageOptions {
@@ -183,7 +183,7 @@ mod tests {
             taxonomies: vec![],
             build_search_index: true,
             search: search::Search::default(),
-            translations: HashMap::new(),
+            translations: BTreeMap::new(),
         };
 
         let res =
@@ -203,7 +203,7 @@ mod tests {
             ..LanguageOptions::default()
         };
 
-        let mut translations = HashMap::new();
+        let mut translations = BTreeMap::new();
         translations.insert("hello".to_string(), "Hello".to_string());
         let section = LanguageOptions { translations, ..LanguageOptions::default() };
 
@@ -220,7 +220,7 @@ mod tests {
             ..LanguageOptions::default()
         };
 
-        let mut translations = HashMap::new();
+        let mut translations = BTreeMap::new();
         translations.insert("hello".to_string(), "Hello".to_string());
         let section = LanguageOptions { translations, ..LanguageOptions::default() };
 

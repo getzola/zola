@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
@@ -13,7 +13,7 @@ use utils::fs::read_file;
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Theme {
     /// All user params set in [extra] in the theme.toml
-    pub extra: HashMap<String, Toml>,
+    pub extra: BTreeMap<String, Toml>,
 }
 
 impl Theme {
@@ -24,7 +24,7 @@ impl Theme {
             Err(e) => bail!(e),
         };
 
-        let mut extra = HashMap::new();
+        let mut extra = BTreeMap::new();
         if let Some(theme_table) = theme.as_table() {
             if let Some(ex) = theme_table.get("extra")
                 && ex.is_table()

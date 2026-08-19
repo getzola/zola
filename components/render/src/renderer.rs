@@ -5,6 +5,7 @@ use content::{
 };
 use errors::{Context as _, Result};
 use serde::Serialize;
+use tera::value::Key;
 use tera::{Context, Tera, Value};
 
 /// Common parameters for rendering feeds
@@ -93,7 +94,7 @@ impl<'a> Renderer<'a> {
         context.insert_value("config", self.cache.configs.get(&taxonomy.lang).unwrap().clone());
         context.insert_value(
             "terms",
-            cached.value.as_map().unwrap().get(&"items".into()).unwrap().clone(),
+            cached.value.as_map().unwrap().get(&Key::from("items")).unwrap().clone(),
         );
         context.insert("taxonomy", &taxonomy.kind);
         context.insert("lang", &taxonomy.lang);

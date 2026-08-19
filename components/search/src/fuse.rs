@@ -41,5 +41,6 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
             },
         });
     }
+    index.sort_by(|a, b| a.url.cmp(&b.url));
     Ok(serde_json::to_string(&index)?)
 }

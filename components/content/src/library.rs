@@ -239,6 +239,14 @@ impl Library {
     /// Sort all sections pages according to sorting method given
     /// Pages that cannot be sorted are set to the section.ignored_pages instead
     pub fn sort_section_pages(&mut self) {
+        // For determinism sake, we sort pages even if there is no sort_by in the front-matter
+        // Those don't get lower/higher though so it's out of the logic below
+        for section in self.sections.values_mut() {
+            if section.meta.sort_by == SortBy::None {
+                section.pages.sort();
+            }
+        }
+
         let mut updates = AHashMap::new();
         for (path, section) in &self.sections {
             let pages: Vec<_> = section.pages.iter().map(|p| &self.pages[p]).collect();
@@ -494,6 +502,7 @@ impl Library {
             }
         }
 
+        translations.sort_by(|a, b| a.lang.cmp(&b.lang));
         translations
     }
 
@@ -511,7 +520,7 @@ mod tests {
     use super::*;
     use crate::{FileInfo, SortBy};
     use config::{LanguageOptions, TaxonomyConfig};
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
     use utils::slugs::SlugifyStrategy;
 
     #[test]
@@ -870,7 +879,7 @@ mod tests {
         let mut page = Page::default();
         page.file.path = PathBuf::from(path);
         page.lang = lang.to_owned();
-        let mut taxonomies = HashMap::new();
+        let mut taxonomies = BTreeMap::new();
         for (name, terms) in taxo {
             taxonomies.insert(name.to_owned(), terms.iter().map(|t| t.to_string()).collect());
         }

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use serde::Deserialize;
 use tera::{Map, Value};
@@ -52,7 +52,7 @@ pub struct PageFrontMatter {
     /// otherwise is set after parsing front matter and sections
     /// Can't be an empty string if present
     pub path: Option<String>,
-    pub taxonomies: HashMap<String, Vec<String>>,
+    pub taxonomies: BTreeMap<String, Vec<String>>,
     /// Integer to use to order content. Highest is at the bottom, lowest first
     pub weight: Option<usize>,
     /// The authors of the page.
@@ -165,7 +165,7 @@ impl Default for PageFrontMatter {
             render: true,
             slug: None,
             path: None,
-            taxonomies: HashMap::new(),
+            taxonomies: BTreeMap::new(),
             weight: None,
             authors: Vec::new(),
             aliases: Vec::new(),
@@ -181,6 +181,7 @@ mod tests {
     use crate::front_matter::page::PageFrontMatter;
     use crate::front_matter::split::RawFrontMatter;
     use tera::Value;
+    use tera::value::Key;
     use test_case::test_case;
     use time::macros::datetime;
 
@@ -472,7 +473,7 @@ extra:
         println!("{:?}", res);
         assert!(res.is_ok());
         assert_eq!(
-            res.unwrap().extra.as_map().unwrap().get(&"some-date".into()).unwrap(),
+            res.unwrap().extra.as_map().unwrap().get(&Key::from("some-date")).unwrap(),
             &Value::from("2002-11-01")
         );
     }
@@ -501,11 +502,11 @@ extra:
                 .extra
                 .as_map()
                 .unwrap()
-                .get(&"something".into())
+                .get(&Key::from("something"))
                 .unwrap()
                 .as_map()
                 .unwrap()
-                .get(&"some-date".into())
+                .get(&Key::from("some-date"))
                 .unwrap(),
             &Value::from("2002-11-01")
         );
@@ -540,13 +541,13 @@ extra:
                 .extra
                 .as_map()
                 .unwrap()
-                .get(&"questions".into())
+                .get(&Key::from("questions"))
                 .unwrap()
                 .as_array()
                 .unwrap()[0]
                 .as_map()
                 .unwrap()
-                .get(&"date".into())
+                .get(&Key::from("date"))
                 .unwrap(),
             &Value::from("2020-05-03")
         );

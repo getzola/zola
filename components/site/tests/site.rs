@@ -1,6 +1,6 @@
 mod common;
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -327,7 +327,7 @@ fn can_build_site_with_taxonomies() {
             let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
             for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
                 page.meta.taxonomies = {
-                    let mut taxonomies = HashMap::new();
+                    let mut taxonomies = BTreeMap::new();
                     taxonomies.insert(
                         "categories".to_string(),
                         vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
@@ -649,7 +649,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
                     nb_a_pages += 1;
                 }
                 page.meta.taxonomies = {
-                    let mut taxonomies = HashMap::new();
+                    let mut taxonomies = BTreeMap::new();
                     taxonomies.insert(
                         "tags".to_string(),
                         vec![if i % 2 == 0 { "A" } else { "B" }.to_string()],
