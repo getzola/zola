@@ -30,7 +30,7 @@ pub enum ExifError<'a> {
     },
 }
 
-impl<'a> std::fmt::Display for ExifNoSuchFieldError {
+impl std::fmt::Display for ExifNoSuchFieldError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Found no field for tag {} and ifd_num {}.", self.tag, self.ifd_num)
     }
@@ -123,17 +123,17 @@ fn get_string_field(
         return Err(ExifError::UnexpectedFieldType {
             tag,
             ifd_num,
-            expected: &"exif::Value::Ascii",
+            expected: "exif::Value::Ascii",
             actual: val,
         });
     };
 
-    if bytes.len() == 0 {
+    if bytes.is_empty() {
         return Err(ExifError::EmptyValue { tag, ifd_num });
     }
 
     let mut s = String::new();
-    s.push_str(&String::from_utf8_lossy(&*bytes[0]));
+    s.push_str(&String::from_utf8_lossy(&bytes[0]));
     Ok(s)
 }
 

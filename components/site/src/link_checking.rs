@@ -92,7 +92,7 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
             )
         })
         .collect::<Vec<_>>();
-    messages.sort_by(|a, b| b.cmp(&a));
+    messages.sort_by(|a, b| b.cmp(a));
 
     // Finally emit a summary, and return overall anchors-checking result.
     if messages.is_empty() {
