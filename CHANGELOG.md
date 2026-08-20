@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.23.5 (unreleased)
+
+
 ## 0.23.4 (2026-08-20)
 
 - Fix another `get_url` bug adding a trailing slash for non default language
