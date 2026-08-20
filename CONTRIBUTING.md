@@ -5,10 +5,14 @@ the `next` branch, unless it is fixing the current documentation.**
 However, if you notice an error or typo in the documentation, feel free to directly submit a PR without opening an issue.
 
 ## Feature requests
-If you want a feature added or modified, please open a thread on the [forum](https://zola.discourse.group/) to discuss it before doing a PR.
+If you want a small feature added or modified, please open an issue to discuss it before doing a PR.
 
 Requested features will not be all added: an ever-increasing features set makes for a hard to use and explain softwares.
 Having something simple and easy to use for 90% of the use cases is more interesting than covering 100% use cases after sacrificing simplicity.
+
+If the feature is large, please open a PR with a [RFC](./rfcs/template.md) on the `master` branch. If you're not
+sure what qualifies as large, start with an issue. 
+
 
 ## Issues tagging
 
@@ -31,4 +35,5 @@ If you're using a LLM to write code, a human needs to review it, edit it, test i
 If it's slop, you're getting banned.
 If all the interactions feels like talking to a LLM, you're getting banned too.
 
-LLM usage is not accepted for the documentation, no one wants to read LLM generated documentation.
+LLM usage is not accepted for the documentation, no one wants to read LLM generated documentation. No one
+wants to read LLM comments either so use your own words in issues/PR.
