@@ -343,6 +343,8 @@ impl Site {
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
+        // Build the cache for Tera functions used in Markdown content.
+        Arc::make_mut(&mut self.cache).build(&self.library, &self.taxonomies, &self.tera);
         tpls::register_early_global_fns(self);
         self.render_markdown()?;
         Arc::make_mut(&mut self.library).fill_backlinks();

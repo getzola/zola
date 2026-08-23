@@ -12,6 +12,7 @@ Same filename but different path
 
 {{ <pirate name="Bob" /> }}
 {{ <pirate name="Bob_Sponge" /> }}
+{{ <taxonomy_url kind="categories" term="a-category" /> }}
 
 {% if page.description %}
 DESCRIPTION: {{page.description}}

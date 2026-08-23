@@ -144,6 +144,11 @@ fn can_build_site_without_live_reload() {
     assert!(file_contains!(public, "posts/python/index.html", "Basic shortcode"));
     assert!(file_contains!(public, "posts/python/index.html", "Arrrh Bob"));
     assert!(file_contains!(public, "posts/python/index.html", "Arrrh Bob_Sponge"));
+    assert!(file_contains!(
+        public,
+        "posts/python/index.html",
+        "https://replace-this-with-your-url.com/categories/a-category/"
+    ));
     assert!(!file_contains!(public, "posts/python/index.html", "SHOULDNOTAPPEAR"));
     assert!(!file_contains!(public, "posts/python/index.html", "DESCRIPTION"));
 

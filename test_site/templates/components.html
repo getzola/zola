@@ -11,3 +11,7 @@ Arrrh {{ name }}
     <iframe src="https://www.youtube-nocookie.com/embed/{{id}}{% if playlist %}?list={{playlist}}{% endif %}{% if autoplay %}?autoplay=1{% endif %}" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 </div>
 {%- endcomponent %}
+
+{% component taxonomy_url(kind, term) -%}
+{{ get_taxonomy_url(kind=kind, term=term) }}
+{%- endcomponent %}
