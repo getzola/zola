@@ -29,7 +29,8 @@ that can be used on all pages.
 ## Guide-level explanation
 [guide-level-explanation]: #guide-level-explanation
 
-Only pages exist but some pages can represent a directory:
+All content files produce a `Page`. Pages with a `_index.md` filename have a `kind == Section` and represent a collection. They do
+have a couple additional front-matter fields that only make sense for collections like `sort_by` for example.
 
 ```
 about.md <-- a normal page
@@ -51,7 +52,7 @@ still.
 On the content side, there are no changes to be made for users. Any directory type attribute (eg a `sort_by`) set on a normal page is an error.
 Files with `_index.md` filename will still default to having a `section.html` template.
 
-The `get_section` function becomes an alias for `get_page`.
+The `get_section` function works just like `get_page` but also checks that `kind==Section` and errors if it's not the case.
 
 Overall, it shouldn't be a breaking change, except for some narrow cases like someone checking if an attribute exists
 on a variable like so:
@@ -78,19 +79,35 @@ The main benefit for users is the lower cognitive load for writing templates as 
 [reference-level-explanation]: #reference-level-explanation
 
 The whole duplication in the `content` component goes away and everything is merged into the `Section` struct
-which is renamed to `Page`. We do need to do post-parsing validation as we can't just use serde `deny_unknown_fields`
-anymore.
-The `ser.rs` duplication goes away as well, and we add the aliases to that file.
-We do keep an enum of `Kind` to differentiate between single pages and collection page.
+which is renamed to `Page`. For the front-matter, since some fields do not make sense on a basic page (like `sort_by`) and
+we want to keep validation, we can use something like:
+
+```rust
+enum ParsedFrontMatter {
+    /// Regular content files
+    Page(PageFrontMatter),
+    /// Content files named _index.md
+    Section(SectionFrontMatter),
+}
+```
+and factor out the common fields. This way we can still use serde `deny_unknown_fields` and get validation for free.
+
+We keep the current `ser.rs` file to ensure the `page`/`section` variables stay the same.
+We keep an enum of `Kind` to differentiate between regular pages and section/collection pages.
 If we allow slugs on sections, we do need to ensure all the descendant permalinks are generated correctly.
 
 The `Library` will merge page and sections and we need to ensure `transparent` and the new equivalent of `populate_sections` still work.
 There should be no regression for parallelization of rendering or for `zola serve`.
 
+We do not want a single `item.children` property instead of having both `.{pages,subsections}` because sorting pages
+and subsection together does not really make sense currently, `sort_by` would not apply to sections.
+The `$NAME.{pages,subsections}` fields become a `Vec<Page>`, not a `Vec<&'a str>`: only for the new variables, not for the 
+legacy `page` and `section` variables.
+
 All the other changes are mechanical, with a special care of still grouping pages through sections (or directories/any name)
 for rendering.
 
-The aliases for the `get_section` and `section` can stay for a few major versions. If what's currently available is not
+The aliases for the `get_section`, `page`, `section` can stay for a few major versions. If what's currently available is not
 enough, we can add more introspection to Tera to be able to show deprecation warnings.
 
 ## Drawbacks
@@ -138,9 +155,7 @@ https://gohugo.io/content-management/page-resources/
 ## Unresolved questions
 [unresolved-questions]: #unresolved-questions
 
-- I like the `_index.md` name since it means the files ends up at top of folder usually, some people don't and
-prefer `index.md` but that conflicts with colocated assets
-- Best name for the context object for a page? `self`, `this`, `item`? It can't be `page` since it would break
+- Best name for the context object for a page? `self`, `this`, `item`, `current`? It can't be `page` since it would break
 some `{% if page %}` check
 - What does it mean to add a taxonomy to a section since it becomes possible?
 
