@@ -421,6 +421,14 @@ impl<'a> State<'a> {
                 Some((k, a)) => (k, Some(a.to_string())),
                 None => (link, None),
             };
+            if key.is_empty()
+                && let Some(anchor) = anchor
+            {
+                if !ctx.current_path.is_empty() {
+                    self.internal_links.push((ctx.current_path.to_owned(), Some(anchor.clone())));
+                }
+                return Ok(format!("{}#{anchor}", ctx.current_permalink));
+            }
             if let Some(md_path) = ctx.wikilinks.get(key) {
                 let permalink = &ctx.permalinks[md_path];
                 self.internal_links.push((md_path.clone(), anchor.clone()));
