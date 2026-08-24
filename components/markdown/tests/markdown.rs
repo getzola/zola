@@ -499,11 +499,15 @@ fn wikilink_resolution() {
         "[[guides/quickstart]]",
         "[[quickstart#install]]",
         "[[quickstart|Get Started]]",
+        "[[#details]]",
+        "[[#details|Details]]",
     ];
 
-    let res = common::render_with_config(&cases.join("\n"), config).unwrap();
+    let markdown = format!("{}\n\n## Details", cases.join("\n"));
+    let res = common::render_with_config(&markdown, config).unwrap();
     insta::assert_snapshot!(res.body);
     assert!(res.internal_links.contains(&("guides/quickstart.md".into(), Some("install".into()))));
+    assert!(res.internal_links.contains(&("my_page.md".into(), Some("details".into()))));
 }
 
 #[test]
