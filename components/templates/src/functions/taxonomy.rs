@@ -1,27 +1,41 @@
 use std::sync::Arc;
 
+use ahash::AHashMap;
+use content::Taxonomy;
 use render::RenderCache;
-use tera::value::Key;
 use tera::{Error, Function, Kwargs, State, TeraResult, Value};
 use utils::slugs::{SlugifyStrategy, slugify_paths};
 
+/// (language -> (taxonomy slug -> (term slug -> permalink)))
+type TaxonomyUrls = AHashMap<String, AHashMap<String, AHashMap<String, String>>>;
+
 #[derive(Debug)]
 pub struct GetTaxonomyUrl {
-    cache: Arc<RenderCache>,
+    urls: TaxonomyUrls,
     default_lang: String,
     slugify: SlugifyStrategy,
 }
 
 impl GetTaxonomyUrl {
-    pub fn new(default_lang: &str, cache: Arc<RenderCache>, slugify: SlugifyStrategy) -> Self {
-        Self { cache, default_lang: default_lang.to_string(), slugify }
+    pub fn new(default_lang: &str, taxonomies: &[Taxonomy], slugify: SlugifyStrategy) -> Self {
+        let mut urls = TaxonomyUrls::new();
+        for taxonomy in taxonomies {
+            let terms = taxonomy
+                .items
+                .iter()
+                .map(|term| (term.slug.clone(), term.permalink.clone()))
+                .collect();
+            urls.entry(taxonomy.lang.clone()).or_default().insert(taxonomy.slug.clone(), terms);
+        }
+
+        Self { urls, default_lang: default_lang.to_string(), slugify }
     }
 }
 
 impl Default for GetTaxonomyUrl {
     fn default() -> Self {
         Self {
-            cache: Arc::new(RenderCache::default()),
+            urls: AHashMap::new(),
             default_lang: String::new(),
             slugify: SlugifyStrategy::default(),
         }
@@ -45,23 +59,21 @@ impl Function<TeraResult<Value>> for GetTaxonomyUrl {
             kwargs.get("lang")?.or(state.get("lang")?).unwrap_or_else(|| self.default_lang.clone());
         let required: bool = kwargs.get("required")?.unwrap_or(true);
 
-        let cached = match (self.cache.get_taxonomy(&lang, kind), required) {
-            (Some(c), _) => c,
-            (None, false) => return Ok(Value::none()),
-            (None, true) => {
-                return Err(Error::message(format!(
-                    "`get_taxonomy_url` received an unknown taxonomy as kind: {}",
-                    kind
-                )));
-            }
-        };
+        let terms =
+            match (self.urls.get(&lang).and_then(|taxonomies| taxonomies.get(kind)), required) {
+                (Some(terms), _) => terms,
+                (None, false) => return Ok(Value::none()),
+                (None, true) => {
+                    return Err(Error::message(format!(
+                        "`get_taxonomy_url` received an unknown taxonomy as kind: {}",
+                        kind
+                    )));
+                }
+            };
 
         let slug = slugify_paths(term, self.slugify);
-        if let Some(t) = cached.terms.get(&slug)
-            && let Some(map) = t.as_map()
-            && let Some(permalink) = map.get(&Key::from("permalink")).and_then(|v| v.as_str())
-        {
-            return Ok(Value::from(permalink));
+        if let Some(permalink) = terms.get(&slug) {
+            return Ok(Value::from(permalink.as_str()));
         }
 
         Err(Error::message(format!(
@@ -171,6 +183,7 @@ mod tests {
     use config::{Config, TaxonomyConfig};
     use content::{Library, Taxonomy, TaxonomyTerm};
     use render::RenderCache;
+    use tera::value::Key;
     use tera::{Context, Kwargs, Tera};
     use utils::slugs::SlugifyStrategy;
 
@@ -269,7 +282,6 @@ mod tests {
         };
         let taxo_config_fr = taxo_config.clone();
         config.slugify_taxonomies();
-        let library = Library::new(&config);
         let tag =
             TaxonomyTerm::new("Programming", &config.default_language, &taxo_config, &[], &config)
                 .unwrap();
@@ -293,12 +305,8 @@ mod tests {
         };
 
         let taxonomies = vec![tags, tags_fr];
-        let tera = Tera::default();
-        let mut cache = RenderCache::new(&config);
-        cache.build(&library, &taxonomies, &tera);
-        let cache = Arc::new(cache);
         let get_taxonomy_url =
-            GetTaxonomyUrl::new(&config.default_language, cache, config.slugify.taxonomies);
+            GetTaxonomyUrl::new(&config.default_language, &taxonomies, config.slugify.taxonomies);
 
         // can find it correctly (default lang)
         let kwargs =

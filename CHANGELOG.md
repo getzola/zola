@@ -2,7 +2,8 @@
 
 ## 0.23.5 (unreleased)
 
-- Fix text_direction not being wired up correctly and causing compilation errors when used in templates
+- Fix `text_direction` not being wired up correctly and causing compilation errors when used in templates
+- Fix `get_taxonomy_url` in templated content not finding anything
 
 ## 0.23.4 (2026-08-20)
 
