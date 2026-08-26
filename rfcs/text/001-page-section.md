@@ -1,6 +1,6 @@
 - Feature Name: page-section
 - Start Date: 2026-08-20
-- RFC PR: [zola/rfcs#0001](https://github.com/getzola/zola/pull/3258)
+- RFC PR: [zola/rfcs#001](https://github.com/getzola/zola/pull/3258)
 
 ## Summary
 [summary]: #summary
@@ -42,7 +42,7 @@ posts/
     hey.jpg
 ```
 
-In the templates, there is just the `self` variable that has `self.{pages,subsections}` filled if it's the directory page
+In the templates, there is just the `current` variable that has `current.{pages,subsections}` filled if it's the directory page
 and empty otherwise.
 For existing users, we can create a `section` and `page` alias that match what existed before this merge in each case (eg
 a directory page gets a `section` variable but a normal page does not).
@@ -53,6 +53,7 @@ On the content side, there are no changes to be made for users. Any directory ty
 Files with `_index.md` filename will still default to having a `section.html` template.
 
 The `get_section` function works just like `get_page` but also checks that `kind==Section` and errors if it's not the case.
+`get_page` will be able to get any page or section.
 
 Overall, it shouldn't be a breaking change, except for some narrow cases like someone checking if an attribute exists
 on a variable like so:
@@ -73,7 +74,6 @@ that I don't think many people would do (like printing all the keys of the varia
 Still it would come in a new release, like 0.24.
 
 The main benefit for users is the lower cognitive load for writing templates as well as things working more as expected.
-
 
 ## Reference-level explanation
 [reference-level-explanation]: #reference-level-explanation
@@ -99,23 +99,20 @@ If we allow slugs on sections, we do need to ensure all the descendant permalink
 The `Library` will merge page and sections and we need to ensure `transparent` and the new equivalent of `populate_sections` still work.
 There should be no regression for parallelization of rendering or for `zola serve`.
 
-We do not want a single `item.children` property instead of having both `.{pages,subsections}` because sorting pages
-and subsection together does not really make sense currently, `sort_by` would not apply to sections.
 The `$NAME.{pages,subsections}` fields become a `Vec<Page>`, not a `Vec<&'a str>`: only for the new variables, not for the 
 legacy `page` and `section` variables.
 
 All the other changes are mechanical, with a special care of still grouping pages through sections (or directories/any name)
 for rendering.
 
-The aliases for the `get_section`, `page`, `section` can stay for a few major versions. If what's currently available is not
-enough, we can add more introspection to Tera to be able to show deprecation warnings.
+The aliases for the `get_section`, `page`, `section` can stay for a few major versions. 
+If what's currently available is not enough, we can add more introspection to Tera to be able to show deprecation warnings.
 
 ## Drawbacks
 [drawbacks]: #drawbacks
 
 - Potentially breaking some templates doing attribute checking
 - Some users like the distinction
-
 
 ## Rationale and alternatives
 [rationale-and-alternatives]: #rationale-and-alternatives
@@ -126,8 +123,10 @@ the usage.
 Alternatives:
 - ship just an alias in the templates for `page` and `section` and have them matching fields: solve the user issue, not the internals
 - solve the duplication internally but don't expose it: doesn't solve the user issue
+- expose a single `item.pages` property instead of keeping both `.pages` and `.subsections`: rejected because
+`sort_by` only applies to pages, so sorting pages and subsections together does not currently make sense. More details on the PR.
 
-
+  
 ## Prior art
 [prior-art]: #prior-art
 
@@ -145,12 +144,8 @@ A page can have one kind out of home, page, section, taxonomy, or term (https://
 so the templates can still differentiate between them if necessary.
 It still refers to sections as the listing of pages: https://gohugo.io/methods/page/ and https://gohugo.io/content-management/sections/
 
-
-
 https://gohugo.io/content-management/page-bundles/
 https://gohugo.io/content-management/page-resources/
-
-
 
 ## Unresolved questions
 [unresolved-questions]: #unresolved-questions
