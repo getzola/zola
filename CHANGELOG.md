@@ -2,6 +2,7 @@
 
 ## 0.23.5 (unreleased)
 
+- Fix text_direction not being wired up correctly and causing compilation errors when used in templates
 
 ## 0.23.4 (2026-08-20)
 

@@ -29,7 +29,7 @@ impl Function<TeraResult<String>> for Trans {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct TextDirection {
     config: Config,
 }
