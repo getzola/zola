@@ -4,6 +4,7 @@
 
 - Fix `text_direction` not being wired up correctly and causing compilation errors when used in templates
 - Fix `get_taxonomy_url` in templated content not finding anything
+- Update tera, adding back `locale` param to the `date` filter
 
 ## 0.23.4 (2026-08-20)
 
