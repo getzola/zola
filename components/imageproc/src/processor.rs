@@ -85,7 +85,20 @@ impl ImageOp {
             None => img,
         };
         let img = match self.instr.resize_instruction {
-            Some((w, h)) => img.resize_exact(w, h, self.filter),
+            Some((w, h)) => {
+                let mut resized = DynamicImage::new(w, h, img.color());
+                fast_image_resize::Resizer::new()
+                    .resize(
+                        &img,
+                        &mut resized,
+                        &fast_image_resize::ResizeOptions::new()
+                            .resize_alg(crate::filter::fir_resize_alg_from_filter(self.filter)),
+                    )
+                    .with_context(|| {
+                        format!("Failed to resize image: {}", self.input_path.display())
+                    })?;
+                resized
+            }
             None => img,
         };
 
