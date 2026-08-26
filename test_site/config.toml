@@ -27,6 +27,7 @@ anchors = "on"
 skip_prefixes = [
     "http://[2001:db8::]/",
     "http://invaliddomain",
+    "https://github.com/rust-lang/rust/blob/",
 ]
 
 skip_anchor_prefixes = [

@@ -954,7 +954,11 @@ fn can_check_site() {
     );
     assert_eq!(
         site.config.link_checker.skip_prefixes,
-        vec!["http://[2001:db8::]/", "http://invaliddomain"]
+        vec![
+            "http://[2001:db8::]/",
+            "http://invaliddomain",
+            "https://github.com/rust-lang/rust/blob/"
+        ]
     );
 
     site.config.enable_check_mode();
@@ -1000,7 +1004,10 @@ fn external_links_ignored_on_check() {
     site.config.link_checker.skip_prefixes.remove(i);
 
     // confirm the invalid domain skip prefix was removed
-    assert_eq!(site.config.link_checker.skip_prefixes, vec!["http://[2001:db8::]/"]);
+    assert_eq!(
+        site.config.link_checker.skip_prefixes,
+        vec!["http://[2001:db8::]/", "https://github.com/rust-lang/rust/blob/"]
+    );
 
     // set a flag to skip external links check
     site.skip_external_links_check();
