@@ -48,6 +48,18 @@ See the [Tera migration guide](https://github.com/Keats/tera/blob/master/MIGRATI
 Shortcodes have been removed in 0.23. The closest feature available now is [Tera components](https://keats.github.io/tera/#components).
 These components can be used in your content but also in your templates, unlike shortcodes.
 
+### Avoiding template compilation error
+
+Since all content is now potentially a template, you might have compilation errors if you have sigils like {% raw %}`{{`/`{%`{% endraw %} in your content.
+
+You have 2 ways of fixing it:
+
+1. If you don't need templating/components in your content, set the `skip_content_templating` option from the config file to match all content files
+2. Wrap the offending lines in {{ "`{% raw %}{% endraw %}`" }} so they are ignored
+
+This documentation site uses both approaches, you can always look at the [source](https://github.com/getzola/zola/tree/master/docs/content/documentation)
+since it does have a lot of Tera code in it.
+
 ## Asset colocation
 
 The `content` directory is not limited to markup files. It's natural to want to co-locate a page and some related
