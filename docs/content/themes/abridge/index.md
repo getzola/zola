@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2026-08-15T11:29:36-07:00
+date = 2026-08-23T20:05:04-07:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-08-15T11:29:36-07:00
-updated = 2026-08-15T11:29:36-07:00
+created = 2026-08-23T20:05:04-07:00
+updated = 2026-08-23T20:05:04-07:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.23.3"
@@ -48,7 +48,7 @@ Maintenance of this project is made possible by all the <a href="https://github.
 - Dark, Light, Auto, and Switcher themes. (colors can be customized, css variables)
 - Code [syntax highlighting](https://abridge.pages.dev/overview-code-blocks/). (colors can be customized, css variables)
 - Numbered code blocks with [line highlighting](https://abridge.pages.dev/overview-code-blocks/#toml).
-- Entirely Offline Site by using the PWA **or** by setting `search_library = "offline"` in `config.toml`.
+- Entirely Offline Site by using the PWA **or** by setting `search_library = "offline"` in `zola.toml`.
 - Multi-language support.
 - Search support. ([elasticlunr](https://abridge.pages.dev/), [pagefind](https://abridge-pagefind.pages.dev/), [tinysearch](https://abridge-tinysearch.pages.dev/))
 - Search Suggestions navigation keys, `/` focus, `arrow` move, `enter` select, `escape` close.
@@ -73,9 +73,20 @@ Maintenance of this project is made possible by all the <a href="https://github.
 
 **[Complete Documentation is available here](https://abridge.pages.dev/overview-abridge/)**
 
+## Windows Users
+
+Below I use some linux commands during setup, to have a similar environment you can install [Msys2](https://www.msys2.org/).
+With msys2 use shift insert to paste into the terminal, I prefer the UCRT64 launcher.
+
+```bash
+MSYS2
+pacman -Syu
+pacman -S --needed mingw-w64-ucrt-x86_64-git mingw-w64-ucrt-x86_64-zola mingw-w64-ucrt-x86_64-uutils-coreutils rsync
+```
+
 ## Quick Start
 
-This theme requires version 0.19.1 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
+This theme requires version 0.23.3 or later of [Zola](https://www.getzola.org/documentation/getting-started/installation/)
 
 ```bash
 git clone https://github.com/jieiku/abridge.git
@@ -118,7 +129,7 @@ Copy some files from the theme directory to your project's root directory:
 
 ```bash
 rsync themes/abridge/.gitignore .gitignore
-rsync themes/abridge/config.toml config.toml
+rsync themes/abridge/zola.toml zola.toml
 rsync themes/abridge/content/_index.md content/
 rsync -r themes/abridge/COPY-TO-ROOT-SASS/* sass/
 rsync themes/abridge/netlify.toml netlify.toml
@@ -126,17 +137,17 @@ rsync themes/abridge/package_abridge.js package_abridge.js
 rsync themes/abridge/package.json package.json
 ```
 
-- `config.toml` base configuration with all config values.
+- `zola.toml` base configuration with all config values.
 - `content/_index.md` required to set pagination.
 - `COPY-TO-ROOT-SASS/abridge.scss` overrides to customize Abridge variables.
 - `netlify.toml` settings to deploy your repo with netlfiy.
 - `package_abridge.js` node script to: update cache files list in PWA, minify js, bundle js
 - `package.json` to facilitate use of package_abridge.js
 
-Uncomment the theme line in your project's root config.toml:
+Uncomment the theme line in your project's root zola.toml:
 
 ```bash
-sed -i 's/^#theme = "abridge"/theme = "abridge"/' config.toml
+sed -i 's/^#theme = "abridge"/theme = "abridge"/' zola.toml
 ```
 
 ### 4: Add new content
@@ -157,7 +168,7 @@ zola serve
 
 Zola will start the dev web server, accessible by default at `http://127.0.0.1:1111`.
 
-Saved changes will live reload in the browser. (press `ctrl+f5`, or while developing set `pwa=false` in `config.toml`)
+Saved changes will live reload in the browser. (press `ctrl+f5`, or while developing set `pwa=false` in `zola.toml`)
 
 ## Customization
 
