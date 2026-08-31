@@ -1,17 +1,5 @@
 use ahash::AHashMap;
 
-#[derive(Clone, Debug)]
-pub struct WikilinkTarget {
-    source_path: String,
-    aliases: Vec<String>,
-}
-
-impl WikilinkTarget {
-    pub fn new(source_path: impl Into<String>, aliases: Vec<String>) -> Self {
-        Self { source_path: source_path.into(), aliases }
-    }
-}
-
 #[derive(Debug, PartialEq, Eq)]
 pub enum WikilinkError {
     Missing,
@@ -32,16 +20,14 @@ pub enum WikilinkError {
 /// over stems.
 #[derive(Clone, Debug, Default)]
 pub struct WikilinkResolver {
-    targets: Vec<WikilinkTarget>,
+    sources: Vec<String>,
     paths: AHashMap<String, Vec<usize>>,
     aliases: AHashMap<String, Vec<usize>>,
     stems: AHashMap<String, Vec<usize>>,
 }
 
-fn normalize_source_path(value: &str) -> Option<String> {
-    let normalized = value.trim_matches('/');
-    let normalized = normalized.strip_suffix(".md").unwrap_or(normalized);
-    (!normalized.is_empty()).then(|| normalized.to_string())
+fn identity(value: &str) -> &str {
+    value.strip_suffix(".md").unwrap_or(value)
 }
 
 fn normalize_lookup(value: &str) -> Option<&str> {
@@ -50,71 +36,50 @@ fn normalize_lookup(value: &str) -> Option<&str> {
 }
 
 impl WikilinkResolver {
-    pub fn from_targets(targets: impl IntoIterator<Item = WikilinkTarget>) -> Self {
-        let mut resolver = Self::default();
-        for target in targets {
-            resolver.insert(target);
-        }
-        resolver
-    }
+    pub fn add(&mut self, source_path: &str, aliases: &[String]) {
+        let index = self.sources.len();
+        let id = identity(source_path);
+        self.paths.entry(id.to_string()).or_default().push(index);
 
-    fn insert(&mut self, target: WikilinkTarget) {
-        let Some(identity) = normalize_source_path(&target.source_path) else {
-            return;
-        };
-        let index = self.targets.len();
-
-        // Store the full source path without its Markdown extension.
-        self.paths.entry(identity.clone()).or_default().push(index);
-
-        // A bare stem is useful only when it differs from the full path. Keeping it in a separate
-        // index lets resolution report collisions without overwriting an exact path.
-        if let Some(stem) = identity.rsplit('/').next()
-            && stem != identity
+        // We want to keep the filename only if possible
+        // eg docs/help.md --> help
+        // but help.md --> N/A since it's already the stem
+        if let Some(stem) = id.rsplit('/').next()
+            && stem != id
         {
             self.stems.entry(stem.to_string()).or_default().push(index);
         }
 
-        // Aliases are existing Zola output paths, normalized to wikilink syntax.
-        for alias in &target.aliases {
-            if let Some(alias) = normalize_lookup(alias) {
-                let candidates = self.aliases.entry(alias.to_string()).or_default();
+        for alias in aliases {
+            if let Some(s) = normalize_lookup(alias) {
+                let candidates = self.aliases.entry(s.to_string()).or_default();
                 if !candidates.contains(&index) {
                     candidates.push(index);
                 }
             }
         }
-        self.targets.push(target);
+        self.sources.push(source_path.to_string());
     }
 
-    fn select(&self, candidates: &[usize]) -> std::result::Result<&str, WikilinkError> {
+    fn select(&self, candidates: &[usize]) -> Result<&str, WikilinkError> {
         if let [index] = candidates {
-            return Ok(&self.targets[*index].source_path);
+            return Ok(&self.sources[*index]);
         }
 
-        let mut paths = candidates
-            .iter()
-            .map(|index| self.targets[*index].source_path.as_str())
-            .collect::<Vec<_>>();
+        let mut paths = candidates.iter().map(|index| &self.sources[*index]).collect::<Vec<_>>();
         paths.sort_unstable();
         paths.dedup();
 
         match paths.as_slice() {
-            [] => Err(WikilinkError::Missing),
             [path] => Ok(path),
+            // We can't have missing here since we are only called if we have candidates
             _ => Err(WikilinkError::Ambiguous {
-                candidates: paths
-                    .into_iter()
-                    .map(|path| {
-                        normalize_source_path(path)
-                            .expect("indexed targets have normalized source paths")
-                    })
-                    .collect(),
+                candidates: paths.into_iter().map(|path| identity(path).to_string()).collect(),
             }),
         }
     }
 
-    pub fn resolve(&self, target: &str) -> std::result::Result<&str, WikilinkError> {
+    pub fn resolve(&self, target: &str) -> Result<&str, WikilinkError> {
         let Some(normalized) = normalize_lookup(target) else {
             return Err(WikilinkError::Missing);
         };
@@ -130,6 +95,7 @@ impl WikilinkResolver {
         {
             return self.select(candidates);
         }
+
         Err(WikilinkError::Missing)
     }
 }
@@ -138,20 +104,20 @@ impl WikilinkResolver {
 mod tests {
     use super::*;
 
-    fn target(path: &str) -> WikilinkTarget {
-        WikilinkTarget::new(path, Vec::new())
-    }
-
     #[test]
     fn resolves_paths_aliases_and_unique_stems() {
-        let resolver = WikilinkResolver::from_targets([
-            target("blog/overview.md"),
-            target("docs/overview.md"),
-            target("about.md"),
-            target("blog/_index.md"),
-            target("_index.md"),
-            WikilinkTarget::new("guides/quickstart.md", vec!["/start/".to_string()]),
-        ]);
+        let inputs = vec![
+            ("blog/overview.md", Vec::new()),
+            ("docs/overview.md", Vec::new()),
+            ("about.md", Vec::new()),
+            ("blog/_index.md", Vec::new()),
+            ("_index.md", Vec::new()),
+            ("guides/quickstart.md", vec!["/start/".to_string()]),
+        ];
+        let mut resolver = WikilinkResolver::default();
+        for (a, b) in inputs {
+            resolver.add(a, &b);
+        }
 
         // Full paths always resolve.
         assert_eq!(resolver.resolve("blog/overview"), Ok("blog/overview.md"));

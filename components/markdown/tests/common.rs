@@ -3,7 +3,7 @@
 use ahash::AHashMap;
 use config::Config;
 use errors::Result;
-use markdown::{MarkdownContext, Rendered, WikilinkResolver, WikilinkTarget, render_content};
+use markdown::{MarkdownContext, Rendered, WikilinkResolver, render_content};
 use templates::ZOLA_TERA;
 use utils::types::InsertAnchor;
 
@@ -22,12 +22,11 @@ fn configurable_render(
         ("guides/duplicate.md".to_owned(), "https://getzola.org/guides/duplicate/".to_owned()),
     ]);
 
-    let wikilinks = WikilinkResolver::from_targets([
-        WikilinkTarget::new("guides/quickstart.md", vec!["/start/".to_string()]),
-        WikilinkTarget::new("about.md", Vec::new()),
-        WikilinkTarget::new("archive/duplicate.md", Vec::new()),
-        WikilinkTarget::new("guides/duplicate.md", Vec::new()),
-    ]);
+    let mut wikilinks = WikilinkResolver::default();
+    wikilinks.add("guides/quickstart.md", &vec!["/start/".to_string()]);
+    wikilinks.add("about.md", &vec![]);
+    wikilinks.add("archive/duplicate.md", &vec![]);
+    wikilinks.add("guides/duplicate.md", &vec![]);
 
     tera.register_filter(
         "markdown",

@@ -1,29 +1,26 @@
 use content::Library;
-use markdown::{WikilinkResolver, WikilinkTarget};
+use markdown::WikilinkResolver;
 
-/// Build wikilink targets from every page and section in the content library.
-///
-/// Render-disabled content remains addressable to preserve the lookup behavior of the original
-/// permalink-based implementation. Existing Zola aliases resolve to the canonical source path.
+/// We take all pages/sections that will be rendered and build a resolver from those
 pub fn build_wikilinks(library: &Library) -> WikilinkResolver {
-    let pages = library
-        .pages
-        .values()
-        .map(|page| WikilinkTarget::new(page.file.relative.clone(), page.meta.aliases.clone()));
-    let sections = library.sections.values().map(|section| {
-        WikilinkTarget::new(section.file.relative.clone(), section.meta.aliases.clone())
-    });
-    WikilinkResolver::from_targets(pages.chain(sections))
+    let mut resolver = WikilinkResolver::default();
+    for p in library.pages.values().filter(|x| x.meta.render) {
+        resolver.add(&p.file.relative, &p.meta.aliases);
+    }
+    for s in library.sections.values().filter(|x| x.meta.render) {
+        resolver.add(&s.file.relative, &s.meta.aliases);
+    }
+    resolver
 }
 
 #[cfg(test)]
 mod tests {
     use std::path::Path;
 
+    use super::*;
     use config::Config;
     use content::{Library, Page, PageFrontMatter, Section, SectionFrontMatter};
-
-    use super::*;
+    use markdown::WikilinkError;
 
     fn page(path: &str, aliases: &[&str], render: bool) -> Page {
         let mut page = Page::new(
@@ -58,8 +55,8 @@ mod tests {
 
         let resolver = build_wikilinks(&library);
         assert_eq!(resolver.resolve("start"), Ok("guides/quickstart.md"));
-        assert_eq!(resolver.resolve("notes/private"), Ok("notes/private.md"));
-        assert_eq!(resolver.resolve("private-note"), Ok("notes/private.md"));
+        assert_eq!(resolver.resolve("notes/private"), Err(WikilinkError::Missing));
+        assert_eq!(resolver.resolve("private-note"), Err(WikilinkError::Missing));
         assert_eq!(resolver.resolve("docs/_index"), Ok("docs/_index.md"));
         assert_eq!(resolver.resolve("documentation"), Ok("docs/_index.md"));
     }
