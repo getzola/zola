@@ -3,14 +3,14 @@
 title = "apollo"
 description = "Modern and minimalistic blog theme"
 template = "theme.html"
-date = 2026-08-15T01:05:07+02:00
+date = 2026-08-17T21:00:52+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-08-15T01:05:07+02:00
-updated = 2026-08-15T01:05:07+02:00
+created = 2026-08-17T21:00:52+02:00
+updated = 2026-08-17T21:00:52+02:00
 repository = "https://github.com/not-matthias/apollo.git"
 homepage = "https://github.com/not-matthias/apollo"
 minimum_version = "0.14.0"

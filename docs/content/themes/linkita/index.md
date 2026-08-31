@@ -3,17 +3,17 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2026-08-16T19:28:31+03:00
+date = 2026-08-30T22:00:20+03:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2026-08-16T19:28:31+03:00
-updated = 2026-08-16T19:28:31+03:00
-repository = "https://codeberg.org/salif/linkita.git"
+created = 2026-08-30T22:00:20+03:00
+updated = 2026-08-30T22:00:20+03:00
+repository = "https://github.com/salif/linkita.git"
 homepage = "https://github.com/salif/linkita"
-minimum_version = "0.23.3"
+minimum_version = "0.23.4"
 license = "MIT"
 demo = "https://salif.github.io/linkita/"
 
@@ -110,13 +110,12 @@ git submodule update --remote themes/linkita
 ```
 
 > [!NOTE]
-> Linkita was previously hosted on Codeberg.
-> If you are using the Codeberg repository, read the instructions to
-> [switch to the new repository](https://github.com/salif/linkita/blob/tera1/CHANGELOG.md#tera1).
+> Linkita was previously hosted on Codeberg. If you are using the
+> Codeberg repository, you need to switch to the new repository.
 > Additionally, the theme has been ported to a newer Zola version,
 > which introduces breaking changes in the template engine.
 > If you are using Zola v0.22.1 or older, read the instructions to
-> [switch to v0.23.3](https://salif.github.io/linkita/update-2/).
+> [switch to v0.23](https://salif.github.io/linkita/update-2/).
 
 ## Usage
 
@@ -261,7 +260,7 @@ path = "about"
 ## Hello, world!
 ```
 
-If you want, you can also create [a page for your projects](https://salif.github.io/linkita/components/#projects).
+If you wish, you can also create [a page for your projects](https://salif.github.io/linkita/components/#projects).
 
 ### Setting page authors
 
@@ -624,7 +623,7 @@ since = 2025
 license_url = "https://creativecommons.org/licenses/by-sa/4.0/deed"
 
 # Replace "Your Name" with your name and "CC BY-SA 4.0" with the name of the license you want.
-copyright = "&copy; $YEAR Your Name &vert; [CC BY-SA 4.0]($LICENSE_URL)"
+copyright = "&copy;&nbsp;$YEAR Your Name &vert; [CC BY-SA 4.0]($LICENSE_URL)"
 
 # Not used yet.
 # Supports "@base".
@@ -644,7 +643,7 @@ The `copyright` variable supports Markdown and these variables:
 
 ### Language specific options
 
-For date format, see [docs](https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html).
+For date format, see [docs](https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html#conversion-specifications).
 
 ```toml ,name=zola.toml
 # For English
@@ -725,7 +724,6 @@ src = "/_vercel/insights/script.js"
 
 Open a page of your site, adding `#disable-analytics` to the page address.
 Do this once for each browser and device.
-For example, open <http://127.0.0.1:1111/#disable-analytics>.
 
 ### Comments
 
