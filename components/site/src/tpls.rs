@@ -94,7 +94,7 @@ pub fn register_tera_global_fns(site: &mut Site) {
         "get_taxonomy_url",
         functions::GetTaxonomyUrl::new(
             &site.config.default_language,
-            site.cache.clone(),
+            &site.taxonomies,
             site.config.slugify.taxonomies,
         ),
     );

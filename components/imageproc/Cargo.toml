@@ -10,6 +10,7 @@ kamadak-exif = "0.6"
 tempfile = "3"
 ahash = { workspace = true }
 avif-parse = { workspace = true }
+fast_image_resize = { workspace = true }
 image = { workspace = true }
 log = { workspace = true }
 rayon = { workspace = true }

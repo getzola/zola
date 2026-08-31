@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.23.5 (unreleased)
+
+- Fix `text_direction` not being wired up correctly and causing compilation errors when used in templates
+- Fix `get_taxonomy_url` in templated content not finding anything
+- Update tera, adding back `locale` param to the `date` filter
+- Fix dark borders around PNG when resizing images
+
 ## 0.23.4 (2026-08-20)
 
 - Fix another `get_url` bug adding a trailing slash for non default language
