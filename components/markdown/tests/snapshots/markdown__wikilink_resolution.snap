@@ -8,5 +8,7 @@ expression: res.body
 <a href="https://getzola.org/guides/quickstart/">Get Started</a>
 <a href="https://www.getzola.org/test/#details">#details</a>
 <a href="https://www.getzola.org/test/#details">Details</a>
-<a href="https://getzola.org/guides/quickstart/">Start alias</a></p>
+<a href="https://getzola.org/guides/quickstart/">Start alias</a>
+<a href="https://getzola.org/guides/source.pdf">Source</a>
+<a href="https://getzola.org/guides/source.pdf">Bare source</a></p>
 <h2 id="details">Details</h2>

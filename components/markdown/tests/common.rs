@@ -17,6 +17,7 @@ fn configurable_render(
     let permalinks = AHashMap::from_iter([
         ("pages/about.md".to_owned(), "https://getzola.org/about/".to_owned()),
         ("guides/quickstart.md".to_owned(), "https://getzola.org/guides/quickstart/".to_owned()),
+        ("guides/index.md".to_owned(), "https://getzola.org/guides/".to_owned()),
         ("about.md".to_owned(), "https://getzola.org/about/".to_owned()),
         ("archive/duplicate.md".to_owned(), "https://getzola.org/archive/duplicate/".to_owned()),
         ("guides/duplicate.md".to_owned(), "https://getzola.org/guides/duplicate/".to_owned()),
@@ -27,18 +28,25 @@ fn configurable_render(
     wikilinks.add("about.md", &vec![]);
     wikilinks.add("archive/duplicate.md", &vec![]);
     wikilinks.add("guides/duplicate.md", &vec![]);
+    wikilinks.add_asset("guides/source.pdf");
+    wikilinks.add_asset("archive/manual.pdf");
+    wikilinks.add_asset("guides/manual.pdf");
+
+    let colocated_assets = AHashMap::from_iter([(
+        "guides/source.pdf".to_owned(),
+        ("guides/index.md".to_owned(), "source.pdf".to_owned()),
+    )]);
 
     tera.register_filter(
         "markdown",
         templates::filters::MarkdownFilter::new(
             config.clone(),
             permalinks.clone(),
-            AHashMap::new(),
+            colocated_assets.clone(),
             wikilinks.clone(),
             tera.clone(),
         ),
     );
-    let colocated_assets = AHashMap::new();
     let context = MarkdownContext {
         tera: &tera,
         config: &config,

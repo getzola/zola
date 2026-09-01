@@ -7,3 +7,5 @@ With assets
 en asset: {{ get_url(path="@/blog/with-assets/some.js") }}
 
 ![js](@/blog/with-assets/some.js)
+
+en wikilink: [[some.js|JS]]
