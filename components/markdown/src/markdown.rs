@@ -15,7 +15,7 @@ use utils::slugs::slugify_anchors;
 use utils::table_of_contents::{Heading, make_table_of_contents};
 use utils::types::InsertAnchor;
 
-use crate::{MarkdownContext, WikilinkError};
+use crate::{MarkdownContext, WikilinkError, WikilinkTarget};
 
 const CONTINUE_READING: &str = "<span id=\"continue-reading\"></span>";
 static EMOJI_REPLACER: LazyLock<EmojiReplacer> = LazyLock::new(EmojiReplacer::new);
@@ -57,6 +57,10 @@ fn is_colocated_asset_link(link: &str) -> bool {
 
 fn resolve_colocated_asset(link: &str, ctx: &MarkdownContext) -> Option<String> {
     let path = link.strip_prefix("@/")?;
+    resolve_colocated_asset_path(path, ctx)
+}
+
+fn resolve_colocated_asset_path(path: &str, ctx: &MarkdownContext) -> Option<String> {
     // `#` in an asset path is probably a mistake, ignore it
     let path = path.split('#').next().unwrap();
     let (owner_md, rel) = ctx.colocated_assets.get(path)?;
@@ -429,15 +433,21 @@ impl<'a> State<'a> {
                 }
                 return Ok(format!("{}#{anchor}", ctx.current_permalink));
             }
-            match ctx.wikilinks.resolve(key) {
-                Ok(md_path) => {
-                    let permalink = &ctx.permalinks[md_path];
+            let resolved = match ctx.wikilinks.resolve(key) {
+                Ok(WikilinkTarget::Content(md_path)) => {
                     self.internal_links.push((md_path.to_string(), anchor.clone()));
-                    match anchor {
-                        Some(a) => format!("{}#{}", permalink, a),
-                        None => permalink.clone(),
-                    }
+                    Ok(ctx.permalinks[md_path].clone())
                 }
+                Ok(WikilinkTarget::Asset(path)) => {
+                    resolve_colocated_asset_path(path, ctx).ok_or(WikilinkError::Missing)
+                }
+                Err(error) => Err(error),
+            };
+            match resolved {
+                Ok(permalink) => match anchor {
+                    Some(a) => format!("{}#{}", permalink, a),
+                    None => permalink,
+                },
                 Err(error) => {
                     let detail = match error {
                         WikilinkError::Missing => String::new(),

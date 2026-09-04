@@ -502,6 +502,8 @@ fn wikilink_resolution() {
         "[[#details]]",
         "[[#details|Details]]",
         "[[start|Start alias]]",
+        "[[guides/source.pdf|Source]]",
+        "[[source.pdf|Bare source]]",
     ];
 
     let markdown = format!("{}\n\n## Details", cases.join("\n"));
@@ -509,6 +511,7 @@ fn wikilink_resolution() {
     insta::assert_snapshot!(res.body);
     assert!(res.internal_links.contains(&("guides/quickstart.md".into(), Some("install".into()))));
     assert!(res.internal_links.contains(&("my_page.md".into(), Some("details".into()))));
+    assert!(!res.internal_links.iter().any(|(path, _)| path == "guides/source.pdf"));
 }
 
 #[test]
@@ -525,6 +528,12 @@ fn wikilink_errors() {
     config.markdown.wikilinks = true;
     config.link_checker.internal_level = config::LinkCheckerLevel::Error;
     assert!(common::render_with_config("[[nope]]", config.clone()).is_err());
+    let message =
+        common::render_with_config("[[manual.pdf]]", config.clone()).unwrap_err().to_string();
+    assert_eq!(
+        message,
+        "Broken wikilink `[[manual.pdf]]` in my_page.md; target is ambiguous; candidates: archive/manual.pdf, guides/manual.pdf"
+    );
 
     let message = common::render_with_config("[[duplicate]]", config).unwrap_err().to_string();
     assert_eq!(

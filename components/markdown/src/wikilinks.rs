@@ -6,24 +6,40 @@ pub enum WikilinkError {
     Ambiguous { candidates: Vec<String> },
 }
 
-/// Resolves content wikilinks by source path, output alias, or bare stem.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum WikilinkTarget {
+    Content(String),
+    Asset(String),
+}
+
+impl WikilinkTarget {
+    fn identity(&self) -> &str {
+        match self {
+            Self::Content(path) => identity(path),
+            Self::Asset(path) => path,
+        }
+    }
+}
+
+/// Resolves content wikilinks by source path, output alias, or bare stem, and asset wikilinks by
+/// path or bare filename.
 ///
-/// For each target, the resolver indexes three forms that point back to the full source path:
+/// Content targets are indexed by three forms that point back to the full source path:
 ///
 /// 1. The source path without its `.md` extension, such as `docs/overview`.
 /// 2. Each existing Zola alias, with surrounding slashes removed, such as `overview-old`.
 /// 3. The bare stem, such as `overview`, when it differs from the full source path.
 ///
-/// A stem that is identical to the full path is not indexed twice. Colliding aliases and stems are
-/// retained so resolution can suggest a qualified key for every matching source path instead of
-/// choosing one arbitrarily. Exact paths take precedence over aliases, and aliases take precedence
-/// over stems.
+/// Assets are indexed by their exact content-root-relative path and bare filename. A short name
+/// that is identical to the full path is not indexed twice. Collisions are retained so resolution
+/// can suggest qualified keys instead of choosing one arbitrarily. Exact paths take precedence over
+/// aliases, and aliases take precedence over short names.
 #[derive(Clone, Debug, Default)]
 pub struct WikilinkResolver {
-    sources: Vec<String>,
+    targets: Vec<WikilinkTarget>,
     paths: AHashMap<String, Vec<usize>>,
     aliases: AHashMap<String, Vec<usize>>,
-    stems: AHashMap<String, Vec<usize>>,
+    names: AHashMap<String, Vec<usize>>,
 }
 
 fn identity(value: &str) -> &str {
@@ -37,49 +53,60 @@ fn normalize_lookup(value: &str) -> Option<&str> {
 
 impl WikilinkResolver {
     pub fn add(&mut self, source_path: &str, aliases: &[String]) {
-        let index = self.sources.len();
-        let id = identity(source_path);
+        self.insert(WikilinkTarget::Content(source_path.to_string()), aliases);
+    }
+
+    pub fn add_asset(&mut self, path: &str) {
+        let Some(path) = normalize_lookup(path) else {
+            return;
+        };
+        self.insert(WikilinkTarget::Asset(path.to_string()), &[]);
+    }
+
+    fn insert(&mut self, target: WikilinkTarget, aliases: &[String]) {
+        let index = self.targets.len();
+        let id = target.identity();
         self.paths.entry(id.to_string()).or_default().push(index);
 
-        // We want to keep the filename only if possible
-        // eg docs/help.md --> help
-        // but help.md --> N/A since it's already the stem
-        if let Some(stem) = id.rsplit('/').next()
-            && stem != id
+        if let Some(name) = id.rsplit('/').next()
+            && name != id
         {
-            self.stems.entry(stem.to_string()).or_default().push(index);
+            self.names.entry(name.to_string()).or_default().push(index);
         }
 
-        for alias in aliases {
-            if let Some(s) = normalize_lookup(alias) {
-                let candidates = self.aliases.entry(s.to_string()).or_default();
-                if !candidates.contains(&index) {
-                    candidates.push(index);
+        if matches!(target, WikilinkTarget::Content(_)) {
+            for alias in aliases {
+                if let Some(s) = normalize_lookup(alias) {
+                    let candidates = self.aliases.entry(s.to_string()).or_default();
+                    if !candidates.contains(&index) {
+                        candidates.push(index);
+                    }
                 }
             }
         }
-        self.sources.push(source_path.to_string());
+        self.targets.push(target);
     }
 
-    fn select(&self, candidates: &[usize]) -> Result<&str, WikilinkError> {
+    fn select(&self, candidates: &[usize]) -> Result<&WikilinkTarget, WikilinkError> {
         if let [index] = candidates {
-            return Ok(&self.sources[*index]);
+            return Ok(&self.targets[*index]);
         }
 
-        let mut paths = candidates.iter().map(|index| &self.sources[*index]).collect::<Vec<_>>();
+        let mut paths =
+            candidates.iter().map(|index| self.targets[*index].identity()).collect::<Vec<_>>();
         paths.sort_unstable();
         paths.dedup();
 
         match paths.as_slice() {
-            [path] => Ok(path),
+            [_] => Ok(&self.targets[candidates[0]]),
             // We can't have missing here since we are only called if we have candidates
             _ => Err(WikilinkError::Ambiguous {
-                candidates: paths.into_iter().map(|path| identity(path).to_string()).collect(),
+                candidates: paths.into_iter().map(str::to_string).collect(),
             }),
         }
     }
 
-    pub fn resolve(&self, target: &str) -> Result<&str, WikilinkError> {
+    pub fn resolve(&self, target: &str) -> Result<&WikilinkTarget, WikilinkError> {
         let Some(normalized) = normalize_lookup(target) else {
             return Err(WikilinkError::Missing);
         };
@@ -91,7 +118,7 @@ impl WikilinkResolver {
             return self.select(candidates);
         }
         if !normalized.contains('/')
-            && let Some(candidates) = self.stems.get(normalized)
+            && let Some(candidates) = self.names.get(normalized)
         {
             return self.select(candidates);
         }
@@ -104,8 +131,16 @@ impl WikilinkResolver {
 mod tests {
     use super::*;
 
+    fn assert_content(resolver: &WikilinkResolver, target: &str, expected: &str) {
+        assert_eq!(resolver.resolve(target), Ok(&WikilinkTarget::Content(expected.to_string())));
+    }
+
+    fn assert_asset(resolver: &WikilinkResolver, target: &str, expected: &str) {
+        assert_eq!(resolver.resolve(target), Ok(&WikilinkTarget::Asset(expected.to_string())));
+    }
+
     #[test]
-    fn resolves_paths_aliases_and_unique_stems() {
+    fn resolves_paths_aliases_and_unique_names() {
         let inputs = vec![
             ("blog/overview.md", Vec::new()),
             ("docs/overview.md", Vec::new()),
@@ -113,28 +148,31 @@ mod tests {
             ("blog/_index.md", Vec::new()),
             ("_index.md", Vec::new()),
             ("guides/quickstart.md", vec!["/start/".to_string()]),
+            ("archive/manual.pdf.md", Vec::new()),
         ];
         let mut resolver = WikilinkResolver::default();
         for (a, b) in inputs {
             resolver.add(a, &b);
         }
+        resolver.add_asset("guides/source.pdf");
+        resolver.add_asset("guides/manual.pdf");
 
         // Full paths always resolve.
-        assert_eq!(resolver.resolve("blog/overview"), Ok("blog/overview.md"));
-        assert_eq!(resolver.resolve("docs/overview"), Ok("docs/overview.md"));
-        assert_eq!(resolver.resolve("about"), Ok("about.md"));
-        assert_eq!(resolver.resolve("blog/_index"), Ok("blog/_index.md"));
-        assert_eq!(resolver.resolve("guides/quickstart"), Ok("guides/quickstart.md"));
+        assert_content(&resolver, "blog/overview", "blog/overview.md");
+        assert_content(&resolver, "docs/overview", "docs/overview.md");
+        assert_content(&resolver, "about", "about.md");
+        assert_content(&resolver, "blog/_index", "blog/_index.md");
+        assert_content(&resolver, "guides/quickstart", "guides/quickstart.md");
 
         // Unique stems and aliases resolve to the same source path.
-        assert_eq!(resolver.resolve("quickstart"), Ok("guides/quickstart.md"));
-        assert_eq!(resolver.resolve("start"), Ok("guides/quickstart.md"));
+        assert_content(&resolver, "quickstart", "guides/quickstart.md");
+        assert_content(&resolver, "start", "guides/quickstart.md");
 
         // The exact root path takes precedence over the colliding blog/_index.md stem.
-        assert_eq!(resolver.resolve("_index"), Ok("_index.md"));
+        assert_content(&resolver, "_index", "_index.md");
 
         // A stem identical to its full path is not indexed separately.
-        assert!(!resolver.stems.contains_key("about"));
+        assert!(!resolver.names.contains_key("about"));
 
         // Colliding bare stems suggest valid qualified keys for an actionable error.
         assert_eq!(
@@ -146,5 +184,20 @@ mod tests {
 
         // Accepting Markdown extensions would be an unrelated syntax expansion.
         assert_eq!(resolver.resolve("about.md"), Err(WikilinkError::Missing));
+
+        // Asset paths and unique filenames use the same resolver.
+        assert_asset(&resolver, "guides/source.pdf", "guides/source.pdf");
+        assert_asset(&resolver, "source.pdf", "guides/source.pdf");
+
+        // Colliding short names require a qualified path regardless of target kind.
+        assert_eq!(
+            resolver.resolve("manual.pdf"),
+            Err(WikilinkError::Ambiguous {
+                candidates: vec!["archive/manual.pdf".to_string(), "guides/manual.pdf".to_string()],
+            })
+        );
+        assert_asset(&resolver, "guides/manual.pdf", "guides/manual.pdf");
+        assert_content(&resolver, "archive/manual.pdf", "archive/manual.pdf.md");
+        assert_eq!(resolver.resolve("manual"), Err(WikilinkError::Missing));
     }
 }

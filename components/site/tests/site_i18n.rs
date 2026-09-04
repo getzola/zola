@@ -225,7 +225,10 @@ fn correct_translations_on_all_pages() {
 
 #[test]
 fn can_resolve_colocated_assets_language_aware() {
-    let (_, _tmp_dir, public) = build_site("test_site_i18n");
+    let (_, _tmp_dir, public) = build_site_with_setup("test_site_i18n", |mut site| {
+        site.config.markdown.wikilinks = true;
+        (site, true)
+    });
 
     assert!(file_contains!(
         public,
@@ -247,5 +250,15 @@ fn can_resolve_colocated_assets_language_aware() {
         public,
         "fr/blog/with-assets/index.html",
         "src=\"https://example.com/fr/blog/with-assets/some.js\""
+    ));
+    assert!(file_contains!(
+        public,
+        "blog/with-assets/index.html",
+        "en wikilink: <a href=\"https://example.com/blog/with-assets/some.js\">JS</a>"
+    ));
+    assert!(file_contains!(
+        public,
+        "fr/blog/with-assets/index.html",
+        "fr wikilink: <a href=\"https://example.com/fr/blog/with-assets/some.js\">JS</a>"
     ));
 }
