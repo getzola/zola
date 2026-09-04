@@ -6,22 +6,25 @@ mod queue;
 pub mod sass;
 pub mod sitemap;
 pub mod tpls;
+mod wikilinks;
 
-use std::collections::{HashMap, HashSet};
 use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
 
+use ahash::{AHashMap, AHashSet};
 use rayon::prelude::*;
 use tera::Tera;
 use walkdir::{DirEntry, WalkDir};
 
 use crate::queue::Queue;
+use crate::wikilinks::build_wikilinks;
 use config::{Config, IndexFormat, get_config};
 use content::{Library, Page, Section, Taxonomy};
 use errors::{Result, anyhow, bail};
+use markdown::WikilinkResolver;
 use relative_path::RelativePathBuf;
 use render::{RenderCache, Renderer};
 use templates::load_tera;
@@ -31,8 +34,8 @@ use utils::fs::{
 use utils::net::get_available_port;
 use utils::types::InsertAnchor;
 
-pub static SITE_CONTENT: LazyLock<Arc<RwLock<HashMap<RelativePathBuf, String>>>> =
-    LazyLock::new(|| Arc::new(RwLock::new(HashMap::new())));
+pub static SITE_CONTENT: LazyLock<Arc<RwLock<AHashMap<RelativePathBuf, String>>>> =
+    LazyLock::new(|| Arc::new(RwLock::new(AHashMap::new())));
 
 /// Where are we building the site
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -63,7 +66,9 @@ pub struct Site {
     pub taxonomies: Vec<Taxonomy>,
     /// A map of all .md files (section and pages) and their permalink
     /// We need that if there are relative links in the content that need to be resolved
-    pub permalinks: HashMap<String, String>,
+    pub permalinks: AHashMap<String, String>,
+    /// Resolves content wikilinks by source path, alias, or unambiguous stem.
+    pub wikilinks: WikilinkResolver,
     /// Contains all pages and sections of the site
     pub library: Arc<Library>,
     /// Pre-serialized render cache
@@ -109,7 +114,8 @@ impl Site {
             static_path,
             templates_path,
             taxonomies: Vec::new(),
-            permalinks: HashMap::new(),
+            permalinks: AHashMap::new(),
+            wikilinks: WikilinkResolver::default(),
             include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(Library::default()),
@@ -193,7 +199,7 @@ impl Site {
         // so it's kinda necessary
         let mut dir_walker =
             WalkDir::new(self.base_path.join("content")).follow_links(true).into_iter();
-        let mut allowed_index_filenames: HashSet<_> = self
+        let mut allowed_index_filenames: AHashSet<_> = self
             .config
             .other_languages()
             .keys()
@@ -205,7 +211,7 @@ impl Site {
         // at the end to detect pages that are actually errors:
         // when there is both a _index.md and index.md in the same folder
         let mut page_paths = Vec::new();
-        let mut sections = HashSet::new();
+        let mut sections = AHashSet::new();
 
         loop {
             let entry: DirEntry = match dir_walker.next() {
@@ -343,6 +349,7 @@ impl Site {
         // taxonomy Tera fns are loaded in `register_early_global_fns`
         // so we do need to populate it first.
         self.populate_taxonomies()?;
+        self.build_wikilinks();
         tpls::register_early_global_fns(self);
         self.render_markdown()?;
         Arc::make_mut(&mut self.library).fill_backlinks();
@@ -459,12 +466,13 @@ impl Site {
         // Another silly thing needed to not borrow &self in parallel and
         // make the borrow checker happy
         let permalinks = &self.permalinks;
+        let wikilinks = &self.wikilinks;
         let tera = &self.tera;
         let config = &self.config;
         let colocated_assets = self.library.colocated_assets.clone();
 
         // This is needed in the first place because of silly borrow checker
-        let mut pages_insert_anchors = HashMap::new();
+        let mut pages_insert_anchors = AHashMap::new();
         for (_, p) in &self.library.pages {
             pages_insert_anchors.insert(
                 p.file.path.clone(),
@@ -489,6 +497,7 @@ impl Site {
                     renderer.clone(),
                     permalinks,
                     &colocated_assets,
+                    wikilinks,
                     tera,
                     config,
                     insert_anchor,
@@ -507,6 +516,7 @@ impl Site {
                     renderer.clone(),
                     permalinks,
                     &colocated_assets,
+                    wikilinks,
                     tera,
                     config,
                 )
@@ -517,7 +527,7 @@ impl Site {
     }
 
     /// Add a page to the site
-    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
+    /// The `render_md` parameter is used in the serve command with --fast, when rebuilding a page.
     pub fn add_page(&mut self, mut page: Page, render_md: bool) -> Result<()> {
         for taxa_name in page.meta.taxonomies.keys() {
             if !self.config.has_taxonomy(taxa_name, &page.lang) {
@@ -541,6 +551,7 @@ impl Site {
                 self.renderer(),
                 &self.permalinks,
                 &self.library.colocated_assets,
+                &self.wikilinks,
                 &self.tera,
                 &self.config,
                 insert_anchor,
@@ -564,7 +575,7 @@ impl Site {
     }
 
     /// Add a section to the site
-    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
+    /// The `render_md` parameter is used in the serve command with --fast, when rebuilding a page.
     pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
         if section.meta.render {
             self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
@@ -575,6 +586,7 @@ impl Site {
                 self.renderer(),
                 &self.permalinks,
                 &self.library.colocated_assets,
+                &self.wikilinks,
                 &self.tera,
                 &self.config,
             )?;
@@ -622,6 +634,14 @@ impl Site {
     pub fn populate_sections(&mut self) {
         let library = Arc::make_mut(&mut self.library);
         library.populate_sections(&self.config, &self.content_path);
+    }
+
+    fn build_wikilinks(&mut self) {
+        if self.config.markdown.wikilinks {
+            self.wikilinks = build_wikilinks(&self.library);
+        } else {
+            self.wikilinks = WikilinkResolver::default();
+        }
     }
 
     /// Find all the tags and categories if it's asked in the config

@@ -18,6 +18,7 @@ tera = { workspace = true }
 url = { workspace = true }
 walkdir = { workspace = true }
 time = { workspace = true, features = ["formatting"] }
+ahash = { workspace = true }
 
 errors = { workspace = true }
 config = { workspace = true }
@@ -30,7 +31,6 @@ content = { workspace = true }
 render = { workspace = true }
 markdown = { workspace = true }
 memchr = { workspace = true }
-ahash = { workspace = true }
 regex = { workspace = true }
 
 [dev-dependencies]

@@ -1,5 +1,5 @@
+use ahash::AHashMap;
 use percent_encoding::percent_decode;
-use std::collections::HashMap;
 
 use errors::{Result, anyhow};
 
@@ -19,7 +19,7 @@ pub struct ResolvedInternalLink {
 /// returns the path + anchor as well
 pub fn resolve_internal_link(
     link: &str,
-    permalinks: &HashMap<String, String>,
+    permalinks: &AHashMap<String, String>,
 ) -> Result<ResolvedInternalLink> {
     // First we remove the @/ since that's zola specific
     let clean_link = link.replacen("@/", "", 1);
@@ -44,13 +44,13 @@ pub fn resolve_internal_link(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use super::*;
 
     use super::resolve_internal_link;
 
     #[test]
     fn can_resolve_valid_internal_link() {
-        let mut permalinks = HashMap::new();
+        let mut permalinks = AHashMap::new();
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
         let res = resolve_internal_link("@/pages/about.md", &permalinks).unwrap();
         assert_eq!(res.permalink, "https://vincent.is/about");
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn can_resolve_valid_root_internal_link() {
-        let mut permalinks = HashMap::new();
+        let mut permalinks = AHashMap::new();
         permalinks.insert("about.md".to_string(), "https://vincent.is/about".to_string());
         let res = resolve_internal_link("@/about.md", &permalinks).unwrap();
         assert_eq!(res.permalink, "https://vincent.is/about");
@@ -66,7 +66,7 @@ mod tests {
 
     #[test]
     fn can_resolve_internal_links_with_anchors() {
-        let mut permalinks = HashMap::new();
+        let mut permalinks = AHashMap::new();
         permalinks.insert("pages/about.md".to_string(), "https://vincent.is/about".to_string());
         let res = resolve_internal_link("@/pages/about.md#hello", &permalinks).unwrap();
         assert_eq!(res.permalink, "https://vincent.is/about#hello");
@@ -76,7 +76,7 @@ mod tests {
 
     #[test]
     fn can_resolve_escaped_internal_links() {
-        let mut permalinks = HashMap::new();
+        let mut permalinks = AHashMap::new();
         permalinks.insert(
             "pages/about space.md".to_string(),
             "https://vincent.is/about%20space/".to_string(),
@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn errors_resolve_inexistent_internal_link() {
-        let res = resolve_internal_link("@/pages/about.md#hello", &HashMap::new());
+        let res = resolve_internal_link("@/pages/about.md#hello", &AHashMap::new());
         assert!(res.is_err());
     }
 }

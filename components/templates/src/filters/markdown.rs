@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
 use ahash::AHashMap;
 use config::Config;
-use markdown::{MarkdownContext, render_content};
+use markdown::{MarkdownContext, WikilinkResolver, render_content};
 use tera::value::Key;
 use tera::{Error, Filter, Kwargs, State, TeraResult, Value};
 use utils::types::InsertAnchor;
@@ -10,19 +8,21 @@ use utils::types::InsertAnchor;
 #[derive(Debug, Default)]
 pub struct MarkdownFilter {
     config: Config,
-    permalinks: HashMap<String, String>,
+    permalinks: AHashMap<String, String>,
     colocated_assets: AHashMap<String, (String, String)>,
+    wikilinks: WikilinkResolver,
     tera: tera::Tera,
 }
 
 impl MarkdownFilter {
     pub fn new(
         config: Config,
-        permalinks: HashMap<String, String>,
+        permalinks: AHashMap<String, String>,
         colocated_assets: AHashMap<String, (String, String)>,
+        wikilinks: WikilinkResolver,
         tera: tera::Tera,
     ) -> Self {
-        Self { config, permalinks, colocated_assets, tera }
+        Self { config, permalinks, colocated_assets, wikilinks, tera }
     }
 }
 
@@ -67,6 +67,7 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
             config: &self.config,
             permalinks: &self.permalinks,
             colocated_assets: &self.colocated_assets,
+            wikilinks: &self.wikilinks,
             lang: &lang,
             current_permalink: &current_permalink,
             current_path: &current_path,
@@ -91,13 +92,13 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
     use std::sync::Arc;
 
     use ahash::AHashMap;
     use config::{Config, HighlightStyle, Highlighting, Registry};
     use giallo::DataAttrPosition;
     use insta::assert_snapshot;
+    use markdown::WikilinkResolver;
     use tera::{Context, Filter, Kwargs, State, Value};
 
     use super::MarkdownFilter;
@@ -116,8 +117,9 @@ mod tests {
 
         let result = MarkdownFilter::new(
             Config::default(),
-            HashMap::new(),
             AHashMap::new(),
+            AHashMap::new(),
+            WikilinkResolver::default(),
             tera::Tera::default(),
         )
         .call("# Hey", kwargs, &state);
@@ -133,8 +135,9 @@ mod tests {
 
         let result = MarkdownFilter::new(
             Config::default(),
-            HashMap::new(),
             AHashMap::new(),
+            AHashMap::new(),
+            WikilinkResolver::default(),
             tera::Tera::default(),
         )
         .call("Using `map`, `filter`, and `fold` instead of `for`", kwargs, &state);
@@ -154,8 +157,9 @@ mod tests {
 
         let result = MarkdownFilter::new(
             Config::default(),
-            HashMap::new(),
             AHashMap::new(),
+            AHashMap::new(),
+            WikilinkResolver::default(),
             tera::Tera::default(),
         )
         .call(
@@ -198,8 +202,9 @@ mod tests {
         let kwargs = Kwargs::from([]);
         let result = MarkdownFilter::new(
             config.clone(),
-            HashMap::new(),
             AHashMap::new(),
+            AHashMap::new(),
+            WikilinkResolver::default(),
             tera::Tera::default(),
         )
         .call(md, kwargs, &state);
@@ -211,16 +216,21 @@ mod tests {
 
         let md = "```py\ni=0\n```";
         let kwargs = Kwargs::from([]);
-        let result =
-            MarkdownFilter::new(config, HashMap::new(), AHashMap::new(), tera::Tera::default())
-                .call(md, kwargs, &state);
+        let result = MarkdownFilter::new(
+            config,
+            AHashMap::new(),
+            AHashMap::new(),
+            WikilinkResolver::default(),
+            tera::Tera::default(),
+        )
+        .call(md, kwargs, &state);
         assert!(result.is_ok());
         assert!(result.unwrap().contains("style"));
     }
 
     #[test]
     fn markdown_filter_can_use_internal_links() {
-        let mut permalinks = HashMap::new();
+        let mut permalinks = AHashMap::new();
         permalinks.insert("blog/_index.md".to_string(), "/foo/blog/".to_string());
         let mut colocated_assets = AHashMap::new();
         colocated_assets.insert(
@@ -237,6 +247,7 @@ mod tests {
             Config::default(),
             permalinks,
             colocated_assets.clone(),
+            WikilinkResolver::default(),
             tera::Tera::default(),
         )
         .call(md, kwargs, &state);
