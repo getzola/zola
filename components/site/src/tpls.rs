@@ -62,6 +62,7 @@ pub fn register_early_global_fns(site: &mut Site) {
             site.permalinks.clone(),
             site.library.colocated_assets.clone(),
             site.wikilinks.clone(),
+            site.taxonomy_permalinks.clone(),
             site.tera.clone(),
         ),
     );

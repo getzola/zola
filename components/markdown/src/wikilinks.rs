@@ -10,19 +10,20 @@ pub enum WikilinkError {
 pub enum WikilinkTarget {
     Content(String),
     Asset(String),
+    TaxonomyTerm(String),
 }
 
 impl WikilinkTarget {
     fn identity(&self) -> &str {
         match self {
             Self::Content(path) => identity(path),
-            Self::Asset(path) => path,
+            Self::Asset(path) | Self::TaxonomyTerm(path) => path,
         }
     }
 }
 
-/// Resolves content wikilinks by source path, output alias, or bare stem, and asset wikilinks by
-/// path or bare filename.
+/// Resolves content wikilinks by source path, output alias, or bare stem; assets by path or bare
+/// filename; and taxonomy terms by qualified identity or bare term slug.
 ///
 /// Content targets are indexed by three forms that point back to the full source path:
 ///
@@ -30,7 +31,8 @@ impl WikilinkTarget {
 /// 2. Each existing Zola alias, with surrounding slashes removed, such as `overview-old`.
 /// 3. The bare stem, such as `overview`, when it differs from the full source path.
 ///
-/// Assets are indexed by their exact content-root-relative path and bare filename. A short name
+/// Assets are indexed by their exact content-root-relative path and bare filename. Taxonomy terms
+/// use their language-neutral `taxonomy-slug/term-slug` identity and bare term slug. A short name
 /// that is identical to the full path is not indexed twice. Collisions are retained so resolution
 /// can suggest qualified keys instead of choosing one arbitrarily. Exact paths take precedence over
 /// aliases, and aliases take precedence over short names.
@@ -61,6 +63,10 @@ impl WikilinkResolver {
             return;
         };
         self.insert(WikilinkTarget::Asset(path.to_string()), &[]);
+    }
+
+    pub fn add_taxonomy_term(&mut self, identity: &str) {
+        self.insert(WikilinkTarget::TaxonomyTerm(identity.to_string()), &[]);
     }
 
     fn insert(&mut self, target: WikilinkTarget, aliases: &[String]) {
@@ -156,6 +162,13 @@ mod tests {
         }
         resolver.add_asset("guides/source.pdf");
         resolver.add_asset("guides/manual.pdf");
+        resolver.add_taxonomy_term("tags/evidence");
+        resolver.add_taxonomy_term("tags/overview");
+        resolver.add_taxonomy_term("tags/manual.pdf");
+        resolver.add_taxonomy_term("categories/evidence");
+        resolver.add_taxonomy_term("tags/unique");
+        resolver.add_taxonomy_term("tags/about");
+        resolver.add_taxonomy_term("tags/start");
 
         // Full paths always resolve.
         assert_content(&resolver, "blog/overview", "blog/overview.md");
@@ -171,14 +184,15 @@ mod tests {
         // The exact root path takes precedence over the colliding blog/_index.md stem.
         assert_content(&resolver, "_index", "_index.md");
 
-        // A stem identical to its full path is not indexed separately.
-        assert!(!resolver.names.contains_key("about"));
-
         // Colliding bare stems suggest valid qualified keys for an actionable error.
         assert_eq!(
             resolver.resolve("overview"),
             Err(WikilinkError::Ambiguous {
-                candidates: vec!["blog/overview".to_string(), "docs/overview".to_string()],
+                candidates: vec![
+                    "blog/overview".to_string(),
+                    "docs/overview".to_string(),
+                    "tags/overview".to_string()
+                ],
             })
         );
 
@@ -193,11 +207,32 @@ mod tests {
         assert_eq!(
             resolver.resolve("manual.pdf"),
             Err(WikilinkError::Ambiguous {
-                candidates: vec!["archive/manual.pdf".to_string(), "guides/manual.pdf".to_string()],
+                candidates: vec![
+                    "archive/manual.pdf".to_string(),
+                    "guides/manual.pdf".to_string(),
+                    "tags/manual.pdf".to_string()
+                ],
             })
         );
         assert_asset(&resolver, "guides/manual.pdf", "guides/manual.pdf");
         assert_content(&resolver, "archive/manual.pdf", "archive/manual.pdf.md");
         assert_eq!(resolver.resolve("manual"), Err(WikilinkError::Missing));
+
+        for (key, identity) in [
+            ("tags/evidence", "tags/evidence"),
+            ("/tags/evidence/", "tags/evidence"),
+            ("unique", "tags/unique"),
+            ("tags/unique", "tags/unique"),
+            ("tags/about", "tags/about"),
+            ("tags/start", "tags/start"),
+        ] {
+            assert_eq!(resolver.resolve(key), Ok(&WikilinkTarget::TaxonomyTerm(identity.into())));
+        }
+        assert_eq!(
+            resolver.resolve("evidence"),
+            Err(WikilinkError::Ambiguous {
+                candidates: vec!["categories/evidence".into(), "tags/evidence".into()],
+            })
+        );
     }
 }

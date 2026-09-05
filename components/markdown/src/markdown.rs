@@ -441,6 +441,10 @@ impl<'a> State<'a> {
                 Ok(WikilinkTarget::Asset(path)) => {
                     resolve_colocated_asset_path(path, ctx).ok_or(WikilinkError::Missing)
                 }
+                Ok(WikilinkTarget::TaxonomyTerm(identity)) => ctx
+                    .taxonomy_permalink(identity)
+                    .map(str::to_owned)
+                    .ok_or(WikilinkError::Missing),
                 Err(error) => Err(error),
             };
             match resolved {
@@ -781,6 +785,8 @@ mod tests {
     static EMPTY_ASSETS: LazyLock<AHashMap<String, (String, String)>> =
         LazyLock::new(AHashMap::new);
 
+    static EMPTY_TAXONOMIES: LazyLock<crate::TaxonomyPermalinks> = LazyLock::new(AHashMap::new);
+
     fn make_context<'a>(
         config: &'a Config,
         tera: &'a tera::Tera,
@@ -793,11 +799,62 @@ mod tests {
             permalinks,
             colocated_assets: &EMPTY_ASSETS,
             wikilinks,
+            taxonomy_permalinks: &EMPTY_TAXONOMIES,
             lang: &config.default_language,
             current_permalink: "",
             current_path: "",
             insert_anchor: InsertAnchor::None,
         }
+    }
+
+    #[test]
+    fn taxonomy_wikilinks_select_language_before_default_fallback() {
+        let mut config = Config::default_for_test();
+        config.markdown.wikilinks = true;
+        config.link_checker.internal_level = config::LinkCheckerLevel::Error;
+        let permalinks = AHashMap::new();
+        let mut wikilinks = WikilinkResolver::default();
+        wikilinks.add_taxonomy_term("tags/evidence");
+        let mut taxonomy_permalinks = crate::TaxonomyPermalinks::default();
+        taxonomy_permalinks.insert(
+            "tags/evidence".into(),
+            AHashMap::from_iter([
+                ("en".into(), "https://example.com/tags/evidence/".into()),
+                ("fr".into(), "https://example.com/fr/tags/evidence/".into()),
+            ]),
+        );
+        for (lang, prefix) in [("en", ""), ("fr", "fr/"), ("it", "")] {
+            let mut ctx = make_context(&config, &ZOLA_TERA, &permalinks, &wikilinks);
+            ctx.taxonomy_permalinks = &taxonomy_permalinks;
+            ctx.lang = lang;
+            let rendered = crate::render_content("[[evidence#details|Evidence]]", &ctx).unwrap();
+            assert_eq!(
+                rendered.body,
+                format!(
+                    "<p><a href=\"https://example.com/{prefix}tags/evidence/#details\">Evidence</a></p>\n"
+                )
+            );
+            assert!(rendered.internal_links.is_empty());
+        }
+        taxonomy_permalinks.get_mut("tags/evidence").unwrap().remove("en");
+        let mut ctx = make_context(&config, &ZOLA_TERA, &permalinks, &wikilinks);
+        ctx.taxonomy_permalinks = &taxonomy_permalinks;
+        ctx.lang = "it";
+        assert!(
+            crate::render_content("[[evidence]]", &ctx)
+                .unwrap_err()
+                .to_string()
+                .contains("Broken wikilink `[[evidence]]`")
+        );
+
+        config.link_checker.internal_level = config::LinkCheckerLevel::Warn;
+        let mut ctx = make_context(&config, &ZOLA_TERA, &permalinks, &wikilinks);
+        ctx.taxonomy_permalinks = &taxonomy_permalinks;
+        ctx.lang = "it";
+        assert_eq!(
+            crate::render_content("[[evidence]]", &ctx).unwrap().body,
+            "<p><a href=\"evidence\">evidence</a></p>\n"
+        );
     }
 
     #[test]

@@ -1,6 +1,6 @@
 use ahash::AHashMap;
 use config::Config;
-use markdown::{MarkdownContext, WikilinkResolver, render_content};
+use markdown::{MarkdownContext, TaxonomyPermalinks, WikilinkResolver, render_content};
 use tera::value::Key;
 use tera::{Error, Filter, Kwargs, State, TeraResult, Value};
 use utils::types::InsertAnchor;
@@ -11,6 +11,7 @@ pub struct MarkdownFilter {
     permalinks: AHashMap<String, String>,
     colocated_assets: AHashMap<String, (String, String)>,
     wikilinks: WikilinkResolver,
+    taxonomy_permalinks: TaxonomyPermalinks,
     tera: tera::Tera,
 }
 
@@ -20,9 +21,10 @@ impl MarkdownFilter {
         permalinks: AHashMap<String, String>,
         colocated_assets: AHashMap<String, (String, String)>,
         wikilinks: WikilinkResolver,
+        taxonomy_permalinks: TaxonomyPermalinks,
         tera: tera::Tera,
     ) -> Self {
-        Self { config, permalinks, colocated_assets, wikilinks, tera }
+        Self { config, permalinks, colocated_assets, wikilinks, taxonomy_permalinks, tera }
     }
 }
 
@@ -37,7 +39,7 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
             .flatten()
             .or_else(|| state.get::<Value>("section").ok().flatten());
 
-        let (current_path, current_permalink, lang) = page_or_section
+        let (current_path, current_permalink) = page_or_section
             .as_ref()
             .and_then(|v| v.as_map())
             .map(|map| {
@@ -51,16 +53,14 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
                     .and_then(|v| v.as_str())
                     .unwrap_or("")
                     .to_string();
-                let lang = state
-                    .get::<String>("lang")
-                    .ok()
-                    .flatten()
-                    .unwrap_or_else(|| self.config.default_language.clone());
-                (path, permalink, lang)
+                (path, permalink)
             })
-            .unwrap_or_else(|| {
-                (String::new(), String::new(), self.config.default_language.clone())
-            });
+            .unwrap_or_default();
+        let lang = state
+            .get::<String>("lang")
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| self.config.default_language.clone());
 
         let context = MarkdownContext {
             tera: &self.tera,
@@ -68,6 +68,7 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
             permalinks: &self.permalinks,
             colocated_assets: &self.colocated_assets,
             wikilinks: &self.wikilinks,
+            taxonomy_permalinks: &self.taxonomy_permalinks,
             lang: &lang,
             current_permalink: &current_permalink,
             current_path: &current_path,
@@ -120,6 +121,7 @@ mod tests {
             AHashMap::new(),
             AHashMap::new(),
             WikilinkResolver::default(),
+            AHashMap::default(),
             tera::Tera::default(),
         )
         .call("# Hey", kwargs, &state);
@@ -138,6 +140,7 @@ mod tests {
             AHashMap::new(),
             AHashMap::new(),
             WikilinkResolver::default(),
+            AHashMap::default(),
             tera::Tera::default(),
         )
         .call("Using `map`, `filter`, and `fold` instead of `for`", kwargs, &state);
@@ -160,6 +163,7 @@ mod tests {
             AHashMap::new(),
             AHashMap::new(),
             WikilinkResolver::default(),
+            AHashMap::default(),
             tera::Tera::default(),
         )
         .call(
@@ -205,6 +209,7 @@ mod tests {
             AHashMap::new(),
             AHashMap::new(),
             WikilinkResolver::default(),
+            AHashMap::default(),
             tera::Tera::default(),
         )
         .call(md, kwargs, &state);
@@ -221,6 +226,7 @@ mod tests {
             AHashMap::new(),
             AHashMap::new(),
             WikilinkResolver::default(),
+            AHashMap::default(),
             tera::Tera::default(),
         )
         .call(md, kwargs, &state);
@@ -248,6 +254,7 @@ mod tests {
             permalinks,
             colocated_assets.clone(),
             WikilinkResolver::default(),
+            AHashMap::default(),
             tera::Tera::default(),
         )
         .call(md, kwargs, &state);

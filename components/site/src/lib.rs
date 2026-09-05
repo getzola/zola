@@ -24,7 +24,7 @@ use crate::wikilinks::build_wikilinks;
 use config::{Config, IndexFormat, get_config};
 use content::{Library, Page, Section, Taxonomy};
 use errors::{Result, anyhow, bail};
-use markdown::WikilinkResolver;
+use markdown::{TaxonomyPermalinks, WikilinkResolver};
 use relative_path::RelativePathBuf;
 use render::{RenderCache, Renderer};
 use templates::load_tera;
@@ -67,8 +67,9 @@ pub struct Site {
     /// A map of all .md files (section and pages) and their permalink
     /// We need that if there are relative links in the content that need to be resolved
     pub permalinks: AHashMap<String, String>,
-    /// Resolves content wikilinks by source path, alias, or unambiguous stem.
+    /// Resolves content, asset, and taxonomy-term wikilinks.
     pub wikilinks: WikilinkResolver,
+    pub taxonomy_permalinks: TaxonomyPermalinks,
     /// Contains all pages and sections of the site
     pub library: Arc<Library>,
     /// Pre-serialized render cache
@@ -116,6 +117,7 @@ impl Site {
             taxonomies: Vec::new(),
             permalinks: AHashMap::new(),
             wikilinks: WikilinkResolver::default(),
+            taxonomy_permalinks: TaxonomyPermalinks::default(),
             include_drafts: false,
             // We will allocate it properly later on
             library: Arc::new(Library::default()),
@@ -467,6 +469,7 @@ impl Site {
         // make the borrow checker happy
         let permalinks = &self.permalinks;
         let wikilinks = &self.wikilinks;
+        let taxonomy_permalinks = &self.taxonomy_permalinks;
         let tera = &self.tera;
         let config = &self.config;
         let colocated_assets = self.library.colocated_assets.clone();
@@ -498,6 +501,7 @@ impl Site {
                     permalinks,
                     &colocated_assets,
                     wikilinks,
+                    taxonomy_permalinks,
                     tera,
                     config,
                     insert_anchor,
@@ -517,6 +521,7 @@ impl Site {
                     permalinks,
                     &colocated_assets,
                     wikilinks,
+                    taxonomy_permalinks,
                     tera,
                     config,
                 )
@@ -552,6 +557,7 @@ impl Site {
                 &self.permalinks,
                 &self.library.colocated_assets,
                 &self.wikilinks,
+                &self.taxonomy_permalinks,
                 &self.tera,
                 &self.config,
                 insert_anchor,
@@ -587,6 +593,7 @@ impl Site {
                 &self.permalinks,
                 &self.library.colocated_assets,
                 &self.wikilinks,
+                &self.taxonomy_permalinks,
                 &self.tera,
                 &self.config,
             )?;
@@ -638,9 +645,11 @@ impl Site {
 
     fn build_wikilinks(&mut self) {
         if self.config.markdown.wikilinks {
-            self.wikilinks = build_wikilinks(&self.library);
+            (self.wikilinks, self.taxonomy_permalinks) =
+                build_wikilinks(&self.library, &self.taxonomies);
         } else {
             self.wikilinks = WikilinkResolver::default();
+            self.taxonomy_permalinks.clear();
         }
     }
 
