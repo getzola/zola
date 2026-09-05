@@ -10,7 +10,7 @@ use tera::Tera;
 use config::Config;
 use content::{Page, Section};
 use errors::{Context as _, Result};
-use markdown::{MarkdownContext, WikilinkResolver};
+use markdown::{MarkdownContext, TaxonomyPermalinks, WikilinkResolver};
 use render::Renderer;
 use utils::net::is_external_link;
 use utils::types::InsertAnchor;
@@ -64,6 +64,7 @@ pub fn render_page(
     permalinks: &AHashMap<String, String>,
     colocated_assets: &AHashMap<String, (String, String)>,
     wikilinks: &WikilinkResolver,
+    taxonomy_permalinks: &TaxonomyPermalinks,
     tera: &Tera,
     config: &Config,
     insert_anchor: InsertAnchor,
@@ -94,6 +95,7 @@ pub fn render_page(
         permalinks,
         colocated_assets,
         wikilinks,
+        taxonomy_permalinks,
         lang: &page.lang,
         current_permalink: &page.permalink,
         current_path: &page.file.relative,
@@ -117,6 +119,7 @@ pub fn render_section(
     permalinks: &AHashMap<String, String>,
     colocated_assets: &AHashMap<String, (String, String)>,
     wikilinks: &WikilinkResolver,
+    taxonomy_permalinks: &TaxonomyPermalinks,
     tera: &Tera,
     config: &Config,
 ) -> Result<()> {
@@ -146,6 +149,7 @@ pub fn render_section(
         permalinks,
         colocated_assets,
         wikilinks,
+        taxonomy_permalinks,
         lang: &section.lang,
         current_permalink: &section.permalink,
         current_path: &section.file.relative,
@@ -215,6 +219,7 @@ Hello world
             &AHashMap::default(),
             &AHashMap::default(),
             &WikilinkResolver::default(),
+            &AHashMap::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
@@ -255,6 +260,7 @@ And here's another. [^3]
             &AHashMap::default(),
             &AHashMap::default(),
             &WikilinkResolver::default(),
+            &AHashMap::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
@@ -293,6 +299,7 @@ And here's another. [^3]
             &AHashMap::default(),
             &AHashMap::default(),
             &WikilinkResolver::default(),
+            &AHashMap::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
@@ -377,6 +384,7 @@ And here's another. [^3]
             &AHashMap::default(),
             &AHashMap::default(),
             &WikilinkResolver::default(),
+            &AHashMap::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,

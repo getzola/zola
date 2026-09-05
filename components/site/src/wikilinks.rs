@@ -1,9 +1,12 @@
 use ahash::AHashSet;
-use content::Library;
-use markdown::WikilinkResolver;
+use content::{Library, Taxonomy};
+use markdown::{TaxonomyPermalinks, WikilinkResolver};
 
-/// We take all pages/sections that will be rendered and build a resolver from those
-pub fn build_wikilinks(library: &Library) -> WikilinkResolver {
+/// Index published content, its colocated assets, and rendered taxonomy terms.
+pub fn build_wikilinks(
+    library: &Library,
+    taxonomies: &[Taxonomy],
+) -> (WikilinkResolver, TaxonomyPermalinks) {
     let mut resolver = WikilinkResolver::default();
     let mut asset_owners = AHashSet::new();
     for p in library.pages.values().filter(|x| x.meta.render) {
@@ -19,7 +22,19 @@ pub fn build_wikilinks(library: &Library) -> WikilinkResolver {
             resolver.add_asset(path);
         }
     }
-    resolver
+    let mut taxonomy_permalinks = TaxonomyPermalinks::default();
+    for taxonomy in taxonomies.iter().filter(|taxonomy| taxonomy.kind.render) {
+        for term in &taxonomy.items {
+            taxonomy_permalinks
+                .entry(format!("{}/{}", taxonomy.slug, term.slug))
+                .or_default()
+                .insert(taxonomy.lang.clone(), term.permalink.clone());
+        }
+    }
+    for identity in taxonomy_permalinks.keys() {
+        resolver.add_taxonomy_term(identity);
+    }
+    (resolver, taxonomy_permalinks)
 }
 
 #[cfg(test)]
@@ -55,8 +70,16 @@ mod tests {
     }
 
     #[test]
-    fn includes_aliases_and_render_disabled_content() {
-        let config = Config::default_for_test();
+    fn includes_rendered_content_assets_and_taxonomies() {
+        let mut config = Config::parse(
+            r#"
+base_url = "https://example.com/base"
+taxonomy_root = "topics"
+taxonomies = [{name = "Research Tags"}, {name = "disabled", render = false}]
+"#,
+        )
+        .unwrap();
+        config.markdown.wikilinks = true;
         let mut library = Library::new(&config);
         library.insert_page(page("guides/quickstart.md", &["/start/"], true));
         library.insert_page(page("notes/private.md", &["/private-note/"], false));
@@ -70,7 +93,18 @@ mod tests {
             ("notes/private.md".to_string(), "private.pdf".to_string()),
         );
 
-        let resolver = build_wikilinks(&library);
+        let mut tagged = page("tagged.md", &[], true);
+        tagged.lang = config.default_language.clone();
+        tagged.meta.taxonomies.insert("Research Tags".into(), vec!["Some Evidence".into()]);
+        tagged.meta.taxonomies.insert("disabled".into(), vec!["Secret".into()]);
+        library.insert_page(tagged);
+        let mut hidden = page("hidden.md", &[], true);
+        hidden.lang = config.default_language.clone();
+        hidden.hidden = true;
+        hidden.meta.taxonomies.insert("Research Tags".into(), vec!["Hidden Term".into()]);
+        library.insert_page(hidden);
+        let taxonomies = library.find_taxonomies(&config).unwrap();
+        let (resolver, taxonomy_permalinks) = build_wikilinks(&library, &taxonomies);
         assert_eq!(
             resolver.resolve("start"),
             Ok(&WikilinkTarget::Content("guides/quickstart.md".to_string()))
@@ -90,5 +124,31 @@ mod tests {
             Ok(&WikilinkTarget::Asset("docs/source.pdf".to_string()))
         );
         assert_eq!(resolver.resolve("private.pdf"), Err(WikilinkError::Missing));
+        for key in ["research-tags/some-evidence", "some-evidence"] {
+            assert_eq!(
+                resolver.resolve(key),
+                Ok(&WikilinkTarget::TaxonomyTerm("research-tags/some-evidence".into()))
+            );
+        }
+        for key in ["disabled/secret", "secret", "research-tags/hidden-term", "hidden-term"] {
+            assert_eq!(resolver.resolve(key), Err(WikilinkError::Missing));
+        }
+        let ctx = markdown::MarkdownContext {
+            tera: &templates::ZOLA_TERA,
+            config: &config,
+            permalinks: &Default::default(),
+            colocated_assets: &Default::default(),
+            wikilinks: &resolver,
+            taxonomy_permalinks: &taxonomy_permalinks,
+            lang: &config.default_language,
+            current_permalink: "",
+            current_path: "",
+            insert_anchor: utils::types::InsertAnchor::None,
+        };
+        let rendered = markdown::render_content("[[some-evidence]]", &ctx).unwrap();
+        assert_eq!(
+            rendered.body,
+            "<p><a href=\"https://example.com/base/topics/research-tags/some-evidence/\">some-evidence</a></p>\n"
+        );
     }
 }

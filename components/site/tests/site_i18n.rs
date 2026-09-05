@@ -224,8 +224,8 @@ fn correct_translations_on_all_pages() {
 }
 
 #[test]
-fn can_resolve_colocated_assets_language_aware() {
-    let (_, _tmp_dir, public) = build_site_with_setup("test_site_i18n", |mut site| {
+fn can_resolve_wikilinks_language_aware() {
+    let (site, _tmp_dir, public) = build_site_with_setup("test_site_i18n", |mut site| {
         site.config.markdown.wikilinks = true;
         (site, true)
     });
@@ -261,4 +261,59 @@ fn can_resolve_colocated_assets_language_aware() {
         "fr/blog/with-assets/index.html",
         "fr wikilink: <a href=\"https://example.com/fr/blog/with-assets/some.js\">JS</a>"
     ));
+
+    for (page, prefix) in
+        [("blog/with-assets/index.html", ""), ("fr/blog/with-assets/index.html", "fr/")]
+    {
+        let term_url = format!("https://example.com/{prefix}tags/evidence/");
+        for label in ["qualified term", "bare term", "filtered term"] {
+            assert!(file_contains!(
+                public,
+                page,
+                &format!("{label}: <a href=\"{term_url}\">Evidence</a>")
+            ));
+        }
+        assert!(file_contains!(
+            public,
+            page,
+            &format!("term fragment: <a href=\"{term_url}#details\">Details</a>")
+        ));
+        assert!(file_contains!(
+            public,
+            page,
+            "fallback term: <a href=\"https://example.com/tags/hello/\">Hello</a>"
+        ));
+        assert!(file_contains!(
+            public,
+            page,
+            "default author: <a href=\"https://example.com/authors/alex/\">Alex</a>"
+        ));
+        for path in
+            [format!("{prefix}tags/index.html"), format!("{prefix}tags/evidence/index.html")]
+        {
+            assert!(file_contains!(
+                public,
+                &path,
+                &format!("filtered term: <a href=\"{term_url}\">Evidence</a>")
+            ));
+        }
+    }
+    for page in site
+        .library
+        .pages
+        .values()
+        .filter(|page| page.file.relative.starts_with("blog/with-assets/"))
+    {
+        assert!(page.internal_links.is_empty());
+    }
+    assert_eq!(
+        site.wikilinks.resolve("evidence"),
+        Ok(&markdown::WikilinkTarget::TaxonomyTerm("tags/evidence".into()))
+    );
+    assert_eq!(
+        site.wikilinks.resolve("alex"),
+        Err(markdown::WikilinkError::Ambiguous {
+            candidates: vec!["auteurs/alex".into(), "authors/alex".into()],
+        })
+    );
 }

@@ -4,7 +4,7 @@ mod wikilinks;
 
 use errors::Result;
 
-pub use context::MarkdownContext;
+pub use context::{MarkdownContext, TaxonomyPermalinks};
 pub use markdown::Rendered;
 pub use wikilinks::{WikilinkError, WikilinkResolver, WikilinkTarget};
 

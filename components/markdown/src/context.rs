@@ -6,11 +6,15 @@ use utils::types::InsertAnchor;
 
 use crate::WikilinkResolver;
 
+/// Taxonomy term identity -> language -> permalink.
+pub type TaxonomyPermalinks = AHashMap<String, AHashMap<String, String>>;
+
 /// All the information from the zola site that is needed to render HTML from markdown
 pub struct MarkdownContext<'a> {
     pub tera: &'a Tera,
     pub config: &'a Config,
     pub permalinks: &'a AHashMap<String, String>,
+    pub taxonomy_permalinks: &'a TaxonomyPermalinks,
     pub colocated_assets: &'a AHashMap<String, (String, String)>,
     pub wikilinks: &'a WikilinkResolver,
     pub lang: &'a str,
@@ -20,6 +24,14 @@ pub struct MarkdownContext<'a> {
 }
 
 impl<'a> MarkdownContext<'a> {
+    pub(crate) fn taxonomy_permalink(&self, identity: &str) -> Option<&str> {
+        let destinations = self.taxonomy_permalinks.get(identity)?;
+        destinations
+            .get(self.lang)
+            .or_else(|| destinations.get(&self.config.default_language))
+            .map(String::as_str)
+    }
+
     pub fn options(&self) -> Options {
         let mut opts = Options::empty();
         opts.insert(Options::ENABLE_TABLES);

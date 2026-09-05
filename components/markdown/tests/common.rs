@@ -44,6 +44,7 @@ fn configurable_render(
             permalinks.clone(),
             colocated_assets.clone(),
             wikilinks.clone(),
+            AHashMap::default(),
             tera.clone(),
         ),
     );
@@ -53,6 +54,7 @@ fn configurable_render(
         permalinks: &permalinks,
         colocated_assets: &colocated_assets,
         wikilinks: &wikilinks,
+        taxonomy_permalinks: &AHashMap::default(),
         lang: &config.default_language,
         current_permalink: "https://www.getzola.org/test/",
         current_path: "my_page.md",
