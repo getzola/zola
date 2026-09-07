@@ -3,14 +3,14 @@
 title = "devlab-theme"
 description = "A Zola-native theme for documentation, release updates and developer sites."
 template = "theme.html"
-date = 2026-08-31T13:48:19+05:00
+date = 2026-09-01T23:12:21+05:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-08-31T13:48:19+05:00
-updated = 2026-08-31T13:48:19+05:00
+created = 2026-09-01T23:12:21+05:00
+updated = 2026-09-01T23:12:21+05:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
 minimum_version = "0.23.4"
@@ -22,8 +22,9 @@ name = "RiPetitor"
 homepage = "https://codeberg.org/RiPetitor"
 +++        
 
+[![Please don't upload to GitHub](https://nogithub.codeberg.page/badge.svg)](https://nogithub.codeberg.page)
 [![Zola](https://img.shields.io/badge/Zola-0.23.4-blue?style=flat-square)](https://www.getzola.org/)
-[![Version](https://img.shields.io/badge/version-0.6.0-blue?style=flat-square)](https://codeberg.org/RiPetitor/devlab-theme/tags)
+[![Version](https://img.shields.io/badge/version-0.7.0-blue?style=flat-square)](https://codeberg.org/RiPetitor/devlab-theme/tags)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 # DevLab Theme
@@ -43,17 +44,17 @@ The live Demo follows the development branch. Install a tagged release when the 
 - Generic pages and sections, a wide landing page and an optional Downloads layout
 - Search, one responsive mobile drawer, skip navigation, Copy feedback and reduced-motion support
 - Light, dark and system color modes with update-safe CSS tokens
-- Namespaced Tera 2 content components, synchronized tabs, structured configuration and template hooks without Node.js or a frontend build step
+- Namespaced Tera 2 components with synchronized tabs, lazy diagrams, file trees and status badges, plus template hooks without a frontend build step
 
 ## Install
 
 For a standalone theme checkout, clone the latest stable release into an existing Zola site:
 
 ```sh
-git clone --branch v0.6.0 --depth 1 https://codeberg.org/RiPetitor/devlab-theme themes/devlab-theme
+git clone --branch v0.7.0 --depth 1 https://codeberg.org/RiPetitor/devlab-theme themes/devlab-theme
 ```
 
-Pinning the release tag keeps site builds reproducible. Change `v0.6.0` only when you intentionally upgrade the theme.
+Pinning the release tag keeps site builds reproducible. Change `v0.7.0` only when you intentionally upgrade the theme.
 
 If the site itself is stored in Git, use a submodule or a vendored copy instead of committing an embedded repository. See [Install and update](https://ripetitor.codeberg.page/devlab-theme/docs/getting-started/installation/) for every installation method and the tagged upgrade workflow.
 
