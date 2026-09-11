@@ -3,6 +3,30 @@
 version = 4
 
 [[package]]
+name = "accent-sass"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72cc9c76cd1fd1d27b8b14fd1bb3c4bb25e0444f04376877eb74830eb03e3350"
+dependencies = [
+ "accent_sass_compiler",
+ "getrandom 0.2.17",
+]
+
+[[package]]
+name = "accent_sass_compiler"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec976e60817c98c26a5aac163fcef1930165f671c5426d7ebba2e94786790feb"
+dependencies = [
+ "codemap",
+ "indexmap 2.14.0",
+ "lasso",
+ "once_cell",
+ "phf 0.11.3",
+ "rand 0.8.8",
+]
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1818,30 +1842,6 @@ dependencies = [
  "log",
  "regex-automata",
  "regex-syntax",
-]
-
-[[package]]
-name = "grass"
-version = "0.13.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7a68216437ef68f0738e48d6c7bb9e6e6a92237e001b03d838314b068f33c94"
-dependencies = [
- "getrandom 0.2.17",
- "grass_compiler",
-]
-
-[[package]]
-name = "grass_compiler"
-version = "0.13.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d9e3df7f0222ce5184154973d247c591d9aadc28ce7a73c6cd31100c9facff6"
-dependencies = [
- "codemap",
- "indexmap 2.14.0",
- "lasso",
- "once_cell",
- "phf 0.11.3",
- "rand 0.8.8",
 ]
 
 [[package]]
@@ -5233,6 +5233,7 @@ checksum = "8ee5873ec9cce0195efcb7a4e9507a04cd49aec9c83d0389df45b1ef7ba2e649"
 name = "site"
 version = "0.23.4"
 dependencies = [
+ "accent-sass",
  "ahash 0.8.12",
  "config",
  "content",
@@ -5240,7 +5241,6 @@ dependencies = [
  "errors",
  "fs-err",
  "globset",
- "grass",
  "imageproc",
  "insta",
  "link_checker",

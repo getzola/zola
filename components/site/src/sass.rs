@@ -2,7 +2,7 @@ use fs_err as fs;
 use std::path::{Path, PathBuf};
 
 use globset::Glob;
-use grass::{Options, OutputStyle, from_path as compile_file};
+use accent_sass::{Options, OutputStyle, from_path as compile_file};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::anyhow;
