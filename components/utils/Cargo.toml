@@ -6,6 +6,7 @@ edition.workspace = true
 include = ["src/**/*"]
 
 [dependencies]
+ahash = { workspace = true }
 serde = { workspace = true }
 filetime = { workspace = true }
 fs-err = { workspace = true }

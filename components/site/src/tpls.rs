@@ -61,10 +61,10 @@ pub fn register_early_global_fns(site: &mut Site) {
             site.config.clone(),
             site.permalinks.clone(),
             site.library.colocated_assets.clone(),
+            site.wikilinks.clone(),
             site.tera.clone(),
         ),
     );
-
     register_tera_global_fns(site);
 }
 

@@ -1,7 +1,6 @@
 //! This is here to avoid content depending on the markdown subcrate
 
 use std::borrow::Cow;
-use std::collections::HashMap;
 use std::sync::LazyLock;
 
 use ahash::AHashMap;
@@ -11,7 +10,7 @@ use tera::Tera;
 use config::Config;
 use content::{Page, Section};
 use errors::{Context as _, Result};
-use markdown::MarkdownContext;
+use markdown::{MarkdownContext, WikilinkResolver};
 use render::Renderer;
 use utils::net::is_external_link;
 use utils::types::InsertAnchor;
@@ -62,8 +61,9 @@ fn needs_templating(s: &str) -> bool {
 pub fn render_page(
     page: &mut Page,
     renderer: Renderer,
-    permalinks: &HashMap<String, String>,
+    permalinks: &AHashMap<String, String>,
     colocated_assets: &AHashMap<String, (String, String)>,
+    wikilinks: &WikilinkResolver,
     tera: &Tera,
     config: &Config,
     insert_anchor: InsertAnchor,
@@ -93,6 +93,7 @@ pub fn render_page(
         config,
         permalinks,
         colocated_assets,
+        wikilinks,
         lang: &page.lang,
         current_permalink: &page.permalink,
         current_path: &page.file.relative,
@@ -113,8 +114,9 @@ pub fn render_page(
 pub fn render_section(
     section: &mut Section,
     renderer: Renderer,
-    permalinks: &HashMap<String, String>,
+    permalinks: &AHashMap<String, String>,
     colocated_assets: &AHashMap<String, (String, String)>,
+    wikilinks: &WikilinkResolver,
     tera: &Tera,
     config: &Config,
 ) -> Result<()> {
@@ -143,6 +145,7 @@ pub fn render_section(
         config,
         permalinks,
         colocated_assets,
+        wikilinks,
         lang: &section.lang,
         current_permalink: &section.permalink,
         current_path: &section.file.relative,
@@ -170,14 +173,13 @@ pub fn render_section(
 #[cfg(test)]
 mod tests {
     use std::borrow::Cow;
-    use std::collections::HashMap;
     use std::path::Path;
     use std::path::PathBuf;
 
     use ahash::AHashMap;
-
     use config::Config;
     use content::{Library, Page};
+    use markdown::WikilinkResolver;
     use render::{RenderCache, Renderer};
     use templates::ZOLA_TERA;
     use utils::types::InsertAnchor;
@@ -210,8 +212,9 @@ Hello world
         render_page(
             &mut page,
             renderer,
-            &HashMap::default(),
             &AHashMap::default(),
+            &AHashMap::default(),
+            &WikilinkResolver::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
@@ -249,8 +252,9 @@ And here's another. [^3]
         render_page(
             &mut page,
             renderer,
-            &HashMap::default(),
             &AHashMap::default(),
+            &AHashMap::default(),
+            &WikilinkResolver::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
@@ -286,8 +290,9 @@ And here's another. [^3]
         render_page(
             &mut page,
             renderer,
-            &HashMap::default(),
             &AHashMap::default(),
+            &AHashMap::default(),
+            &WikilinkResolver::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
@@ -369,8 +374,9 @@ And here's another. [^3]
         render_page(
             &mut page,
             renderer,
-            &HashMap::default(),
             &AHashMap::default(),
+            &AHashMap::default(),
+            &WikilinkResolver::default(),
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
