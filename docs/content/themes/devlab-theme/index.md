@@ -3,14 +3,14 @@
 title = "devlab-theme"
 description = "A Zola-native theme for documentation, release updates and developer sites."
 template = "theme.html"
-date = 2026-09-01T23:12:21+05:00
+date = 2026-09-12T19:35:07+05:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-09-01T23:12:21+05:00
-updated = 2026-09-01T23:12:21+05:00
+created = 2026-09-12T19:35:07+05:00
+updated = 2026-09-12T19:35:07+05:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
 minimum_version = "0.23.4"
@@ -45,6 +45,7 @@ The live Demo follows the development branch. Install a tagged release when the 
 - Search, one responsive mobile drawer, skip navigation, Copy feedback and reduced-motion support
 - Light, dark and system color modes with update-safe CSS tokens
 - Namespaced Tera 2 components with synchronized tabs, lazy diagrams, file trees and status badges, plus template hooks without a frontend build step
+- Reusable community cards with optional avatars, biographies and accessible SVG links (development branch)
 
 ## Install
 
