@@ -99,7 +99,15 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
 ///
 /// https://zola.discourse.group/t/where-should-i-put-component-definitions-in-zola-0-23/2957
 fn glob_base(path: &Path) -> String {
-    dunce::simplified(path).display().to_string()
+    // `dunce::simplified` strips the `\\?\C:\...` prefix but leaves network paths
+    // in their `\\?\UNC\server\share` form (e.g. when the site lives on a mapped
+    // network drive), which globs fail to match. Convert those to `\\server\share`.
+    let simplified = dunce::simplified(path);
+    let mut text = simplified.as_os_str().to_string_lossy().into_owned();
+    if let Some(rest) = text.strip_prefix(r"\\?\UNC\") {
+        text = format!(r"\\{rest}");
+    }
+    text
 }
 
 /// Combines the builtin Zola templates with an optional theme and the user templates.
