@@ -3,14 +3,14 @@
 title = "volks-typo"
 description = "Minimalist blog theme with bold industrial typography and an 8-point grid (Zola port of the Astro Volks-Typo theme)."
 template = "theme.html"
-date = 2026-08-14T17:54:03+02:00
+date = 2026-09-13T18:08:11+02:00
 
 [taxonomies]
 theme-tags = ['blog', 'minimal', 'dark-mode', 'search', 'responsive', 'bauhaus']
 
 [extra]
-created = 2026-08-14T17:54:03+02:00
-updated = 2026-08-14T17:54:03+02:00
+created = 2026-09-13T18:08:11+02:00
+updated = 2026-09-13T18:08:11+02:00
 repository = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
 homepage = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
 minimum_version = "0.23.0"
@@ -191,7 +191,10 @@ content/
 │   └── _index.md             # search index data (required for search)
 └── blog/
     ├── _index.md             # blog list section
-    └── <post>.md             # individual posts
+    ├── <post>.md             # a simple post
+    └── <post>/               # a post with colocated images (page bundle)
+        ├── index.md
+        └── photo.jpg
 ```
 
 ### Blog section — `content/blog/_index.md`
@@ -227,6 +230,61 @@ image = "/img/post.jpg"       # optional; path to a file in static/.
                               # social-share previews.
 +++
 ```
+
+### Images — the `image` shortcode
+
+The theme ships one shortcode, `image`, that resizes images at build time
+(wrapping Zola's built-in `resize_image()`), so posts serve appropriately-sized
+files instead of full-resolution originals.
+
+It accepts the same sizing options as `resize_image()`: `width`, `height`
+(pixels), `op` (`fit_width`, `fit_height`, `fit`, `scale`, `crop`; default
+`fit_width`) and `format` (default `auto`). Numbers go in `{…}`, strings stay
+quoted, and the tag is self-closing (`/>`).
+
+**The path tells the shortcode where to look — like a URL:**
+
+- **Leading `/`** → an **external** asset, resolved the way `resize_image()`
+  always resolves: `/`, `/static`, `/content`, `/public`. No `page` needed.
+
+  ```md
+  {{/*< image path="/img/photo.jpg" width={800} op="fit_width" alt="A description" />*/}}
+  ```
+
+- **No leading `/`** → a **local** (colocated) asset, sitting next to the post's
+  `index.md`. You must pass `page` — Tera components can't see the current page
+  unless it is handed to them, and `resize_image()` does not search bundle
+  folders on its own.
+
+  ```md
+  {{/*< image path="photo.jpg" page width={800} op="fit_width" alt="A description" />*/}}
+  ```
+
+**Captions.** Add a `caption` and the image is wrapped in a `<figure>` /
+`<figcaption>` instead of a bare `<img>` (use `figure={true}` for a caption-less
+figure):
+
+```md
+{{/*< image path="photo.jpg" page width={800} caption="A caption." alt="A description" />*/}}
+```
+
+**Alignment.** `align` — `left`, `center`, or `right`. The default depends on the
+form: a plain image defaults to `left` (like a raw markdown image), a figure
+(with a caption) defaults to `center`. An unrecognised value stops the build with
+a message listing the valid options.
+
+```md
+{{/*< image path="photo.jpg" page width={400} align="center" alt="…" />*/}}
+```
+
+> **Local images need a page bundle:** make the post a folder with an `index.md`
+> and put the images beside it — e.g. `content/blog/my-post/index.md` plus
+> `content/blog/my-post/photo.jpg`. The bundled `working-with-images` post is a
+> working example.
+>
+> If you use a local path (no leading `/`) but forget `page`, the build stops
+> with a message telling you exactly how to fix the call — either add `page`, or
+> use a leading `/` for an image in `static/`.
 
 ### About / Contact pages
 
