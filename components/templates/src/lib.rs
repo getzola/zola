@@ -103,11 +103,18 @@ fn glob_base(path: &Path) -> String {
     // in their `\\?\UNC\server\share` form (e.g. when the site lives on a mapped
     // network drive), which globs fail to match. Convert those to `\\server\share`.
     let simplified = dunce::simplified(path);
-    let mut text = simplified.as_os_str().to_string_lossy().into_owned();
+    strip_unc_prefix(simplified.as_os_str().to_string_lossy().into_owned())
+}
+
+/// Converts `\\?\UNC\server\share` back to `\\server\share` so the result can
+/// take part in glob patterns; every other input passes through untouched.
+/// (Extracted from `glob_base` so it can be unit-tested on any platform.)
+fn strip_unc_prefix(text: String) -> String {
     if let Some(rest) = text.strip_prefix(r"\\?\UNC\") {
-        text = format!(r"\\{rest}");
+        format!(r"\\{rest}")
+    } else {
+        text
     }
-    text
 }
 
 /// Combines the builtin Zola templates with an optional theme and the user templates.
@@ -150,10 +157,16 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
     // Load theme templates first (lower priority)
     if let Some(ref theme) = config.theme {
-        let pattern = format!(
-            "{}/themes/{theme}/templates/**/*.{{html,xml,md,txt,json,ics}}",
-            glob_base(path)
-        );
+        // Build the glob with Path::join so the separators match the platform
+        // instead of hard-coding '/' onto an already-platform-shaped base.
+        let pattern = Path::new(&glob_base(path))
+            .join("themes")
+            .join(theme)
+            .join("templates")
+            .join("**")
+            .join("*.{html,xml,md,txt,json,ics}")
+            .display()
+            .to_string();
         for (file_path, name) in tera::load_from_glob(&pattern)? {
             // "page.html" → "sample/templates/page.html"
             let name = format!("{theme}/templates/{name}");
@@ -165,7 +178,12 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
     // Load site templates (higher priority, will override theme templates)
     if site_tpl_dir.exists() {
-        let pattern = format!("{}/templates/**/*.{{html,xml,md,txt,json,ics}}", glob_base(path));
+        let pattern = Path::new(&glob_base(path))
+            .join("templates")
+            .join("**")
+            .join("*.{html,xml,md,txt,json,ics}")
+            .display()
+            .to_string();
         for (file_path, name) in tera::load_from_glob(&pattern)? {
             let content = fs::read_to_string(&file_path)
                 .with_context(|| format!("Failed to read '{}'", file_path.display()))?;
@@ -177,4 +195,32 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
     tera.global_context().insert("zola_version", env!("CARGO_PKG_VERSION"));
 
     Ok(tera)
+}
+
+#[cfg(test)]
+mod glob_base_tests {
+    use super::strip_unc_prefix;
+
+    #[test]
+    fn unc_prefix_is_converted_to_server_share() {
+        assert_eq!(
+            strip_unc_prefix(r"\\?\UNC\server\share".to_string()),
+            r"\\server\share"
+        );
+    }
+
+    #[test]
+    fn drive_paths_pass_through() {
+        // Stripping `\\?\C:\` is dunce's job; this function must not touch it.
+        assert_eq!(strip_unc_prefix(r"C:\site".to_string()), r"C:\site");
+        assert_eq!(strip_unc_prefix(r"\\?\C:\site".to_string()), r"\\?\C:\site");
+    }
+
+    #[test]
+    fn plain_unc_passes_through() {
+        assert_eq!(
+            strip_unc_prefix(r"\\server\share".to_string()),
+            r"\\server\share"
+        );
+    }
 }
