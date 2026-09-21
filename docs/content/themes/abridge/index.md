@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2026-09-14T01:00:11-07:00
+date = 2026-09-20T17:46:04-07:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-09-14T01:00:11-07:00
-updated = 2026-09-14T01:00:11-07:00
+created = 2026-09-20T17:46:04-07:00
+updated = 2026-09-20T17:46:04-07:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.23.6"
@@ -50,7 +50,7 @@ Maintenance of this project is made possible by all the <a href="https://github.
 - Numbered code blocks with [line highlighting](https://abridge.pages.dev/overview-code-blocks/#toml).
 - Entirely Offline Site by using the PWA **or** by setting `search_library = "offline"` in `zola.toml`.
 - Multi-language support.
-- Search support. ([elasticlunr](https://abridge.pages.dev/), [pagefind](https://abridge-pagefind.pages.dev/), [tinysearch](https://abridge-tinysearch.pages.dev/))
+- Search support. ([elasticlunr](https://abridge.pages.dev/), [pagefind](https://abridge-pagefind.pages.dev/), [tinysearch](https://abridge-tinysearch.pages.dev/), [flexsearch](https://abridge-flexsearch.pages.dev/))
 - Search Suggestions navigation keys, `/` focus, `arrow` move, `enter` select, `escape` close.
 - Search Results Page, type search query then hit `Enter Key` or `click` the search button icon.
 - [SEO](https://abridge.pages.dev/overview-abridge/#seo-and-header-tags) support. (Search Engine Optimization)
@@ -67,7 +67,7 @@ Maintenance of this project is made possible by all the <a href="https://github.
 - Categories. (similar to Tags, disabled/commented out by default)
 - Social icon links in footer.
 - Responsive design. (mobile first)
-- Video Components: [Youtube](https://abridge.pages.dev/video-streaming-sites/overview-embed-youtube/), [Vimeo](https://abridge.pages.dev/video-streaming-sites/overview-embed-vimeo/), [Streamable](https://abridge.pages.dev/video-streaming-sites/overview-embed-streamable/).
+- Video Components: [YouTube](https://abridge.pages.dev/video-streaming-sites/overview-embed-youtube/), [Vimeo](https://abridge.pages.dev/video-streaming-sites/overview-embed-vimeo/), [Streamable](https://abridge.pages.dev/video-streaming-sites/overview-embed-streamable/).
 - Media Components: [video](https://abridge.pages.dev/overview-rich-content/#video), [img](https://abridge.pages.dev/overview-images/#img-component), [imgswap](https://abridge.pages.dev/overview-images/#imgswap-component), [image](https://abridge.pages.dev/overview-rich-content/#image), [gif](https://abridge.pages.dev/overview-rich-content/#gif), [audio](https://abridge.pages.dev/overview-rich-content/#audio).
 - Other Components: [showdata](https://abridge.pages.dev/overview-showdata/), [katex](https://abridge.pages.dev/overview-math/#usage-1).
 
@@ -140,7 +140,7 @@ rsync themes/abridge/package.json package.json
 - `zola.toml` base configuration with all config values.
 - `content/_index.md` required to set pagination.
 - `COPY-TO-ROOT-SASS/abridge.scss` overrides to customize Abridge variables.
-- `netlify.toml` settings to deploy your repo with netlfiy.
+- `netlify.toml` settings to deploy your repo with netlify.
 - `package_abridge.js` node script to: update cache files list in PWA, minify js, bundle js
 - `package.json` to facilitate use of package_abridge.js
 
@@ -181,13 +181,15 @@ npm run abridge
 The alternate search demos use an explicit build mode:
 
 ```bash
-npm run abridge -- --mode elasticlunr --base-url https://example.com
+npm run abridge -- --mode elasticlunr --base-url https://abridge.pages.dev
 npm run abridge -- --mode pagefind --base-url https://abridge-pagefind.pages.dev
 npm run abridge -- --mode tinysearch --base-url https://abridge-tinysearch.pages.dev
+npm run abridge -- --mode flexsearch --base-url https://abridge-flexsearch.pages.dev
 npm run abridge -- --mode offline --drafts
+npm run abridge -- --mode offlineflexsearch --drafts
 ```
 
-Valid modes are `elasticlunr`, `pagefind`, `tinysearch`, `offline`, and `elasticlunrjava`.
+Valid modes are `elasticlunr`, `pagefind`, `tinysearch`, `flexsearch`, `offline`, `offlineflexsearch`, and `elasticlunrjava`.
 
 There is a `build-zola.sh` that helps with deployment at cloudflare, netlify, etc. The helper works both from the Abridge repository itself and when called from a site as `./themes/abridge/build-zola.sh`; The script checks `theme.toml` for the proper version of Zola to use, this avoids having to set or update Zola Version variables.
 
@@ -203,9 +205,9 @@ Do you love this theme? Was it useful to you? Please leave a github star, and if
 
 We'd love your help! Especially with fixes to issues, or improvements to existing features.
 
-The goal is for Abridge to be lightweight, fast, and to work properly even if javascript is disabled or blocked.
+The goal is for Abridge to be lightweight, fast, and to work properly even if JavaScript is disabled or blocked.
 
-The only feature that may be considered a necessity that relies on javascript is the Search.
+The only feature that may be considered a necessity that relies on JavaScript is the Search.
 
 ## License
 

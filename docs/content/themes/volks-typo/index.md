@@ -3,14 +3,14 @@
 title = "volks-typo"
 description = "Minimalist blog theme with bold industrial typography and an 8-point grid (Zola port of the Astro Volks-Typo theme)."
 template = "theme.html"
-date = 2026-09-13T18:08:11+02:00
+date = 2026-09-18T12:11:09+02:00
 
 [taxonomies]
 theme-tags = ['blog', 'minimal', 'dark-mode', 'search', 'responsive', 'bauhaus']
 
 [extra]
-created = 2026-09-13T18:08:11+02:00
-updated = 2026-09-13T18:08:11+02:00
+created = 2026-09-18T12:11:09+02:00
+updated = 2026-09-18T12:11:09+02:00
 repository = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
 homepage = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
 minimum_version = "0.23.0"
@@ -238,7 +238,7 @@ The theme ships one shortcode, `image`, that resizes images at build time
 files instead of full-resolution originals.
 
 It accepts the same sizing options as `resize_image()`: `width`, `height`
-(pixels), `op` (`fit_width`, `fit_height`, `fit`, `scale`, `crop`; default
+(pixels), `op` (`fit_width`, `fit_height`, `fit`, `scale`, `fill`; default
 `fit_width`) and `format` (default `auto`). Numbers go in `{…}`, strings stay
 quoted, and the tag is self-closing (`/>`).
 
@@ -285,6 +285,34 @@ a message listing the valid options.
 > If you use a local path (no leading `/`) but forget `page`, the build stops
 > with a message telling you exactly how to fix the call — either add `page`, or
 > use a leading `/` for an image in `static/`.
+
+### Before / after slider — the `before_after` shortcode
+
+A before/after image comparison slider (CSS + a little JavaScript): the **before**
+image is on the left, the **after** on the right, and you drag the round handle to
+reveal one over the other. Both images are generated at the same size so they line
+up. Paths follow the same convention as `image` (leading `/` for a static asset; a
+bare name plus `page` for a colocated one).
+
+```md
+{{/*< before_after before="old.jpg" after="new.jpg" page label_before="Old" label_after="New" />*/}}
+{{/*< before_after before="/img/old.jpg" after="/img/new.jpg" ratio="16/9" width={500} />*/}}
+```
+
+| Option | Meaning |
+| --- | --- |
+| `before` / `after` | the two images (required) |
+| `page` | pass it for colocated images (bare-name paths) |
+| `width` | display width in px (default `800`); the slider renders at `min(100%, width)`. Images render at 2× for sharpness — there is no separate resolution knob |
+| `ratio` | aspect ratio as `"W/H"` or `"W:H"` (e.g. `"16/9"`). Crops both images to it. Omit to keep the before image's own proportions (no cropping) |
+| `start` | opening split, `0`–`100` (% from the left). Default `50` |
+| `label_before` / `label_after` | text shown over each image. Default none |
+| `alt_before` / `alt_after` | alt text for each image |
+
+Styles ship in `main.css` (from `sass/_before-after.scss`) and the behaviour in
+`static/js/before_after.js`, which the shortcode loads on demand. The handle and
+divider use the theme's accent colour. The bundled `working-with-images` post has
+live examples.
 
 ### About / Contact pages
 

@@ -3,17 +3,17 @@
 title = "devlab-theme"
 description = "A Zola-native theme for documentation, release updates and developer sites."
 template = "theme.html"
-date = 2026-09-12T19:35:07+05:00
+date = 2026-09-19T22:28:53+02:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-09-12T19:35:07+05:00
-updated = 2026-09-12T19:35:07+05:00
+created = 2026-09-19T22:28:53+02:00
+updated = 2026-09-19T22:28:53+02:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
-minimum_version = "0.23.4"
+minimum_version = "0.23.6"
 license = "MIT"
 demo = "https://ripetitor.codeberg.page/devlab-theme/"
 
@@ -23,8 +23,8 @@ homepage = "https://codeberg.org/RiPetitor"
 +++        
 
 [![Please don't upload to GitHub](https://nogithub.codeberg.page/badge.svg)](https://nogithub.codeberg.page)
-[![Zola](https://img.shields.io/badge/Zola-0.23.4-blue?style=flat-square)](https://www.getzola.org/)
-[![Version](https://img.shields.io/badge/version-0.7.0-blue?style=flat-square)](https://codeberg.org/RiPetitor/devlab-theme/tags)
+[![Zola](https://img.shields.io/badge/Zola-0.23.6-blue?style=flat-square)](https://www.getzola.org/)
+[![Version](https://img.shields.io/badge/version-0.8.0-blue?style=flat-square)](https://codeberg.org/RiPetitor/devlab-theme/tags)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 # DevLab Theme
@@ -40,22 +40,22 @@ The live Demo follows the development branch. Install a tagged release when the 
 ## Features
 
 - Recursive Docs navigation with remembered groups, breadcrumbs, nested page TOC and server-rendered previous/next links
-- Paginated Blog/Updates with published, updated and release metadata
+- Paginated Blog/Updates with release metadata, reading time, post tables of contents and reusable author profiles
 - Generic pages and sections, a wide landing page and an optional Downloads layout
 - Search, one responsive mobile drawer, skip navigation, Copy feedback and reduced-motion support
 - Light, dark and system color modes with update-safe CSS tokens
 - Namespaced Tera 2 components with synchronized tabs, lazy diagrams, file trees and status badges, plus template hooks without a frontend build step
-- Reusable community cards with optional avatars, biographies and accessible SVG links (development branch)
+- Reusable community cards with optional avatars, biographies and accessible SVG links
 
 ## Install
 
 For a standalone theme checkout, clone the latest stable release into an existing Zola site:
 
 ```sh
-git clone --branch v0.7.0 --depth 1 https://codeberg.org/RiPetitor/devlab-theme themes/devlab-theme
+git clone --branch v0.8.0 --depth 1 https://codeberg.org/RiPetitor/devlab-theme themes/devlab-theme
 ```
 
-Pinning the release tag keeps site builds reproducible. Change `v0.7.0` only when you intentionally upgrade the theme.
+Pinning the release tag keeps site builds reproducible. Change `v0.8.0` only when you intentionally upgrade the theme.
 
 If the site itself is stored in Git, use a submodule or a vendored copy instead of committing an embedded repository. See [Install and update](https://ripetitor.codeberg.page/devlab-theme/docs/getting-started/installation/) for every installation method and the tagged upgrade workflow.
 
@@ -103,7 +103,7 @@ Docs, Blog, Downloads and richer homepage sections are opt-in. Continue with [Ge
 
 ## Tera 2 components
 
-DevLab tracks the current Zola release and requires Zola `0.23.4`. It uses global, namespaced Tera 2 components in Markdown. No import is required:
+DevLab tracks the current Zola release and requires Zola `0.23.6`. It uses global, namespaced Tera 2 components in Markdown. No import is required:
 
 ```jinja
 {%/* <devlab.callout type="tip" title="Native component"> */%}
@@ -115,7 +115,7 @@ This release does not support Zola 0.22 or the removed shortcode syntax. Sites u
 
 ## Compatibility
 
-- Zola `0.23.4` (the theme tracks the current Zola release)
+- Zola `0.23.6` (the theme tracks the current Zola release)
 - No Node.js, npm or external frontend runtime required
 
 ## Development
@@ -125,7 +125,10 @@ This repository contains both the reusable theme and its Demo/Docs site. The Blo
 ```sh
 zola check
 zola build
+python3 tests/test_theme.py
 ```
+
+The consumer regression checks need Python 3.11+ and Zola 0.23.6. Set `ZOLA_BINARY` when testing a binary outside `PATH`. Python is only a development/CI dependency.
 
 ## License
 
