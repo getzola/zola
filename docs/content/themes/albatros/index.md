@@ -3,16 +3,16 @@
 title = "Albatros"
 description = "A feature rich theme originally made for Duniter website."
 template = "theme.html"
-date = 2026-09-13T19:08:36+02:00
+date = 2026-09-20T21:08:36+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-09-13T19:08:36+02:00
-updated = 2026-09-13T19:08:36+02:00
+created = 2026-09-20T21:08:36+02:00
+updated = 2026-09-20T21:08:36+02:00
 repository = "https://git.42l.fr/HugoTrentesaux/Albatros.git"
-homepage = "https://git.42l.fr/HugoTrentesaux/Albatros"
+homepage = "https://git.lacontrevoie.fr/HugoTrentesaux/Albatros"
 minimum_version = "0.23.0"
 license = "AGPL"
 demo = "https://albatros.coinduf.eu/"
@@ -33,7 +33,7 @@ This theme was made for [Duniter](https://duniter.fr/) website. It was then abst
 Add the theme as a git submodule:
 
 ```bash
-git submodule add --name albatros https://git.42l.fr/HugoTrentesaux/albatros.git themes/albatros
+git submodule add --name albatros https://git.lacontrevoie.fr/HugoTrentesaux/Albatros.git themes/albatros
 ```
 
 and enable the theme in your `config.toml`
