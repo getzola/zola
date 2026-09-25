@@ -180,6 +180,6 @@ By default, it will show an ellipsis (…) regardless of the content of the summ
 
 ```jinja
 {% raw -%}
-{% if summary is matching("\PP$") %}&hellip;{% endif %}
+{% if summary is matching(pat="\PP$") %}&hellip;{% endif %}
 {%- endraw %}
 ```
