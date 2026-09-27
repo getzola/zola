@@ -6,7 +6,7 @@
 [summary]: #summary
 
 Merge the concept of page and section in Zola.
-Pages and sections are currently different concepts in Zola, which causes a lot of confusion
+Pages and sections are currently different concepts in Zola, which causes a lot of confusion.
 
 ## Motivation
 [motivation]: #motivation
@@ -45,29 +45,33 @@ posts/
 In the templates, there is just the `current` variable that has `current.{pages,subsections}` filled if it's the directory page
 and empty otherwise.
 For existing users, we can create a `section` and `page` alias that match what existed before this merge in each case (eg
-a directory page gets a `section` variable but a normal page does not).
+a directory page gets a `section` variable but a normal page does not) using that new `current` shape.
 We do expose a new field, `kind`, which indicates whether it's a section or a page since we need to differentiate between those
 still.
 
 On the content side, there are no changes to be made for users. Any directory type attribute (eg a `sort_by`) set on a normal page is an error.
-Files with `_index.md` filename will still default to having a `section.html` template.
+Files with `_index.md` filename will still default to having a `section.html` template (`index.html` for the index section).
 
 The `get_section` function works just like `get_page` but also checks that `kind==Section` and errors if it's not the case.
-`get_page` will be able to get any page or section.
+`get_page` will be able to get any page or section in the new `current` shape.
 
-Overall, it shouldn't be a breaking change, except for some narrow cases like someone checking if an attribute exists
-on a variable like so:
+Overall, it should be a small breaking change, quick to fix:
 
 ```j2
 {% set item = page or section %}
+{# this line won't be falsy anymore if item is a page #}
 {% if item.subsections is defined %}
 ...
 {% else %}
 ...
 {% endif %}
-```
 
-That will not continue to work as before, without any warnings. You can use the new `kind` field to work reliably instead.
+
+{% for sub in section.subsections %}
+{# this line won't be needed anymore and will error #}
+{% set s = get_section(path=sub) %}
+{% endfor %}
+```
 
 There might be other breakages but only for edge cases
 that I don't think many people would do (like printing all the keys of the variable...?).
@@ -92,26 +96,24 @@ enum ParsedFrontMatter {
 ```
 and factor out the common fields. This way we can still use serde `deny_unknown_fields` and get validation for free.
 
-We keep the current `ser.rs` file to ensure the `page`/`section` variables stay the same.
 We keep an enum of `Kind` to differentiate between regular pages and section/collection pages.
 If we allow slugs on sections, we do need to ensure all the descendant permalinks are generated correctly.
 
 The `Library` will merge page and sections and we need to ensure `transparent` and the new equivalent of `populate_sections` still work.
 There should be no regression for parallelization of rendering or for `zola serve`.
 
-The `$NAME.{pages,subsections}` fields become a `Vec<Page>`, not a `Vec<&'a str>`: only for the new variables, not for the 
-legacy `page` and `section` variables.
+`subsections` becomes a `Vec<Page>` for `current`, `page` and `section`.
 
 All the other changes are mechanical, with a special care of still grouping pages through sections (or directories/any name)
 for rendering.
 
-The aliases for the `get_section`, `page`, `section` can stay for a few major versions. 
+The aliases for the `get_section`, `page`, `section` can stay for a few major versions.
 If what's currently available is not enough, we can add more introspection to Tera to be able to show deprecation warnings.
 
 ## Drawbacks
 [drawbacks]: #drawbacks
 
-- Potentially breaking some templates doing attribute checking
+- Some breaking changes in templates
 - Some users like the distinction
 
 ## Rationale and alternatives
@@ -124,9 +126,9 @@ Alternatives:
 - ship just an alias in the templates for `page` and `section` and have them matching fields: solve the user issue, not the internals
 - solve the duplication internally but don't expose it: doesn't solve the user issue
 - expose a single `item.pages` property instead of keeping both `.pages` and `.subsections`: rejected because
-`sort_by` only applies to pages, so sorting pages and subsections together does not currently make sense. More details on the PR.
+`sort_by` only applies to pages, so sorting pages and subsections together does not currently make sense. More details on the [PR comments](https://github.com/getzola/zola/pull/3258).
 
-  
+
 ## Prior art
 [prior-art]: #prior-art
 
@@ -138,7 +140,7 @@ it's not just: you write some JS/JSON.
 ### Hugo
 
 Hugo seems to be exactly the same idea as this RFC.
-They use the same name for colocated assets and sections: `page bundle`. 
+They use the same name for colocated assets and sections: `page bundle`.
 A colocated page bundle is called `leaf bundle` and a section `branch bundle`.
 A page can have one kind out of home, page, section, taxonomy, or term (https://gohugo.io/quick-reference/glossary/#page-kind)
 so the templates can still differentiate between them if necessary.
