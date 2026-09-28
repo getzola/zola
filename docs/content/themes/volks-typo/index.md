@@ -3,14 +3,14 @@
 title = "volks-typo"
 description = "Minimalist blog theme with bold industrial typography and an 8-point grid (Zola port of the Astro Volks-Typo theme)."
 template = "theme.html"
-date = 2026-09-18T12:11:09+02:00
+date = 2026-09-24T14:39:04+02:00
 
 [taxonomies]
 theme-tags = ['blog', 'minimal', 'dark-mode', 'search', 'responsive', 'bauhaus']
 
 [extra]
-created = 2026-09-18T12:11:09+02:00
-updated = 2026-09-18T12:11:09+02:00
+created = 2026-09-24T14:39:04+02:00
+updated = 2026-09-24T14:39:04+02:00
 repository = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
 homepage = "https://gitlab.com/tisgoud/zola-volks-typo-theme"
 minimum_version = "0.23.0"
@@ -313,6 +313,32 @@ Styles ship in `main.css` (from `sass/_before-after.scss`) and the behaviour in
 `static/js/before_after.js`, which the shortcode loads on demand. The handle and
 divider use the theme's accent colour. The bundled `working-with-images` post has
 live examples.
+
+### Before / current / after slider — the `before_current_after` shortcode
+
+For three stages, `before_current_after` stacks three images with two handles,
+revealing them left→right as **before | current | after**. It shares the look and
+options of `before_after`, adding the middle image. The before handle can never
+pass the current handle, and the two handles keep a small gap so they never stack.
+
+```md
+{{/*< before_current_after before="a.jpg" current="b.jpg" after="c.jpg" page
+   label_before="2019" label_current="2022" label_after="2026" />*/}}
+```
+
+| Option | Meaning |
+| --- | --- |
+| `before` / `current` / `after` | the three images (required) |
+| `page` | pass it for colocated images (bare-name paths) |
+| `start` | before handle position, `0`–`100` (% from the left). Default `33` |
+| `start_current` | current handle position — the second slider. Default `66`. Clamped to be ≥ `start` |
+| `width` | display width in px (default `800`); as for `before_after` |
+| `ratio` | aspect ratio `"W/H"`; crops all three images. Omit for the before image's own shape |
+| `label_before` / `label_current` / `label_after` | text over each region |
+| `alt_before` / `alt_current` / `alt_after` | alt text per image |
+
+Styles ship in `sass/_before-current-after.scss` (into `main.css`) and behaviour in
+`static/js/before_current_after.js`.
 
 ### About / Contact pages
 
