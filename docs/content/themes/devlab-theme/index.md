@@ -3,14 +3,14 @@
 title = "devlab-theme"
 description = "A Zola-native theme for documentation, release updates and developer sites."
 template = "theme.html"
-date = 2026-09-19T22:28:53+02:00
+date = 2026-09-22T17:22:43+02:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-09-19T22:28:53+02:00
-updated = 2026-09-19T22:28:53+02:00
+created = 2026-09-22T17:22:43+02:00
+updated = 2026-09-22T17:22:43+02:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
 minimum_version = "0.23.6"
@@ -35,13 +35,13 @@ DevLab is a Zola-native theme for documentation, release updates and software pr
 
 [Live demo](https://ripetitor.codeberg.page/devlab-theme/) · [Documentation](https://ripetitor.codeberg.page/devlab-theme/docs/) · [Updates](https://ripetitor.codeberg.page/devlab-theme/blog/)
 
-The live Demo follows the development branch. Install a tagged release when the site must remain reproducible.
+The live Demo follows the development branch. Install a tagged release when the site must remain reproducible. Single and Catalog downloads are development features after `v0.8.0`; that tag includes the simple download cards layout.
 
 ## Features
 
 - Recursive Docs navigation with remembered groups, breadcrumbs, nested page TOC and server-rendered previous/next links
 - Paginated Blog/Updates with release metadata, reading time, post tables of contents and reusable author profiles
-- Generic pages and sections, a wide landing page and an optional Downloads layout
+- Generic pages and sections, a wide landing page and optional Single and Catalog downloads layouts
 - Search, one responsive mobile drawer, skip navigation, Copy feedback and reduced-motion support
 - Light, dark and system color modes with update-safe CSS tokens
 - Namespaced Tera 2 components with synchronized tabs, lazy diagrams, file trees and status badges, plus template hooks without a frontend build step
