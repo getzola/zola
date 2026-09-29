@@ -3,17 +3,17 @@
 title = "Zolarwind"
 description = "A GDPR-friendly Zola blog theme: no third-party requests, Tailwind CSS, KaTeX, Mermaid, localization"
 template = "theme.html"
-date = 2026-08-12T12:59:32+02:00
+date = 2026-09-13T18:34:10+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-08-12T12:59:32+02:00
-updated = 2026-08-12T12:59:32+02:00
+created = 2026-09-13T18:34:10+02:00
+updated = 2026-09-13T18:34:10+02:00
 repository = "https://github.com/thomasweitzel/zolarwind.git"
 homepage = "https://github.com/thomasweitzel/zolarwind"
-minimum_version = "0.23.2"
+minimum_version = "0.23.5"
 license = "MIT"
 demo = "https://weitzel.dev"
 
@@ -58,9 +58,15 @@ Localization is built-in for a single-locale build.
 
 ## Important Note
 
-As of Zola v0.23.2 from 2026-08-07, Giallo dark/light theme CSS generation works correctly again.
-The theme needs this to work properly.
-This theme is not compatible with Zola v0.23.1 and earlier.
+As of Zola v0.23.5, released on 2026-09-12, Zolarwind's locale-specific `settings_date_format` values are no longer
+compatible with Zola's date filter. Zola v0.23.5 updates Tera to v2.3.0, which includes tera-contrib v0.3.0.
+
+The tera-contrib v0.3.0 changelog describes the relevant change as: "Add `locale` parameter to `date` filter using
+UTS-35 datetime patterns."
+
+As a result, locale-specific date formats now use UTS-35 patterns instead of the strftime patterns previously used by
+Zolarwind. Zolarwind's date format settings have therefore been updated accordingly. This change is required for the
+theme to work with Zola v0.23.5, but makes it incompatible with earlier Zola versions.
 
 ---
 
@@ -452,7 +458,9 @@ To localize your blog with this theme:
 This theme uses `default_language` as a build-time switch for a single locale per build.
 It does not target Zola's multi-language output in a single build.
 
-If you need to define your own date format, look [here](https://docs.rs/chrono/latest/chrono/format/strftime/index.html) for supported specifiers.
+If you need to define your own date format,
+look [here](https://unicode.org/reports/tr35/tr35-dates.html?utm_source=chatgpt.com#table-date-field-symbol-table) for
+supported specifiers.
 
 ---
 

@@ -3,14 +3,14 @@
 title = "pickles"
 description = "A modern, simple, clean blog theme for Zola."
 template = "theme.html"
-date = 2026-09-01T07:47:41Z
+date = 2026-09-16T10:32:31-06:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-09-01T07:47:41Z
-updated = 2026-09-01T07:47:41Z
+created = 2026-09-16T10:32:31-06:00
+updated = 2026-09-16T10:32:31-06:00
 repository = "https://github.com/lukehsiao/zola-pickles.git"
 homepage = "https://github.com/lukehsiao/zola-pickles"
 minimum_version = "0.23.0"
@@ -67,6 +67,9 @@ insert_anchor_links = "right"
 +++
 ```
 
+To preview the theme by itself, run `./build.sh && zola serve` from the theme's own directory: the repository doubles as the demo site, and the build step is what gives the preview a search index.
+That script is also the demo's build command on Cloudflare Pages, in place of the Zola preset's `zola build`, because Pages has to run Pagefind for the search on the demo to answer anything.
+
 ## Reference guides
 
 ## Configuration Options
@@ -87,6 +90,9 @@ katex_enable = false
 
 # See below
 instantpage_enable = false
+
+# Pagefind site search; see below. Requires a build step.
+search_enable = false
 ```
 
 A full example configuration is included in zola.toml.
@@ -149,6 +155,35 @@ The table component is convenient for making mobile-friendly tables (centered wi
 | Bananas      |  1.89 |          6 |
 {%/* </table> */%}
 ```
+
+### Search
+
+Search uses [Pagefind](https://pagefind.app/), enabled by setting `search_enable = true` in `[extra]`.
+Pagefind indexes the built HTML rather than the Markdown sources, so it runs after Zola, on every build:
+
+```bash
+zola build
+pagefind --site public
+```
+
+`zola serve` never runs the second step, but it keeps only HTML in memory and serves everything else out of `public/`, so an index left there by an earlier build is served as-is: search works in a live-reload preview, answering from that snapshot rather than from the page you are editing.
+On a host that builds for you, the second step has to go in the build command: on Cloudflare Pages, for instance, the Zola preset runs `zola build`, and the command becomes `zola build && npm_config_yes=true npx pagefind --site public`.
+Pin that version (`pagefind@1.5.2`) if you want reproducible builds; the theme themes the UI through Pagefind's documented `--pf-*` properties, so tracking the latest release is also fine.
+Zola's own `build_search_index` plays no part in any of this and can stay off.
+
+With search enabled, the header grows a search field under the subtitle, and clicking it, or pressing `Ctrl`/`Cmd`+`K`, opens Pagefind's modal over the blurred page.
+Both are Pagefind's own components, `<pagefind-modal-trigger>` and `<pagefind-modal>`, so the input, the results and their sub-results, focus trapping, keyboard navigation, screen reader announcements and translations all come from upstream; the theme contributes the placement and the colors and no JavaScript of its own.
+Because the field a reader clicks is itself a Pagefind component, the component bundle (around 210 kB, closer to 60 kB over the wire) is on every page view rather than on the first search; the index and the WebAssembly behind it are still only fetched once someone types.
+If the bundle is missing, because the site was built without the Pagefind step, the field simply never appears.
+
+Only posts are indexed: `page.html` marks its `<main>` with `data-pagefind-body`, and the listing, tag and category pages are left out because they only repeat the titles of the posts they link to.
+A site that wants something else in the index overrides the `main_attrs` block in its own template.
+The `webring` block is wrapped in `data-pagefind-ignore`, because posts from other people's blogs would otherwise answer for every post on yours.
+
+Colors and sizes come from the `--pf-*` custom properties, set on `pagefind-modal` and `pagefind-modal-trigger` in `sass/object/component/_search.scss`.
+Pagefind's components reset inherited styles on themselves, so those properties are the whole theming surface; a site that overrides the theme's palette should override them too.
+A `search` template block wraps the head assets, so a site can load a different Pagefind build or a pinned copy of it without copying the whole base template.
+Those two files keep stable names and Pagefind writes them after Zola has run, so `cachebust=true` on them fails the build; give them a short cache lifetime rather than a year, so a bundle in someone's cache cannot outlive the index it knows how to read.
 
 ### Fontawesome
 
