@@ -271,6 +271,20 @@ async fn serve_livereload_js() -> impl IntoResponse {
         .expect("Could not build livereload.js response")
 }
 
+fn escape_html(input: &str) -> String {
+    let mut escaped = String::with_capacity(input.len());
+    for ch in input.chars() {
+        match ch {
+            '&' => escaped.push_str("&amp;"),
+            '<' => escaped.push_str("&lt;"),
+            '>' => escaped.push_str("&gt;"),
+            '"' => escaped.push_str("&quot;"),
+            _ => escaped.push(ch),
+        }
+    }
+    escaped
+}
+
 /// Inserts build error message boxes into HTML responses when needed.
 /// Used as axum middleware via `map_response`.
 async fn error_injection_middleware(response: Response) -> Response {
@@ -318,6 +332,7 @@ async fn error_injection_middleware(response: Response) -> Response {
             cause = e.source();
         }
 
+        let error_str = escape_html(&error_str);
         let html_error = format!(
             r#"<div style="all:revert;position:fixed;display:flex;align-items:center;justify-content:center;background-color:rgb(0,0,0,0.5);top:0;right:0;bottom:0;left:0;"><div style="background-color:white;padding:0.5rem;border-radius:0.375rem;filter:drop-shadow(0,25px,25px,rgb(0,0,0/0.15));overflow-x:auto;"><p style="font-weight:700;color:black;font-size:1.25rem;margin:0;margin-bottom:0.5rem;">Zola Build Error:</p><pre style="padding:0.5rem;margin:0;border-radius:0.375rem;background-color:#363636;color:#CE4A2F;font-weight:700;">{error_str}</pre></div></div>"#
         );
@@ -931,12 +946,60 @@ pub fn serve(
 
 #[cfg(test)]
 mod tests {
-    use super::{construct_url, create_new_site, strip_base_path};
+    use super::{
+        clear_serve_error, construct_url, create_new_site, error_injection_middleware,
+        set_serve_error, strip_base_path,
+    };
     use crate::get_config_file_path;
+    use axum::body::Body;
+    use axum::http::{StatusCode, header};
+    use axum::response::Response;
+    use errors::anyhow;
     use std::net::{IpAddr, SocketAddr};
     use std::path::Path;
     use std::str::FromStr;
     use url::Url;
+
+    fn html_ok(body: &'static str) -> Response {
+        Response::builder()
+            .header(header::CONTENT_TYPE, "text/html")
+            .status(StatusCode::OK)
+            .body(Body::from(body))
+            .unwrap()
+    }
+
+    async fn body_text(response: Response) -> String {
+        let bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        String::from_utf8(bytes.to_vec()).unwrap()
+    }
+
+    #[test]
+    fn build_error_overlay_escapes_html() {
+        let rt = tokio::runtime::Builder::new_current_thread().build().unwrap();
+        rt.block_on(async {
+            clear_serve_error();
+            set_serve_error("<img src=\"x\"", anyhow!("fish & chips"));
+            let body = body_text(error_injection_middleware(html_ok("<p>page</p>")).await).await;
+            assert!(body.contains("<p>page</p>"));
+            assert!(body.contains("<pre"));
+            assert!(body.contains("&lt;img"));
+            assert!(body.contains("&amp;"));
+            assert!(body.contains("&quot;"));
+            assert!(!body.contains("<img"));
+            assert!(!body.contains("fish & chips"));
+
+            clear_serve_error();
+            set_serve_error("build failed", anyhow!("missing template"));
+            let body = body_text(error_injection_middleware(html_ok("<p>page</p>")).await).await;
+            assert!(body.contains("Error: build failed\n"));
+            assert!(body.contains("Error: missing template\n"));
+            assert!(!body.contains("&lt;"));
+            assert!(!body.contains("&amp;"));
+            assert!(!body.contains("&gt;"));
+            assert!(!body.contains("&quot;"));
+            clear_serve_error();
+        });
+    }
 
     #[test]
     fn test_construct_url_base_url_is_slash() {
