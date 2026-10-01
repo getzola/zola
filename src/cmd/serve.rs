@@ -271,6 +271,8 @@ async fn serve_livereload_js() -> impl IntoResponse {
         .expect("Could not build livereload.js response")
 }
 
+const ERROR_OVERLAY_TPL: &str = r#"<div style="all:revert;position:fixed;display:flex;align-items:center;justify-content:center;background-color:rgb(0,0,0,0.5);top:0;right:0;bottom:0;left:0;"><div style="background-color:white;padding:0.5rem;border-radius:0.375rem;filter:drop-shadow(0,25px,25px,rgb(0,0,0/0.15));overflow-x:auto;"><p style="font-weight:700;color:black;font-size:1.25rem;margin:0;margin-bottom:0.5rem;">Zola Build Error:</p><pre style="padding:0.5rem;margin:0;border-radius:0.375rem;background-color:#363636;color:#CE4A2F;font-weight:700;">{{ error }}</pre></div></div>"#;
+
 /// Inserts build error message boxes into HTML responses when needed.
 /// Used as axum middleware via `map_response`.
 async fn error_injection_middleware(response: Response) -> Response {
@@ -318,9 +320,15 @@ async fn error_injection_middleware(response: Response) -> Response {
             cause = e.source();
         }
 
-        let html_error = format!(
-            r#"<div style="all:revert;position:fixed;display:flex;align-items:center;justify-content:center;background-color:rgb(0,0,0,0.5);top:0;right:0;bottom:0;left:0;"><div style="background-color:white;padding:0.5rem;border-radius:0.375rem;filter:drop-shadow(0,25px,25px,rgb(0,0,0/0.15));overflow-x:auto;"><p style="font-weight:700;color:black;font-size:1.25rem;margin:0;margin-bottom:0.5rem;">Zola Build Error:</p><pre style="padding:0.5rem;margin:0;border-radius:0.375rem;background-color:#363636;color:#CE4A2F;font-weight:700;">{error_str}</pre></div></div>"#
-        );
+        let mut context = tera::Context::new();
+        context.insert("error", &error_str);
+        let html_error = match tera::Tera::one_off(ERROR_OVERLAY_TPL, &context, true) {
+            Ok(s) => s,
+            Err(e) => {
+                log::error!("Failed to render build error overlay: {e}");
+                return Response::from_parts(parts, Body::from(bytes));
+            }
+        };
 
         if is_html {
             // Inject error dialog into existing HTML response
