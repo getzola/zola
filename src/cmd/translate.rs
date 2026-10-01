@@ -8,8 +8,12 @@
 //! (INV-5: a glossary token present in the source must survive verbatim, else
 //! the file is NOT written and counts as a failure).
 //!
-//! Network lives ONLY here — `zola build` stays offline. The LLM call is behind
-//! the [`LlmClient`] trait so unit tests mock it without touching the network.
+//! Network lives ONLY here — `zola build` stays offline. The OpenRouter call
+//! is behind the [`LlmClient`] trait so unit tests mock it without touching
+//! the network. With `TRANSLATE_URL` set, pages go through the batched
+//! endpoint driver instead: one language is drained at a time, each request
+//! carries at most [`BATCH_MAX_PAGES`] pages and [`BATCH_MAX_TEXT_BYTES`] bytes
+//! of text, and a per-input `ok` flag fails only the page owning that text.
 //!
 //! Field/transport contract ported from landing-website
 //! `backend/cms/openrouter.py` (ADR-003: `openai/gpt-4o-mini`, JSON-object
@@ -35,6 +39,11 @@ const MAX_TOKENS: u32 = 16384;
 /// Bodies larger than this are translated in H2-sized chunks so each OpenRouter
 /// call stays under the JSON output cap (the old 113 KB pillar hit truncation).
 const BODY_CHUNK_CHARS: usize = 6_000;
+/// Endpoint batching caps: at most this many distinct pages per request.
+const BATCH_MAX_PAGES: usize = 4;
+/// …and at most this many bytes of `texts` per request. Bytes, not chars —
+/// the endpoint's request limit is a wire limit.
+const BATCH_MAX_TEXT_BYTES: usize = 16 * 1024;
 const FM_DELIM: &str = "+++";
 
 /// Target language code → human name for the system prompt.
@@ -87,10 +96,15 @@ impl LlmClient for OpenRouterClient {
     }
 }
 
-/// Which of the three fields were actually sent, in request order. Empty fields
-/// are not sent at all: a body-only chunk would otherwise spend an engine call
-/// translating two empty strings.
-type SentFields = Vec<&'static str>;
+/// Bulk translation client for the self-hosted endpoint: one request
+/// translates many texts at once. A trait so unit tests inject a mock without
+/// a network, exactly like [`LlmClient`].
+pub trait BatchTranslateClient {
+    /// Translate `texts` into `lang`; returns one (translation, ok) pair per
+    /// input, in input order. `ok == false` marks that input as returned
+    /// untranslated — the caller must not write it.
+    fn translate_texts(&self, texts: &[&str], lang: &str) -> Result<Vec<(String, bool)>>;
+}
 
 /// Client for a self-hosted translation endpoint.
 ///
@@ -100,28 +114,32 @@ type SentFields = Vec<&'static str>;
 ///
 /// ```text
 /// POST $TRANSLATE_URL
-///   {"texts": ["..."], "target_language": "ko", "source_language": "en",
+///   {"texts": ["...", "..."], "target_language": "ko", "source_language": "en",
 ///    "preserve_terms": ["Acme Widgets"]}
-/// → {"translations": ["..."]}
+/// → {"translations": ["..."], "ok": [true, true]}
 /// ```
 ///
-/// Translations come back in request order, one per input. `preserve_terms`
-/// (#23 review) carries the caller's own untranslatables — brand and product
-/// names that must survive verbatim — so the endpoint masks them out of the
-/// engine and restores them after (curriculo-ai #1023/#1133). Sourced from
-/// `TRANSLATE_PRESERVE_TERMS` (comma-separated) via [`preserve_terms_from_env`],
-/// and only included in the body when non-empty.
+/// Requests are bulk: the driver packs whole pages in — at most
+/// [`BATCH_MAX_PAGES`] distinct pages and [`BATCH_MAX_TEXT_BYTES`] bytes of
+/// text per request — and drains one language at a time. Translations come
+/// back in request order, one per input; a per-input false `ok` flag means
+/// that text came back untranslated, and only the page owning it is failed.
+/// `preserve_terms` (#23 review) carries the caller's own untranslatables —
+/// brand and product names that must survive verbatim — so the endpoint masks
+/// them out of the engine and restores them after (curriculo-ai #1023/#1133).
+/// Sourced from `TRANSLATE_PRESERVE_TERMS` (comma-separated) via
+/// [`preserve_terms_from_env`], and only included in the body when non-empty.
 ///
 /// Note the endpoint ignores terms shorter than 3 characters, and the INV-5
 /// [`glossary_ok`] gate still checks only the built-in [`GLOSSARY`] — caller
 /// terms are trusted to the endpoint's mask/restore machinery.
 ///
 /// Failure envelopes are hard failures, never passthroughs: the endpoint may
-/// answer HTTP 200 with `"ok": false` (or a per-string `"ok"` array with any
-/// false) or a mirrored error code (e.g. `"code": 1003`), with `translations`
-/// carrying the ORIGINAL source text. Writing that would stamp English content
-/// as a fresh translation, so any of those shapes is an error and the sibling
-/// file is not written.
+/// answer HTTP 200 with a scalar `"ok": false` or a mirrored error code
+/// (e.g. `"code": 1003`), with `translations` carrying the ORIGINAL source
+/// text. Writing that would stamp English content as a fresh translation, so
+/// any of those shapes is a whole-batch error and none of its pages are
+/// written.
 pub struct TranslateApiClient {
     url: String,
     /// Built once per run and reused across chunks/requests: a blocking client
@@ -190,22 +208,12 @@ fn preserve_terms_from_env() -> Vec<String> {
         .collect()
 }
 
-impl LlmClient for TranslateApiClient {
-    fn translate(&self, fields: &Translatable, lang: &str, _key: &str) -> Result<Translatable> {
-        // Chunking lives inside the client, as it does for OpenRouter: the
-        // caller hands the whole body over in one piece, so without this a
-        // pillar page is a single enormous request. `body_only` is already
-        // implied here — build_translate_request skips empty fields.
-        translate_fields_impl(|f, _body_only| self.translate_once(f, lang), fields)
-    }
-}
-
-impl TranslateApiClient {
-    fn translate_once(&self, fields: &Translatable, lang: &str) -> Result<Translatable> {
-        let (payload, sent) = build_translate_request(fields, lang, &self.preserve_terms);
-        if sent.is_empty() {
-            return Ok(fields.clone());
+impl BatchTranslateClient for TranslateApiClient {
+    fn translate_texts(&self, texts: &[&str], lang: &str) -> Result<Vec<(String, bool)>> {
+        if texts.is_empty() {
+            return Ok(Vec::new()); // the driver never packs an empty batch
         }
+        let payload = build_batch_request(texts, lang, &self.preserve_terms);
         let resp = self
             .client
             .post(&self.url)
@@ -217,29 +225,14 @@ impl TranslateApiClient {
         if !status.is_success() {
             bail!("translate endpoint HTTP {status}: {}", take200(&text));
         }
-        parse_translate_response(&text, &sent, fields)
+        parse_batch_translate_response(&text, texts.len())
     }
 }
 
-/// Build the request body, and record which fields it carries so the response
-/// can be mapped back positionally. `preserve_terms` is included only when
+/// Build one bulk request body. `preserve_terms` is included only when
 /// non-empty: an empty array is the server default (curriculo-ai #1023), and
 /// omitting it keeps the body byte-identical for callers with no glossary.
-fn build_translate_request(
-    fields: &Translatable,
-    lang: &str,
-    preserve_terms: &[String],
-) -> (Value, SentFields) {
-    let mut texts: Vec<&str> = Vec::new();
-    let mut sent: SentFields = Vec::new();
-    for (name, value) in
-        [("title", &fields.title), ("description", &fields.description), ("body", &fields.body)]
-    {
-        if !value.is_empty() {
-            texts.push(value.as_str());
-            sent.push(name);
-        }
-    }
+fn build_batch_request(texts: &[&str], lang: &str, preserve_terms: &[String]) -> Value {
     let mut payload = json!({
         "texts": texts,
         "target_language": lang,
@@ -248,16 +241,14 @@ fn build_translate_request(
     if !preserve_terms.is_empty() {
         payload["preserve_terms"] = json!(preserve_terms);
     }
-    (payload, sent)
+    payload
 }
 
-/// Map `translations` back onto the fields that were sent. A field that was not
-/// sent keeps its original (empty) value.
-fn parse_translate_response(
-    text: &str,
-    sent: &SentFields,
-    fields: &Translatable,
-) -> Result<Translatable> {
+/// Parse a bulk response into one (translation, ok) pair per sent text, in
+/// input order. Envelope semantics ported from the old single-page parser; the
+/// one deliberate change: a per-string false `ok` flag is SOFT here — the flag
+/// rides along on the pair and only the page owning that text is failed.
+fn parse_batch_translate_response(text: &str, sent_count: usize) -> Result<Vec<(String, bool)>> {
     let data: Value = serde_json::from_str(text)
         .map_err(|e| anyhow!("translate endpoint non-JSON response: {e}"))?;
     // #1003-style failure envelopes arrive as HTTP 200 with the ORIGINAL source
@@ -265,6 +256,9 @@ fn parse_translate_response(
     // file anyway would mark English content as a fresh translation, so they are
     // hard errors. `ok` may be a bool, a per-string bool array (false = that
     // string came back as source), or null/absent on older deployments.
+    // A per-string false flag is SOFT: the flag rides on that index's pair and
+    // the driver fails only the page owning the text.
+    let mut soft = vec![true; sent_count];
     if let Some(ok) = data.get("ok") {
         match ok {
             Value::Bool(false) => {
@@ -273,19 +267,22 @@ fn parse_translate_response(
                 )
             }
             Value::Array(flags) => {
-                if flags.len() != sent.len() {
+                if flags.len() != sent_count {
                     bail!(
-                        "translate endpoint: malformed envelope: ok array length {} != {} sent field(s)",
+                        "translate endpoint: malformed envelope: ok array length {} != {} sent text(s)",
                         flags.len(),
-                        sent.len()
+                        sent_count
                     );
                 }
-                if let Some(i) = flags.iter().position(|f| !f.is_boolean() || !f.as_bool().unwrap())
-                {
-                    let field = sent.get(i).copied().unwrap_or("?");
-                    bail!(
-                        "translate endpoint: ok[{i}]=false — `{field}` came back untranslated, not writing"
-                    );
+                for (i, f) in flags.iter().enumerate() {
+                    // A non-bool entry is an envelope defect, not a "false".
+                    match f.as_bool() {
+                        Some(true) => {}
+                        Some(false) => soft[i] = false,
+                        None => bail!(
+                            "translate endpoint: malformed envelope: ok[{i}] is not a boolean"
+                        ),
+                    }
                 }
             }
             _ => {}
@@ -312,34 +309,26 @@ fn parse_translate_response(
     let arr = data["translations"].as_array().ok_or_else(|| {
         anyhow!("translate endpoint: no `translations` array: {}", take160(&data.to_string()))
     })?;
-    // A short array would silently shift every field onto the wrong key, so the
+    // A short array would silently shift every text onto the wrong page, so the
     // length is a hard error rather than something to paper over.
-    if arr.len() != sent.len() {
+    if arr.len() != sent_count {
         bail!(
             "translate endpoint returned {} translation(s) for {} text(s)",
             arr.len(),
-            sent.len()
+            sent_count
         );
     }
-    let mut out =
-        Translatable { title: String::new(), description: String::new(), body: String::new() };
-    for (name, value) in sent.iter().zip(arr) {
+    let mut out = Vec::with_capacity(sent_count);
+    for (i, value) in arr.iter().enumerate() {
         // A non-string entry (null/list/object) used to coerce to "" and write
         // a blank title/description/body. Skip-with-warning is not an option
-        // here: there is nothing sane to write for the field, so the request
-        // fails and the existing sibling (if any) is left untouched.
+        // here: there is nothing sane to write for that text, so the request
+        // fails and the existing siblings (if any) are left untouched.
         let s = value.as_str().ok_or_else(|| {
-            anyhow!("translate endpoint: value for `{name}` is not a string ({}) — not writing blanks", json_kind(value))
+            anyhow!("translate endpoint: translations[{i}] is not a string ({}) — not writing blanks", json_kind(value))
         })?.to_string();
-        match *name {
-            "title" => out.title = s,
-            "description" => out.description = s,
-            _ => out.body = s,
-        }
+        out.push((s, soft[i]));
     }
-    // Fields we never sent were empty on the way in; keep them empty on the way
-    // out rather than inventing content.
-    let _ = fields;
     Ok(out)
 }
 
@@ -538,9 +527,10 @@ pub fn glossary_ok(en: &Translatable, t: &Translatable) -> Result<()> {
 /// Entry point from `main.rs`. Reads `OPENROUTER_API_KEY` (fail-fast when absent
 /// and not a dry-run), then delegates to [`translate_with`].
 ///
-/// Opt-in alternative: when `TRANSLATE_URL` is set the call is served by
-/// [`TranslateApiClient`] instead and no API key is read. Unset — which is the
-/// default for every existing site — and nothing below this block changes.
+/// Opt-in alternative: when `TRANSLATE_URL` is set the run is served by
+/// [`translate_with_endpoint`] (batched, no API key read) instead. Unset —
+/// which is the default for every existing site — and nothing below this
+/// block changes.
 pub fn translate(
     root_dir: &Path,
     config_file: &Path,
@@ -555,7 +545,7 @@ pub fn translate(
             preserve_terms.len()
         );
         let client = TranslateApiClient::new(url, timeout, preserve_terms)?;
-        return translate_with(root_dir, config_file, max, dry_run, "", &client);
+        return translate_with_endpoint(root_dir, config_file, max, dry_run, &client);
     }
     let key = if dry_run {
         String::new()
@@ -656,6 +646,278 @@ pub fn translate_with<C: LlmClient>(
                     // file intentionally NOT written on failure
                 }
             }
+        }
+    }
+
+    log::info!(
+        "translate: written={written} fresh={skipped_fresh} capped={skipped_cap} calls={calls} failures={failures}"
+    );
+    if failures > 0 {
+        bail!("translate completed with {failures} failure(s)");
+    }
+    Ok(())
+}
+
+/// One (page, lang) unit of work for [`translate_with_endpoint`].
+struct BatchJob {
+    /// Default-language page; logs read its display path.
+    page: PathBuf,
+    lang: String,
+    en: Translatable,
+    /// Frontmatter template copied into the sibling.
+    en_fm: toml::Value,
+    /// sha256 of `en` — the freshness stamp written into the sibling.
+    hash: String,
+    sibling: PathBuf,
+}
+
+/// Where a flattened request text came from, for positional reassembly.
+enum BatchSlot {
+    Title,
+    Description,
+    Body(usize),
+}
+
+/// A flattened request text: its owning job (index into the current language's
+/// job list), its slot, and the text itself.
+struct FlatText {
+    job: usize,
+    slot: BatchSlot,
+    text: String,
+}
+
+/// Endpoint driver: same walk/parse/hash-gate rules as [`translate_with`], but
+/// jobs are batched — one language drained at a time, at most
+/// [`BATCH_MAX_PAGES`] pages and [`BATCH_MAX_TEXT_BYTES`] text bytes per
+/// request — so a site-wide run is a handful of requests instead of one per
+/// page. Testable core; takes the client as a parameter so tests inject a
+/// mock without a network or sockets.
+fn translate_with_endpoint<C: BatchTranslateClient>(
+    root_dir: &Path,
+    config_file: &Path,
+    max: Option<usize>,
+    dry_run: bool,
+    client: &C,
+) -> Result<()> {
+    let (_default_lang, langs) = read_langs(config_file)?;
+    if langs.is_empty() {
+        log::info!("translate: no non-default languages configured; nothing to do");
+        return Ok(());
+    }
+    let lang_set: HashSet<&str> = langs.iter().map(|s| s.as_str()).collect();
+
+    let content_dir = root_dir.join("content");
+    let mut pages: Vec<PathBuf> = Vec::new();
+    walk_md(&content_dir, &mut pages)?;
+    pages.sort();
+
+    let mut jobs: Vec<BatchJob> = Vec::new();
+    let mut failures = 0usize;
+    let mut skipped_fresh = 0usize;
+    let mut skipped_cap = 0usize;
+
+    // Collection: page-major, same walk/parse/skip rules as translate_with.
+    for page in &pages {
+        // Only default-language, non-section pages.
+        let name = page.file_name().unwrap().to_string_lossy().into_owned();
+        if !is_default_page(&name, &lang_set) {
+            continue;
+        }
+        let (en_fm, en_body) = match parse_page(page) {
+            Ok(v) => v,
+            Err(e) => {
+                failures += 1;
+                log::error!("translate: {}: parse failed: {e}", page.display());
+                continue;
+            }
+        };
+        let en = Translatable {
+            title: get_str(&en_fm, "title"),
+            description: get_str(&en_fm, "description"),
+            body: en_body.trim().to_string(),
+        };
+        // ponytail: nothing meaningful to translate without a body (title-only
+        // stubs). They get picked up once real content is authored.
+        if en.body.is_empty() {
+            continue;
+        }
+        let hash = source_hash(&en);
+
+        for lang in &langs {
+            let sibling = sibling_path(page, lang);
+            if let Ok((sib_fm, _)) = parse_page(&sibling) {
+                if extra_hash(&sib_fm).as_deref() == Some(hash.as_str()) {
+                    skipped_fresh += 1;
+                    continue; // fresh — skip
+                }
+            }
+            // missing or stale
+            if dry_run {
+                log::info!("translate [dry-run]: {} → {lang} (stale/missing)", page.display());
+                continue;
+            }
+            jobs.push(BatchJob {
+                page: page.clone(),
+                lang: lang.clone(),
+                en: en.clone(),
+                en_fm: en_fm.clone(),
+                hash: hash.clone(),
+                sibling,
+            });
+        }
+    }
+
+    // Cap on jobs, page-major — the same iteration-order cut translate_with
+    // applies per (page, lang); the rest resumes next run.
+    let cap = max.unwrap_or(usize::MAX);
+    if jobs.len() > cap {
+        skipped_cap = jobs.len() - cap;
+        jobs.truncate(cap);
+    }
+    let calls = jobs.len(); // jobs attempted this run (success + fail)
+    let mut written = 0usize;
+
+    // One language at a time: drain all of a language's jobs before the next,
+    // so a partial run leaves whole languages consistent.
+    for lang in &langs {
+        let lang_jobs: Vec<&BatchJob> = jobs.iter().filter(|j| j.lang == *lang).collect();
+        if lang_jobs.is_empty() {
+            continue;
+        }
+
+        // Flatten: per job, title → description → body chunks, in field order
+        // (empty fields are not sent). Every job has ≥1 text — bodies are
+        // non-empty by the skip above.
+        let mut flat: Vec<FlatText> = Vec::new();
+        let mut ranges: Vec<(usize, usize)> = Vec::with_capacity(lang_jobs.len());
+        for (ji, job) in lang_jobs.iter().enumerate() {
+            let start = flat.len();
+            if !job.en.title.is_empty() {
+                flat.push(FlatText { job: ji, slot: BatchSlot::Title, text: job.en.title.clone() });
+            }
+            if !job.en.description.is_empty() {
+                flat.push(FlatText {
+                    job: ji,
+                    slot: BatchSlot::Description,
+                    text: job.en.description.clone(),
+                });
+            }
+            for (ci, chunk) in chunk_body(&job.en.body).iter().enumerate() {
+                flat.push(FlatText { job: ji, slot: BatchSlot::Body(ci), text: chunk.clone() });
+            }
+            ranges.push((start, flat.len()));
+        }
+
+        // Pack greedily in order: a batch closes when one more text would push
+        // it past the page or byte cap. A lone over-cap text (a monster chunk)
+        // rides alone in its own batch rather than being dropped.
+        let mut batches: Vec<Vec<usize>> = Vec::new();
+        let mut cur: Vec<usize> = Vec::new();
+        let mut cur_jobs: HashSet<usize> = HashSet::new();
+        let mut cur_bytes = 0usize;
+        for (i, ft) in flat.iter().enumerate() {
+            let adds_page = !cur_jobs.contains(&ft.job);
+            if !cur.is_empty()
+                && (cur_jobs.len() + usize::from(adds_page) > BATCH_MAX_PAGES
+                    || cur_bytes + ft.text.len() > BATCH_MAX_TEXT_BYTES)
+            {
+                batches.push(std::mem::take(&mut cur));
+                cur_jobs.clear();
+                cur_bytes = 0;
+            }
+            cur.push(i);
+            cur_jobs.insert(ft.job);
+            cur_bytes += ft.text.len();
+        }
+        if !cur.is_empty() {
+            batches.push(cur);
+        }
+
+        // One request in flight at a time: a self-hosted CPU endpoint serves a
+        // batch no faster for being asked concurrently.
+        let mut results: Vec<Option<(String, bool)>> = vec![None; flat.len()];
+        let mut failed = vec![false; lang_jobs.len()];
+        for batch in &batches {
+            let texts: Vec<&str> = batch.iter().map(|&i| flat[i].text.as_str()).collect();
+            match client.translate_texts(&texts, lang) {
+                Err(e) => {
+                    // Envelope/HTTP failure: every job owning a text in this
+                    // batch is unwritten and counted, then the run moves on.
+                    for &i in batch {
+                        let ji = flat[i].job;
+                        if !failed[ji] {
+                            failed[ji] = true;
+                            failures += 1;
+                            log::error!(
+                                "translate: {} → {lang} FAILED: {e}",
+                                lang_jobs[ji].page.display()
+                            );
+                        }
+                    }
+                }
+                Ok(pairs) => {
+                    for (&i, pair) in batch.iter().zip(pairs) {
+                        results[i] = Some(pair);
+                    }
+                }
+            }
+        }
+
+        // Assemble survivors in job order: slots back onto fields, body chunks
+        // rejoined with the same conditional translate_fields_impl uses.
+        for (ji, job) in lang_jobs.iter().enumerate() {
+            if failed[ji] {
+                continue; // already counted + logged above
+            }
+            let (start, end) = ranges[ji];
+            let mut t = Translatable {
+                title: String::new(),
+                description: String::new(),
+                body: String::new(),
+            };
+            let mut ok_all = true;
+            let mut body_seen = 0usize;
+            for i in start..end {
+                // A missing pair means a misbehaving client short-changed the
+                // batch; treat it like a false flag, never as a blank field.
+                let Some((s, ok)) = &results[i] else {
+                    ok_all = false;
+                    break;
+                };
+                if !*ok {
+                    ok_all = false; // this text came back untranslated
+                }
+                match flat[i].slot {
+                    BatchSlot::Title => t.title = s.clone(),
+                    BatchSlot::Description => t.description = s.clone(),
+                    BatchSlot::Body(ci) => {
+                        // Chunks reassemble in request order — the slot index
+                        // is that invariant, so it is checked, not assumed.
+                        debug_assert_eq!(ci, body_seen, "body chunks out of request order");
+                        body_seen += 1;
+                        if !t.body.is_empty() && !s.is_empty() {
+                            t.body.push_str("\n\n");
+                        }
+                        t.body.push_str(s);
+                    }
+                }
+            }
+            if !ok_all {
+                failures += 1;
+                log::error!(
+                    "translate: {} → {lang} FAILED: endpoint reported ok=false — source text returned untranslated, not writing",
+                    job.page.display()
+                );
+                continue;
+            }
+            if let Err(e) = glossary_ok(&job.en, &t) {
+                failures += 1;
+                log::error!("translate: {} → {lang} FAILED: {e}", job.page.display());
+                continue; // file intentionally NOT written on failure
+            }
+            write_sibling(&job.sibling, &job.en_fm, &t, &job.hash)?;
+            written += 1;
+            log::info!("translate: {} → {lang}", job.page.display());
         }
     }
 
@@ -852,9 +1114,8 @@ mod tests {
     }
 
     #[test]
-    fn request_carries_every_non_empty_field_in_order() {
-        let (payload, sent) = build_translate_request(&t("T", "D", "B"), "ko", &[]);
-        assert_eq!(sent, vec!["title", "description", "body"]);
+    fn request_carries_texts_languages_and_omits_empty_glossary() {
+        let payload = build_batch_request(&["T", "D", "B"], "ko", &[]);
         assert_eq!(payload["texts"], json!(["T", "D", "B"]));
         assert_eq!(payload["target_language"], "ko");
         assert_eq!(payload["source_language"], "en");
@@ -869,46 +1130,39 @@ mod tests {
         // same request as `texts`, so the endpoint can mask them out of the
         // engine and restore them verbatim.
         let terms = vec!["Acme Widgets".to_string(), "Zephyr Analytics".to_string()];
-        let (payload, _) = build_translate_request(&t("T", "D", "B"), "ko", &terms);
+        let payload = build_batch_request(&["T", "D", "B"], "ko", &terms);
         assert_eq!(payload["preserve_terms"], json!(terms));
         assert_eq!(payload["target_language"], "ko");
     }
 
     #[test]
     fn body_only_chunk_sends_only_the_body() {
-        // translate_fields blanks title/description for continuation chunks;
-        // sending those empty strings would spend an engine call on nothing.
-        let (payload, sent) = build_translate_request(&t("", "", "B"), "ja", &[]);
-        assert_eq!(sent, vec!["body"]);
+        // Continuation chunks carry no title/description (empty fields are
+        // never sent); those empty strings would spend an engine call on
+        // nothing.
+        let payload = build_batch_request(&["B"], "ja", &[]);
         assert_eq!(payload["texts"], json!(["B"]));
     }
 
     #[test]
-    fn response_maps_back_onto_the_fields_that_were_sent() {
-        let (_, sent) = build_translate_request(&t("", "", "B"), "ja", &[]);
-        let out = parse_translate_response(r#"{"translations":["本文"]}"#, &sent, &t("", "", "B"))
-            .unwrap();
-        assert_eq!(out.body, "本文");
-        assert!(out.title.is_empty() && out.description.is_empty());
+    fn response_pairs_map_back_in_input_order() {
+        let out = parse_batch_translate_response(r#"{"translations":["本文"]}"#, 1).unwrap();
+        assert_eq!(out, vec![("本文".to_string(), true)]);
     }
 
     #[test]
     fn short_response_is_an_error_not_a_silent_shift() {
-        // Two translations for three texts would otherwise land the body on the
-        // description key and write a plausible-looking, wrong page.
-        let (_, sent) = build_translate_request(&t("T", "D", "B"), "fr", &[]);
-        let err = parse_translate_response(
-            r#"{"translations":["Titre","Description"]}"#,
-            &sent,
-            &t("T", "D", "B"),
-        )
-        .unwrap_err();
+        // Two translations for three texts would otherwise shift every later
+        // page's fields onto the wrong slot and write a plausible-looking,
+        // wrong page.
+        let err = parse_batch_translate_response(r#"{"translations":["Titre","Description"]}"#, 3)
+            .unwrap_err();
         assert!(format!("{err}").contains("2 translation(s) for 3"));
     }
 
     #[test]
-    fn long_body_is_chunked_by_the_endpoint_client_too() {
-        // Regression: chunking lives inside each client impl, so a client that
+    fn long_body_is_chunked_by_translate_fields_impl() {
+        // Regression: chunking lives inside each client path, so a client that
         // skips it sends a whole pillar page as one request. Counts the calls
         // translate_fields_impl makes for an over-cap body.
         let body = (0..40)
@@ -931,8 +1185,7 @@ mod tests {
 
     #[test]
     fn missing_translations_array_is_an_error() {
-        let (_, sent) = build_translate_request(&t("T", "", ""), "fr", &[]);
-        let err = parse_translate_response(r#"{"oops":true}"#, &sent, &t("T", "", "")).unwrap_err();
+        let err = parse_batch_translate_response(r#"{"oops":true}"#, 1).unwrap_err();
         assert!(format!("{err}").contains("translations"));
     }
 
@@ -941,40 +1194,29 @@ mod tests {
         // #1003: HTTP 200 + ok:false means `translations` carries the ORIGINAL
         // source text. Accepting it would write English into `<slug>.ko.md`
         // stamped fresh (source_hash set) — exactly the bug this guards.
-        let (_, sent) = build_translate_request(&t("T", "D", "B"), "ko", &[]);
-        let err = parse_translate_response(
-            r#"{"ok":false,"translations":["T","D","B"]}"#,
-            &sent,
-            &t("T", "D", "B"),
-        )
-        .unwrap_err();
+        let err = parse_batch_translate_response(r#"{"ok":false,"translations":["T","D","B"]}"#, 3)
+            .unwrap_err();
         assert!(format!("{err}").contains("ok:false"), "got: {err}");
     }
 
     #[test]
-    fn ok_array_with_a_false_flag_is_a_hard_failure() {
-        let (_, sent) = build_translate_request(&t("T", "", "B"), "ko", &[]);
-        let err = parse_translate_response(
-            r#"{"ok":[true,false],"translations":["T","B"]}"#,
-            &sent,
-            &t("T", "", "B"),
-        )
-        .unwrap_err();
-        assert!(format!("{err}").contains("ok[1]=false"), "got: {err}");
-        assert!(format!("{err}").contains("`body`"), "names the failed field: {err}");
+    fn ok_array_false_flag_is_soft_and_per_input() {
+        // Bulk semantics: a false flag marks ONLY that input as untranslated.
+        // The driver fails the page owning it; the rest of the batch writes.
+        let out =
+            parse_batch_translate_response(r#"{"ok":[true,false],"translations":["T","B"]}"#, 2)
+                .unwrap();
+        assert_eq!(out[0], ("T".to_string(), true));
+        assert_eq!(out[1], ("B".to_string(), false));
     }
 
     #[test]
     fn ok_array_shorter_than_sent_is_malformed() {
         // Finding #3: an all-true but short ok array used to pass; the missing
-        // flags must reject the envelope rather than silently covering unsent fields.
-        let (_, sent) = build_translate_request(&t("T", "D", "B"), "ko", &[]);
-        let err = parse_translate_response(
-            r#"{"ok":[true],"translations":["T","D","B"]}"#,
-            &sent,
-            &t("T", "D", "B"),
-        )
-        .unwrap_err();
+        // flags must reject the envelope rather than silently covering unsent texts.
+        let err =
+            parse_batch_translate_response(r#"{"ok":[true],"translations":["T","D","B"]}"#, 3)
+                .unwrap_err();
         assert!(
             format!("{err}").contains("malformed") || format!("{err}").contains("length"),
             "got: {err}"
@@ -982,26 +1224,31 @@ mod tests {
     }
 
     #[test]
+    fn ok_array_with_a_non_bool_entry_is_malformed() {
+        let err = parse_batch_translate_response(r#"{"ok":[true,1],"translations":["T","B"]}"#, 2)
+            .unwrap_err();
+        assert!(format!("{err}").contains("malformed"), "got: {err}");
+    }
+
+    #[test]
     fn ok_all_true_or_absent_still_passes() {
         // Older deployments send no `ok` at all; newer ones send all-true.
         // Both must keep working — guard against over-tightening the #1003 fix.
-        let (_, sent) = build_translate_request(&t("", "", "B"), "ja", &[]);
         for body in [r#"{"ok":[true],"translations":["本文"]}"#, r#"{"translations":["本文"]}"#]
         {
-            let out = parse_translate_response(body, &sent, &t("", "", "B")).unwrap();
-            assert_eq!(out.body, "本文");
+            let out = parse_batch_translate_response(body, 1).unwrap();
+            assert_eq!(out, vec![("本文".to_string(), true)]);
         }
     }
 
     #[test]
     fn mirrored_error_code_1003_is_a_hard_failure() {
-        let (_, sent) = build_translate_request(&t("T", "", ""), "fr", &[]);
         for body in [
             r#"{"code":1003,"translations":["T"]}"#,
             r#"{"status":1003,"translations":["T"]}"#,
             r#"{"error_code":"1003","translations":["T"]}"#,
         ] {
-            let err = parse_translate_response(body, &sent, &t("T", "", "")).unwrap_err();
+            let err = parse_batch_translate_response(body, 1).unwrap_err();
             assert!(format!("{err}").contains("1003"), "body {body} -> {err}");
         }
     }
@@ -1009,27 +1256,27 @@ mod tests {
     #[test]
     fn numeric_negative_error_code_is_a_hard_failure() {
         // Finding #4: as_u64/as_str both miss JSON numbers like -1.
-        let (_, sent) = build_translate_request(&t("T", "", ""), "fr", &[]);
-        let err = parse_translate_response(
-            r#"{"code":-1,"translations":["T"]}"#,
-            &sent,
-            &t("T", "", ""),
-        )
-        .unwrap_err();
+        let err =
+            parse_batch_translate_response(r#"{"code":-1,"translations":["T"]}"#, 1).unwrap_err();
         let msg = format!("{err}");
         assert!(msg.contains("-1") || msg.contains("error code"), "got: {err}");
     }
 
     #[test]
     fn non_string_translation_is_an_error_not_a_blank() {
-        let (_, sent) = build_translate_request(&t("T", "D", "B"), "ko", &[]);
+        // Batch-level: one bad entry sinks the whole request — there is nothing
+        // sane to write for that slot's page, and a partial write would need a
+        // partial-response contract the endpoint does not have.
         for body in [
-            r#"{"translations":[null,"D","B"]}"#,
-            r#"{"translations":[["T"],"D","B"]}"#,
-            r#"{"translations":[{"v":"T"},"D","B"]}"#,
+            r#"{"translations":[null,"D"]}"#,
+            r#"{"translations":[["T"],"D"]}"#,
+            r#"{"translations":[{"v":"T"},"D"]}"#,
         ] {
-            let err = parse_translate_response(body, &sent, &t("T", "D", "B")).unwrap_err();
-            assert!(format!("{err}").contains("`title` is not a string"), "body {body} -> {err}");
+            let err = parse_batch_translate_response(body, 2).unwrap_err();
+            assert!(
+                format!("{err}").contains("translations[0] is not a string"),
+                "body {body} -> {err}"
+            );
         }
     }
 
@@ -1152,7 +1399,7 @@ mod tests {
             json!({"ok": false, "translations": vec!["passthrough"; n]}).to_string()
         });
         let client = TranslateApiClient::new(&server.url, Duration::from_secs(30), vec![]).unwrap();
-        let res = translate_with(fx.root(), &fx.config(), None, false, "", &client);
+        let res = translate_with_endpoint(fx.root(), &fx.config(), None, false, &client);
         assert!(res.is_err(), "ok:false must surface as a failure");
         assert!(!fx.root().join("content/post/index.es.md").exists(), "must not write es");
         assert!(!fx.root().join("content/post/index.fr.md").exists(), "must not write fr");
@@ -1167,19 +1414,21 @@ mod tests {
             json!({"code": 1003, "translations": vec!["passthrough"; n]}).to_string()
         });
         let client = TranslateApiClient::new(&server.url, Duration::from_secs(30), vec![]).unwrap();
-        let res = translate_with(fx.root(), &fx.config(), None, false, "", &client);
+        let res = translate_with_endpoint(fx.root(), &fx.config(), None, false, &client);
         assert!(res.is_err(), "mirrored error code 1003 must surface as a failure");
         assert!(!fx.root().join("content/post/index.es.md").exists(), "must not write es");
         assert!(!fx.root().join("content/post/index.fr.md").exists(), "must not write fr");
     }
 
     #[test]
-    fn http_client_is_built_once_and_reused_across_chunks() {
-        // A chunked body issues several sequential requests; a client built
-        // per request would open a TCP connection per chunk. The pooled client
-        // built once per run must keep them on ONE connection.
+    fn http_client_is_built_once_and_reused_across_batches() {
+        // An over-16 KiB body spans several batches, each its own request; a
+        // client built per request would open a TCP connection per batch. The
+        // pooled client built once per run must keep them on ONE connection.
         let fx = Fixture::new();
-        let body = (0..10)
+        // 24 × ~1 KB sections ≈ 24 KB body → 4+ chunks → over the 16 KiB
+        // batch cap → 2+ batches per language.
+        let body = (0..24)
             .map(|i| format!("## H{i}\n\n{}", "word ".repeat(200)))
             .collect::<Vec<_>>()
             .join("\n\n");
@@ -1192,12 +1441,343 @@ mod tests {
             .to_string()
         });
         let client = TranslateApiClient::new(&server.url, Duration::from_secs(30), vec![]).unwrap();
-        translate_with(fx.root(), &fx.config(), None, false, "", &client).unwrap();
+        translate_with_endpoint(fx.root(), &fx.config(), None, false, &client).unwrap();
         let reqs = server.reqs.load(Ordering::SeqCst);
         let conns = server.conns.load(Ordering::SeqCst);
-        assert!(reqs > 2, "expected several chunked requests, got {reqs}");
+        assert!(reqs > 2, "expected several batched requests, got {reqs}");
         assert_eq!(conns, 1, "all requests must share one pooled connection, got {conns}");
         assert!(fx.root().join("content/post/index.es.md").exists());
+    }
+
+    /// Rewrite the fixture config to a single non-default language (es).
+    fn one_lang_config(fx: &Fixture) {
+        fs::write(
+            fx.root().join("config.toml"),
+            "base_url = \"https://x/\"\ndefault_language = \"en\"\n[languages.es]\n",
+        )
+        .unwrap();
+    }
+
+    /// Recording mock for the endpoint driver: remembers every call's texts
+    /// and lang, and answers from a scripted list of outcomes drained in
+    /// order. When the script runs dry it echoes the input with ok=true
+    /// (echo keeps glossary tokens, so happy-path runs pass INV-5).
+    struct MockBatch {
+        calls: Mutex<Vec<(Vec<String>, String)>>,
+        script: Mutex<Vec<Result<Vec<(String, bool)>, String>>>,
+    }
+
+    impl MockBatch {
+        fn new() -> Self {
+            MockBatch { calls: Mutex::new(Vec::new()), script: Mutex::new(Vec::new()) }
+        }
+
+        /// Script one successful response: (translation, ok) per text.
+        fn push_ok_flags(&self, pairs: Vec<(&str, bool)>) {
+            self.script
+                .lock()
+                .unwrap()
+                .push(Ok(pairs.into_iter().map(|(s, ok)| (s.to_string(), ok)).collect()));
+        }
+
+        /// Script one whole-batch failure (envelope/HTTP error).
+        fn push_err(&self, msg: &str) {
+            self.script.lock().unwrap().push(Err(msg.to_string()));
+        }
+
+        fn calls(&self) -> Vec<(Vec<String>, String)> {
+            self.calls.lock().unwrap().clone()
+        }
+
+        fn texts_of(&self, i: usize) -> Vec<String> {
+            self.calls()[i].0.clone()
+        }
+
+        fn langs(&self) -> Vec<String> {
+            self.calls().into_iter().map(|(_, l)| l).collect()
+        }
+    }
+
+    impl BatchTranslateClient for MockBatch {
+        fn translate_texts(&self, texts: &[&str], lang: &str) -> Result<Vec<(String, bool)>> {
+            self.calls
+                .lock()
+                .unwrap()
+                .push((texts.iter().map(|s| s.to_string()).collect(), lang.to_string()));
+            let mut script = self.script.lock().unwrap();
+            if script.is_empty() {
+                return Ok(texts.iter().map(|t| (t.to_string(), true)).collect());
+            }
+            script.remove(0).map_err(|e| anyhow!("{e}"))
+        }
+    }
+
+    #[test]
+    fn page_cap_splits_five_small_pages_into_two_requests() {
+        let fx = Fixture::new();
+        one_lang_config(&fx);
+        for i in 1..=5 {
+            fx.write_page(
+                &format!("content/p{i}/index.md"),
+                &format!("title = \"P{i}\"\ndescription = \"D{i}\"\n"),
+                &format!("Body {i}.\n"),
+            );
+        }
+        let mock = MockBatch::new();
+        translate_with_endpoint(fx.root(), &fx.config(), None, false, &mock).unwrap();
+        let calls = mock.calls();
+        assert_eq!(calls.len(), 2, "5 pages under a 4-page cap ⇒ 2 requests");
+        assert_eq!(calls[0].1, "es");
+        // First request: pages 1-4 flattened in field order (title/desc/body).
+        assert_eq!(
+            calls[0].0,
+            [
+                "P1", "D1", "Body 1.", "P2", "D2", "Body 2.", "P3", "D3", "Body 3.", "P4", "D4",
+                "Body 4."
+            ]
+        );
+        // Second request: just page 5.
+        assert_eq!(calls[1].0, ["P5", "D5", "Body 5."]);
+        for i in 1..=5 {
+            assert!(fx.root().join(format!("content/p{i}/index.es.md")).exists(), "page {i}");
+        }
+    }
+
+    #[test]
+    fn byte_cap_keeps_every_request_under_16kib() {
+        let fx = Fixture::new();
+        one_lang_config(&fx);
+        // 8188-byte bodies (one chunk each): a page's texts weigh 8192 bytes,
+        // so pages 1-2 land at exactly 16384 — the cap, allowed — and page 3's
+        // title overflows it. ⇒ clean 2+1 page split, 6+3 texts.
+        for i in 1..=3 {
+            fx.write_page(
+                &format!("content/p{i}/index.md"),
+                &format!("title = \"P{i}\"\ndescription = \"D{i}\"\n"),
+                &format!("Curriculo {}\n", "x".repeat(8178)),
+            );
+        }
+        let mock = MockBatch::new();
+        translate_with_endpoint(fx.root(), &fx.config(), None, false, &mock).unwrap();
+        let calls = mock.calls();
+        assert_eq!(calls.len(), 2, "expected the 2+1 page split");
+        for (texts, lang) in &calls {
+            let bytes: usize = texts.iter().map(|t| t.len()).sum();
+            assert!(bytes <= BATCH_MAX_TEXT_BYTES, "{lang} request of {bytes} bytes over cap");
+        }
+        // Batch 1 sits exactly at the cap: two whole pages (title/desc/body
+        // each), 16384 bytes.
+        assert_eq!(calls[0].0.len(), 6, "first request carries pages 1-2 (3 texts each)");
+        assert_eq!(calls[0].0[0], "P1");
+        assert_eq!(calls[0].0[3], "P2");
+        assert_eq!(calls[0].0[4], "D2");
+        let bytes0: usize = calls[0].0.iter().map(|t| t.len()).sum();
+        assert_eq!(bytes0, BATCH_MAX_TEXT_BYTES);
+        assert_eq!(calls[1].0.first().map(String::as_str), Some("P3"));
+        assert_eq!(calls[1].0.len(), 3, "second request carries page 3");
+    }
+
+    #[test]
+    fn oversized_page_spans_batches_and_reassembles_in_order() {
+        let fx = Fixture::new();
+        one_lang_config(&fx);
+        // One ~24 KB body: its chunks alone exceed the 16 KiB request cap, so
+        // the page spans batches. The echo mock makes the written body equal to
+        // the chunk join — order and separators both checked.
+        let body = (0..24)
+            .map(|i| format!("## H{i}\n\n{}", "x".repeat(1000)))
+            .collect::<Vec<_>>()
+            .join("\n\n");
+        fx.write_page("content/post/index.md", "title = \"T\"\ndescription = \"D\"\n", &body);
+        let mock = MockBatch::new();
+        translate_with_endpoint(fx.root(), &fx.config(), None, false, &mock).unwrap();
+        let calls = mock.calls();
+        assert!(calls.len() >= 2, "over-cap page must span batches, got {}", calls.len());
+        let sibling = fx.root().join("content/post/index.es.md");
+        let (fm, written) = parse_page(&sibling).unwrap();
+        let expected = chunk_body(&body).join("\n\n");
+        assert_eq!(written.trim(), expected, "chunks must rejoin in request order");
+        // …and the hash stamp matches the en fields, so the pair is now fresh.
+        let en =
+            Translatable { title: "T".into(), description: "D".into(), body: body.trim().into() };
+        assert_eq!(extra_hash(&fm).as_deref(), Some(source_hash(&en).as_str()));
+    }
+
+    #[test]
+    fn languages_drain_one_at_a_time_es_before_fr() {
+        let fx = Fixture::new(); // default fixture config: es + fr
+        for i in 1..=5 {
+            fx.write_page(
+                &format!("content/p{i}/index.md"),
+                &format!("title = \"P{i}\"\n"),
+                &format!("Body {i}.\n"),
+            );
+        }
+        let mock = MockBatch::new();
+        translate_with_endpoint(fx.root(), &fx.config(), None, false, &mock).unwrap();
+        // 5 pages > the 4-page cap ⇒ 2 requests per language; all of es first.
+        assert_eq!(mock.langs(), vec!["es", "es", "fr", "fr"]);
+    }
+
+    #[test]
+    fn flattening_order_and_positional_reassembly() {
+        let fx = Fixture::new();
+        one_lang_config(&fx);
+        fx.write_page("content/post/index.md", "title = \"T\"\ndescription = \"D\"\n", "Body.\n");
+        let mock = MockBatch::new();
+        mock.push_ok_flags(vec![("t-es", true), ("d-es", true), ("b-es", true)]);
+        translate_with_endpoint(fx.root(), &fx.config(), None, false, &mock).unwrap();
+        // One call: title → description → body, in field order.
+        assert_eq!(mock.texts_of(0), ["T", "D", "Body."]);
+        let (fm, body) = parse_page(&fx.root().join("content/post/index.es.md")).unwrap();
+        assert_eq!(fm.get("title").and_then(|v| v.as_str()), Some("t-es"));
+        assert_eq!(fm.get("description").and_then(|v| v.as_str()), Some("d-es"));
+        assert_eq!(body.trim(), "b-es");
+    }
+
+    #[test]
+    fn one_false_ok_flag_fails_only_its_page() {
+        let fx = Fixture::new();
+        one_lang_config(&fx);
+        for i in 1..=4 {
+            fx.write_page(
+                &format!("content/p{i}/index.md"),
+                &format!("title = \"P{i}\"\ndescription = \"D{i}\"\n"),
+                &format!("Body {i}.\n"),
+            );
+        }
+        let mock = MockBatch::new();
+        // All four pages fit one request (12 texts); page 2's three slots come
+        // back flagged untranslated.
+        mock.push_ok_flags(vec![
+            ("x0", true),
+            ("x1", true),
+            ("x2", true),
+            ("x3", false),
+            ("x4", false),
+            ("x5", false),
+            ("x6", true),
+            ("x7", true),
+            ("x8", true),
+            ("x9", true),
+            ("x10", true),
+            ("x11", true),
+        ]);
+        let res = translate_with_endpoint(fx.root(), &fx.config(), None, false, &mock);
+        let err = res.unwrap_err().to_string();
+        assert!(err.contains("failure"), "got: {err}");
+        // Page 2: no file (which also means no source_hash stamp). Pages
+        // 1, 3, 4: written and stamped with the hash of their en fields.
+        assert!(
+            !fx.root().join("content/p2/index.es.md").exists(),
+            "flagged page must not be written"
+        );
+        for i in [1, 3, 4] {
+            let (fm, _) = parse_page(&fx.root().join(format!("content/p{i}/index.es.md"))).unwrap();
+            let en = Translatable {
+                title: format!("P{i}"),
+                description: format!("D{i}"),
+                body: format!("Body {i}."),
+            };
+            assert_eq!(extra_hash(&fm).as_deref(), Some(source_hash(&en).as_str()), "page {i}");
+        }
+        assert_eq!(mock.calls().len(), 1, "all four pages fit one request");
+    }
+
+    #[test]
+    fn envelope_error_fails_the_whole_batch_but_not_the_run() {
+        let fx = Fixture::new();
+        one_lang_config(&fx);
+        // 5459-byte bodies (one chunk each): a page weighs 5461 bytes, so
+        // three pages land at 16383 and page 4's title overflows ⇒ batch 1 =
+        // pages 1-3 exactly, batch 2 = pages 4-5.
+        for i in 1..=5 {
+            fx.write_page(
+                &format!("content/p{i}/index.md"),
+                &format!("title = \"P{i}\"\n"),
+                &format!("Curriculo {}\n", "y".repeat(5449)),
+            );
+        }
+        let mock = MockBatch::new();
+        mock.push_err("translate endpoint reported ok:false — source text returned untranslated");
+        // Batch 2 falls through to the echo default and writes pages 4-5.
+        let res = translate_with_endpoint(fx.root(), &fx.config(), None, false, &mock);
+        assert!(res.is_err(), "3 failed jobs must fail the run");
+        for i in 1..=3 {
+            assert!(
+                !fx.root().join(format!("content/p{i}/index.es.md")).exists(),
+                "page {i} must not be written"
+            );
+        }
+        for i in 4..=5 {
+            assert!(
+                fx.root().join(format!("content/p{i}/index.es.md")).exists(),
+                "page {i} should still be written"
+            );
+        }
+        assert_eq!(mock.calls().len(), 2, "second batch must still be attempted");
+    }
+
+    #[test]
+    fn max_cap_truncates_page_major_and_resumes() {
+        let fx = Fixture::new();
+        for i in 1..=2 {
+            fx.write_page(
+                &format!("content/p{i}/index.md"),
+                &format!("title = \"P{i}\"\n"),
+                &format!("Body {i}.\n"),
+            );
+        }
+        // Jobs are page-major (p1-es, p1-fr, p2-es, p2-fr); --max 1 keeps the
+        // first only — the same cut translate_with makes per (page, lang).
+        let m1 = MockBatch::new();
+        translate_with_endpoint(fx.root(), &fx.config(), Some(1), false, &m1).unwrap();
+        assert_eq!(m1.calls().len(), 1);
+        assert_eq!(m1.calls()[0].1, "es");
+        assert_eq!(m1.texts_of(0), ["P1", "Body 1."]);
+        assert!(fx.root().join("content/p1/index.es.md").exists());
+        for p in ["content/p1/index.fr.md", "content/p2/index.es.md", "content/p2/index.fr.md"] {
+            assert!(!fx.root().join(p).exists(), "{p} must stay untouched");
+        }
+
+        // Resume: exactly the 3 remaining jobs translate; es drained before fr.
+        let m2 = MockBatch::new();
+        translate_with_endpoint(fx.root(), &fx.config(), None, false, &m2).unwrap();
+        assert_eq!(m2.langs(), vec!["es", "fr"], "es (only p2 left) before fr (p1, p2)");
+        for p in ["content/p1/index.fr.md", "content/p2/index.es.md", "content/p2/index.fr.md"] {
+            assert!(fx.root().join(p).exists(), "{p} must be written on resume");
+        }
+    }
+
+    #[test]
+    fn endpoint_dry_run_makes_no_calls_and_writes_nothing() {
+        let fx = Fixture::new();
+        fx.write_page("content/post/index.md", en_page_fm(), "Body one.\n");
+        let mock = MockBatch::new();
+        translate_with_endpoint(fx.root(), &fx.config(), None, true, &mock).unwrap();
+        assert!(mock.calls().is_empty(), "dry-run must not hit the endpoint");
+        assert!(!fx.root().join("content/post/index.es.md").exists());
+        assert!(!fx.root().join("content/post/index.fr.md").exists());
+    }
+
+    #[test]
+    fn fresh_endpoint_sibling_skips_the_call() {
+        let fx = Fixture::new();
+        fx.write_page("content/post/index.md", en_page_fm(), "Body one.\n");
+        // Pre-stamp a fresh es sibling (correct source_hash) ⇒ not a job.
+        let en = Translatable {
+            title: "Hello Curriculo".into(),
+            description: "A desc".into(),
+            body: "Body one.".into(),
+        };
+        let (fm, _) = parse_page(&fx.root().join("content/post/index.md")).unwrap();
+        write_sibling(&fx.root().join("content/post/index.es.md"), &fm, &en, &source_hash(&en))
+            .unwrap();
+        let mock = MockBatch::new();
+        translate_with_endpoint(fx.root(), &fx.config(), None, false, &mock).unwrap();
+        let calls = mock.calls();
+        assert_eq!(calls.len(), 1, "only fr remains");
+        assert_eq!(calls[0].1, "fr");
     }
 
     struct EchoClient {
