@@ -100,14 +100,21 @@ type SentFields = Vec<&'static str>;
 ///
 /// ```text
 /// POST $TRANSLATE_URL
-///   {"texts": ["..."], "target_language": "ko", "source_language": "en"}
+///   {"texts": ["..."], "target_language": "ko", "source_language": "en",
+///    "preserve_terms": ["Acme Widgets"]}
 /// → {"translations": ["..."]}
 /// ```
 ///
-/// Translations come back in request order, one per input. Terminology that must
-/// survive verbatim is the endpoint's concern, not this client's — whatever it
-/// returns is still gated by [`glossary_ok`] before any file is written, so a
-/// mangled brand token fails the page rather than shipping it.
+/// Translations come back in request order, one per input. `preserve_terms`
+/// (#23 review) carries the caller's own untranslatables — brand and product
+/// names that must survive verbatim — so the endpoint masks them out of the
+/// engine and restores them after (curriculo-ai #1023/#1133). Sourced from
+/// `TRANSLATE_PRESERVE_TERMS` (comma-separated) via [`preserve_terms_from_env`],
+/// and only included in the body when non-empty.
+///
+/// Note the endpoint ignores terms shorter than 3 characters, and the INV-5
+/// [`glossary_ok`] gate still checks only the built-in [`GLOSSARY`] — caller
+/// terms are trusted to the endpoint's mask/restore machinery.
 ///
 /// Failure envelopes are hard failures, never passthroughs: the endpoint may
 /// answer HTTP 200 with `"ok": false` (or a per-string `"ok"` array with any
@@ -121,11 +128,18 @@ pub struct TranslateApiClient {
     /// owns a connection pool, so rebuilding it per chunk throws the pool (and
     /// keep-alive) away on every page.
     client: reqwest::blocking::Client,
+    /// Caller-supplied untranslatables sent as `preserve_terms` on every
+    /// request. Empty means the field is omitted entirely.
+    preserve_terms: Vec<String>,
 }
 
 impl TranslateApiClient {
-    pub fn new(url: impl Into<String>, timeout: Duration) -> Result<Self> {
-        Ok(Self { url: url.into(), client: http_client(timeout)? })
+    pub fn new(
+        url: impl Into<String>,
+        timeout: Duration,
+        preserve_terms: Vec<String>,
+    ) -> Result<Self> {
+        Ok(Self { url: url.into(), client: http_client(timeout)?, preserve_terms })
     }
 }
 
@@ -161,6 +175,21 @@ fn timeout_from_env() -> Result<Duration> {
     Ok(Duration::from_secs(secs))
 }
 
+/// `TRANSLATE_PRESERVE_TERMS`: comma-separated terms the caller needs back
+/// verbatim (its own brand/product names), forwarded to the endpoint as
+/// `preserve_terms`. Blank segments are dropped, everything else is kept
+/// verbatim after a trim — the endpoint does its own cap/filtering (100 terms
+/// of ≤100 chars, terms under 3 chars ignored), so this side stays dumb.
+fn preserve_terms_from_env() -> Vec<String> {
+    env::var("TRANSLATE_PRESERVE_TERMS")
+        .unwrap_or_default()
+        .split(',')
+        .map(str::trim)
+        .filter(|t| !t.is_empty())
+        .map(str::to_string)
+        .collect()
+}
+
 impl LlmClient for TranslateApiClient {
     fn translate(&self, fields: &Translatable, lang: &str, _key: &str) -> Result<Translatable> {
         // Chunking lives inside the client, as it does for OpenRouter: the
@@ -173,7 +202,7 @@ impl LlmClient for TranslateApiClient {
 
 impl TranslateApiClient {
     fn translate_once(&self, fields: &Translatable, lang: &str) -> Result<Translatable> {
-        let (payload, sent) = build_translate_request(fields, lang);
+        let (payload, sent) = build_translate_request(fields, lang, &self.preserve_terms);
         if sent.is_empty() {
             return Ok(fields.clone());
         }
@@ -193,8 +222,14 @@ impl TranslateApiClient {
 }
 
 /// Build the request body, and record which fields it carries so the response
-/// can be mapped back positionally.
-fn build_translate_request(fields: &Translatable, lang: &str) -> (Value, SentFields) {
+/// can be mapped back positionally. `preserve_terms` is included only when
+/// non-empty: an empty array is the server default (curriculo-ai #1023), and
+/// omitting it keeps the body byte-identical for callers with no glossary.
+fn build_translate_request(
+    fields: &Translatable,
+    lang: &str,
+    preserve_terms: &[String],
+) -> (Value, SentFields) {
     let mut texts: Vec<&str> = Vec::new();
     let mut sent: SentFields = Vec::new();
     for (name, value) in
@@ -205,11 +240,14 @@ fn build_translate_request(fields: &Translatable, lang: &str) -> (Value, SentFie
             sent.push(name);
         }
     }
-    let payload = json!({
+    let mut payload = json!({
         "texts": texts,
         "target_language": lang,
         "source_language": "en",
     });
+    if !preserve_terms.is_empty() {
+        payload["preserve_terms"] = json!(preserve_terms);
+    }
     (payload, sent)
 }
 
@@ -498,8 +536,12 @@ pub fn translate(
 ) -> Result<()> {
     if let Some(url) = env::var("TRANSLATE_URL").ok().filter(|s| !s.is_empty()) {
         let timeout = timeout_from_env()?;
-        log::info!("translate: using translation endpoint at {url} (timeout {timeout:?})");
-        let client = TranslateApiClient::new(url, timeout)?;
+        let preserve_terms = preserve_terms_from_env();
+        log::info!(
+            "translate: using translation endpoint at {url} (timeout {timeout:?}, {} preserve term(s)",
+            preserve_terms.len()
+        );
+        let client = TranslateApiClient::new(url, timeout, preserve_terms)?;
         return translate_with(root_dir, config_file, max, dry_run, "", &client);
     }
     let key = if dry_run {
@@ -798,25 +840,39 @@ mod tests {
 
     #[test]
     fn request_carries_every_non_empty_field_in_order() {
-        let (payload, sent) = build_translate_request(&t("T", "D", "B"), "ko");
+        let (payload, sent) = build_translate_request(&t("T", "D", "B"), "ko", &[]);
         assert_eq!(sent, vec!["title", "description", "body"]);
         assert_eq!(payload["texts"], json!(["T", "D", "B"]));
         assert_eq!(payload["target_language"], "ko");
         assert_eq!(payload["source_language"], "en");
+        // Empty glossary ⇒ field omitted, body byte-identical to pre-#23-review
+        // shape (an empty array is the server default, curriculo-ai #1023).
+        assert!(payload.get("preserve_terms").is_none());
+    }
+
+    #[test]
+    fn request_carries_preserve_terms_when_supplied() {
+        // #23 review / curriculo-ai #1023: the caller's untranslatables ride the
+        // same request as `texts`, so the endpoint can mask them out of the
+        // engine and restore them verbatim.
+        let terms = vec!["Acme Widgets".to_string(), "Zephyr Analytics".to_string()];
+        let (payload, _) = build_translate_request(&t("T", "D", "B"), "ko", &terms);
+        assert_eq!(payload["preserve_terms"], json!(terms));
+        assert_eq!(payload["target_language"], "ko");
     }
 
     #[test]
     fn body_only_chunk_sends_only_the_body() {
         // translate_fields blanks title/description for continuation chunks;
         // sending those empty strings would spend an engine call on nothing.
-        let (payload, sent) = build_translate_request(&t("", "", "B"), "ja");
+        let (payload, sent) = build_translate_request(&t("", "", "B"), "ja", &[]);
         assert_eq!(sent, vec!["body"]);
         assert_eq!(payload["texts"], json!(["B"]));
     }
 
     #[test]
     fn response_maps_back_onto_the_fields_that_were_sent() {
-        let (_, sent) = build_translate_request(&t("", "", "B"), "ja");
+        let (_, sent) = build_translate_request(&t("", "", "B"), "ja", &[]);
         let out = parse_translate_response(r#"{"translations":["本文"]}"#, &sent, &t("", "", "B"))
             .unwrap();
         assert_eq!(out.body, "本文");
@@ -827,7 +883,7 @@ mod tests {
     fn short_response_is_an_error_not_a_silent_shift() {
         // Two translations for three texts would otherwise land the body on the
         // description key and write a plausible-looking, wrong page.
-        let (_, sent) = build_translate_request(&t("T", "D", "B"), "fr");
+        let (_, sent) = build_translate_request(&t("T", "D", "B"), "fr", &[]);
         let err = parse_translate_response(
             r#"{"translations":["Titre","Description"]}"#,
             &sent,
@@ -862,7 +918,7 @@ mod tests {
 
     #[test]
     fn missing_translations_array_is_an_error() {
-        let (_, sent) = build_translate_request(&t("T", "", ""), "fr");
+        let (_, sent) = build_translate_request(&t("T", "", ""), "fr", &[]);
         let err = parse_translate_response(r#"{"oops":true}"#, &sent, &t("T", "", "")).unwrap_err();
         assert!(format!("{err}").contains("translations"));
     }
@@ -872,7 +928,7 @@ mod tests {
         // #1003: HTTP 200 + ok:false means `translations` carries the ORIGINAL
         // source text. Accepting it would write English into `<slug>.ko.md`
         // stamped fresh (source_hash set) — exactly the bug this guards.
-        let (_, sent) = build_translate_request(&t("T", "D", "B"), "ko");
+        let (_, sent) = build_translate_request(&t("T", "D", "B"), "ko", &[]);
         let err = parse_translate_response(
             r#"{"ok":false,"translations":["T","D","B"]}"#,
             &sent,
@@ -884,7 +940,7 @@ mod tests {
 
     #[test]
     fn ok_array_with_a_false_flag_is_a_hard_failure() {
-        let (_, sent) = build_translate_request(&t("T", "", "B"), "ko");
+        let (_, sent) = build_translate_request(&t("T", "", "B"), "ko", &[]);
         let err = parse_translate_response(
             r#"{"ok":[true,false],"translations":["T","B"]}"#,
             &sent,
@@ -899,7 +955,7 @@ mod tests {
     fn ok_all_true_or_absent_still_passes() {
         // Older deployments send no `ok` at all; newer ones send all-true.
         // Both must keep working — guard against over-tightening the #1003 fix.
-        let (_, sent) = build_translate_request(&t("", "", "B"), "ja");
+        let (_, sent) = build_translate_request(&t("", "", "B"), "ja", &[]);
         for body in [r#"{"ok":[true],"translations":["本文"]}"#, r#"{"translations":["本文"]}"#]
         {
             let out = parse_translate_response(body, &sent, &t("", "", "B")).unwrap();
@@ -909,7 +965,7 @@ mod tests {
 
     #[test]
     fn mirrored_error_code_1003_is_a_hard_failure() {
-        let (_, sent) = build_translate_request(&t("T", "", ""), "fr");
+        let (_, sent) = build_translate_request(&t("T", "", ""), "fr", &[]);
         for body in [
             r#"{"code":1003,"translations":["T"]}"#,
             r#"{"status":1003,"translations":["T"]}"#,
@@ -922,7 +978,7 @@ mod tests {
 
     #[test]
     fn non_string_translation_is_an_error_not_a_blank() {
-        let (_, sent) = build_translate_request(&t("T", "D", "B"), "ko");
+        let (_, sent) = build_translate_request(&t("T", "D", "B"), "ko", &[]);
         for body in [
             r#"{"translations":[null,"D","B"]}"#,
             r#"{"translations":[["T"],"D","B"]}"#,
@@ -949,6 +1005,21 @@ mod tests {
         unsafe { env::set_var("TRANSLATE_TIMEOUT", "soon") };
         assert!(timeout_from_env().is_err());
         unsafe { env::remove_var("TRANSLATE_TIMEOUT") };
+    }
+
+    #[test]
+    fn preserve_terms_env_parses_trims_and_drops_blanks() {
+        let _g = ENV_LOCK.lock().unwrap();
+        unsafe { env::remove_var("TRANSLATE_PRESERVE_TERMS") };
+        assert!(preserve_terms_from_env().is_empty());
+        unsafe { env::set_var("TRANSLATE_PRESERVE_TERMS", " Acme Widgets ,, Zephyr ") };
+        assert_eq!(
+            preserve_terms_from_env(),
+            vec!["Acme Widgets".to_string(), "Zephyr".to_string()]
+        );
+        unsafe { env::set_var("TRANSLATE_PRESERVE_TERMS", " , , ") };
+        assert!(preserve_terms_from_env().is_empty());
+        unsafe { env::remove_var("TRANSLATE_PRESERVE_TERMS") };
     }
 
     /// Minimal keep-alive HTTP/1.1 server for exercising [`TranslateApiClient`]
@@ -1036,7 +1107,7 @@ mod tests {
         let server = TinyServer::start(|n| {
             json!({"ok": false, "translations": vec!["passthrough"; n]}).to_string()
         });
-        let client = TranslateApiClient::new(&server.url, Duration::from_secs(30)).unwrap();
+        let client = TranslateApiClient::new(&server.url, Duration::from_secs(30), vec![]).unwrap();
         let res = translate_with(fx.root(), &fx.config(), None, false, "", &client);
         assert!(res.is_err(), "ok:false must surface as a failure");
         assert!(!fx.root().join("content/post/index.es.md").exists(), "must not write es");
@@ -1051,7 +1122,7 @@ mod tests {
         let server = TinyServer::start(|n| {
             json!({"code": 1003, "translations": vec!["passthrough"; n]}).to_string()
         });
-        let client = TranslateApiClient::new(&server.url, Duration::from_secs(30)).unwrap();
+        let client = TranslateApiClient::new(&server.url, Duration::from_secs(30), vec![]).unwrap();
         let res = translate_with(fx.root(), &fx.config(), None, false, "", &client);
         assert!(res.is_err(), "mirrored error code 1003 must surface as a failure");
         assert!(!fx.root().join("content/post/index.es.md").exists(), "must not write es");
@@ -1076,7 +1147,7 @@ mod tests {
             })
             .to_string()
         });
-        let client = TranslateApiClient::new(&server.url, Duration::from_secs(30)).unwrap();
+        let client = TranslateApiClient::new(&server.url, Duration::from_secs(30), vec![]).unwrap();
         translate_with(fx.root(), &fx.config(), None, false, "", &client).unwrap();
         let reqs = server.reqs.load(Ordering::SeqCst);
         let conns = server.conns.load(Ordering::SeqCst);
