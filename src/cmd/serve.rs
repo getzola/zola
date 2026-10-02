@@ -515,6 +515,7 @@ pub fn serve(
     utc_offset: UtcOffset,
     extra_watch_paths: Vec<String>,
     debounce: u64,
+    graph_refresh: bool,
 ) -> Result<()> {
     let start = Instant::now();
     let (mut site, bind_address, constructed_base_url) = create_new_site(
@@ -817,6 +818,18 @@ pub fn serve(
                                     }
                                 } else if let Some(s) = recreate_site() {
                                     site = s;
+                                }
+                            }
+                            if graph_refresh {
+                                log::info!("-> Refreshing knowledge graph");
+                                if let Err(e) = crate::cmd::graph::run(
+                                    root_dir,
+                                    config_file,
+                                    crate::cli::GraphCommand::Refresh { max: None, dry_run: false },
+                                ) {
+                                    log::error!(
+                                        "graph refresh failed; serving the committed graph as-is: {e:#}"
+                                    );
                                 }
                             }
                         }

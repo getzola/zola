@@ -154,6 +154,7 @@ fn main() {
             no_port_append,
             extra_watch_path,
             debounce,
+            graph_refresh,
         } => {
             if port != 1111 && !port_is_available(interface, port) {
                 log::error!("The requested port is not available");
@@ -185,6 +186,7 @@ fn main() {
                 UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC),
                 extra_watch_path,
                 debounce,
+                graph_refresh,
             ) {
                 messages::unravel_errors("Failed to serve the site", &e);
                 std::process::exit(1);
