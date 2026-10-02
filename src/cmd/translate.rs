@@ -273,6 +273,13 @@ fn parse_translate_response(
                 )
             }
             Value::Array(flags) => {
+                if flags.len() != sent.len() {
+                    bail!(
+                        "translate endpoint: malformed envelope: ok array length {} != {} sent field(s)",
+                        flags.len(),
+                        sent.len()
+                    );
+                }
                 if let Some(i) = flags.iter().position(|f| !f.is_boolean() || !f.as_bool().unwrap())
                 {
                     let field = sent.get(i).copied().unwrap_or("?");
@@ -287,9 +294,15 @@ fn parse_translate_response(
     // Some gateways mirror the error status in the body of a 200 response
     // (e.g. {"code": 1003}). 0 and 200 mean success; anything else does not.
     for key in ["code", "status", "error_code"] {
-        let code = data
-            .get(key)
-            .and_then(|v| v.as_u64().or_else(|| v.as_str().and_then(|s| s.parse().ok())));
+        // i64 first so numeric negatives ("code": -1) are not dropped: as_u64 is
+        // None on signed JSON numbers, as_str is None on numbers. Do not fold
+        // i64 → u64 (try_from drops negatives again). u64 → i64 is only for
+        // values that did not fit as_i64.
+        let code = data.get(key).and_then(|v| {
+            v.as_i64()
+                .or_else(|| v.as_u64().and_then(|n| i64::try_from(n).ok()))
+                .or_else(|| v.as_str().and_then(|s| s.parse().ok()))
+        });
         if let Some(code) = code {
             if code != 0 && code != 200 {
                 bail!("translate endpoint error code {code} in `{key}` — not writing");
@@ -952,6 +965,23 @@ mod tests {
     }
 
     #[test]
+    fn ok_array_shorter_than_sent_is_malformed() {
+        // Finding #3: an all-true but short ok array used to pass; the missing
+        // flags must reject the envelope rather than silently covering unsent fields.
+        let (_, sent) = build_translate_request(&t("T", "D", "B"), "ko", &[]);
+        let err = parse_translate_response(
+            r#"{"ok":[true],"translations":["T","D","B"]}"#,
+            &sent,
+            &t("T", "D", "B"),
+        )
+        .unwrap_err();
+        assert!(
+            format!("{err}").contains("malformed") || format!("{err}").contains("length"),
+            "got: {err}"
+        );
+    }
+
+    #[test]
     fn ok_all_true_or_absent_still_passes() {
         // Older deployments send no `ok` at all; newer ones send all-true.
         // Both must keep working — guard against over-tightening the #1003 fix.
@@ -974,6 +1004,20 @@ mod tests {
             let err = parse_translate_response(body, &sent, &t("T", "", "")).unwrap_err();
             assert!(format!("{err}").contains("1003"), "body {body} -> {err}");
         }
+    }
+
+    #[test]
+    fn numeric_negative_error_code_is_a_hard_failure() {
+        // Finding #4: as_u64/as_str both miss JSON numbers like -1.
+        let (_, sent) = build_translate_request(&t("T", "", ""), "fr", &[]);
+        let err = parse_translate_response(
+            r#"{"code":-1,"translations":["T"]}"#,
+            &sent,
+            &t("T", "", ""),
+        )
+        .unwrap_err();
+        let msg = format!("{err}");
+        assert!(msg.contains("-1") || msg.contains("error code"), "got: {err}");
     }
 
     #[test]
