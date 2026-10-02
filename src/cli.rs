@@ -110,6 +110,12 @@ pub enum Command {
         /// Debounce time in milliseconds for the file watcher (at least 1ms)
         #[clap(short = 'd', long, default_value_t = 1000, value_parser = clap::value_parser!(u64).range(1..))]
         debounce: u64,
+
+        /// Run `graph refresh` (Curriculo fork) after every content rebuild, keeping
+        /// `data/graph/` in sync while serving. Needs a prior `graph migrate`; re-topics
+        /// stale pages via OpenRouter (`OPENROUTER_API_KEY`). Never crawls.
+        #[clap(long)]
+        graph_refresh: bool,
     },
 
     /// Try to build the project without rendering it. Checks links

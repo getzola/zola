@@ -28,6 +28,7 @@ After migrate, **committed markdown under `content/**` is the source of truth**.
 |---------|-----------|------------|-------|
 | `graph migrate` | **yes, once per origin** | yes | remote sitemap + HTML |
 | `graph refresh` | **never** | yes (stale pages only) | local `content/**` + `data/graph/**` |
+| `serve --graph-refresh` | **never** | yes (same as `refresh`) | local `content/**` + `data/graph/**` |
 | `build` | never | never | local files only |
 
 `migrate` refuses a second crawl if `data/graph/meta.json` already has
@@ -85,6 +86,11 @@ zola graph refresh                               # local markdown only → updat
 zola build --base-url https://example.com/
 # repeat last two forever
 ```
+
+Dev-loop variant: `zola serve --graph-refresh` runs the same local refresh
+automatically after every content rebuild, so `data/graph/` stays in sync
+without remembering the manual step. Refresh failures (missing key, no prior
+migrate, API errors) are logged and serving continues on the committed graph.
 
 Deploy today is **`curriculo-me.pages.dev`**. Live `curriculo.me` cutover is Z-5
 (founder-gated DNS), not this loop.

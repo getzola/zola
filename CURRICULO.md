@@ -9,6 +9,7 @@ behavior is unchanged; we add two subcommands used by `curriculo-tech/landing-we
 | `v0.23.2-curriculo.1` | `zola translate` |
 | `v0.23.2-curriculo.2` | `zola graph migrate` / `graph refresh` |
 | `v0.23.2-curriculo.3` | Clean migrate extraction (metadata description, boilerplate strip, asset URL skip) |
+| `v0.23.2-curriculo.11` | `zola serve --graph-refresh` — KG refresh after every content rebuild |
 
 Landing CI pins the binary via `ZOLA_VERSION` / `ZOLA_BIN_URL` (never `latest`).
 
@@ -35,9 +36,14 @@ zola --root <site> graph migrate --from https://example.com [--max N] [--force] 
 
 # Forever after (OpenRouter only) — updates data/graph from local markdown
 zola --root <site> graph refresh [--max N] [--dry-run]
+
+# Opt-in: same refresh automatically after every content rebuild while serving
+zola --root <site> serve --graph-refresh
 ```
 
 **Hard rule:** Firecrawl is migrate-only. `refresh` and `build` never crawl.
+`serve --graph-refresh` reuses `refresh` (local markdown + OpenRouter for
+stale pages); it never crawls, and `zola build` stays offline.
 
 ## Operator loop
 

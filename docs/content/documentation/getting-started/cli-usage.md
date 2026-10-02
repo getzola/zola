@@ -154,6 +154,10 @@ $ zola graph refresh --max 40
 
 Requires `OPENROUTER_API_KEY`. `migrate` also requires `FIRECRAWL_API_KEY`.
 
+`zola serve --graph-refresh` (Curriculo fork) runs `graph refresh` automatically
+after every content rebuild while serving. It needs a prior `graph migrate`;
+refresh failures are logged and serving continues.
+
 ## Colored output
 
 Colored output is used if your terminal supports it.
