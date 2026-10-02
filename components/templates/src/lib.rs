@@ -99,7 +99,22 @@ pub fn render_redirect_template(url: &str, tera: &Tera) -> Result<String> {
 ///
 /// https://zola.discourse.group/t/where-should-i-put-component-definitions-in-zola-0-23/2957
 fn glob_base(path: &Path) -> String {
-    dunce::simplified(path).display().to_string()
+    // `dunce::simplified` strips the `\\?\C:\...` prefix but leaves network paths
+    // in their `\\?\UNC\server\share` form (e.g. when the site lives on a mapped
+    // network drive), which globs fail to match. Convert those to `\\server\share`.
+    let simplified = dunce::simplified(path);
+    strip_unc_prefix(simplified.as_os_str().to_string_lossy().into_owned())
+}
+
+/// Converts `\\?\UNC\server\share` back to `\\server\share` so the result can
+/// take part in glob patterns; every other input passes through untouched.
+/// (Extracted from `glob_base` so it can be unit-tested on any platform.)
+fn strip_unc_prefix(text: String) -> String {
+    if let Some(rest) = text.strip_prefix(r"\\?\UNC\") {
+        format!(r"\\{rest}")
+    } else {
+        text
+    }
 }
 
 /// Combines the builtin Zola templates with an optional theme and the user templates.
@@ -142,10 +157,16 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
     // Load theme templates first (lower priority)
     if let Some(ref theme) = config.theme {
-        let pattern = format!(
-            "{}/themes/{theme}/templates/**/*.{{html,xml,md,txt,json,ics}}",
-            glob_base(path)
-        );
+        // Build the glob with Path::join so the separators match the platform
+        // instead of hard-coding '/' onto an already-platform-shaped base.
+        let pattern = Path::new(&glob_base(path))
+            .join("themes")
+            .join(theme)
+            .join("templates")
+            .join("**")
+            .join("*.{html,xml,md,txt,json,ics}")
+            .display()
+            .to_string();
         for (file_path, name) in tera::load_from_glob(&pattern)? {
             // "page.html" → "sample/templates/page.html"
             let name = format!("{theme}/templates/{name}");
@@ -157,7 +178,12 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 
     // Load site templates (higher priority, will override theme templates)
     if site_tpl_dir.exists() {
-        let pattern = format!("{}/templates/**/*.{{html,xml,md,txt,json,ics}}", glob_base(path));
+        let pattern = Path::new(&glob_base(path))
+            .join("templates")
+            .join("**")
+            .join("*.{html,xml,md,txt,json,ics}")
+            .display()
+            .to_string();
         for (file_path, name) in tera::load_from_glob(&pattern)? {
             let content = fs::read_to_string(&file_path)
                 .with_context(|| format!("Failed to read '{}'", file_path.display()))?;
@@ -169,4 +195,77 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
     tera.global_context().insert("zola_version", env!("CARGO_PKG_VERSION"));
 
     Ok(tera)
+}
+
+#[cfg(test)]
+mod glob_base_tests {
+    use super::strip_unc_prefix;
+    use std::fs;
+    use std::path::Path;
+
+    #[test]
+    fn unc_prefix_is_converted_to_server_share() {
+        assert_eq!(
+            strip_unc_prefix(r"\\?\UNC\server\share".to_string()),
+            r"\\server\share"
+        );
+    }
+
+    #[test]
+    fn drive_paths_pass_through() {
+        // Stripping `\\?\C:\` is dunce's job; this function must not touch it.
+        assert_eq!(strip_unc_prefix(r"C:\site".to_string()), r"C:\site");
+        assert_eq!(strip_unc_prefix(r"\\?\C:\site".to_string()), r"\\?\C:\site");
+    }
+
+    #[test]
+    fn plain_unc_passes_through() {
+        assert_eq!(
+            strip_unc_prefix(r"\\server\share".to_string()),
+            r"\\server\share"
+        );
+    }
+
+    /// The original bug (#3229): a site whose base path is in verbatim UNC form
+    /// (`\\?\UNC\server\share\site`) leaves a glob pattern that never matches,
+    /// so every template under `templates/` is reported missing.
+    /// `load_tera` must find site templates regardless of the base path's form.
+    /// This exercises the real `load_tera` code path (not just `strip_unc_prefix`).
+    #[test]
+    fn load_tera_finds_site_templates_via_verbatim_unc_base() {
+        if !cfg!(windows) {
+            // UNC/verbatim forms only exist on Windows; the base-path join is
+            // platform-shaped everywhere else, so there is nothing to reproduce.
+            return;
+        }
+
+        let tmp = std::env::temp_dir().join("zola-load-tera-unc-test");
+        fs::create_dir_all(tmp.join("templates")).unwrap();
+        fs::write(tmp.join("templates").join("page.html"), "hello").unwrap();
+
+        // Reach the same directory through its verbatim UNC form (localhost
+        // administrative share). If the environment has no shares, skip quietly.
+        let canonical = fs::canonicalize(&tmp).unwrap();
+        let plain = canonical.display().to_string();
+        let Some((drive, rest)) = plain.split_once(':') else {
+            return;
+        };
+        let unc_base = format!(r"\\?\UNC\localhost\{}$\{}", drive.to_lowercase(), rest.trim_start_matches('\\'));
+        if !Path::new(&unc_base).exists() {
+            eprintln!("skipping: no localhost administrative share available");
+            return;
+        }
+
+        let base = Path::new(&unc_base);
+        // The bug signature on the old code: glob_base() leaves the verbatim UNC
+        // prefix in place, the hand-joined glob never matches, load_tera returns
+        // an empty Tera. With the fix the pattern resolves and the template loads.
+        let tera = super::load_tera(base, &Default::default()).unwrap();
+        assert!(
+            tera.contains_template("page.html"),
+            "load_tera should find templates through a verbatim UNC base path"
+        );
+
+        fs::remove_dir_all(&tmp).ok();
+    }
 }

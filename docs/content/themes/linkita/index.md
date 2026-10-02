@@ -3,17 +3,17 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2026-09-06T18:26:50+03:00
+date = 2026-09-21T13:58:35+03:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2026-09-06T18:26:50+03:00
-updated = 2026-09-06T18:26:50+03:00
+created = 2026-09-21T13:58:35+03:00
+updated = 2026-09-21T13:58:35+03:00
 repository = "https://github.com/salif/linkita.git"
 homepage = "https://github.com/salif/linkita"
-minimum_version = "0.23.4"
+minimum_version = "0.23.6"
 license = "MIT"
 demo = "https://salif.github.io/linkita/"
 
@@ -88,6 +88,8 @@ theme = "linkita"
 ```
 
 Place it near the `base_url` variable, not under `[extra]`.
+
+3. Read the instructions to add configuration on your site.
 
 ## Managing versions
 
@@ -180,116 +182,6 @@ alt = ""
 ### Other extra front matter variables
 
 Linkita supports [more extra variables, listed here](https://salif.github.io/linkita/extra-frontmatter/).
-
-### Pages and Posts
-
-#### Home page
-
-Create a `content/_index.md` file and set `extra.profile` to your username:
-
-```toml ,name=content/_index.md
-+++
-title = ""
-description = ""
-sort_by = "date"
-paginate_by = 4
-[extra]
-profile = "your_username"
-+++
-```
-
-Do it for each language in your site.
-For French, the file name is `content/_index.fr.md`.
-
-See Profiles for more.
-
-#### Posts
-
-In the `content` directory, create a subdirectory named `blog` or another name of your choice.
-
-Create a `content/blog/_index.md` file:
-
-```toml ,name=content/blog/_index.md
-+++
-title = "Archive"
-description = ""
-template = "archive.html"
-transparent = true
-[extra]
-date_format = "%b %d"
-+++
-```
-
-Create a `content/blog/hello.md` file:
-
-```md ,name=content/blog/hello.md
-+++
-title = "Title"
-date = 2026-12-30
-+++
-
-Summary <!-- more -->
-
-## Hello, world!
-```
-
-#### Pages
-
-The default page template `page.html` is for blog posts.
-For pages that are not blog posts, you can use the `pages.html` template.
-
-In the `content` directory, create a subdirectory named `pages` and
-create a `content/pages/_index.md` file:
-
-```toml ,name=content/pages/_index.md
-+++
-render = false
-page_template = "pages.html"
-+++
-```
-
-Create a `content/pages/about.md` file:
-
-```md ,name=content/pages/about.md
-+++
-title = "About me"
-description = ""
-path = "about"
-+++
-
-## Hello, world!
-```
-
-If you wish, you can also create [a page for your projects](https://salif.github.io/linkita/components/#projects).
-
-### Setting page authors
-
-Choose one of the following options or skip if you don't know what you're doing:
-
-#### Option A: Using `page.authors` and `config.author`
-
-The default author for posts is set using the `author` variable in the `zola.toml` file.
-
-You don't need to set `authors` in the front matter if the default author is the only author of the post.
-Otherwise, set `authors`:
-
-```toml ,name=frontmatter
-+++
-authors = ["author_username"]
-+++
-```
-
-#### Option B: Using Taxonomies
-
-Useful if the blog has a team of several authors.
-If you choose this option you should set taxonomies in each post.
-
-```toml ,name=frontmatter
-+++
-[taxonomies]
-authors = ["author_username", "author2_username"]
-+++
-```
 
 ### Inject support
 
@@ -643,14 +535,30 @@ The `copyright` variable supports Markdown and these variables:
 
 ### Language specific options
 
-For date format, see [docs](https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html#conversion-specifications).
+Date format uses different formats depending on whether `locale` is set or not.
+If `locale` is not set, see [strftime specifiers](https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html#conversion-specifications).
+If `locale` is set, see [UTS-35 datetime patterns](https://unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table).
 
 ```toml ,name=zola.toml
 # For English
 [extra.languages.en]
 
-# Default value: "%F"
-date_format = "%Y %b %-d"
+# Locale for `date_format`.
+# e.g. "en-US".
+# No default value.
+locale = "en"
+
+# Change it to "%Y %b %-d" if `locale` is not set.
+# Default value: "%F" (strftime) or "y MMM d" (UTS-35)
+date_format = "y MMM d"
+
+# To format numbers for a different locale. e.g. "en-GB".
+# Useful if lang is not a valid locale.
+# num_format = ""
+
+# To set a different lang attribute of the document.
+# Also changes the interface language. e.g. "en-GB".
+# hreflang = ""
 
 # Default value: extra.page_info
 # page_info = []
@@ -663,14 +571,6 @@ date_format = "%Y %b %-d"
 
 # Default value: extra.header_buttons
 # header_buttons = []
-
-# To set a different lang attribute of the document.
-# Also changes the interface language. e.g. "en-GB".
-# hreflang = ""
-
-# To format numbers for a different locale. e.g. "en-GB".
-# Useful if lang is not a valid locale.
-# num_format = ""
 
 # Set a description for taxonomy pages.
 [extra.languages.en.taxonomy_descriptions]
@@ -776,10 +676,9 @@ Live preview is available in the following languages:
 
 [Arabic](https://salif.github.io/linkita/ar/),
 [Bulgarian](https://salif.github.io/linkita/bg/),
-[Czech](https://salif.github.io/linkita/cs/),
 [Esperanto](https://salif.github.io/linkita/eo/),
 [Spanish](https://salif.github.io/linkita/es/),
-[Finnish](https://salif.github.io/linkita/fi/),
+[Persian](https://salif.github.io/linkita/fa/),
 [French](https://salif.github.io/linkita/fr/),
 [Globasa](https://salif.github.io/linkita/gb/),
 [Japanese](https://salif.github.io/linkita/ja/),

@@ -5,7 +5,7 @@
 
 ## 0.23.6 (2026-09-12)
 
-- Update tera version to add implicit params
+- Update tera version to support component implicit params
 
 ## 0.23.5 (2026-09-11)
 
