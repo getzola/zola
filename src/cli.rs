@@ -154,6 +154,32 @@ pub enum Command {
         #[clap(subcommand)]
         command: GraphCommand,
     },
+
+    /// Submit page/section URLs to IndexNow so engines re-crawl changed
+    /// content (Curriculo fork). Changed-content mode by default; the site is
+    /// loaded read-only and nothing is written to the output directory.
+    /// Network lives only here.
+    Indexnow {
+        /// Force the base URL to be that value (defaults to the one in the config file)
+        #[clap(short = 'u', long)]
+        base_url: Option<String>,
+
+        /// Git ref to diff content/ against (default HEAD~1; in CI e.g. origin/master)
+        #[clap(long)]
+        diff_base: Option<String>,
+
+        /// Submit every loaded page/section permalink instead of only changed ones
+        #[clap(long)]
+        full: bool,
+
+        /// Read URLs from a file (one per line, `#` comments) instead of the git diff
+        #[clap(long)]
+        urls_file: Option<PathBuf>,
+
+        /// Print what would be submitted without sending anything (no key needed)
+        #[clap(long)]
+        dry_run: bool,
+    },
 }
 
 /// Subcommands of `zola graph`.

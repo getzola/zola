@@ -224,5 +224,21 @@ fn main() {
                 std::process::exit(1);
             }
         }
+        Command::Indexnow { base_url, diff_base, full, urls_file, dry_run } => {
+            log::info!("IndexNow...");
+            let (root_dir, config_file) = get_config_file_path(&cli_dir, cli.config.as_deref());
+            if let Err(e) = cmd::indexnow(
+                &root_dir,
+                &config_file,
+                base_url.as_deref(),
+                diff_base.as_deref(),
+                full,
+                urls_file.as_deref(),
+                dry_run,
+            ) {
+                messages::unravel_errors("Failed to submit URLs to IndexNow", &e);
+                std::process::exit(1);
+            }
+        }
     }
 }

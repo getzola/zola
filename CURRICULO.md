@@ -1,7 +1,7 @@
 # Curriculo Zola fork
 
 This is Curriculo’s fork of [getzola/zola](https://github.com/getzola/zola). Upstream
-behavior is unchanged; we add two subcommands used by `curriculo-tech/landing-website`
+behavior is unchanged; we add three subcommands used by `curriculo-tech/landing-website`
 (ADR-008 files-as-truth: content lives as committed markdown under the site root).
 
 | Release pin | What it ships |
@@ -10,6 +10,7 @@ behavior is unchanged; we add two subcommands used by `curriculo-tech/landing-we
 | `v0.23.2-curriculo.2` | `zola graph migrate` / `graph refresh` |
 | `v0.23.2-curriculo.3` | Clean migrate extraction (metadata description, boilerplate strip, asset URL skip) |
 | `v0.23.2-curriculo.11` | `zola serve --graph-refresh` — KG refresh after every content rebuild |
+| `v0.23.2-curriculo.12` | `zola indexnow` — IndexNow ping for changed content |
 
 Landing CI pins the binary via `ZOLA_VERSION` / `ZOLA_BIN_URL` (never `latest`).
 
@@ -45,6 +46,22 @@ zola --root <site> serve --graph-refresh
 `serve --graph-refresh` reuses `refresh` (local markdown + OpenRouter for
 stale pages); it never crawls, and `zola build` stays offline.
 
+### `zola indexnow`
+
+Submit page/section URLs to [IndexNow](https://www.indexnow.org/) so
+participating engines re-crawl changed content. Defaults to diffing `content/`
+against `HEAD~1` (`--diff-base` to override, e.g. `origin/master` in CI); a
+changed page submits its permalinks in every language. The site is loaded
+read-only (like `zola check`) — nothing is written to the output directory.
+Needs `INDEXNOW_KEY` (`INDEXNOW_URL` overrides the endpoint).
+
+```bash
+zola --root <site> indexnow [--diff-base <ref> | --full | --urls-file <file>] [--dry-run]
+```
+
+Network lives only here — `zola build` stays offline. Google does not
+participate in IndexNow (Bing, Yandex, Seznam and Naver do).
+
 ## Operator loop
 
 Identity (org, pillars, forbidden related-pairs) lives in the site's
@@ -64,6 +81,7 @@ zola build --base-url https://example.com/
 |--------|---------|
 | `OPENROUTER_API_KEY` | `translate`, `graph migrate`, `graph refresh` |
 | `FIRECRAWL_API_KEY` | `graph migrate` only |
+| `INDEXNOW_KEY` | `zola indexnow` only |
 
 ## Related
 

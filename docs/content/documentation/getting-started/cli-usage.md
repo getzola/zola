@@ -158,6 +158,36 @@ Requires `OPENROUTER_API_KEY`. `migrate` also requires `FIRECRAWL_API_KEY`.
 after every content rebuild while serving. It needs a prior `graph migrate`;
 refresh failures are logged and serving continues.
 
+## indexnow (Curriculo fork)
+
+Submit URLs to [IndexNow](https://www.indexnow.org/) so participating search
+engines re-crawl changed pages. The site is loaded **read-only** (like `zola
+check`): nothing is built and nothing is written to the output directory.
+Network lives only here — `zola build` stays offline.
+
+```bash
+$ zola indexnow                           # changed content since HEAD~1
+$ zola indexnow --diff-base origin/master # CI: diff against a branch
+$ zola indexnow --full                    # every loaded page/section permalink
+$ zola indexnow --urls-file urls.txt      # explicit list, one URL per line
+$ zola indexnow --base-url https://example.com # override the config base_url
+$ zola indexnow --dry-run                 # print what would be sent (no key)
+```
+
+Requires `INDEXNOW_KEY`; the key file must be reachable at
+`<base_url>/<key>.txt` (commit it as `static/<key>.txt`). `INDEXNOW_URL`
+overrides the endpoint (default `https://api.indexnow.org/indexnow`).
+
+By default the command diffs `content/` against the diff base and submits the
+permalinks of changed pages/sections — the default-language permalink **and**
+every translation of the same page. URLs whose host differs from the effective
+base URL (`--base-url`, else `base_url`) are skipped with a warning.
+
+Ceiling (deliberate): **taxonomy and pagination URLs are never submitted** —
+they are not part of the page/section library; pass them via `--urls-file`.
+Deleted-content URLs cannot be resolved from the loaded site either (the
+command warns and suggests `--urls-file` or `--full`).
+
 ## Colored output
 
 Colored output is used if your terminal supports it.
