@@ -200,6 +200,8 @@ pub fn load_tera(path: &Path, config: &Config) -> Result<Tera> {
 #[cfg(test)]
 mod glob_base_tests {
     use super::strip_unc_prefix;
+    use std::fs;
+    use std::path::Path;
 
     #[test]
     fn unc_prefix_is_converted_to_server_share() {
@@ -222,5 +224,48 @@ mod glob_base_tests {
             strip_unc_prefix(r"\\server\share".to_string()),
             r"\\server\share"
         );
+    }
+
+    /// The original bug (#3229): a site whose base path is in verbatim UNC form
+    /// (`\\?\UNC\server\share\site`) leaves a glob pattern that never matches,
+    /// so every template under `templates/` is reported missing.
+    /// `load_tera` must find site templates regardless of the base path's form.
+    /// This exercises the real `load_tera` code path (not just `strip_unc_prefix`).
+    #[test]
+    fn load_tera_finds_site_templates_via_verbatim_unc_base() {
+        if !cfg!(windows) {
+            // UNC/verbatim forms only exist on Windows; the base-path join is
+            // platform-shaped everywhere else, so there is nothing to reproduce.
+            return;
+        }
+
+        let tmp = std::env::temp_dir().join("zola-load-tera-unc-test");
+        fs::create_dir_all(tmp.join("templates")).unwrap();
+        fs::write(tmp.join("templates").join("page.html"), "hello").unwrap();
+
+        // Reach the same directory through its verbatim UNC form (localhost
+        // administrative share). If the environment has no shares, skip quietly.
+        let canonical = fs::canonicalize(&tmp).unwrap();
+        let plain = canonical.display().to_string();
+        let Some((drive, rest)) = plain.split_once(':') else {
+            return;
+        };
+        let unc_base = format!(r"\\?\UNC\localhost\{}$\{}", drive.to_lowercase(), rest.trim_start_matches('\\'));
+        if !Path::new(&unc_base).exists() {
+            eprintln!("skipping: no localhost administrative share available");
+            return;
+        }
+
+        let base = Path::new(&unc_base);
+        // The bug signature on the old code: glob_base() leaves the verbatim UNC
+        // prefix in place, the hand-joined glob never matches, load_tera returns
+        // an empty Tera. With the fix the pattern resolves and the template loads.
+        let tera = super::load_tera(base, &Default::default()).unwrap();
+        assert!(
+            tera.contains_template("page.html"),
+            "load_tera should find templates through a verbatim UNC base path"
+        );
+
+        fs::remove_dir_all(&tmp).ok();
     }
 }
