@@ -322,7 +322,7 @@ An example is:
 {%- endraw %}
 ```
 
-In the case of a non-internal link, you can also add a cachebust of the format `?h=<sha256>` at the end of a URL
+You can also add a cachebust of the format `?h=<sha256>` at the end of a URL
 by passing `cachebust=true` to the `get_url` function. In this case, the path will need to resolve to an actual file. 
 See [File Searching Logic](@/documentation/templates/overview.md#file-searching-logic) for details.
 

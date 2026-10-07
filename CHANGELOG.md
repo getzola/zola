@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.23.7 (unreleased)
+## 0.24.x (unreleased)
+
+### Breaking
+
+### Other
+
+- Make `cachebust` arg of `get_url` work with colocated asset `@/` path
 
 
 ## 0.23.6 (2026-09-12)

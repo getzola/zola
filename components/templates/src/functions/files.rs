@@ -1,12 +1,12 @@
-use ahash::AHashMap;
-use fs_err as fs;
 use std::collections::HashMap;
 use std::fmt::Write as _;
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use ahash::AHashMap;
 use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
+use fs_err as fs;
 use sha2::{Sha256, Sha384, Sha512, digest};
 
 use config::Config;
@@ -62,6 +62,24 @@ impl GetUrl {
             result_cache: Arc::new(Mutex::new(HashMap::new())),
         }
     }
+
+    fn cachebust_hash(&self, file_path: &Path, cache_key: &str) -> Option<String> {
+        let mut cache = self.result_cache.lock().expect("result cache lock");
+        if let Some(hash) = cache.get(cache_key) {
+            return Some(hash.clone());
+        }
+        let mut f = fs::File::open(file_path).ok()?;
+        let mut contents = Vec::new();
+        f.read_to_end(&mut contents).ok()?;
+        let hash = compute_hash::<Sha256>(&contents, false);
+        cache.insert(cache_key.to_string(), hash.clone());
+        Some(hash)
+    }
+}
+
+fn add_cachebust(permalink: &mut String, hash: &str) {
+    // 2^-80 chance of false positive
+    write!(permalink, "?h={}", &hash[..20]).unwrap();
 }
 
 fn make_path_with_lang(path: String, lang: &str, config: &Config) -> TeraResult<String> {
@@ -99,23 +117,40 @@ impl Function<TeraResult<String>> for GetUrl {
             if let Some((owner_md, rel)) = self.colocated_assets.get(stripped) {
                 let owner_with_lang =
                     make_path_with_lang(format!("@/{}", owner_md), &lang, &self.config)?;
-                return match resolve_internal_link(&owner_with_lang, &self.permalinks) {
-                    Ok(resolved) => Ok(format!("{}{}", resolved.permalink, rel)),
-                    Err(_) => Err(Error::message(format!(
-                        "`get_url`: could not resolve URL for asset `{}` not found.",
-                        path
-                    ))),
-                };
+                let resolved =
+                    resolve_internal_link(&owner_with_lang, &self.permalinks).map_err(|_| {
+                        Error::message(format!(
+                            "`get_url`: could not resolve URL for asset `{path}` not found."
+                        ))
+                    })?;
+                let mut permalink = format!("{}{rel}", resolved.permalink);
+                if cachebust {
+                    let file_path = self.base_path.join("content").join(stripped);
+                    match self.cachebust_hash(&file_path, &path) {
+                        Some(hash) => add_cachebust(&mut permalink, &hash),
+                        None => {
+                            return Err(Error::message(format!(
+                                "`get_url`: Could not find or open file {path} for cachebusting"
+                            )));
+                        }
+                    }
+                }
+                return Ok(permalink);
+            }
+
+            if cachebust {
+                return Err(Error::message(
+                    "`get_url`: `cachebust` can only be used with files, not with content",
+                ));
             }
 
             let path_with_lang = make_path_with_lang(path, &lang, &self.config)?;
 
             match resolve_internal_link(&path_with_lang, &self.permalinks) {
                 Ok(resolved) => Ok(resolved.permalink),
-                Err(_) => Err(Error::message(format!(
-                    "`get_url`: could not resolve URL for link `{}` not found.",
-                    path_with_lang
-                ))),
+                Err(_) => Err(Error::message(
+                    "`get_url`: could not resolve URL for link `{path_with_lang}` not found.",
+                )),
             }
         } else {
             // anything else
@@ -150,23 +185,11 @@ impl Function<TeraResult<String>> for GetUrl {
                     &self.config.theme,
                     &self.output_path,
                 )
-                .map_err(|e| Error::message(format!("`get_url`: {}", e)))?
+                .map_err(|e| Error::message(format!("`get_url`: {e}")))?
                 .and_then(|(file_path, unified_path)| {
-                    let mut cache = self.result_cache.lock().expect("result cache lock");
-                    if let Some(hash) = cache.get(&unified_path) {
-                        return Some(hash.clone());
-                    }
-                    let mut f = fs::File::open(file_path).ok()?;
-                    let mut contents = Vec::new();
-                    f.read_to_end(&mut contents).ok()?;
-                    let hash = compute_hash::<Sha256>(&contents, false);
-                    cache.insert(unified_path, hash.clone());
-                    Some(hash)
+                    self.cachebust_hash(&file_path, &unified_path)
                 }) {
-                    Some(hash) => {
-                        let short_hash = &hash[..20]; // 2^-80 chance of false positive
-                        permalink = format!("{permalink}?h={short_hash}");
-                    }
+                    Some(hash) => add_cachebust(&mut permalink, &hash),
                     None => {
                         return Err(Error::message(format!(
                             "`get_url`: Could not find or open file {}",
@@ -305,13 +328,23 @@ title = "A title"
 
     #[test]
     fn can_add_cachebust_to_url() {
+        let mut permalinks = HashMap::new();
+        permalinks.insert(
+            "a_section/an_article/index.md".to_string(),
+            "http://a-website.com/an_article/".to_string(),
+        );
+        let mut colocated_assets = AHashMap::new();
+        colocated_assets.insert(
+            "a_section/an_article/gutenberg.jpg".to_string(),
+            ("a_section/an_article/index.md".to_string(), "gutenberg.jpg".to_string()),
+        );
         let dir = create_temp_dir();
         let get_url = GetUrl::new(
             dir.path().to_path_buf(),
             Config::default(),
-            HashMap::new(),
+            permalinks,
             PathBuf::new(),
-            AHashMap::new(),
+            colocated_assets,
         );
 
         let kwargs = Kwargs::from([
@@ -335,6 +368,28 @@ title = "A title"
             get_url.call(kwargs, &State::new(&ctx)).unwrap(),
             "http://a-website.com/gutenberg.jpg?h=93fff9d0ecde9b119c0c"
         );
+
+        // also works with colocated assets
+        fs::create_dir_all(dir.path().join("content/a_section/an_article")).unwrap();
+        fs::copy("gutenberg.jpg", dir.path().join("content/a_section/an_article/gutenberg.jpg"))
+            .unwrap();
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("@/a_section/an_article/gutenberg.jpg")),
+            ("cachebust", tera::Value::from(true)),
+        ]);
+        let ctx = Context::new();
+        assert_eq!(
+            get_url.call(kwargs, &State::new(&ctx)).unwrap(),
+            "http://a-website.com/an_article/gutenberg.jpg?h=93fff9d0ecde9b119c0c"
+        );
+
+        // cachebust on a page errors
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("@/a_section/an_article/index.md")),
+            ("cachebust", tera::Value::from(true)),
+        ]);
+        let ctx = Context::new();
+        assert!(get_url.call(kwargs, &State::new(&ctx)).is_err());
     }
 
     #[test]
