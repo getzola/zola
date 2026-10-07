@@ -25,6 +25,15 @@ theme = "catppuccin-mocha"
 # Put all your custom variables here
 "#;
 
+const GITIGNORE: &str = include_str!("default_theme/.gitignore");
+const README: &str = include_str!("default_theme/README.md");
+const INDEX_CONTENT: &str = include_str!("default_theme/content/_index.md");
+const BASE_TEMPLATE: &str = include_str!("default_theme/templates/base.html");
+const INDEX_TEMPLATE: &str = include_str!("default_theme/templates/index.html");
+const PAGE_TEMPLATE: &str = include_str!("default_theme/templates/page.html");
+const SECTION_TEMPLATE: &str = include_str!("default_theme/templates/section.html");
+const STYLE_CSS: &str = include_str!("default_theme/static/style.css");
+
 // canonicalize(path) function on windows system returns a path with UNC.
 // Example: \\?\C:\Users\VssAdministrator\AppData\Local\Temp\new_project
 // More details on Universal Naming Convention (UNC):
@@ -112,11 +121,25 @@ fn populate(path: &Path, compile_sass: bool, config: &str) -> Result<()> {
     if !path.exists() {
         fs::create_dir(path)?;
     }
+
     create_file(&path.join("zola.toml"), config)?;
+    create_file(&path.join(".gitignore"), GITIGNORE)?;
+    create_file(&path.join("README.md"), README)?;
+
     fs::create_dir(path.join("content"))?;
+    create_file(&path.join("content/_index.md"), INDEX_CONTENT)?;
+
     fs::create_dir(path.join("templates"))?;
+    create_file(&path.join("templates/base.html"), BASE_TEMPLATE)?;
+    create_file(&path.join("templates/index.html"), INDEX_TEMPLATE)?;
+    create_file(&path.join("templates/page.html"), PAGE_TEMPLATE)?;
+    create_file(&path.join("templates/section.html"), SECTION_TEMPLATE)?;
+
     fs::create_dir(path.join("static"))?;
+    create_file(&path.join("static/style.css"), STYLE_CSS)?;
+
     fs::create_dir(path.join("themes"))?;
+
     if compile_sass {
         fs::create_dir(path.join("sass"))?;
     }
@@ -192,9 +215,17 @@ mod tests {
         populate(&dir, true, "").expect("Could not populate zola directories");
 
         assert!(dir.join("zola.toml").exists());
+        assert!(dir.join(".gitignore").exists());
+        assert!(dir.join("README.md").exists());
         assert!(dir.join("content").exists());
+        assert!(dir.join("content/_index.md").exists());
         assert!(dir.join("templates").exists());
+        assert!(dir.join("templates/base.html").exists());
+        assert!(dir.join("templates/index.html").exists());
+        assert!(dir.join("templates/page.html").exists());
+        assert!(dir.join("templates/section.html").exists());
         assert!(dir.join("static").exists());
+        assert!(dir.join("static/style.css").exists());
         assert!(dir.join("themes").exists());
         assert!(dir.join("sass").exists());
 
@@ -212,9 +243,17 @@ mod tests {
 
         assert!(dir.exists());
         assert!(dir.join("zola.toml").exists());
+        assert!(dir.join(".gitignore").exists());
+        assert!(dir.join("README.md").exists());
         assert!(dir.join("content").exists());
+        assert!(dir.join("content/_index.md").exists());
         assert!(dir.join("templates").exists());
+        assert!(dir.join("templates/base.html").exists());
+        assert!(dir.join("templates/index.html").exists());
+        assert!(dir.join("templates/page.html").exists());
+        assert!(dir.join("templates/section.html").exists());
         assert!(dir.join("static").exists());
+        assert!(dir.join("static/style.css").exists());
         assert!(dir.join("themes").exists());
         assert!(dir.join("sass").exists());
 
