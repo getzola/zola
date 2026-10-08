@@ -3,14 +3,14 @@
 title = "Linkita"
 description = "A clean and elegant blog theme for Zola. Linkita is based on Kita and Hugo-Paper and is multilingual and SEO friendly."
 template = "theme.html"
-date = 2026-09-21T13:58:35+03:00
+date = 2026-09-28T14:09:40+03:00
 
 [taxonomies]
 theme-tags = ['Blog', 'Multilingual', 'Responsive', 'SEO', 'Search']
 
 [extra]
-created = 2026-09-21T13:58:35+03:00
-updated = 2026-09-21T13:58:35+03:00
+created = 2026-09-28T14:09:40+03:00
+updated = 2026-09-28T14:09:40+03:00
 repository = "https://github.com/salif/linkita.git"
 homepage = "https://github.com/salif/linkita"
 minimum_version = "0.23.6"
@@ -24,9 +24,8 @@ homepage = "https://salif.eu"
 
 # Linkita
 
-A clean and elegant blog theme for [Zola](https://www.getzola.org/).  
-Linkita is based on [Kita](https://github.com/st1020/kita)
-and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual and SEO friendly.
+A clean and elegant blog theme for [Zola](https://www.getzola.org/).
+Based on [Kita](https://github.com/st1020/kita) and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper).
 
 - Get started using the [quickstart repository](https://github.com/salif/linkita-start).
 - Check out the [live preview](https://salif.github.io/linkita/) and [its source code](https://github.com/salif/linkita/tree/demo).
@@ -34,8 +33,8 @@ and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual a
 
 ## Features
 
+- Multilingual
 - Responsive design
-- SEO friendly
 - Social icons
 - Dark mode
 - Table of Contents
@@ -48,8 +47,7 @@ and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual a
 - Mathematical notations using [KaTeX](https://katex.org/)
 - Diagrams and charts using [Mermaid](https://mermaid.js.org/)
 - Search support (elasticlunr_javascript)
-- Relative URLs support
-- Multilingual support
+- Relative URL support
 - Author profiles
 - Keyboard shortcuts
 
@@ -57,7 +55,7 @@ and [Hugo-Paper](https://github.com/nanxiaobei/hugo-paper) and is multilingual a
 
 The fastest way to create a new site is to use the
 [linkita-start template](https://github.com/salif/linkita-start).
-This gives you a complete blog setup with all the essential configuration ready to go.
+This gives you a complete blog setup with all essential configuration ready to go.
 
 ### Manual installation
 
@@ -89,17 +87,17 @@ theme = "linkita"
 
 Place it near the `base_url` variable, not under `[extra]`.
 
-3. Read the instructions to add configuration on your site.
+3. Follow the instructions to [create content](https://salif.github.io/linkita/manual) on your site.
 
 ## Managing versions
 
-If you installed it as a submodule, you can update by running this command:
+If you installed the theme as a submodule, you can update it by running this command:
 
 ```sh
 git submodule update --remote themes/linkita
 ```
 
-There may be breaking changes that require manual involvement.  
+There may be breaking changes that require manual intervention.  
 If you use the `main` repo branch, check the
 [CHANGELOG.md](https://github.com/salif/linkita/blob/main/CHANGELOG.md) file.
 
@@ -113,7 +111,7 @@ git submodule update --remote themes/linkita
 
 > [!NOTE]
 > Linkita was previously hosted on Codeberg. If you are using the
-> Codeberg repository, you need to switch to the new repository.
+> Codeberg repository, you need to switch to the GitHub repository.
 > Additionally, the theme has been ported to a newer Zola version,
 > which introduces breaking changes in the template engine.
 > If you are using Zola v0.22.1 or older, read the instructions to
@@ -121,11 +119,10 @@ git submodule update --remote themes/linkita
 
 ## Usage
 
-Linkita uses the following front matter variables.
-All variables are optional.
-Set the ones you need.
+Linkita supports the following front matter variables.
+All of them are optional. Set only the ones you need.
 
-### YAML frontmatter
+### YAML front matter
 
 ```yaml ,name=frontmatter
 ---
@@ -146,7 +143,7 @@ extra:
 ---
 ```
 
-### TOML frontmatter
+### TOML front matter
 
 ```toml ,name=frontmatter
 +++
@@ -181,18 +178,18 @@ alt = ""
 
 ### Other extra front matter variables
 
-Linkita supports [more extra variables, listed here](https://salif.github.io/linkita/extra-frontmatter/).
+Linkita supports [additional `extra` variables, listed here](https://salif.github.io/linkita/extra-frontmatter/).
 
 ### Inject support
 
-You can easily use inject to add new features to your site without modifying the theme itself.
+You can easily use template injection to add new features to your site without modifying the theme itself.
 
-To use inject, you need to add some HTML files to the `templates/injects` directory.
+To use injects, add HTML files to the `templates/injects` directory.
 
 The available inject points are: `head.html`, `head_end.html`, `header_nav.html`,
 `body_start.html`, `body_end.html`, `page_start.html`, `page_end.html`, `footer.html`.
 
-For example, you can add JavaScript files and CSS stylesheets in the `templates/injects/head_end.html` file.
+For example, you can add JavaScript files and CSS stylesheets to `templates/injects/head_end.html`.
 
 ### Keyboard shortcuts
 
@@ -269,7 +266,7 @@ feed = true
 paginate_by = 4
 ```
 
-You can add more languages by replacing `fr` from the following example with the language code:
+You can add more languages by replacing `fr` in the following example with the language code:
 
 ```toml ,name=zola.toml
 [languages.fr]
@@ -331,11 +328,11 @@ disable_default_favicon = false
 use_cdn = false
 
 # Use relative URLs.
-# It doesn't apply to content yet.
+# This does not apply to content yet.
 # Default value: false
 relative_urls = false
 
-# If you want to view the site without a webserver
+# If you want to view the site without a web server
 # set this and "relative_urls" to true.
 # Default value: false
 ugly_urls = false
@@ -364,7 +361,7 @@ toc = true
 # Information shown on post pages.
 # Valid "when" values:
 #  "date", "date_updated", "reading_time", "word_count", "authors", "tags", "".
-# The "prepend" and "append" are used when the value of "when" is defined for the page.
+# "prepend" and "append" are used when the value of "when" is defined for the page.
 # e.g. [{when="", prepend="Page Info: "},{when="date",prepend="Published on "},{when="authors",prepend="By "}]
 # page_info = [{ when="date" }, { when="date_updated", prepend="(", append=")" }, { when="reading_time" }]
 
@@ -384,10 +381,10 @@ bg_dark_color = "#18181b"
 # Enable header blur.
 header_blur = false
 
-# The custom header color, only available
+# The custom header color, applied only
 # when "header_blur" is false.
 header_color = "#e4e4e7"
-# The custom header color in dark mode, only available
+# The custom header color in dark mode, applied only
 # when "header_blur" is false.
 header_dark_color = "#27272a"
 ```
@@ -416,7 +413,7 @@ multilingual_menu_name = [
 
 To use a menu defined here, set `extra.header_menu_name`.
 
-`@base` in `url` will be automatically replaced with the language specific base URL.
+`@base` in `url` will be automatically replaced with the language-specific base URL.
 You can use [Internal links](https://www.getzola.org/documentation/content/linking/#internal-links)
 instead of `@base`.
 
@@ -451,8 +448,8 @@ name = ""
 bio = ""
 
 # Social icons.
-# "name" should be the file name of "static/icons/*.svg" or
-# the icon name of https://simpleicons.org/
+# "name" should be the filename in "static/icons/*.svg" or
+# an icon name from https://simpleicons.org/
 # "url" supports "@base".
 # Other variables: "urls", "title", "titles".
 social = [
@@ -470,7 +467,7 @@ social = [
 # { handle = "me", domain = "mastodon.social" }
 fediverse_creator = { handle = "", domain = "" }
 
-# The URL for Open Graph image.
+# The URL for the Open Graph image.
 # Uses the get_url function, does not support @base.
 og_image = ""
 
@@ -533,9 +530,9 @@ copyright = "&copy;&nbsp;$YEAR Your Name &vert; [CC BY-SA 4.0]($LICENSE_URL)"
 The `copyright` variable supports Markdown and these variables:
 `$BASE_URL`, `$YEAR` (uses `since`), and `$LICENSE_URL` (uses `license_url`).
 
-### Language specific options
+### Language-specific options
 
-Date format uses different formats depending on whether `locale` is set or not.
+The date format differs depending on whether `locale` is set.
 If `locale` is not set, see [strftime specifiers](https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html#conversion-specifications).
 If `locale` is set, see [UTS-35 datetime patterns](https://unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table).
 
@@ -556,7 +553,7 @@ date_format = "y MMM d"
 # Useful if lang is not a valid locale.
 # num_format = ""
 
-# To set a different lang attribute of the document.
+# To set a different lang attribute for the document.
 # Also changes the interface language. e.g. "en-GB".
 # hreflang = ""
 
@@ -620,7 +617,7 @@ Set only if you use [Vercel Web Analytics](https://vercel.com/docs/analytics).
 src = "/_vercel/insights/script.js"
 ```
 
-#### Prevent tracking own pageviews
+#### Prevent tracking your own pageviews
 
 Open a page of your site, adding `#disable-analytics` to the page address.
 Do this once for each browser and device.
@@ -672,7 +669,7 @@ echo '{}' > static/i18n/LANG_CODE.json
 node ./static/i18n/sync.js
 ```
 
-Live preview is available in the following languages:
+A live preview is available in the following languages:
 
 [Arabic](https://salif.github.io/linkita/ar/),
 [Bulgarian](https://salif.github.io/linkita/bg/),

@@ -3,14 +3,14 @@
 title = "Bear"
 description = "Bear blog theme"
 template = "theme.html"
-date = 2026-09-09T14:02:28+02:00
+date = 2026-10-03T11:35:53+02:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-09-09T14:02:28+02:00
-updated = 2026-09-09T14:02:28+02:00
+created = 2026-10-03T11:35:53+02:00
+updated = 2026-10-03T11:35:53+02:00
 repository = "https://codeberg.org/alanpearce/zola-bearblog.git"
 homepage = "https://codeberg.org/alinnow/zola-bearblog"
 minimum_version = "0.23.0"
