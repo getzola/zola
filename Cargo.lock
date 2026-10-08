@@ -6796,6 +6796,7 @@ dependencies = [
  "site",
  "tauri-winres",
  "templates",
+ "tera",
  "time",
  "tokio",
  "url",
