@@ -10,7 +10,7 @@ If you want a small feature added or modified, please open an issue to discuss i
 Requested features will not be all added: an ever-increasing features set makes for a hard to use and explain softwares.
 Having something simple and easy to use for 90% of the use cases is more interesting than covering 100% use cases after sacrificing simplicity.
 
-If the feature is large, please open a PR with a [RFC](./rfcs/template.md) on the `master` branch. If you're not
+If the feature is large, please open a PR with a [RFC](rfcs/000-template.md) on the `master` branch. If you're not
 sure what qualifies as large, start with an issue. 
 
 

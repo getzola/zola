@@ -1,6 +1,6 @@
 - Feature Name: (fill me in with a unique ident, `my_awesome_feature`)
 - Start Date: (fill me in with today's date, YYYY-MM-DD)
-- RFC PR: [zola/rfcs#0000](https://github.com/getzola/zola/pulls/0000)
+- RFC PR: [zola/rfcs#000](https://github.com/getzola/zola/pulls/0000)
 
 ## Summary
 [summary]: #summary
