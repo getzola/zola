@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Keep line breaks in image alt text as spaces instead of dropping them
+
 ## 0.23.6 (2026-09-12)
 
 - Update tera version to support component implicit params

@@ -31,3 +31,9 @@ fn can_add_lazy_loading_and_async_decoding() {
     let body = common::render_with_config(&cases.join("\n"), config).unwrap().body;
     insta::assert_snapshot!(body);
 }
+
+#[test]
+fn keeps_line_breaks_in_alt_text_as_spaces() {
+    let body = common::render("![foo\nbar](a.png)").unwrap().body;
+    assert!(body.contains("alt=\"foo bar\""), "unexpected body: {body}");
+}
