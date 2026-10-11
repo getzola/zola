@@ -1,11 +1,14 @@
 use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
+use std::error::Error as _;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, LazyLock, Mutex};
 
 use csv::Reader;
+use lazy_format::lazy_format;
+use option_either_or::OptionEitherOr as _;
 use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderName, HeaderValue};
 use reqwest::{blocking::Client, header};
 use tera::{Error, Function, Kwargs, Map, State, TeraResult, Value};
@@ -220,18 +223,17 @@ fn add_headers_from_args(header_args: Option<Vec<String>>) -> TeraResult<HeaderM
 pub struct LoadData {
     base_path: PathBuf,
     theme: Option<String>,
-    client: Arc<Mutex<Client>>,
+    client: LazyLock<reqwest::Result<Client>>,
     result_cache: Arc<Mutex<HashMap<u64, Value>>>,
     output_path: PathBuf,
 }
 impl LoadData {
     pub fn new(base_path: PathBuf, theme: Option<String>, output_path: PathBuf) -> Self {
-        let client = Arc::new(Mutex::new(
+        let client = LazyLock::<_, fn() -> _>::new(|| {
             Client::builder()
                 .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
                 .build()
-                .expect("reqwest client build"),
-        ));
+        });
         let result_cache = Arc::new(Mutex::new(HashMap::new()));
         Self { base_path, client, result_cache, theme, output_path }
     }
@@ -239,12 +241,11 @@ impl LoadData {
 
 impl Default for LoadData {
     fn default() -> Self {
-        let client = Arc::new(Mutex::new(
+        let client = LazyLock::<_, fn() -> _>::new(|| {
             Client::builder()
                 .user_agent(concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")))
                 .build()
-                .expect("reqwest client build"),
-        ));
+        });
         Self {
             base_path: PathBuf::new(),
             theme: None,
@@ -324,7 +325,17 @@ impl Function<TeraResult<Value>> for LoadData {
                 Error::message(format!("`load_data`: error reading file {:?}: {}", path, e))
             }),
             DataSource::Url(url) => {
-                let response_client = self.client.lock().expect("response client lock");
+                let maybe_client = self.client.as_ref().map_err(|e| {
+                    Error::message(format!(
+                        "`load_data`: Failed to initialize HTTP client: {}",
+                        e.source().map(|s| lazy_format!("{e}: {s}")).either_or(e)
+                    ))
+                });
+                let response_client = match maybe_client {
+                    Ok(client) => client,
+                    Err(e) if required => return Err(e),
+                    Err(_) => return Ok(Value::none()),
+                };
                 let req = match method {
                     Method::Get => response_client
                         .get(url.as_str())
