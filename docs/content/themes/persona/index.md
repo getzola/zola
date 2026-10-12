@@ -3,14 +3,14 @@
 title = "Persona"
 description = "A portfolio, a resume, a blog, and a Zola theme."
 template = "theme.html"
-date = 2026-09-28T13:15:24Z
+date = 2026-10-12T05:13:27Z
 
 [taxonomies]
 theme-tags = ['portfolio', 'resume', 'blog']
 
 [extra]
-created = 2026-09-28T13:15:24Z
-updated = 2026-09-28T13:15:24Z
+created = 2026-10-12T05:13:27Z
+updated = 2026-10-12T05:13:27Z
 repository = "https://github.com/hanson-hschang/Persona-Zola-Theme.git"
 homepage = "https://github.com/hanson-hschang/Persona-Zola-Theme"
 minimum_version = "0.23.0"
@@ -160,10 +160,10 @@ After completing the setup, build and serve your site with Zola:
 | [**Dynamic Badges**](https://shields.io/) | Customizable badges |
 | [**PageSpeed Insights**](https://github.com/lowlighter/metrics/tree/master/source/plugins/pagespeed) | Automated performance reporting |
 | [**GitHub**](https://github.com/features) | [Actions (CI/CD)](https://github.com/features/actions) • [Pages (Hosting Website)](https://docs.github.com/en/pages/getting-started-with-github-pages) • [Copilot (AI Agent)](https://docs.github.com/en/copilot/get-started/what-is-github-copilot) |
+| [**OpenAI**](https://openai.com/) | [ChatGPT](https://chat.openai.com/) • [Codex](https://openai.com/codex/) |
 | [**Anthropic**](https://www.anthropic.com/) | [Claude](https://claude.ai/) • [Claude Code](https://code.claude.com/docs/en/overview) |
 | [**Google**](https://cloud.google.com/ai/gemini) | [Gemini](https://gemini.google.com/) • [Gemini CLI](https://geminicli.com/) |
-| [**OpenAI**](https://openai.com/) | [ChatGPT](https://chat.openai.com/) • [Codex](https://openai.com/codex/) |
-| [**BootstrapMade Templates**](https://bootstrapmade.com/) | [Active](https://bootstrapmade.com/demo/Active) • [MyResume](https://bootstrapmade.com/demo/MyResume) • [UpConstruction](https://bootstrapmade.com/demo/UpConstruction) • [Style](https://bootstrapmade.com/demo/Style/) |
+| [**BootstrapMade Templates**](https://bootstrapmade.com/) | [Active](https://bootstrapmade.com/demo/Active) • [MyResume](https://bootstrapmade.com/demo/MyResume) • [UpConstruction](https://bootstrapmade.com/demo/UpConstruction) • [Style](https://bootstrapmade.com/demo/Style/) • [FolioOne](https://bootstrapmade.com/demo/FolioOne/) |
 | [**Zola Themes**](https://www.getzola.org/themes/) | [Mabuya](https://mabuya.vercel.app/) • [Vonge](https://pascal-berrang.de/vonge-zola-theme/) • [Zluinav](https://harrymkt.github.io/zluinav/) |
 | [**Academic Project Page Template**](https://github.com/eliahuhorwitz/Academic-project-page-template) | Post layout inspiration |
 
