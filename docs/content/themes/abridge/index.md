@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2026-09-20T17:46:04-07:00
+date = 2026-10-11T20:22:06-07:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-09-20T17:46:04-07:00
-updated = 2026-09-20T17:46:04-07:00
+created = 2026-10-11T20:22:06-07:00
+updated = 2026-10-11T20:22:06-07:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.23.6"
@@ -27,7 +27,7 @@ homepage = "https://github.com/jieiku/"
 
 # Abridge Zola Theme
 
-A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing class-light semantic HTML with modular CSS. Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.pages.dev) scores. Here is a [Zola Themes Benchmarks](https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md) Page.
+A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing class-light semantic HTML with modular CSS. Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.pages.dev) scores. See the Zola Themes Benchmarks [Zola Themes Benchmarks](https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md).
 
 ![Lighthouse Score](https://raw.githubusercontent.com/Jieiku/abridge/master/content/overview-abridge/lighthouse.png)
 
@@ -48,14 +48,14 @@ Maintenance of this project is made possible by all the <a href="https://github.
 - Dark, Light, Auto, and Switcher themes. (colors can be customized, css variables)
 - Code [syntax highlighting](https://abridge.pages.dev/overview-code-blocks/). (colors can be customized, css variables)
 - Numbered code blocks with [line highlighting](https://abridge.pages.dev/overview-code-blocks/#toml).
-- Entirely Offline Site by using the PWA **or** by setting `search_library = "offline"` in `zola.toml`.
+- Entirely Offline Site by using the PWA **or** by setting `search_library = "offline"` or `search_library = "offlineflexsearch"` in `zola.toml`.
 - Multi-language support.
 - Search support. ([elasticlunr](https://abridge.pages.dev/), [pagefind](https://abridge-pagefind.pages.dev/), [tinysearch](https://abridge-tinysearch.pages.dev/), [flexsearch](https://abridge-flexsearch.pages.dev/))
 - Search Suggestions navigation keys, `/` focus, `arrow` move, `enter` select, `escape` close.
-- Search Results Page, type search query then hit `Enter Key` or `click` the search button icon.
+- Search Results Page, type search query then hit `Enter key` or `click` the search button icon.
 - [SEO](https://abridge.pages.dev/overview-abridge/#seo-and-header-tags) support. (Search Engine Optimization)
 - [Pagination](https://abridge.pages.dev/overview-abridge/#pagination) with numbered paginator on index.
-- Title Based Previous and Next Article links at bottom of Article.
+- Title-based Previous and Next Article links at bottom of Article.
 - Table of Contents in page Index (Optional, clickable links)
 - Recent Posts Block. (Optional)
 - Back to Top button. (uses css only)
@@ -75,8 +75,8 @@ Maintenance of this project is made possible by all the <a href="https://github.
 
 ## Windows Users
 
-Below I use some linux commands during setup, to have a similar environment you can install [Msys2](https://www.msys2.org/).
-With msys2 use shift insert to paste into the terminal, I prefer the UCRT64 launcher.
+Some setup steps use Unix-style commands during setup, to have a similar environment you can install [Msys2](https://www.msys2.org/).
+With msys2 use Shift+Insert to paste into the terminal, I prefer the UCRT64 launcher.
 
 ```bash
 MSYS2
@@ -191,7 +191,7 @@ npm run abridge -- --mode offlineflexsearch --drafts
 
 Valid modes are `elasticlunr`, `pagefind`, `tinysearch`, `flexsearch`, `offline`, `offlineflexsearch`, and `elasticlunrjava`.
 
-There is a `build-zola.sh` that helps with deployment at cloudflare, netlify, etc. The helper works both from the Abridge repository itself and when called from a site as `./themes/abridge/build-zola.sh`; The script checks `theme.toml` for the proper version of Zola to use, this avoids having to set or update Zola Version variables.
+There is a `build-zola.sh` that helps with deployment at cloudflare, netlify, etc. The helper works both from the Abridge repository itself and when called from a site as `./themes/abridge/build-zola.sh`. The script checks `theme.toml` for the proper version of Zola to use, this avoids having to set or update Zola Version variables.
 
 ## Customization
 
@@ -199,7 +199,7 @@ For further customization be sure to [check the docs](https://abridge.pages.dev/
 
 ## Sponsor
 
-Do you love this theme? Was it useful to you? Please leave a github star, and if you feel inclined to donate you can make a donation to me through [github sponsors](https://github.com/sponsors/Jieiku/).
+Do you love this theme? Was it useful to you? Please leave a GitHub star, and if you feel inclined to donate you can make a donation to me through [github sponsors](https://github.com/sponsors/Jieiku/).
 
 ## Contributing and Philosophy
 
