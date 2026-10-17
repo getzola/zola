@@ -81,7 +81,7 @@ fn collect_index_items<'a>(lang: &str, library: &'a Library) -> Vec<IndexItem<'a
 
         for page in &section.pages {
             let page = &library.pages[page];
-            if page.meta.in_search_index {
+            if page.meta.in_search_index() {
                 items.insert(
                     &page.permalink,
                     IndexItem {

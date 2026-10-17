@@ -89,13 +89,13 @@ impl<'a> Queue<'a> {
         // https://github.com/getzola/zola/issues/1599
         if render_pages {
             for page in &pages {
-                if page.meta.render && seen_pages.insert(&page.file.path) {
+                if page.meta.render() && seen_pages.insert(&page.file.path) {
                     self.jobs.push(Job::Page(page));
                 }
             }
             for key in &section.hidden_pages {
                 let page = self.site.library.pages.get(key).unwrap();
-                if page.meta.render && seen_pages.insert(&page.file.path) {
+                if page.meta.render() && seen_pages.insert(&page.file.path) {
                     self.jobs.push(Job::Page(page));
                 }
             }
@@ -179,7 +179,7 @@ impl<'a> Queue<'a> {
 
         // Orphan pages
         for page in site.library.get_all_orphan_pages() {
-            if page.meta.render {
+            if page.meta.render() {
                 queue.jobs.push(Job::Page(page));
             }
         }
