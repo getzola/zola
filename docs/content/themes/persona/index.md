@@ -3,14 +3,14 @@
 title = "Persona"
 description = "A portfolio, a resume, a blog, and a Zola theme."
 template = "theme.html"
-date = 2026-10-12T05:13:27Z
+date = 2026-10-13T02:13:00Z
 
 [taxonomies]
 theme-tags = ['portfolio', 'resume', 'blog']
 
 [extra]
-created = 2026-10-12T05:13:27Z
-updated = 2026-10-12T05:13:27Z
+created = 2026-10-13T02:13:00Z
+updated = 2026-10-13T02:13:00Z
 repository = "https://github.com/hanson-hschang/Persona-Zola-Theme.git"
 homepage = "https://github.com/hanson-hschang/Persona-Zola-Theme"
 minimum_version = "0.23.0"
