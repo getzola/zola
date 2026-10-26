@@ -60,14 +60,7 @@ fn resolve_colocated_asset(link: &str, ctx: &MarkdownContext) -> Option<String> 
     // `#` in an asset path is probably a mistake, ignore it
     let path = path.split('#').next().unwrap();
     let (owner_md, rel) = ctx.colocated_assets.get(path)?;
-    let owner = if ctx.lang != ctx.config.default_language
-        && let Some(stem) = owner_md.strip_suffix(".md")
-        && let Ok(owner) = resolve_internal_link(&format!("{stem}.{}.md", ctx.lang), ctx.permalinks)
-    {
-        owner
-    } else {
-        resolve_internal_link(owner_md.as_str(), ctx.permalinks).ok()?
-    };
+    let owner = resolve_internal_link(owner_md.as_str(), ctx.permalinks).ok()?;
     Some(format!("{}{rel}", owner.permalink))
 }
 
@@ -439,7 +432,16 @@ impl<'a> State<'a> {
                 }
             }
         } else if is_colocated_asset_link(link) {
-            format!("{}{}", ctx.current_permalink, link)
+            let base_permalink = if ctx.lang != ctx.config.default_language
+                && let Some(stem) = ctx.current_path.strip_suffix(&format!(".{}.md", ctx.lang))
+                && let Some(canonical) = ctx.permalinks.get(&format!("{stem}.md"))
+            {
+                canonical.as_str()
+            } else {
+                ctx.current_permalink
+            };
+            let clean_link = link.strip_prefix("./").unwrap_or(link);
+            format!("{base_permalink}{clean_link}")
         } else if is_external_link(link) {
             self.external_links.push(link.to_owned());
             link.to_owned()

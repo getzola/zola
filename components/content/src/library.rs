@@ -476,6 +476,101 @@ impl Library {
         // And once we have all the pages assigned to their section, we sort them
         self.sort_section_pages();
         self.sort_section_subsections();
+        self.populate_colocated_assets(&config.default_language);
+    }
+
+    pub fn has_rendered_default_page(&self, dir: &Path, default_lang: &str) -> bool {
+        let default_page_path = dir.join("index.md");
+        if let Some(p) = self.pages.get(&default_page_path) {
+            return p.meta.render && p.lang == default_lang;
+        }
+        let default_lang_path = dir.join(format!("index.{default_lang}.md"));
+        if let Some(p) = self.pages.get(&default_lang_path) {
+            return p.meta.render && p.lang == default_lang;
+        }
+        false
+    }
+
+    pub fn has_rendered_default_section(&self, dir: &Path, default_lang: &str) -> bool {
+        let default_section_path = dir.join("_index.md");
+        if let Some(s) = self.sections.get(&default_section_path) {
+            return s.meta.render && s.lang == default_lang;
+        }
+        let default_lang_path = dir.join(format!("_index.{default_lang}.md"));
+        if let Some(s) = self.sections.get(&default_lang_path) {
+            return s.meta.render && s.lang == default_lang;
+        }
+        false
+    }
+
+    pub fn populate_colocated_assets(&mut self, default_language: &str) {
+        self.colocated_assets.clear();
+
+        // 1. Pages: collect only rendered pages with assets in bundles
+        let mut rendered_pages: Vec<&Page> = self
+            .pages
+            .values()
+            .filter(|p| p.meta.render && !p.assets.is_empty() && p.file.colocated_path.is_some())
+            .collect();
+
+        // Sort deterministically: default_language first, then lexicographically by (lang, file.relative)
+        rendered_pages.sort_by(|a, b| {
+            let a_is_default = a.lang == default_language;
+            let b_is_default = b.lang == default_language;
+            b_is_default
+                .cmp(&a_is_default)
+                .then_with(|| a.lang.cmp(&b.lang))
+                .then_with(|| a.file.relative.cmp(&b.file.relative))
+        });
+
+        for page in rendered_pages {
+            let dir = page.file.path.parent().unwrap();
+            let has_rendered_default = self.has_rendered_default_page(dir, default_language);
+
+            if has_rendered_default {
+                // If there is a rendered default page, it is the sole canonical owner
+                if page.lang == default_language {
+                    self.colocated_assets.extend(page.colocated_assets.clone());
+                }
+            } else {
+                // If default page is not rendered or missing, canonical owner is chosen
+                // deterministically from the rendered translations
+                for (k, v) in &page.colocated_assets {
+                    self.colocated_assets.entry(k.clone()).or_insert_with(|| v.clone());
+                }
+            }
+        }
+
+        // 2. Sections: collect only rendered sections with assets in bundles
+        let mut rendered_sections: Vec<&Section> = self
+            .sections
+            .values()
+            .filter(|s| s.meta.render && !s.assets.is_empty() && s.file.colocated_path.is_some())
+            .collect();
+
+        rendered_sections.sort_by(|a, b| {
+            let a_is_default = a.lang == default_language;
+            let b_is_default = b.lang == default_language;
+            b_is_default
+                .cmp(&a_is_default)
+                .then_with(|| a.lang.cmp(&b.lang))
+                .then_with(|| a.file.relative.cmp(&b.file.relative))
+        });
+
+        for section in rendered_sections {
+            let dir = section.file.path.parent().unwrap();
+            let has_rendered_default = self.has_rendered_default_section(dir, default_language);
+
+            if has_rendered_default {
+                if section.lang == default_language {
+                    self.colocated_assets.extend(section.colocated_assets.clone());
+                }
+            } else {
+                for (k, v) in &section.colocated_assets {
+                    self.colocated_assets.entry(k.clone()).or_insert_with(|| v.clone());
+                }
+            }
+        }
     }
 
     /// Find all the orphan pages: pages that are in a folder without an `_index.md`

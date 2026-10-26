@@ -54,3 +54,5 @@ file with the desired front-matter options as there is no language fallback.
 ## Output
 Zola outputs the translated content with a base URL of `{base_url}/{code}/`.
 The only exception to this is if you are setting a translated page `path` directly in the front matter.
+
+For multilingual page and section bundles that share a directory with the rendered default language (e.g. `index.md` alongside `index.fr.md`), colocated assets are published only once under the default language path (without the language prefix) rather than being duplicated for each translation. Links to these assets in translated pages automatically resolve to the canonical asset URL. If the default language page is not rendered (`render = false`) or does not exist, the translated pages will publish the colocated assets under their respective language paths.

@@ -194,7 +194,7 @@ impl Page {
                     &page.assets,
                     page.file.path.parent().unwrap(),
                     colocated_path,
-                    &format!("{}index.md", colocated_path),
+                    &page.file.relative,
                 );
             }
         } else {

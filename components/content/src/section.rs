@@ -139,7 +139,7 @@ impl Section {
                 &section.assets,
                 section.file.path.parent().unwrap(),
                 colocated_path,
-                &format!("{}_index.md", colocated_path),
+                &section.file.relative,
             );
         }
 

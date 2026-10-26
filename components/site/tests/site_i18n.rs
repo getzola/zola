@@ -227,6 +227,11 @@ fn correct_translations_on_all_pages() {
 fn can_resolve_colocated_assets_language_aware() {
     let (_, _tmp_dir, public) = build_site("test_site_i18n");
 
+    // Default language has the assets copied
+    assert!(public.join("blog/with-assets/some.js").exists());
+    // Translated version does not duplicate the assets
+    assert!(!public.join("fr/blog/with-assets/some.js").exists());
+
     assert!(file_contains!(
         public,
         "blog/with-assets/index.html",
@@ -235,7 +240,7 @@ fn can_resolve_colocated_assets_language_aware() {
     assert!(file_contains!(
         public,
         "fr/blog/with-assets/index.html",
-        "fr asset: https://example.com/fr/blog/with-assets/some.js"
+        "fr asset: https://example.com/blog/with-assets/some.js"
     ));
 
     assert!(file_contains!(
@@ -246,6 +251,144 @@ fn can_resolve_colocated_assets_language_aware() {
     assert!(file_contains!(
         public,
         "fr/blog/with-assets/index.html",
-        "src=\"https://example.com/fr/blog/with-assets/some.js\""
+        "src=\"https://example.com/blog/with-assets/some.js\""
+    ));
+
+    // Raw HTML with query string rewritten to canonical URL
+    assert!(file_contains!(
+        public,
+        "fr/blog/with-assets/index.html",
+        "<img src=\"https://example.com/blog/with-assets/some.js?v=1\" alt=\"raw html with query\">"
+    ));
+
+    // Unquoted srcset rewritten to canonical URL
+    assert!(file_contains!(
+        public,
+        "fr/blog/with-assets/index.html",
+        "<img srcset=https://example.com/blog/with-assets/some.js alt=\"unquoted\">"
+    ));
+
+    // Srcset with data: URL preserved intact, and colocated asset rewritten
+    assert!(file_contains!(
+        public,
+        "fr/blog/with-assets/index.html",
+        "<img srcset=\"data:image/png;base64,AAAA 1x, https://example.com/blog/with-assets/some.js 2x\" alt=\"srcset with data url\">"
+    ));
+
+    // Code and pre blocks remain untouched
+    assert!(file_contains!(
+        public,
+        "fr/blog/with-assets/index.html",
+        "<pre>https://example.com/fr/blog/with-assets/some.js</pre>"
+    ));
+    assert!(file_contains!(public, "fr/blog/with-assets/index.html", "<code>some.js</code>"));
+}
+
+#[test]
+fn colocated_assets_with_unrendered_default_page() {
+    let tmp_dir = tempfile::tempdir().expect("create temp dir");
+    let site_dir = tmp_dir.path().join("site");
+    utils::fs::copy_directory(&test_site_path("test_site_i18n"), &site_dir, false, None).unwrap();
+
+    let unrendered_dir = site_dir.join("content").join("blog").join("unrendered-bundle");
+    std::fs::create_dir_all(&unrendered_dir).unwrap();
+
+    std::fs::write(
+        unrendered_dir.join("index.md"),
+        "+++\ndate = 2018-11-10\nrender = false\n+++\nDefault unrendered\n",
+    )
+    .unwrap();
+    std::fs::write(
+        unrendered_dir.join("index.fr.md"),
+        "+++\ndate = 2018-11-10\n+++\nFrançais rendu\n\nfr asset: {{ get_url(path=\"@/blog/unrendered-bundle/bundle.js\") }}\n\n![js](bundle.js)\n",
+    )
+    .unwrap();
+    std::fs::write(unrendered_dir.join("bundle.js"), "console.log('bundle');").unwrap();
+
+    let config_file = site_dir.join("config.toml");
+    let mut site = Site::new(&site_dir, &config_file).unwrap();
+    site.load().unwrap();
+    let public = site_dir.join("public");
+    site.set_output_path(&public);
+    site.build().expect("Couldn't build the site");
+
+    // The asset was copied under fr/... because default index.md has render = false
+    assert!(public.join("fr/blog/unrendered-bundle/bundle.js").exists());
+    // Not copied under blog/unrendered-bundle/
+    assert!(!public.join("blog/unrendered-bundle/bundle.js").exists());
+
+    // Both get_url and markdown relative link point to the fr permalink
+    assert!(file_contains!(
+        public,
+        "fr/blog/unrendered-bundle/index.html",
+        "fr asset: https://example.com/fr/blog/unrendered-bundle/bundle.js"
+    ));
+    assert!(file_contains!(
+        public,
+        "fr/blog/unrendered-bundle/index.html",
+        "src=\"https://example.com/fr/blog/unrendered-bundle/bundle.js\""
+    ));
+}
+
+#[test]
+fn colocated_assets_with_multiple_translations_unrendered_default() {
+    let tmp_dir = tempfile::tempdir().expect("create temp dir");
+    let site_dir = tmp_dir.path().join("site");
+    utils::fs::copy_directory(&test_site_path("test_site_i18n"), &site_dir, false, None).unwrap();
+
+    let unrendered_dir = site_dir.join("content").join("blog").join("multi-unrendered");
+    std::fs::create_dir_all(&unrendered_dir).unwrap();
+
+    std::fs::write(
+        unrendered_dir.join("index.md"),
+        "+++\ndate = 2018-11-10\nrender = false\n+++\nDefault unrendered\n",
+    )
+    .unwrap();
+    std::fs::write(
+        unrendered_dir.join("index.fr.md"),
+        "+++\ndate = 2018-11-10\n+++\nFrançais\n\nfr asset: {{ get_url(path=\"@/blog/multi-unrendered/bundle.js\") }}\n\n![js](bundle.js)\n",
+    )
+    .unwrap();
+    std::fs::write(
+        unrendered_dir.join("index.it.md"),
+        "+++\ndate = 2018-11-10\n+++\nItaliano\n\nit asset: {{ get_url(path=\"@/blog/multi-unrendered/bundle.js\") }}\n\n![js](bundle.js)\n",
+    )
+    .unwrap();
+    std::fs::write(unrendered_dir.join("bundle.js"), "console.log('bundle');").unwrap();
+
+    let config_file = site_dir.join("config.toml");
+    let mut site = Site::new(&site_dir, &config_file).unwrap();
+    site.load().unwrap();
+    let public = site_dir.join("public");
+    site.set_output_path(&public);
+    site.build().expect("Couldn't build the site");
+
+    // Both translations published the assets under their respective paths
+    assert!(public.join("fr/blog/multi-unrendered/bundle.js").exists());
+    assert!(public.join("it/blog/multi-unrendered/bundle.js").exists());
+    assert!(!public.join("blog/multi-unrendered/bundle.js").exists());
+
+    // Canonical owner for get_url is chosen deterministically by sorting lang: 'fr' < 'it'
+    assert!(file_contains!(
+        public,
+        "fr/blog/multi-unrendered/index.html",
+        "fr asset: https://example.com/fr/blog/multi-unrendered/bundle.js"
+    ));
+    assert!(file_contains!(
+        public,
+        "it/blog/multi-unrendered/index.html",
+        "it asset: https://example.com/fr/blog/multi-unrendered/bundle.js"
+    ));
+
+    // Markdown relative links in each page resolve to their own permalinks
+    assert!(file_contains!(
+        public,
+        "fr/blog/multi-unrendered/index.html",
+        "src=\"https://example.com/fr/blog/multi-unrendered/bundle.js\""
+    ));
+    assert!(file_contains!(
+        public,
+        "it/blog/multi-unrendered/index.html",
+        "src=\"https://example.com/it/blog/multi-unrendered/bundle.js\""
     ));
 }

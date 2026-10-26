@@ -107,7 +107,463 @@ pub fn render_page(
     page.toc = res.toc;
     page.internal_links = res.internal_links;
     page.external_links = res.external_links;
+
+    if page.lang != config.default_language
+        && let Some(stem) = page.file.relative.strip_suffix(&format!(".{}.md", page.lang))
+        && let Some(canonical_permalink) = permalinks.get(&format!("{stem}.md"))
+    {
+        page.content = rewrite_colocated_asset_links(
+            &page.content,
+            &page.permalink,
+            canonical_permalink,
+            &page.colocated_assets,
+        );
+        if let Some(summary) = page.summary.take() {
+            page.summary = Some(rewrite_colocated_asset_links(
+                &summary,
+                &page.permalink,
+                canonical_permalink,
+                &page.colocated_assets,
+            ));
+        }
+    }
+
     Ok(())
+}
+
+fn rewrite_colocated_asset_links(
+    content: &str,
+    current_permalink: &str,
+    canonical_permalink: &str,
+    colocated_assets: &AHashMap<String, (String, String)>,
+) -> String {
+    if colocated_assets.is_empty() {
+        return content.to_string();
+    }
+
+    let mut result = String::with_capacity(content.len());
+    let mut pos = 0;
+    let bytes = content.as_bytes();
+
+    while pos < bytes.len() {
+        // Find next '<'
+        let next_lt = match content[pos..].find('<') {
+            Some(idx) => pos + idx,
+            None => {
+                result.push_str(&content[pos..]);
+                break;
+            }
+        };
+
+        // Push text preceding '<'
+        result.push_str(&content[pos..next_lt]);
+        pos = next_lt;
+
+        // Check for HTML comment <!-- ... -->
+        if content[pos..].starts_with("<!--") {
+            if let Some(end_idx) = content[pos..].find("-->") {
+                let comment_end = pos + end_idx + 3;
+                result.push_str(&content[pos..comment_end]);
+                pos = comment_end;
+                continue;
+            } else {
+                result.push_str(&content[pos..]);
+                break;
+            }
+        }
+
+        // Check for closing tag </...
+        if content[pos..].starts_with("</") {
+            if let Some(end_idx) = content[pos..].find('>') {
+                let tag_end = pos + end_idx + 1;
+                result.push_str(&content[pos..tag_end]);
+                pos = tag_end;
+                continue;
+            } else {
+                result.push_str(&content[pos..]);
+                break;
+            }
+        }
+
+        // Find the end of this tag '>' taking quotes into account
+        let mut in_quote = None;
+        let mut tag_end = None;
+        for (i, &b) in bytes[pos..].iter().enumerate() {
+            match b {
+                b'"' | b'\'' => {
+                    if in_quote == Some(b) {
+                        in_quote = None;
+                    } else if in_quote.is_none() {
+                        in_quote = Some(b);
+                    }
+                }
+                b'>' if in_quote.is_none() => {
+                    tag_end = Some(pos + i + 1);
+                    break;
+                }
+                _ => {}
+            }
+        }
+
+        let Some(end_pos) = tag_end else {
+            result.push_str(&content[pos..]);
+            break;
+        };
+
+        let tag_slice = &content[pos..end_pos];
+
+        // Parse tag name
+        let tag_name = {
+            let s = &tag_slice[1..]; // skip '<'
+            let end =
+                s.find(|c: char| c.is_whitespace() || c == '>' || c == '/').unwrap_or(s.len());
+            &s[..end]
+        };
+
+        let is_skip_block = tag_name.eq_ignore_ascii_case("pre")
+            || tag_name.eq_ignore_ascii_case("code")
+            || tag_name.eq_ignore_ascii_case("script")
+            || tag_name.eq_ignore_ascii_case("style");
+
+        let is_self_closing = tag_slice.ends_with("/>");
+
+        // Rewrite opening tag
+        let rewritten_tag =
+            rewrite_tag(tag_slice, current_permalink, canonical_permalink, colocated_assets);
+        result.push_str(&rewritten_tag);
+        pos = end_pos;
+
+        // If it's a skip block and not self-closing, skip its body untouched
+        if is_skip_block && !is_self_closing {
+            if let Some(rel_idx) = find_closing_tag(&content[pos..], tag_name) {
+                let c_idx = pos + rel_idx;
+                result.push_str(&content[pos..c_idx]);
+                pos = c_idx;
+            } else {
+                result.push_str(&content[pos..]);
+                break;
+            }
+        }
+    }
+
+    result
+}
+
+fn find_closing_tag(haystack: &str, tag_name: &str) -> Option<usize> {
+    let tag_bytes = tag_name.as_bytes();
+    let prefix = b"</";
+    let len = 2 + tag_bytes.len();
+    if haystack.len() < len {
+        return None;
+    }
+    for i in 0..=haystack.len() - len {
+        if &haystack.as_bytes()[i..i + 2] == prefix {
+            let candidate = &haystack.as_bytes()[i + 2..i + len];
+            if candidate.eq_ignore_ascii_case(tag_bytes) {
+                let remainder = &haystack.as_bytes()[i + len..];
+                if remainder.is_empty() {
+                    return Some(i);
+                }
+                let next = remainder[0];
+                if next == b'>' || next.is_ascii_whitespace() || next == b'/' {
+                    return Some(i);
+                }
+            }
+        }
+    }
+    None
+}
+
+fn rewrite_tag(
+    tag_str: &str,
+    current_permalink: &str,
+    canonical_permalink: &str,
+    colocated_assets: &AHashMap<String, (String, String)>,
+) -> String {
+    if !tag_str.starts_with('<')
+        || tag_str.starts_with("</")
+        || tag_str.starts_with("<!")
+        || tag_str.starts_with("<?")
+    {
+        return tag_str.to_string();
+    }
+
+    let bytes = tag_str.as_bytes();
+    let mut i = 1;
+    // Skip tag name
+    while i < bytes.len() && !bytes[i].is_ascii_whitespace() && bytes[i] != b'>' && bytes[i] != b'/'
+    {
+        i += 1;
+    }
+
+    let mut result = String::with_capacity(tag_str.len());
+    result.push_str(&tag_str[..i]);
+
+    while i < bytes.len() {
+        if bytes[i].is_ascii_whitespace() || bytes[i] == b'/' || bytes[i] == b'>' {
+            result.push(bytes[i] as char);
+            i += 1;
+            continue;
+        }
+
+        let attr_name_start = i;
+        while i < bytes.len()
+            && !bytes[i].is_ascii_whitespace()
+            && bytes[i] != b'='
+            && bytes[i] != b'>'
+            && bytes[i] != b'/'
+        {
+            i += 1;
+        }
+        let attr_name = &tag_str[attr_name_start..i];
+        result.push_str(attr_name);
+
+        let ws_start = i;
+        while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+            i += 1;
+        }
+
+        if i < bytes.len() && bytes[i] == b'=' {
+            result.push_str(&tag_str[ws_start..=i]);
+            i += 1;
+
+            while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+                result.push(bytes[i] as char);
+                i += 1;
+            }
+
+            if i >= bytes.len() {
+                break;
+            }
+
+            let quote = bytes[i];
+            if quote == b'"' || quote == b'\'' {
+                result.push(quote as char);
+                i += 1;
+                let val_start = i;
+                while i < bytes.len() && bytes[i] != quote {
+                    i += 1;
+                }
+                let val = &tag_str[val_start..i];
+                let rewritten = if attr_name.eq_ignore_ascii_case("srcset") {
+                    rewrite_srcset(val, current_permalink, canonical_permalink, colocated_assets)
+                } else if matches_attr_name(attr_name) {
+                    rewrite_url(val, current_permalink, canonical_permalink, colocated_assets)
+                } else {
+                    None
+                };
+
+                if let Some(new_val) = rewritten {
+                    result.push_str(&new_val);
+                } else {
+                    result.push_str(val);
+                }
+
+                if i < bytes.len() && bytes[i] == quote {
+                    result.push(quote as char);
+                    i += 1;
+                }
+            } else {
+                let val_start = i;
+                while i < bytes.len() && !bytes[i].is_ascii_whitespace() && bytes[i] != b'>' {
+                    i += 1;
+                }
+                let val = &tag_str[val_start..i];
+                let rewritten = if attr_name.eq_ignore_ascii_case("srcset") {
+                    rewrite_srcset(val, current_permalink, canonical_permalink, colocated_assets)
+                } else if matches_attr_name(attr_name) {
+                    rewrite_url(val, current_permalink, canonical_permalink, colocated_assets)
+                } else {
+                    None
+                };
+
+                if let Some(new_val) = rewritten {
+                    result.push_str(&new_val);
+                } else {
+                    result.push_str(val);
+                }
+            }
+        }
+    }
+
+    result
+}
+
+fn matches_attr_name(name: &str) -> bool {
+    name.eq_ignore_ascii_case("src")
+        || name.eq_ignore_ascii_case("href")
+        || name.eq_ignore_ascii_case("poster")
+        || name.eq_ignore_ascii_case("data")
+        || name.eq_ignore_ascii_case("data-src")
+        || name.eq_ignore_ascii_case("data-href")
+}
+
+fn rewrite_url(
+    url: &str,
+    current_permalink: &str,
+    canonical_permalink: &str,
+    colocated_assets: &AHashMap<String, (String, String)>,
+) -> Option<String> {
+    let (path_part, query_and_hash) = match url.find(['?', '#']) {
+        Some(idx) => (&url[..idx], &url[idx..]),
+        None => (url, ""),
+    };
+
+    let sub_path = if let Some(stripped) = path_part.strip_prefix(current_permalink) {
+        stripped
+    } else if path_part.starts_with("http://")
+        || path_part.starts_with("https://")
+        || path_part.starts_with("//")
+        || path_part.to_ascii_lowercase().starts_with("data:")
+        || path_part.to_ascii_lowercase().starts_with("mailto:")
+        || path_part.to_ascii_lowercase().starts_with("javascript:")
+    {
+        return None;
+    } else if let Some(stripped) = path_part.strip_prefix("./") {
+        stripped
+    } else if path_part.starts_with('/') {
+        let parsed_current = url::Url::parse(current_permalink).ok()?;
+        let current_path = parsed_current.path();
+        path_part.strip_prefix(current_path)?
+    } else {
+        path_part
+    };
+
+    let matches = colocated_assets.values().any(|(_owner_md, rel)| {
+        if sub_path == rel {
+            return true;
+        }
+        let encoded_rel = rel.replace(' ', "%20");
+        if sub_path == encoded_rel {
+            return true;
+        }
+        false
+    });
+
+    if matches { Some(format!("{canonical_permalink}{sub_path}{query_and_hash}")) } else { None }
+}
+
+struct SrcsetCandidate<'a> {
+    raw: &'a str,
+    url: &'a str,
+    descriptor: Option<&'a str>,
+}
+
+fn parse_srcset_candidates(srcset: &str) -> Vec<SrcsetCandidate<'_>> {
+    let mut candidates = Vec::new();
+    let bytes = srcset.as_bytes();
+    let mut pos = 0;
+
+    while pos < bytes.len() {
+        // Skip leading ASCII whitespace and commas
+        while pos < bytes.len() && (bytes[pos].is_ascii_whitespace() || bytes[pos] == b',') {
+            pos += 1;
+        }
+        if pos >= bytes.len() {
+            break;
+        }
+
+        let cand_start = pos;
+
+        // Collect non-ASCII-whitespace characters for the candidate URL
+        let url_token_start = pos;
+        while pos < bytes.len() && !bytes[pos].is_ascii_whitespace() {
+            pos += 1;
+        }
+        let url_token = &srcset[url_token_start..pos];
+
+        // If the URL token ends with a comma, that comma separates this candidate from the next
+        if url_token.ends_with(',') {
+            let url = url_token.trim_end_matches(',');
+            candidates.push(SrcsetCandidate {
+                raw: &srcset[cand_start..cand_start + url.len()],
+                url,
+                descriptor: None,
+            });
+            continue;
+        }
+
+        let url = url_token;
+
+        // Skip whitespace between URL and optional descriptor
+        while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
+            pos += 1;
+        }
+
+        if pos >= bytes.len() || bytes[pos] == b',' {
+            candidates.push(SrcsetCandidate {
+                raw: &srcset[cand_start..url_token_start + url.len()],
+                url,
+                descriptor: None,
+            });
+            if pos < bytes.len() && bytes[pos] == b',' {
+                pos += 1;
+            }
+            continue;
+        }
+
+        // Collect descriptor until comma outside parentheses or end of string
+        let desc_start = pos;
+        let mut paren_depth = 0;
+        while pos < bytes.len() {
+            if bytes[pos] == b'(' {
+                paren_depth += 1;
+            } else if bytes[pos] == b')' && paren_depth > 0 {
+                paren_depth -= 1;
+            } else if bytes[pos] == b',' && paren_depth == 0 {
+                break;
+            }
+            pos += 1;
+        }
+
+        let desc_end = pos;
+        let descriptor = srcset[desc_start..desc_end].trim();
+        let raw = &srcset[cand_start..desc_end];
+
+        candidates.push(SrcsetCandidate {
+            raw,
+            url,
+            descriptor: if descriptor.is_empty() { None } else { Some(descriptor) },
+        });
+
+        if pos < bytes.len() && bytes[pos] == b',' {
+            pos += 1;
+        }
+    }
+
+    candidates
+}
+
+fn rewrite_srcset(
+    srcset: &str,
+    current_permalink: &str,
+    canonical_permalink: &str,
+    colocated_assets: &AHashMap<String, (String, String)>,
+) -> Option<String> {
+    let candidates = parse_srcset_candidates(srcset);
+    if candidates.is_empty() {
+        return None;
+    }
+
+    let mut rewritten = false;
+    let mut parts = Vec::with_capacity(candidates.len());
+
+    for cand in candidates {
+        if let Some(new_url) =
+            rewrite_url(cand.url, current_permalink, canonical_permalink, colocated_assets)
+        {
+            rewritten = true;
+            if let Some(desc) = cand.descriptor {
+                parts.push(format!("{new_url} {desc}"));
+            } else {
+                parts.push(new_url);
+            }
+        } else {
+            parts.push(cand.raw.to_string());
+        }
+    }
+
+    if rewritten { Some(parts.join(", ")) } else { None }
 }
 
 pub fn render_section(
@@ -164,6 +620,19 @@ pub fn render_section(
         section.external_links.push(redirect_to.to_owned());
     }
     section.internal_links = res.internal_links;
+
+    if section.lang != config.default_language
+        && let Some(stem) = section.file.relative.strip_suffix(&format!(".{}.md", section.lang))
+        && let Some(canonical_permalink) = permalinks.get(&format!("{stem}.md"))
+    {
+        section.content = rewrite_colocated_asset_links(
+            &section.content,
+            &section.permalink,
+            canonical_permalink,
+            &section.colocated_assets,
+        );
+    }
+
     Ok(())
 }
 
@@ -385,5 +854,197 @@ And here's another. [^3]
         <h1 id="mermaid-header5">Mermaid</h1>
         <p>0</p>
         "#);
+    }
+
+    #[test]
+    fn test_rewrite_colocated_asset_links() {
+        let mut colocated_assets = AHashMap::new();
+        colocated_assets.insert(
+            "blog/with-assets/some.js".to_string(),
+            ("blog/with-assets/index.md".to_string(), "some.js".to_string()),
+        );
+        colocated_assets.insert(
+            "blog/with-assets/img 2.png".to_string(),
+            ("blog/with-assets/index.md".to_string(), "img 2.png".to_string()),
+        );
+
+        let current_permalink = "https://example.com/fr/blog/with-assets/";
+        let canonical_permalink = "https://example.com/blog/with-assets/";
+
+        // 1. Raw HTML with query string and hash
+        let input = r#"<img src="some.js?v=1#sec" alt="test">"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(
+            out,
+            r#"<img src="https://example.com/blog/with-assets/some.js?v=1#sec" alt="test">"#
+        );
+
+        // 2. Relative ./ prefix and single quotes
+        let input = r#"<a href='./some.js?v=2'>link</a>"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(out, r#"<a href='https://example.com/blog/with-assets/some.js?v=2'>link</a>"#);
+
+        // 3. Current permalink prefix replaced with canonical
+        let input = r#"<img src="https://example.com/fr/blog/with-assets/some.js?v=1">"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(out, r#"<img src="https://example.com/blog/with-assets/some.js?v=1">"#);
+
+        // 4. Srcset rewriting
+        let input = r#"<source srcset="some.js?v=1 1x, ./some.js?v=2 2x, other.js 3x">"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(
+            out,
+            r#"<source srcset="https://example.com/blog/with-assets/some.js?v=1 1x, https://example.com/blog/with-assets/some.js?v=2 2x, other.js 3x">"#
+        );
+
+        // 5. Preserved untouched in <pre>
+        let input = r#"<pre>https://example.com/fr/blog/with-assets/some.js</pre>"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(out, input);
+
+        // 6. Preserved untouched in <code>
+        let input = r#"<code>some.js</code>"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(out, input);
+
+        // 7. Preserved untouched in <pre><code>...</code></pre>
+        let input = r#"<pre><code class="language-html">&lt;img src="some.js"&gt; https://example.com/fr/blog/with-assets/some.js</code></pre>"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(out, input);
+
+        // 8. Preserved in inline <script> and <style>
+        let input =
+            r#"<script>var x = "https://example.com/fr/blog/with-assets/some.js";</script>"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(out, input);
+
+        // 9. External script tag src is rewritten, body untouched
+        let input = r#"<script src="some.js?v=1"></script>"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(
+            out,
+            r#"<script src="https://example.com/blog/with-assets/some.js?v=1"></script>"#
+        );
+
+        // 10. Tag containing <code> inside: tag attribute is rewritten, code content is untouched
+        let input = r#"<a href="some.js"><code>some.js</code></a>"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(
+            out,
+            r#"<a href="https://example.com/blog/with-assets/some.js"><code>some.js</code></a>"#
+        );
+
+        // 11. Unquoted srcset attribute
+        let input = r#"<img srcset=some.js alt="unquoted">"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(
+            out,
+            r#"<img srcset=https://example.com/blog/with-assets/some.js alt="unquoted">"#
+        );
+
+        // 12. Unquoted srcset with ./ prefix
+        let input = r#"<img srcset=./some.js alt="unquoted dot">"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(
+            out,
+            r#"<img srcset=https://example.com/blog/with-assets/some.js alt="unquoted dot">"#
+        );
+
+        // 13. Data URL in srcset is preserved intact without extra spaces
+        let input = r#"<img srcset="data:image/png;base64,AAAA 1x, some.js 2x">"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(
+            out,
+            r#"<img srcset="data:image/png;base64,AAAA 1x, https://example.com/blog/with-assets/some.js 2x">"#
+        );
+
+        // 14. Data URL without descriptor followed by comma
+        let input = r#"<img srcset="data:image/png;base64,AAAA, some.js 2x">"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(
+            out,
+            r#"<img srcset="data:image/png;base64,AAAA, https://example.com/blog/with-assets/some.js 2x">"#
+        );
+
+        // 15. Srcset without rewritable assets is preserved completely
+        let input =
+            r#"<img srcset="data:image/png;base64,AAAA 1x, https://cdn.example.com/a.png 2x">"#;
+        let out = super::rewrite_colocated_asset_links(
+            input,
+            current_permalink,
+            canonical_permalink,
+            &colocated_assets,
+        );
+        assert_eq!(out, input);
     }
 }

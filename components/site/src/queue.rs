@@ -242,19 +242,41 @@ impl<'a> Queue<'a> {
 
             match job {
                 Job::Page(page) => {
-                    let dest = self
-                        .site
-                        .output_path
-                        .join(page.path.strip_prefix('/').unwrap_or(&page.path));
-                    self.site.copy_assets(page.file.path.parent().unwrap(), &page.assets, &dest)?;
+                    let is_translated_with_default = page.lang != self.site.config.default_language
+                        && page.file.colocated_path.is_some()
+                        && page.file.path.parent().is_some_and(|p| {
+                            self.site
+                                .library
+                                .has_rendered_default_page(p, &self.site.config.default_language)
+                        });
+                    if !is_translated_with_default {
+                        let dest = self
+                            .site
+                            .output_path
+                            .join(page.path.strip_prefix('/').unwrap_or(&page.path));
+                        self.site.copy_assets(
+                            page.file.path.parent().unwrap(),
+                            &page.assets,
+                            &dest,
+                        )?;
+                    }
                 }
                 Job::SectionAssets { section, path } => {
-                    let dest = self.site.output_path.join(path);
-                    self.site.copy_assets(
-                        section.file.path.parent().unwrap(),
-                        &section.assets,
-                        &dest,
-                    )?;
+                    let is_translated_with_default = section.lang
+                        != self.site.config.default_language
+                        && section.file.path.parent().is_some_and(|p| {
+                            self.site
+                                .library
+                                .has_rendered_default_section(p, &self.site.config.default_language)
+                        });
+                    if !is_translated_with_default {
+                        let dest = self.site.output_path.join(path);
+                        self.site.copy_assets(
+                            section.file.path.parent().unwrap(),
+                            &section.assets,
+                            &dest,
+                        )?;
+                    }
                 }
                 _ => {}
             }

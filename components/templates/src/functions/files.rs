@@ -115,14 +115,11 @@ impl Function<TeraResult<String>> for GetUrl {
 
             // Check if it's a colocated asset first
             if let Some((owner_md, rel)) = self.colocated_assets.get(stripped) {
-                let owner_with_lang =
-                    make_path_with_lang(format!("@/{}", owner_md), &lang, &self.config)?;
-                let resolved =
-                    resolve_internal_link(&owner_with_lang, &self.permalinks).map_err(|_| {
-                        Error::message(format!(
-                            "`get_url`: could not resolve URL for asset `{path}` not found."
-                        ))
-                    })?;
+                let resolved = resolve_internal_link(owner_md, &self.permalinks).map_err(|_| {
+                    Error::message(format!(
+                        "`get_url`: could not resolve URL for asset `{path}` not found."
+                    ))
+                })?;
                 let mut permalink = format!("{}{rel}", resolved.permalink);
                 if cachebust {
                     let file_path = self.base_path.join("content").join(stripped);
@@ -609,14 +606,14 @@ title = "A title"
             get_url.call(kwargs, &State::new(&ctx))
         };
 
-        // Default language, then another language following that page's own slug
+        // Both default language and another language resolve to the canonical non-duplicated asset
         assert_eq!(
             resolve("@/a_section/an_article/graph.jpg", "fr").unwrap(),
             "https://remplace-par-ton-url.fr/a_section/mon_article/graph.jpg"
         );
         assert_eq!(
             resolve("@/a_section/an_article/graph.jpg", "en").unwrap(),
-            "https://remplace-par-ton-url.fr/en/a_section/the_article/graph.jpg"
+            "https://remplace-par-ton-url.fr/a_section/mon_article/graph.jpg"
         );
         // Unknown asset errors
         assert!(resolve("@/a_section/my-article/missing.jpg", "fr").is_err());
