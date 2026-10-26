@@ -5316,6 +5316,7 @@ name = "site"
 version = "0.23.6"
 dependencies = [
  "ahash 0.8.12",
+ "base64 0.23.1",
  "config",
  "content",
  "criterion",
@@ -5337,6 +5338,7 @@ dependencies = [
  "render",
  "search",
  "serde",
+ "sha2",
  "tempfile",
  "templates",
  "tera",
@@ -6134,6 +6136,12 @@ dependencies = [
  "filetime",
  "fs-err",
  "globset",
+ "lightningcss",
+ "oxc_allocator",
+ "oxc_codegen",
+ "oxc_minifier",
+ "oxc_parser",
+ "oxc_span",
  "percent-encoding",
  "regex",
  "serde",

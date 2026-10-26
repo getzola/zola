@@ -53,6 +53,7 @@ pub fn register_early_global_fns(site: &mut Site) {
             site.base_path.clone(),
             site.config.theme.clone(),
             site.output_path.clone(),
+            site.config.minify_html,
         ),
     );
     site.tera.register_filter(

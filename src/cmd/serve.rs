@@ -55,7 +55,7 @@ use errors::{Error, Result, anyhow};
 use serde_json::json;
 use site::sass::compile_sass;
 use site::{BuildMode, SITE_CONTENT, Site};
-use utils::fs::{clean_site_output_folder, copy_file, create_directory};
+use utils::fs::{clean_site_output_folder, create_directory};
 
 use crate::fs_utils::{ChangeKind, SimpleFileSystemEventKind, filter_events};
 use crate::messages;
@@ -707,11 +707,11 @@ pub fn serve(
         let combined_paths =
             paths.iter().map(|p| p.display().to_string()).collect::<Vec<String>>().join(", ");
         log::info!("Sass file(s) changed {combined_paths}");
-        rebuild_done_handling(
-            &broadcaster,
-            compile_sass(&site.base_path, &site.output_path),
-            &site.sass_path.to_string_lossy(),
-        );
+        let mut res = compile_sass(&site.base_path, &site.output_path);
+        if res.is_ok() && site.config.minify_html {
+            res = site.minify_assets();
+        }
+        rebuild_done_handling(&broadcaster, res, &site.sass_path.to_string_lossy());
     };
 
     let reload_templates = |site: &mut Site| {
@@ -742,17 +742,14 @@ pub fn serve(
 
         log::info!("{msg}");
         if path.is_dir() {
-            rebuild_done_handling(
-                &broadcaster,
-                site.copy_static_directories(),
-                &path.to_string_lossy(),
-            );
+            let mut res = site.copy_static_directories();
+            if res.is_ok() && site.config.minify_html {
+                res = site.minify_assets();
+            }
+            rebuild_done_handling(&broadcaster, res, &path.to_string_lossy());
         } else {
-            rebuild_done_handling(
-                &broadcaster,
-                copy_file(path, &site.output_path, &site.static_path, site.config.hard_link_static),
-                &partial_path.to_string_lossy(),
-            );
+            let res = site.copy_static_file(path);
+            rebuild_done_handling(&broadcaster, res, &partial_path.to_string_lossy());
         }
     };
 

@@ -14,6 +14,8 @@ use std::sync::LazyLock;
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
 
+use fs_err as fs;
+
 use rayon::prelude::*;
 use tera::Tera;
 use walkdir::{DirEntry, WalkDir};
@@ -26,7 +28,8 @@ use relative_path::RelativePathBuf;
 use render::{RenderCache, Renderer};
 use templates::load_tera;
 use utils::fs::{
-    clean_site_output_folder, copy_directory, copy_file_if_needed, create_directory, create_file,
+    clean_site_output_folder, copy_directory, copy_file, copy_file_if_needed, create_directory,
+    create_file,
 };
 use utils::net::get_available_port;
 use utils::types::InsertAnchor;
@@ -177,10 +180,12 @@ impl Site {
 
     pub fn set_output_path<P: AsRef<Path>>(&mut self, path: P) {
         self.output_path = path.as_ref().to_path_buf();
+        tpls::register_early_global_fns(self);
     }
 
     pub fn minify(&mut self) {
         self.config.minify_html = true;
+        tpls::register_early_global_fns(self);
     }
 
     /// Reads all .md files in the `content` directory and create pages/sections
@@ -691,6 +696,16 @@ impl Site {
         Ok(())
     }
 
+    pub fn copy_static_file(&self, path: &Path) -> Result<()> {
+        copy_file(path, &self.output_path, &self.static_path, self.config.hard_link_static)?;
+        if self.config.minify_html {
+            let relative_path = path.strip_prefix(&self.static_path)?;
+            let target_file = self.output_path.join(relative_path);
+            self.minify_file(&target_file)?;
+        }
+        Ok(())
+    }
+
     pub fn num_img_ops(&self) -> usize {
         let imageproc = self.imageproc.lock().expect("Couldn't lock imageproc (num_img_ops)");
         imageproc.num_img_ops()
@@ -712,13 +727,13 @@ impl Site {
     fn copy_assets(&self, parent: &Path, assets: &[impl AsRef<Path>], dest: &Path) -> Result<()> {
         for asset in assets {
             let asset_path = asset.as_ref();
-            copy_file_if_needed(
-                asset_path,
-                &dest.join(
-                    asset_path.strip_prefix(parent).expect("Couldn't get filename from page asset"),
-                ),
-                self.config.hard_link_static,
-            )?;
+            let dest_file = dest.join(
+                asset_path.strip_prefix(parent).expect("Couldn't get filename from page asset"),
+            );
+            copy_file_if_needed(asset_path, &dest_file, self.config.hard_link_static)?;
+            if self.config.minify_html {
+                self.minify_file(&dest_file)?;
+            }
         }
 
         Ok(())
@@ -747,12 +762,20 @@ impl Site {
             start = log_time(start, "Compiled own Sass");
         }
 
+        self.copy_static_directories()?;
+        start = log_time(start, "Copied static dir");
+
         if self.config.needs_search_index() {
             self.build_search_index()?;
             start = log_time(start, "Built search index");
         }
         self.render_themes_css()?;
         start = log_time(start, "Rendered themes css");
+
+        if self.config.minify_html {
+            self.minify_assets()?;
+            start = log_time(start, "Minified CSS & JS static assets");
+        }
 
         let queue = Queue::full_build(self);
         queue.process()?;
@@ -761,11 +784,58 @@ impl Site {
         // or from templates
         self.process_images()?;
         start = log_time(start, "Processed images");
-        // Processed images will be in static so the last step is to copy it
-        self.copy_static_directories()?;
-        log_time(start, "Copied static dir");
+        // Processed images will be in static so copy them to output
+        let processed_images_path = self.static_path.join(imageproc::RESIZED_SUBDIR);
+        if processed_images_path.exists() {
+            copy_directory(
+                &processed_images_path,
+                &self.output_path.join(imageproc::RESIZED_SUBDIR),
+                self.config.hard_link_static,
+                None,
+            )?;
+            log_time(start, "Copied processed images");
+        }
 
         Ok(())
+    }
+
+    pub fn minify_file(&self, path: &Path) -> Result<()> {
+        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        let is_css = name.ends_with(".css") && !name.ends_with(".min.css");
+        let is_js = name.ends_with(".js") && !name.ends_with(".min.js");
+        if !is_css && !is_js {
+            return Ok(());
+        }
+
+        let content = fs::read(path)?;
+        if let Some(minified) = utils::minify::minify_asset_bytes(path, &content) {
+            fs::remove_file(path)?;
+            fs::write(path, minified)?;
+        }
+
+        Ok(())
+    }
+
+    pub fn minify_directory(&self, dir: &Path) -> Result<()> {
+        let entries: Vec<PathBuf> = WalkDir::new(dir)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.file_type().is_file())
+            .map(|e| e.into_path())
+            .filter(|path| {
+                let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+                (name.ends_with(".css") && !name.ends_with(".min.css"))
+                    || (name.ends_with(".js") && !name.ends_with(".min.js"))
+            })
+            .collect();
+
+        entries.par_iter().try_for_each(|path| -> Result<()> { self.minify_file(path) })?;
+
+        Ok(())
+    }
+
+    pub fn minify_assets(&self) -> Result<()> {
+        self.minify_directory(&self.output_path)
     }
 
     pub fn render_themes_css(&self) -> Result<()> {

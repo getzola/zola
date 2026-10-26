@@ -10,6 +10,7 @@ use config::TaxonomyConfig;
 use content::Page;
 use site::Site;
 use site::sitemap;
+use tempfile::tempdir;
 use tera::Value;
 use tera::value::Key;
 use utils::types::InsertAnchor;
@@ -891,6 +892,192 @@ fn can_build_site_with_html_minified() {
         "index.html",
         "<!doctype html><html lang=en><head><meta charset=UTF-8>"
     ));
+    assert_eq!(std::fs::read_to_string(public.join("site.css")).unwrap().trim(), "body{color:red}");
+    assert_eq!(std::fs::read_to_string(public.join("scripts/hello.js")).unwrap(), "");
+    assert!(file_contains!(
+        public,
+        "index.html",
+        "integrity=sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb"
+    ));
+}
+
+#[test]
+fn can_build_site_with_minified_assets_sri_hash_matches() {
+    let tmp_site = tempdir().unwrap();
+    utils::fs::copy_directory(&test_site_path("test_site"), tmp_site.path(), false, None).unwrap();
+    std::fs::write(
+        tmp_site.path().join("static/app.js"),
+        "function greet(name) {\n    const message = 'Hello, ' + name;\n    console.log(message);\n    return message;\n}\n",
+    )
+    .unwrap();
+
+    let config_file = tmp_site.path().join("config.toml");
+    let mut site = Site::new(tmp_site.path(), &config_file).unwrap();
+    site.config.minify_html = true;
+    site.load().unwrap();
+    site.tera
+        .add_raw_template(
+            "index.html",
+            "{% extends \"sample/templates/index.html\" %}{% block content %}<link rel=\"stylesheet\" href=\"site.css\" integrity=\"sha384-{{ get_hash(path=\"site.css\", sha_type=384, base64=true) }}\"><script src=\"app.js\" integrity=\"sha384-{{ get_hash(path=\"app.js\", sha_type=384, base64=true) }}\"></script>{% endblock content %}",
+        )
+        .unwrap();
+
+    let tmp_dir = tempdir().unwrap();
+    let public = tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    assert!(public.exists());
+    let minified_css = std::fs::read(public.join("site.css")).unwrap();
+    assert_eq!(std::str::from_utf8(&minified_css).unwrap().trim(), "body{color:red}");
+    let minified_js = std::fs::read(public.join("app.js")).unwrap();
+
+    use base64::Engine as _;
+    use sha2::{Digest, Sha384};
+
+    let mut hasher = Sha384::new();
+    hasher.update(&minified_css);
+    let expected_css_hash = base64::engine::general_purpose::STANDARD.encode(hasher.finalize());
+
+    let mut hasher = Sha384::new();
+    hasher.update(&minified_js);
+    let expected_js_hash = base64::engine::general_purpose::STANDARD.encode(hasher.finalize());
+
+    let index_html = std::fs::read_to_string(public.join("index.html")).unwrap();
+    assert!(
+        index_html.contains(&format!("integrity=sha384-{expected_css_hash}")),
+        "Rendered HTML {index_html} did not contain expected CSS SRI hash sha384-{expected_css_hash}"
+    );
+    assert!(
+        index_html.contains(&format!("integrity=sha384-{expected_js_hash}")),
+        "Rendered HTML {index_html} did not contain expected JS SRI hash sha384-{expected_js_hash}"
+    );
+}
+
+#[test]
+fn can_build_site_with_colocated_asset_sri_and_cachebust_matches() {
+    let tmp_site = tempdir().unwrap();
+    utils::fs::copy_directory(&test_site_path("test_site"), tmp_site.path(), false, None).unwrap();
+
+    let bundle_path = tmp_site.path().join("content/posts/with-assets/bundle.css");
+    std::fs::write(&bundle_path, "body {\n    color: red;\n}\n").unwrap();
+
+    let config_file = tmp_site.path().join("config.toml");
+    let mut site = Site::new(tmp_site.path(), &config_file).unwrap();
+    site.config.minify_html = true;
+    site.load().unwrap();
+    site.tera
+        .add_raw_template(
+            "page.html",
+            "{% extends \"sample/templates/index.html\" %}{% block content %}<link rel=\"stylesheet\" href=\"{{ get_url(path=\"@/posts/with-assets/bundle.css\", cachebust=true) }}\" integrity=\"sha384-{{ get_hash(path=\"@/posts/with-assets/bundle.css\", sha_type=384, base64=true) }}\">{% endblock content %}",
+        )
+        .unwrap();
+
+    let tmp_dir = tempdir().unwrap();
+    let public = tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    let published_asset = public.join("posts/with-assets/bundle.css");
+    assert!(published_asset.exists(), "Co-located asset was not published to public/");
+    let minified_css = std::fs::read(&published_asset).unwrap();
+    assert_eq!(std::str::from_utf8(&minified_css).unwrap().trim(), "body{color:red}");
+
+    use base64::Engine as _;
+    use sha2::{Digest, Sha256, Sha384};
+
+    let mut hasher = Sha384::new();
+    hasher.update(&minified_css);
+    let expected_sri = base64::engine::general_purpose::STANDARD.encode(hasher.finalize());
+
+    let mut hasher = Sha256::new();
+    hasher.update(&minified_css);
+    let cb_hash: String = hasher.finalize().iter().map(|b| format!("{b:02x}")).collect();
+    let expected_cb_prefix = &cb_hash[..20];
+
+    let page_html = std::fs::read_to_string(public.join("posts/with-assets/index.html")).unwrap();
+    assert!(
+        page_html.contains(&format!("integrity=sha384-{expected_sri}")),
+        "Page HTML does not contain expected SRI hash sha384-{expected_sri}: {page_html}"
+    );
+    assert!(
+        page_html.contains(&format!("?h={expected_cb_prefix}")),
+        "Page HTML does not contain expected cachebust prefix ?h={expected_cb_prefix}: {page_html}"
+    );
+}
+
+#[test]
+fn can_build_site_with_sri_hash_in_markdown_content() {
+    let tmp_site = tempdir().unwrap();
+    utils::fs::copy_directory(&test_site_path("test_site"), tmp_site.path(), false, None).unwrap();
+
+    let md_content = r#"+++
+title = "SRI in Markdown"
+description = "test"
+date = 2026-10-27
++++
+
+<link rel="stylesheet" href="site.css" integrity="sha384-{{ get_hash(path="site.css", sha_type=384, base64=true) }}">
+"#;
+    std::fs::write(tmp_site.path().join("content/posts/sri-markdown.md"), md_content).unwrap();
+
+    let config_file = tmp_site.path().join("config.toml");
+    let mut site = Site::new(tmp_site.path(), &config_file).unwrap();
+    site.config.minify_html = true;
+    site.load().unwrap();
+
+    let tmp_dir = tempdir().unwrap();
+    let public = tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    let minified_css = std::fs::read(public.join("site.css")).unwrap();
+    assert_eq!(std::str::from_utf8(&minified_css).unwrap().trim(), "body{color:red}");
+
+    use base64::Engine as _;
+    use sha2::{Digest, Sha384};
+    let mut hasher = Sha384::new();
+    hasher.update(&minified_css);
+    let expected_sri = base64::engine::general_purpose::STANDARD.encode(hasher.finalize());
+
+    let page_html = std::fs::read_to_string(public.join("posts/sri-markdown/index.html")).unwrap();
+    assert!(
+        page_html.contains(&format!("integrity=sha384-{expected_sri}")),
+        "Rendered markdown HTML did not contain expected SRI hash sha384-{expected_sri}: {page_html}"
+    );
+}
+
+#[test]
+fn can_update_single_static_file_with_minification() {
+    let tmp_site = tempdir().unwrap();
+    utils::fs::copy_directory(&test_site_path("test_site"), tmp_site.path(), false, None).unwrap();
+
+    let config_file = tmp_site.path().join("config.toml");
+    let mut site = Site::new(tmp_site.path(), &config_file).unwrap();
+    site.config.minify_html = true;
+    site.config.hard_link_static = true;
+    site.load().unwrap();
+
+    let tmp_dir = tempdir().unwrap();
+    let public = tmp_dir.path().join("public");
+    site.set_output_path(&public);
+    site.build().unwrap();
+
+    // Now simulate watcher: static file updated/created
+    let static_file = tmp_site.path().join("static/app.css");
+    std::fs::write(&static_file, "body {\n    color: blue;\n}\n").unwrap();
+
+    // In watcher (serve), site.copy_static_file is called on the updated file
+    site.copy_static_file(&static_file).unwrap();
+
+    let published_file = public.join("app.css");
+    assert!(published_file.exists(), "app.css was not published to public/");
+    let minified = std::fs::read_to_string(&published_file).unwrap();
+    assert_eq!(minified.trim(), "body{color:#00f}");
+
+    // Also verify the source static file is unmodified (hard link was unlinked before writing minified content)
+    let source_content = std::fs::read_to_string(&static_file).unwrap();
+    assert_eq!(source_content, "body {\n    color: blue;\n}\n");
 }
 
 #[test]

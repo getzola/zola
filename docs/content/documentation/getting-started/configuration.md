@@ -51,7 +51,7 @@ preserve_dotfiles_in_output = false
 # Sass files in theme directories are always compiled.
 compile_sass = false
 
-# When set to "true", the generated HTML files are minified.
+# When set to "true", the generated HTML files as well as CSS and JS static assets are minified.
 minify_html = false
 
 # A list of glob patterns specifying asset files to ignore when the content

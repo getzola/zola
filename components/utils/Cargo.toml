@@ -17,6 +17,12 @@ tera = { workspace = true }
 walkdir = { workspace = true }
 
 errors = { workspace = true }
+lightningcss = { workspace = true }
+oxc_allocator = { workspace = true }
+oxc_codegen = { workspace = true }
+oxc_minifier = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_span = { workspace = true }
 
 [dev-dependencies]
 tempfile = "3"
