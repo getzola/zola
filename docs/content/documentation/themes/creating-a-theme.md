@@ -56,7 +56,7 @@ to be able to build the theme from your repository.
 ## Submitting a theme to the gallery
 
 If you want your theme to be featured in the [themes](@/themes/_index.md) section
-of this site, make sure that the theme meets the following three requirements:
+of this site, make sure that the theme meets the following requirements:
 
 - have a `screenshot.png` of the theme in action with a max size of around 2000x1000
 - have a default working site in the repository, with a `{zola,config}.toml` in it
