@@ -38,6 +38,8 @@ fn configurable_render(
         current_permalink: "https://www.getzola.org/test/",
         current_path: "my_page.md",
         insert_anchor,
+        current_dir: None,
+        base_path: None,
     };
 
     render_content(content, &context)

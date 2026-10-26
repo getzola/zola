@@ -60,4 +60,8 @@ You can still link to an anchor directly; `[my link](@/pages/about.md#example)` 
 
 The `@/` syntax also resolves [colocated assets](@/documentation/content/overview.md#asset-colocation).
 
+### Image dimensions
+
+When referencing local images in Markdown (such as `![Alt text](image.png)` or `![Alt text](@/path/image.png)`), Zola automatically reads the intrinsic dimensions of the source image and adds `width` and `height` attributes to the rendered `<img>` tag to prevent cumulative layout shift. Remote images (e.g. starting with `http://` or `https://`) are rendered without dimensions.
+
 By default, broken internal links are treated as errors.  To treat them as warnings instead, visit the `[link_checker]` section of `zola.toml` and set `internal_level = "warn"`.  Note: treating broken links as warnings allows the site to be built with broken links intact, so a link such as `[my link](@/pages/whoops.md)` will be rendered to HTML as `<a href="@/pages/whoops.md">`.

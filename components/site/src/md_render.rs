@@ -2,6 +2,7 @@
 
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::path::Path;
 use std::sync::LazyLock;
 
 use ahash::AHashMap;
@@ -59,6 +60,7 @@ fn needs_templating(s: &str) -> bool {
 
 /// We need access to all pages url to render links relative to content
 /// so that can't happen at the same time as parsing
+#[allow(clippy::too_many_arguments)]
 pub fn render_page(
     page: &mut Page,
     renderer: Renderer,
@@ -67,6 +69,7 @@ pub fn render_page(
     tera: &Tera,
     config: &Config,
     insert_anchor: InsertAnchor,
+    base_path: &Path,
 ) -> Result<()> {
     let skip_templating = config
         .skip_content_templating_globset
@@ -97,6 +100,8 @@ pub fn render_page(
         current_permalink: &page.permalink,
         current_path: &page.file.relative,
         insert_anchor,
+        current_dir: page.file.path.parent(),
+        base_path: Some(base_path),
     };
     let res = markdown::render_content(&input, &context)
         .with_context(|| format!("Failed to render content of {}", page.file.path.display()))?;
@@ -117,6 +122,7 @@ pub fn render_section(
     colocated_assets: &AHashMap<String, (String, String)>,
     tera: &Tera,
     config: &Config,
+    base_path: &Path,
 ) -> Result<()> {
     let skip_templating = config
         .skip_content_templating_globset
@@ -150,6 +156,8 @@ pub fn render_section(
             .meta
             .insert_anchor_links
             .unwrap_or(config.markdown.insert_anchor_links),
+        current_dir: section.file.path.parent(),
+        base_path: Some(base_path),
     };
     let res = markdown::render_content(&input, &context)
         .with_context(|| format!("Failed to render content of {}", section.file.path.display()))?;
@@ -215,6 +223,7 @@ Hello world
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
+            Path::new(""),
         )
         .unwrap();
         assert_eq!(page.summary, Some("<p>Hello world</p>".to_string()));
@@ -254,6 +263,7 @@ And here's another. [^3]
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
+            Path::new(""),
         )
         .unwrap();
         insta::assert_snapshot!(page.summary.as_deref().unwrap_or(""), @r###"
@@ -291,6 +301,7 @@ And here's another. [^3]
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
+            Path::new(""),
         )
         .unwrap();
         insta::assert_snapshot!(page.summary.as_deref().unwrap_or(""), @r###"
@@ -374,6 +385,7 @@ And here's another. [^3]
             &ZOLA_TERA,
             &config,
             InsertAnchor::None,
+            Path::new(""),
         )
         .unwrap();
         insta::assert_snapshot!(page.content, @r#"

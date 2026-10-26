@@ -13,13 +13,16 @@ regex = { workspace = true }
 tera = { workspace = true }
 giallo = { workspace = true }
 log = { workspace = true }
+percent-encoding = { workspace = true }
 
 errors = { workspace = true }
 utils = { workspace = true }
 config = { workspace = true }
 render = { workspace = true }
+imageproc = { workspace = true }
 
 [dev-dependencies]
+tempfile = "3"
 templates = { workspace = true }
 insta = { workspace = true }
 criterion = { version = "0.8", features = ["html_reports"] }

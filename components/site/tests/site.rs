@@ -1045,3 +1045,69 @@ fn can_find_site_and_page_authors() {
 fn current_path(path: &str) -> String {
     format!("[current_path]({})", path)
 }
+
+#[test]
+fn can_add_image_dimensions_in_page_bundles_and_static() {
+    let tmp_dir = tempfile::tempdir().unwrap();
+    let root = tmp_dir.path();
+
+    let svg = r##"<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240" viewBox="0 0 320 240"><rect width="320" height="240" fill="#f00"/></svg>"##;
+
+    let config = r#"
+base_url = "https://example.com"
+compile_sass = false
+build_search_index = false
+"#;
+    std::fs::write(root.join("config.toml"), config).unwrap();
+
+    let tpl_dir = root.join("templates");
+    std::fs::create_dir_all(&tpl_dir).unwrap();
+    std::fs::write(tpl_dir.join("index.html"), "{{ section.content | safe }}").unwrap();
+    std::fs::write(tpl_dir.join("page.html"), "{{ page.content | safe }}").unwrap();
+
+    let static_dir = root.join("static");
+    std::fs::create_dir_all(&static_dir).unwrap();
+    std::fs::write(static_dir.join("logo.svg"), svg).unwrap();
+
+    let bundle_dir = root.join("content").join("posts").join("my-bundle");
+    std::fs::create_dir_all(&bundle_dir).unwrap();
+    std::fs::write(bundle_dir.join("graphic.svg"), svg).unwrap();
+    let bundle_content = r#"+++
+title = "My Bundle"
++++
+![bundle](graphic.svg)
+![static](/logo.svg)
+"#;
+    std::fs::write(bundle_dir.join("index.md"), bundle_content).unwrap();
+
+    let other_content = r#"+++
+title = "Other"
++++
+![at](@/posts/my-bundle/graphic.svg?v=1)
+"#;
+    std::fs::write(root.join("content").join("other.md"), other_content).unwrap();
+
+    let config_file = root.join("config.toml");
+    let mut site = Site::new(root, &config_file).unwrap();
+    let public = root.join("public");
+    site.set_output_path(&public);
+    site.load().unwrap();
+    site.build().unwrap();
+
+    assert!(file_contains!(
+        public,
+        "posts/my-bundle/index.html",
+        r#"<img src="https://example.com/posts/my-bundle/graphic.svg" alt="bundle" width="320" height="240" />"#
+    ));
+    assert!(file_contains!(
+        public,
+        "posts/my-bundle/index.html",
+        r#"<img src="/logo.svg" alt="static" width="320" height="240" />"#
+    ));
+
+    assert!(file_contains!(
+        public,
+        "other/index.html",
+        r#"<img src="https://example.com/posts/my-bundle/graphic.svg?v=1" alt="at" width="320" height="240" />"#
+    ));
+}

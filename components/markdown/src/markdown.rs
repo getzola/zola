@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::path::Path;
 use std::sync::LazyLock;
 
 use gh_emoji::Replacer as EmojiReplacer;
@@ -57,9 +58,12 @@ fn is_colocated_asset_link(link: &str) -> bool {
 
 fn resolve_colocated_asset(link: &str, ctx: &MarkdownContext) -> Option<String> {
     let path = link.strip_prefix("@/")?;
-    // `#` in an asset path is probably a mistake, ignore it
-    let path = path.split('#').next().unwrap();
-    let (owner_md, rel) = ctx.colocated_assets.get(path)?;
+    let (raw_path, suffix) = match path.find(['?', '#']) {
+        Some(i) => (&path[..i], &path[i..]),
+        None => (path, ""),
+    };
+    let decoded = percent_encoding::percent_decode_str(raw_path).decode_utf8_lossy();
+    let (owner_md, rel) = ctx.colocated_assets.get(decoded.as_ref())?;
     let owner = if ctx.lang != ctx.config.default_language
         && let Some(stem) = owner_md.strip_suffix(".md")
         && let Ok(owner) = resolve_internal_link(&format!("{stem}.{}.md", ctx.lang), ctx.permalinks)
@@ -68,7 +72,7 @@ fn resolve_colocated_asset(link: &str, ctx: &MarkdownContext) -> Option<String> 
     } else {
         resolve_internal_link(owner_md.as_str(), ctx.permalinks).ok()?
     };
-    Some(format!("{}{rel}", owner.permalink))
+    Some(format!("{}{rel}{suffix}", owner.permalink))
 }
 
 #[inline]
@@ -118,6 +122,58 @@ struct ImageBuffer {
     url: String,
     title: String,
     alt: Vec<Event<'static>>,
+    dimensions: Option<(u32, u32)>,
+}
+
+fn read_valid_dimensions(path: &Path) -> Option<(u32, u32)> {
+    if path.is_file()
+        && let Ok(meta) = imageproc::read_image_metadata(path)
+        && meta.width > 0
+        && meta.height > 0
+    {
+        return Some((meta.width, meta.height));
+    }
+    None
+}
+
+fn get_image_dimensions(dest_url: &str, ctx: &MarkdownContext) -> Option<(u32, u32)> {
+    if is_external_link(dest_url) || dest_url.starts_with("//") || dest_url.starts_with("data:") {
+        return None;
+    }
+
+    let path = dest_url.split(['?', '#']).next().filter(|s| !s.is_empty())?;
+    let decoded = percent_encoding::percent_decode_str(path).decode_utf8_lossy();
+    let decoded_path = decoded.as_ref();
+
+    if let Some(stripped) = decoded_path.strip_prefix("@/") {
+        if let Some(base) = ctx.base_path {
+            if let Some((owner_md, rel)) = ctx.colocated_assets.get(stripped) {
+                let owner_path = Path::new(owner_md);
+                let path = match owner_path.parent() {
+                    Some(parent) => base.join("content").join(parent).join(rel),
+                    None => base.join("content").join(rel),
+                };
+                read_valid_dimensions(&path)
+            } else {
+                read_valid_dimensions(&base.join("content").join(stripped))
+            }
+        } else if let Some((_, rel)) = ctx.colocated_assets.get(stripped) {
+            ctx.current_dir.and_then(|d| read_valid_dimensions(&d.join(rel)))
+        } else {
+            None
+        }
+    } else if let Some(rel) = decoded_path.strip_prefix('/') {
+        let base = ctx.base_path?;
+        read_valid_dimensions(&base.join("static").join(rel)).or_else(|| {
+            let theme = ctx.config.theme.as_deref()?;
+            read_valid_dimensions(&base.join("themes").join(theme).join("static").join(rel))
+        })
+    } else if let Some(current_dir) = ctx.current_dir {
+        let clean_path = decoded_path.strip_prefix("./").unwrap_or(decoded_path);
+        read_valid_dimensions(&current_dir.join(clean_path))
+    } else {
+        None
+    }
 }
 
 impl ImageBuffer {
@@ -497,14 +553,18 @@ impl<'a> State<'a> {
         } else {
             format!(r#" title="{}""#, escape_html_string(&img.title))
         };
-        let html = if ctx.config.markdown.lazy_async_image {
-            format!(
-                r#"<img src="{src}" alt="{alt}"{title_attr} loading="lazy" decoding="async" />"#
-            )
-        } else {
-            format!(r#"<img src="{src}" alt="{alt}"{title_attr} />"#)
+        let dims_attr = match img.dimensions {
+            Some((w, h)) => format!(r#" width="{w}" height="{h}""#),
+            None => String::new(),
         };
-        self.push_html(html);
+        let lazy_attr = if ctx.config.markdown.lazy_async_image {
+            r#" loading="lazy" decoding="async""#
+        } else {
+            ""
+        };
+        self.push_html(format!(
+            r#"<img src="{src}" alt="{alt}"{title_attr}{dims_attr}{lazy_attr} />"#
+        ));
     }
 
     fn handle_footnote_ref(&mut self, name: CowStr<'a>, ctx: &MarkdownContext) {
@@ -553,6 +613,7 @@ impl<'a> State<'a> {
 
             // Images
             Event::Start(Tag::Image { link_type, dest_url, title, .. }) => {
+                let dimensions = get_image_dimensions(dest_url.as_ref(), ctx);
                 let url = match self.fix_link(ctx, link_type, dest_url.as_ref()) {
                     Ok(url) => url,
                     Err(e) => {
@@ -560,7 +621,12 @@ impl<'a> State<'a> {
                         dest_url.to_string()
                     }
                 };
-                self.image = Some(ImageBuffer { url, title: title.to_string(), alt: Vec::new() });
+                self.image = Some(ImageBuffer {
+                    url,
+                    title: title.to_string(),
+                    alt: Vec::new(),
+                    dimensions,
+                });
             }
             Event::End(TagEnd::Image) => self.end_image(ctx),
 
@@ -743,6 +809,8 @@ mod tests {
             current_permalink: "",
             current_path: "",
             insert_anchor: InsertAnchor::None,
+            current_dir: None,
+            base_path: None,
         }
     }
 
@@ -783,6 +851,27 @@ mod tests {
         assert_eq!(
             resolve_colocated_asset("@/blog/english-only/img.png", &context).unwrap(),
             "https://example.com/blog/english-only/img.png"
+        );
+    }
+
+    #[test]
+    fn test_resolve_colocated_asset_with_query_hash_and_encoding() {
+        let config = Config::default();
+        let tera = ZOLA_TERA.clone();
+        let mut permalinks = HashMap::new();
+        permalinks
+            .insert("blog/post/index.md".to_string(), "https://example.com/blog/post/".to_string());
+        let mut colocated_assets = AHashMap::new();
+        colocated_assets.insert(
+            "blog/post/my img.svg".to_string(),
+            ("blog/post/index.md".to_string(), "my img.svg".to_string()),
+        );
+        let mut context = make_context(&config, &tera, &permalinks);
+        context.colocated_assets = &colocated_assets;
+
+        assert_eq!(
+            resolve_colocated_asset("@/blog/post/my%20img.svg?v=1#hash", &context).unwrap(),
+            "https://example.com/blog/post/my img.svg?v=1#hash"
         );
     }
 

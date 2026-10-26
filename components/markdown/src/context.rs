@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::Path;
 
 use ahash::AHashMap;
 use config::Config;
@@ -16,6 +17,8 @@ pub struct MarkdownContext<'a> {
     pub current_permalink: &'a str,
     pub current_path: &'a str,
     pub insert_anchor: InsertAnchor,
+    pub current_dir: Option<&'a Path>,
+    pub base_path: Option<&'a Path>,
 }
 
 impl<'a> MarkdownContext<'a> {

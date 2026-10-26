@@ -71,6 +71,8 @@ impl Filter<&str, TeraResult<String>> for MarkdownFilter {
             current_permalink: &current_permalink,
             current_path: &current_path,
             insert_anchor: InsertAnchor::None,
+            current_dir: None,
+            base_path: None,
         };
 
         let mut html = render_content(value, &context)

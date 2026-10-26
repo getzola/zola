@@ -499,6 +499,7 @@ impl Site {
                     tera,
                     config,
                     insert_anchor,
+                    &self.base_path,
                 )
             })
             .collect::<Result<()>>()?;
@@ -516,6 +517,7 @@ impl Site {
                     &colocated_assets,
                     tera,
                     config,
+                    &self.base_path,
                 )
             })
             .collect::<Result<()>>()?;
@@ -551,6 +553,7 @@ impl Site {
                 &self.tera,
                 &self.config,
                 insert_anchor,
+                &self.base_path,
             )?;
         }
 
@@ -585,6 +588,7 @@ impl Site {
                 &self.library.colocated_assets,
                 &self.tera,
                 &self.config,
+                &self.base_path,
             )?;
         }
         let library = Arc::make_mut(&mut self.library);
