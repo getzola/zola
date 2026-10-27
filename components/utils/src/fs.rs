@@ -1,6 +1,8 @@
 use filetime::{FileTime, set_file_mtime};
 use fs_err as fs;
 use globset::GlobSet;
+use rayon::prelude::*;
+use same_file::is_same_file;
 use std::io::prelude::*;
 use std::path::Path;
 use std::time::SystemTime;
@@ -17,7 +19,10 @@ pub fn is_path_in_directory(parent: &Path, path: &Path) -> Result<bool> {
 
 /// Creates the parent of a directory, if needed.
 fn create_parent(path: &Path) -> Result<()> {
-    if let Some(parent) = path.parent() {
+    if let Some(parent) = path.parent()
+        && !parent.as_os_str().is_empty()
+        && !parent.exists()
+    {
         create_directory(parent)?;
     }
     Ok(())
@@ -64,7 +69,6 @@ pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> 
     let relative_path = src.strip_prefix(base_path)?;
     let target_path = dest.join(relative_path);
 
-    create_parent(&target_path)?;
     copy_file_if_needed(src, &target_path, hard_link)
 }
 
@@ -73,9 +77,11 @@ pub fn copy_file(src: &Path, dest: &Path, base_path: &Path, hard_link: bool) -> 
 /// 2. Its modification timestamp is identical to that of the src file.
 /// 3. Its filesize is identical to that of the src file.
 pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<()> {
-    create_parent(dest)?;
-
     if hard_link {
+        if is_same_file(src, dest).unwrap_or(false) {
+            return Ok(());
+        }
+        create_parent(dest)?;
         if dest.exists() {
             fs::remove_file(dest).with_context(|| format!("Error removing file: {:?}", dest))?;
         }
@@ -85,20 +91,25 @@ pub fn copy_file_if_needed(src: &Path, dest: &Path, hard_link: bool) -> Result<(
         let src_metadata = fs::metadata(src)
             .with_context(|| format!("Failed to get metadata of {}", src.display()))?;
         let src_mtime = FileTime::from_last_modification_time(&src_metadata);
-        if Path::new(&dest).is_file() {
-            let target_metadata = fs::metadata(dest)?;
-            let target_mtime = FileTime::from_last_modification_time(&target_metadata);
-            if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
+
+        match fs::metadata(dest) {
+            Ok(target_metadata) if target_metadata.is_file() => {
+                let target_mtime = FileTime::from_last_modification_time(&target_metadata);
+                if !(src_mtime == target_mtime && src_metadata.len() == target_metadata.len()) {
+                    create_parent(dest)?;
+                    fs::copy(src, dest).with_context(|| {
+                        format!("Was not able to copy file {} to {}", src.display(), dest.display())
+                    })?;
+                    set_file_mtime(dest, src_mtime)?;
+                }
+            }
+            _ => {
+                create_parent(dest)?;
                 fs::copy(src, dest).with_context(|| {
                     format!("Was not able to copy file {} to {}", src.display(), dest.display())
                 })?;
                 set_file_mtime(dest, src_mtime)?;
             }
-        } else {
-            fs::copy(src, dest).with_context(|| {
-                format!("Was not able to copy directory {} to {}", src.display(), dest.display())
-            })?;
-            set_file_mtime(dest, src_mtime)?;
         }
     }
     Ok(())
@@ -110,6 +121,9 @@ pub fn copy_directory(
     hard_link: bool,
     ignore_globset: Option<&GlobSet>,
 ) -> Result<()> {
+    let mut dirs = Vec::new();
+    let mut files = Vec::new();
+
     for entry in
         WalkDir::new(src).follow_links(true).into_iter().filter_map(std::result::Result::ok)
     {
@@ -124,20 +138,29 @@ pub fn copy_directory(
         let target_path = dest.join(relative_path);
 
         if entry.path().is_dir() {
-            if !target_path.exists() {
-                create_directory(&target_path)?;
-            }
+            dirs.push(target_path);
         } else {
-            copy_file(entry.path(), dest, src, hard_link).with_context(|| {
-                format!(
-                    "Was not able to copy {} to {} (hard_link={})",
-                    entry.path().display(),
-                    dest.display(),
-                    hard_link
-                )
-            })?;
+            files.push((entry.into_path(), target_path));
         }
     }
+
+    for dir in dirs {
+        if !dir.exists() {
+            create_directory(&dir)?;
+        }
+    }
+
+    files.into_par_iter().try_for_each(|(src_file, target_file)| {
+        copy_file_if_needed(&src_file, &target_file, hard_link).with_context(|| {
+            format!(
+                "Was not able to copy {} to {} (hard_link={})",
+                src_file.display(),
+                dest.display(),
+                hard_link
+            )
+        })
+    })?;
+
     Ok(())
 }
 
@@ -255,7 +278,9 @@ mod tests {
     use filetime;
     use tempfile::tempdir_in;
 
-    use super::copy_file;
+    use super::{copy_directory, copy_file, copy_file_if_needed};
+    use globset::GlobSetBuilder;
+    use same_file::is_same_file;
 
     #[test]
     fn test_copy_file_timestamp_preserved() {
@@ -319,5 +344,80 @@ mod tests {
         copy_file(&src_file_path, dest_dir.path(), &base_path, false).unwrap();
         assert_eq!(fs::read_to_string(&src_file_path).unwrap(), "file1");
         assert_eq!(fs::read_to_string(&dest_file_path).unwrap(), "file1");
+    }
+
+    #[test]
+    fn test_copy_file_hard_link() {
+        let base_path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+        let src_dir =
+            tempdir_in(&base_path).expect("failed to create a temporary source directory.");
+        let dest_dir =
+            tempdir_in(&base_path).expect("failed to create a temporary destination directory.");
+        let src_file_path = src_dir.path().join("test.txt");
+        let dest_file_path = dest_dir.path().join("test.txt");
+
+        fs::write(&src_file_path, b"hello hard link").unwrap();
+
+        // 1. Initial hard link creation
+        copy_file_if_needed(&src_file_path, &dest_file_path, true).unwrap();
+        assert!(is_same_file(&src_file_path, &dest_file_path).unwrap());
+
+        // 2. Redundant call should succeed and preserve hard link without errors
+        copy_file_if_needed(&src_file_path, &dest_file_path, true).unwrap();
+        assert!(is_same_file(&src_file_path, &dest_file_path).unwrap());
+
+        // 3. If dest is overwritten with a separate file, hard link replaces it
+        fs::remove_file(&dest_file_path).unwrap();
+        fs::write(&dest_file_path, b"different file").unwrap();
+        assert!(!is_same_file(&src_file_path, &dest_file_path).unwrap());
+
+        copy_file_if_needed(&src_file_path, &dest_file_path, true).unwrap();
+        assert!(is_same_file(&src_file_path, &dest_file_path).unwrap());
+        assert_eq!(fs::read_to_string(&dest_file_path).unwrap(), "hello hard link");
+    }
+
+    #[test]
+    fn test_copy_directory() {
+        let base_path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+        let src_dir =
+            tempdir_in(&base_path).expect("failed to create a temporary source directory.");
+        let dest_dir =
+            tempdir_in(&base_path).expect("failed to create a temporary destination directory.");
+
+        // Create structure:
+        // src/a.txt
+        // src/sub/b.txt
+        // src/ignored.tmp
+        fs::write(src_dir.path().join("a.txt"), b"aaa").unwrap();
+        fs::create_dir_all(src_dir.path().join("sub")).unwrap();
+        fs::write(src_dir.path().join("sub").join("b.txt"), b"bbb").unwrap();
+        fs::write(src_dir.path().join("ignored.tmp"), b"ignore me").unwrap();
+
+        let mut builder = GlobSetBuilder::new();
+        builder.add(globset::Glob::new("*.tmp").unwrap());
+        let globset = builder.build().unwrap();
+
+        copy_directory(src_dir.path(), dest_dir.path(), false, Some(&globset)).unwrap();
+
+        assert_eq!(fs::read_to_string(dest_dir.path().join("a.txt")).unwrap(), "aaa");
+        assert_eq!(fs::read_to_string(dest_dir.path().join("sub").join("b.txt")).unwrap(), "bbb");
+        assert!(!dest_dir.path().join("ignored.tmp").exists());
+
+        // Test with hard links
+        let dest_link_dir =
+            tempdir_in(&base_path).expect("failed to create a temporary destination directory.");
+        copy_directory(src_dir.path(), dest_link_dir.path(), true, None).unwrap();
+
+        assert!(
+            is_same_file(src_dir.path().join("a.txt"), dest_link_dir.path().join("a.txt")).unwrap()
+        );
+        assert!(
+            is_same_file(
+                src_dir.path().join("sub").join("b.txt"),
+                dest_link_dir.path().join("sub").join("b.txt")
+            )
+            .unwrap()
+        );
+        assert!(dest_link_dir.path().join("ignored.tmp").exists());
     }
 }

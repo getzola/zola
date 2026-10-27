@@ -69,7 +69,7 @@ time = { workspace = true, features = ["formatting", "macros", "local-offset", "
 url = { workspace = true }
 
 [dev-dependencies]
-same-file = "1"
+same-file = { workspace = true }
 
 [features]
 indexing-zh = ["search/indexing-zh"]
@@ -101,6 +101,7 @@ percent-encoding = "2"
 pulldown-cmark = { version = "0.13", default-features = false, features = ["html", "simd"] }
 pulldown-cmark-escape = { version = "0.11", default-features = false }
 roxmltree_to_serde = "0.6"
+same-file = "1"
 rayon = "1"
 regex = "1"
 relative-path = "2"

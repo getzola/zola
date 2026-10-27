@@ -11,7 +11,9 @@ filetime = { workspace = true }
 fs-err = { workspace = true }
 globset = { workspace = true }
 percent-encoding = { workspace = true }
+rayon = { workspace = true }
 regex = { workspace = true }
+same-file = { workspace = true }
 slug = { workspace = true }
 tera = { workspace = true }
 walkdir = { workspace = true }
