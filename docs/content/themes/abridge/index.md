@@ -3,14 +3,14 @@
 title = "abridge"
 description = "A fast and lightweight Zola theme using semantic html, a class-light abridge.css, and No mandatory JS."
 template = "theme.html"
-date = 2026-10-11T20:22:06-07:00
+date = 2026-10-25T21:01:04-07:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-10-11T20:22:06-07:00
-updated = 2026-10-11T20:22:06-07:00
+created = 2026-10-25T21:01:04-07:00
+updated = 2026-10-25T21:01:04-07:00
 repository = "https://github.com/Jieiku/abridge.git"
 homepage = "https://github.com/jieiku/abridge"
 minimum_version = "0.23.6"
@@ -27,7 +27,7 @@ homepage = "https://github.com/jieiku/"
 
 # Abridge Zola Theme
 
-A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing class-light semantic HTML with modular CSS. Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.pages.dev) scores. See the Zola Themes Benchmarks [Zola Themes Benchmarks](https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md).
+A fast, lightweight, and modern [Zola](https://getzola.org) theme utilizing class-light semantic HTML with modular CSS. Perfect [Lighthouse](https://pagespeed.web.dev/report?url=abridge.pages.dev), [YellowLabTools](https://yellowlab.tools/), and [Observatory](https://developer.mozilla.org/en-US/observatory/analyze?host=abridge.pages.dev) scores. See the [Zola Themes Benchmarks](https://github.com/Jieiku/zola-themes-benchmarks/blob/main/README.md).
 
 ![Lighthouse Score](https://raw.githubusercontent.com/Jieiku/abridge/master/content/overview-abridge/lighthouse.png)
 

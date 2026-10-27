@@ -3,14 +3,14 @@
 title = "zola-quiet"
 description = "A quiet, two-skin Zola theme: Minima-flavoured typography and a TUI/ncurses look with ASCII article frame. Both skins ship with matched light and dark modes plus a runtime toggle. Docs-style on-page TOC, addendum convention, iframe theme-sync protocol baked in."
 template = "theme.html"
-date = 2026-10-12T17:47:18+05:30
+date = 2026-10-14T11:02:10+05:30
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-10-12T17:47:18+05:30
-updated = 2026-10-12T17:47:18+05:30
+created = 2026-10-14T11:02:10+05:30
+updated = 2026-10-14T11:02:10+05:30
 repository = "https://github.com/johnnybravo-xyz/zola-quiet.git"
 homepage = "https://github.com/johnnybravo-xyz/zola-quiet"
 minimum_version = "0.19.0"
@@ -98,6 +98,10 @@ Then in your `config.toml`:
 theme = "zola-quiet"
 ```
 
+Every link, stylesheet and icon goes through `get_url`, so the theme also
+works when the site is served from a sub-path, such as a GitHub Pages
+project site: set `base_url = "https://you.github.io/project"`.
+
 ## `[extra]` keys the templates read
 
 All optional. Every block is `{%/* if */%}`-guarded so the theme
@@ -126,6 +130,39 @@ ascii_signature = """
 ░░░░░░░░░░░░
 """
 ```
+
+## Project pages
+
+Three templates cover a site that also documents software:
+
+- `project.html` (section): the section's own content followed by one
+  list per subsection, e.g. docs and posts. `template = "project.html"`.
+- `doc.html` (page): undated documentation with the on-page TOC.
+  `page_template = "doc.html"` in the docs section's `_index.md`.
+- `projects.html` (section): projects listed from front matter, so local
+  ones and projects with their own sites sit side by side:
+
+```toml
++++
+title = "Projects"
+template = "projects.html"
+[[extra.projects]]
+name = "agd"
+tagline = "org-agenda for terminals and coding agents"
+url = "projects/agd/"
+links = [{ name = "source", url = "https://github.com/johnnybravo-xyz/agd" }]
+hero = { src = "/visualizers/agd.html", title = "An org-mode bench", ratio = "680 / 397" }
+[[extra.projects]]
+name = "suchi"
+url = "https://suchi.page/"
++++
+```
+
+`hero` is optional: a page (an animated figure, say) shown above the
+project's name as a picture that links to it.
+
+A site mirrored on a second host sets `extra.canonical_base` to the
+primary host so both copies declare the same canonical URL.
 
 ## Shareable heading anchors
 

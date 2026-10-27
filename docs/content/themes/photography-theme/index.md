@@ -3,14 +3,14 @@
 title = "photography theme"
 description = "a photography portfolio theme with many features, including an AI blocker"
 template = "theme.html"
-date = 2026-10-08T11:41:09+02:00
+date = 2026-10-17T13:45:30+02:00
 
 [taxonomies]
 theme-tags = ['Blog', 'portfolio', 'photography', 'SEO']
 
 [extra]
-created = 2026-10-08T11:41:09+02:00
-updated = 2026-10-08T11:41:09+02:00
+created = 2026-10-17T13:45:30+02:00
+updated = 2026-10-17T13:45:30+02:00
 repository = "https://codeberg.org/arbs09/photography-theme.git"
 homepage = "https://codeberg.org/arbs09/photography-theme"
 minimum_version = "0.23.6"
@@ -35,7 +35,7 @@ git init
 Add this theme to the `themes` folder:
 
 ```bash
-git submodule add --depth=1 https://github.com/arbs09/photography-theme.git themes/photography
+git submodule add --depth=1 https://codeberg.org/arbs09/photography-theme.git themes/photography
 git submodule update --init --recursive
 ```
 
