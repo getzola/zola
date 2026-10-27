@@ -2,6 +2,7 @@ use config::{Config, Search};
 use content::Library;
 use elasticlunr::{IndexBuilder, lang};
 use errors::{Result, bail};
+use rayon::prelude::*;
 use time::format_description::well_known::Rfc3339;
 
 use crate::{IndexItem, clean_and_truncate_body, collect_index_items};
@@ -39,7 +40,7 @@ fn path_tokenizer(text: &str) -> Vec<String> {
         .collect()
 }
 
-fn fill_index(search_config: &Search, item: IndexItem) -> Vec<String> {
+fn fill_index(search_config: &Search, item: &IndexItem) -> Vec<String> {
     let mut row = vec![];
 
     if search_config.include_title {
@@ -85,8 +86,13 @@ pub fn build_index(lang: &str, library: &Library, config: &Config) -> Result<Str
 
     let items = collect_index_items(lang, library);
 
-    for item in items {
-        index.add_doc(item.url, fill_index(&language_options.search, item));
+    let docs: Vec<(&str, Vec<String>)> = items
+        .par_iter()
+        .map(|item| (item.url, fill_index(&language_options.search, item)))
+        .collect();
+
+    for (url, fields) in docs {
+        index.add_doc(url, fields);
     }
 
     Ok(index.to_json())
@@ -136,7 +142,7 @@ mod tests {
             content: &content,
         };
 
-        let res = fill_index(&config.search, item);
+        let res = fill_index(&config.search, &item);
         assert_eq!(res.len(), 2);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], content);
@@ -160,7 +166,7 @@ mod tests {
             content: &content,
         };
 
-        let res = fill_index(&config.search, item);
+        let res = fill_index(&config.search, &item);
         assert_eq!(res.len(), 3);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], description.unwrap());
@@ -185,7 +191,7 @@ mod tests {
             content: &content,
         };
 
-        let res = fill_index(&config.search, item);
+        let res = fill_index(&config.search, &item);
         assert_eq!(res.len(), 2);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], content[..5]);
@@ -210,7 +216,7 @@ mod tests {
             content: &content,
         };
 
-        let res = fill_index(&config.search, item);
+        let res = fill_index(&config.search, &item);
         assert_eq!(res.len(), 3);
         assert_eq!(res[0], title.unwrap());
         assert_eq!(res[1], "2023-01-31T00:00:00Z");

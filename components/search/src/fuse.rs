@@ -1,6 +1,7 @@
 use config::Search;
 use content::Library;
 use errors::Result;
+use rayon::prelude::*;
 
 use crate::{clean_and_truncate_body, collect_index_items};
 
@@ -18,10 +19,10 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
         #[serde(skip_serializing_if = "Option::is_none")]
         path: Option<&'a str>,
     }
-    let mut index: Vec<FuseIndexItem> = Vec::new();
     let items = collect_index_items(lang, library);
-    for item in &items {
-        index.push(FuseIndexItem {
+    let mut index: Vec<FuseIndexItem> = items
+        .par_iter()
+        .map(|item| FuseIndexItem {
             url: item.url,
             title: match config.include_title {
                 true => Some(item.title.as_deref().unwrap_or_default()),
@@ -39,8 +40,8 @@ pub fn build_index(lang: &str, library: &Library, config: &Search) -> Result<Str
                 true => Some(item.path),
                 false => None,
             },
-        });
-    }
+        })
+        .collect();
     index.sort_by(|a, b| a.url.cmp(b.url));
     Ok(serde_json::to_string(&index)?)
 }

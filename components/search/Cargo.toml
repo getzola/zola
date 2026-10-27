@@ -9,6 +9,7 @@ ammonia = { workspace = true }
 elasticlunr-rs = { workspace = true }
 serde_json = { workspace = true }
 time = { workspace = true }
+rayon = { workspace = true }
 
 errors = { workspace = true }
 content = { workspace = true }

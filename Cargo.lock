@@ -5089,6 +5089,7 @@ dependencies = [
  "content",
  "elasticlunr-rs",
  "errors",
+ "rayon",
  "serde",
  "serde_json",
  "time",
