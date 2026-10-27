@@ -24,6 +24,8 @@ dunce = "1"
 log = { workspace = true }
 giallo = { workspace = true }
 ahash = {workspace = true }
+option_either_or = "1"
+lazy_format = "2"
 
 markdown = { workspace = true }
 errors = { workspace = true }

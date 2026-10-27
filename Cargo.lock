@@ -2785,6 +2785,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "lazy_format"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e479e99b287d578ed5f6cd4c92cdf48db219088adb9c5b14f7c155b71dfba792"
+
+[[package]]
 name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3649,6 +3655,15 @@ name = "openssl-probe"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c87def4c32ab89d880effc9e097653c8da5d6ef28e6b539d313baaacfbafcbe"
+
+[[package]]
+name = "option_either_or"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60b91ae14048041846cfd4a76b00880e9ffb9d03838050ba6afb6460a6be4c6b"
+dependencies = [
+ "either",
+]
 
 [[package]]
 name = "os_str_bytes"
@@ -5581,11 +5596,13 @@ dependencies = [
  "imageproc",
  "insta",
  "jiff",
+ "lazy_format",
  "log",
  "markdown",
  "mockito",
  "nom-bibtex",
  "num-format",
+ "option_either_or",
  "render",
  "reqwest",
  "roxmltree_to_serde",
