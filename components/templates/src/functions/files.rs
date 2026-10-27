@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 use std::fmt::Write as _;
-use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use ahash::AHashMap;
 use base64::engine::{Engine, general_purpose::STANDARD as standard_b64};
 use fs_err as fs;
-use sha2::{Sha256, Sha384, Sha512, digest};
+use sha2::{Digest, Sha256, Sha384, Sha512, digest};
 
 use config::Config;
 use tera::{Error, Function, Kwargs, State, TeraResult};
@@ -15,13 +14,26 @@ use utils::site::resolve_internal_link;
 
 use crate::helpers::search_for_file;
 
-fn compute_hash<D>(data: &[u8], as_base64: bool) -> String
+struct DigestWriter<D>(pub D);
+
+impl<D: Digest> std::io::Write for DigestWriter<D> {
+    #[inline]
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        self.0.update(buf);
+        Ok(buf.len())
+    }
+
+    #[inline]
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}
+
+fn format_hash<D>(hasher: D, as_base64: bool) -> String
 where
-    D: digest::Digest,
+    D: Digest,
     digest::Output<D>: AsRef<[u8]>,
 {
-    let mut hasher = D::new();
-    hasher.update(data);
     let result = hasher.finalize();
     let bytes = result.as_ref();
     if as_base64 {
@@ -33,6 +45,27 @@ where
         }
         hex
     }
+}
+
+fn compute_hash<D>(data: &[u8], as_base64: bool) -> String
+where
+    D: Digest,
+    digest::Output<D>: AsRef<[u8]>,
+{
+    let mut hasher = D::new();
+    hasher.update(data);
+    format_hash(hasher, as_base64)
+}
+
+fn compute_file_hash<D>(file_path: &Path, as_base64: bool) -> std::io::Result<String>
+where
+    D: Digest,
+    digest::Output<D>: AsRef<[u8]>,
+{
+    let mut file = fs::File::open(file_path)?;
+    let mut writer = DigestWriter(D::new());
+    std::io::copy(&mut file, &mut writer)?;
+    Ok(format_hash(writer.0, as_base64))
 }
 
 #[derive(Debug, Default)]
@@ -64,15 +97,16 @@ impl GetUrl {
     }
 
     fn cachebust_hash(&self, file_path: &Path, cache_key: &str) -> Option<String> {
-        let mut cache = self.result_cache.lock().expect("result cache lock");
-        if let Some(hash) = cache.get(cache_key) {
-            return Some(hash.clone());
+        if let Some(hash) =
+            self.result_cache.lock().expect("result cache lock").get(cache_key).cloned()
+        {
+            return Some(hash);
         }
-        let mut f = fs::File::open(file_path).ok()?;
-        let mut contents = Vec::new();
-        f.read_to_end(&mut contents).ok()?;
-        let hash = compute_hash::<Sha256>(&contents, false);
-        cache.insert(cache_key.to_string(), hash.clone());
+        let hash = compute_file_hash::<Sha256>(file_path, false).ok()?;
+        self.result_cache
+            .lock()
+            .expect("result cache lock")
+            .insert(cache_key.to_string(), hash.clone());
         Some(hash)
     }
 }
@@ -125,15 +159,23 @@ impl Function<TeraResult<String>> for GetUrl {
                     })?;
                 let mut permalink = format!("{}{rel}", resolved.permalink);
                 if cachebust {
-                    let file_path = self.base_path.join("content").join(stripped);
-                    match self.cachebust_hash(&file_path, &path) {
-                        Some(hash) => add_cachebust(&mut permalink, &hash),
+                    let maybe_hash =
+                        self.result_cache.lock().expect("result cache lock").get(&path).cloned();
+                    let hash = match maybe_hash {
+                        Some(h) => h,
                         None => {
-                            return Err(Error::message(format!(
-                                "`get_url`: Could not find or open file {path} for cachebusting"
-                            )));
+                            let file_path = self.base_path.join("content").join(stripped);
+                            match self.cachebust_hash(&file_path, &path) {
+                                Some(hash) => hash,
+                                None => {
+                                    return Err(Error::message(format!(
+                                        "`get_url`: Could not find or open file {path} for cachebusting"
+                                    )));
+                                }
+                            }
                         }
-                    }
+                    };
+                    add_cachebust(&mut permalink, &hash);
                 }
                 return Ok(permalink);
             }
@@ -179,24 +221,35 @@ impl Function<TeraResult<String>> for GetUrl {
             }
 
             if cachebust {
-                match search_for_file(
-                    &self.base_path,
-                    &path_with_lang,
-                    &self.config.theme,
-                    &self.output_path,
-                )
-                .map_err(|e| Error::message(format!("`get_url`: {e}")))?
-                .and_then(|(file_path, unified_path)| {
-                    self.cachebust_hash(&file_path, &unified_path)
-                }) {
-                    Some(hash) => add_cachebust(&mut permalink, &hash),
+                let cache_key = path_with_lang.trim_start_matches('/');
+                let maybe_hash =
+                    self.result_cache.lock().expect("result cache lock").get(cache_key).cloned();
+
+                let hash = match maybe_hash {
+                    Some(hash) => hash,
                     None => {
-                        return Err(Error::message(format!(
-                            "`get_url`: Could not find or open file {}",
-                            path_with_lang
-                        )));
+                        match search_for_file(
+                            &self.base_path,
+                            &path_with_lang,
+                            &self.config.theme,
+                            &self.output_path,
+                        )
+                        .map_err(|e| Error::message(format!("`get_url`: {e}")))?
+                        .and_then(|(file_path, unified_path)| {
+                            self.cachebust_hash(&file_path, &unified_path)
+                        }) {
+                            Some(hash) => hash,
+                            None => {
+                                return Err(Error::message(format!(
+                                    "`get_url`: Could not find or open file {}",
+                                    path_with_lang
+                                )));
+                            }
+                        }
                     }
                 };
+
+                add_cachebust(&mut permalink, &hash);
             }
 
             Ok(permalink)
@@ -232,65 +285,51 @@ impl Function<TeraResult<String>> for GetHash {
         }
         let base64: bool = kwargs.get("base64")?.unwrap_or(true);
 
-        let (contents, cache_key) = match (path, literal) {
-            (Some(_), Some(_)) => {
-                return Err(Error::message(
-                    "`get_hash`: must have only one of `path` or `literal` argument",
-                ));
-            }
-            (None, None) => {
-                return Err(Error::message(
-                    "`get_hash`: must have at least one of `path` or `literal` argument",
-                ));
-            }
+        match (path, literal) {
+            (Some(_), Some(_)) => Err(Error::message(
+                "`get_hash`: must have only one of `path` or `literal` argument",
+            )),
+            (None, None) => Err(Error::message(
+                "`get_hash`: must have at least one of `path` or `literal` argument",
+            )),
             (Some(path_v), None) => {
                 let key = (path_v, sha_type, base64);
-                let cache = self.result_cache.lock().expect("result cache lock");
-                if let Some(hash) = cache.get(&key) {
-                    return Ok(hash.clone());
+                if let Some(hash) =
+                    self.result_cache.lock().expect("result cache lock").get(&key).cloned()
+                {
+                    return Ok(hash);
                 }
-                drop(cache);
 
-                let file_path =
-                    match search_for_file(&self.base_path, &key.0, &self.theme, &self.output_path)
+                let (file_path, _) =
+                    search_for_file(&self.base_path, &key.0, &self.theme, &self.output_path)
                         .map_err(|e| Error::message(format!("`get_hash`: {}", e)))?
-                    {
-                        Some((f, _)) => f,
-                        None => {
-                            return Err(Error::message(format!(
-                                "`get_hash`: Cannot find file: {}",
-                                key.0
-                            )));
-                        }
-                    };
+                        .ok_or_else(|| {
+                            Error::message(format!("`get_hash`: Cannot find file: {}", key.0))
+                        })?;
 
-                let mut f = fs::File::open(&file_path).map_err(|e| {
-                    Error::message(format!("File {} could not be open: {}", key.0, e))
-                })?;
+                let hash = match sha_type {
+                    256 => compute_file_hash::<Sha256>(&file_path, base64),
+                    384 => compute_file_hash::<Sha384>(&file_path, base64),
+                    512 => compute_file_hash::<Sha512>(&file_path, base64),
+                    _ => unreachable!(),
+                }
+                .map_err(|e| Error::message(format!("File {} could not be read: {}", key.0, e)))?;
 
-                let mut contents = Vec::new();
-                f.read_to_end(&mut contents).map_err(|e| {
-                    Error::message(format!("File {} could not be read: {}", key.0, e))
-                })?;
+                self.result_cache.lock().expect("result cache lock").insert(key, hash.clone());
 
-                (contents, Some(key))
+                Ok(hash)
             }
-            (None, Some(literal_v)) => (literal_v.into_bytes(), None),
-        };
+            (None, Some(literal_v)) => {
+                let hash = match sha_type {
+                    256 => compute_hash::<Sha256>(literal_v.as_bytes(), base64),
+                    384 => compute_hash::<Sha384>(literal_v.as_bytes(), base64),
+                    512 => compute_hash::<Sha512>(literal_v.as_bytes(), base64),
+                    _ => unreachable!(),
+                };
 
-        let hash = match sha_type {
-            256 => compute_hash::<Sha256>(&contents, base64),
-            384 => compute_hash::<Sha384>(&contents, base64),
-            512 => compute_hash::<Sha512>(&contents, base64),
-            _ => unreachable!(),
-        };
-
-        if let Some(key) = cache_key {
-            let mut cache = self.result_cache.lock().expect("result cache lock");
-            cache.insert(key, hash.clone());
+                Ok(hash)
+            }
         }
-
-        Ok(hash)
     }
 }
 
@@ -962,5 +1001,47 @@ title = "A title"
         ]);
         let url = get_url.call(kwargs, &State::new(&ctx)).unwrap();
         assert_eq!(url, "https://remplace-par-ton-url.fr/en/");
+    }
+
+    #[test]
+    fn repeated_calls_use_cache_without_filesystem_lookup() {
+        let dir = create_temp_dir();
+        let app_css = dir.path().join("app.css");
+        assert!(app_css.exists());
+
+        let get_url = GetUrl::new(
+            dir.path().to_path_buf(),
+            Config::default(),
+            HashMap::new(),
+            PathBuf::new(),
+            AHashMap::new(),
+        );
+
+        let ctx = Context::new();
+        let kwargs = Kwargs::from([
+            ("path", tera::Value::from("app.css")),
+            ("cachebust", tera::Value::from(true)),
+        ]);
+        let url1 = get_url.call(kwargs.clone(), &State::new(&ctx)).unwrap();
+        assert_eq!(url1, "http://a-website.com/app.css?h=572e691dc68c3fcd653a");
+
+        let get_hash = GetHash::new(dir.path().to_path_buf(), None, PathBuf::new());
+        let hash_kwargs = Kwargs::from([
+            ("path", tera::Value::from("app.css")),
+            ("sha_type", tera::Value::from(256)),
+            ("base64", tera::Value::from(false)),
+        ]);
+        let hash1 = get_hash.call(hash_kwargs.clone(), &State::new(&ctx)).unwrap();
+        assert_eq!(hash1, "572e691dc68c3fcd653ae463261bdb38f35dc6f01715d9ce68799319dd158840");
+
+        // Remove the file from disk: subsequent calls must succeed from cache without filesystem access
+        fs::remove_file(&app_css).unwrap();
+        assert!(!app_css.exists());
+
+        let url2 = get_url.call(kwargs, &State::new(&ctx)).unwrap();
+        assert_eq!(url2, url1);
+
+        let hash2 = get_hash.call(hash_kwargs, &State::new(&ctx)).unwrap();
+        assert_eq!(hash2, hash1);
     }
 }
