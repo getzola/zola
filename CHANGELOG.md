@@ -9,6 +9,7 @@
 - Make `cachebust` arg of `get_url` work with colocated asset `@/` path
 - Change Sass library to support more recent Sass things
 - Apply `ignored_content` only to content changes in `zola serve`
+- Fix line breaks in image alt text being dropped and replace them with spaces instead
 
 
 ## 0.23.6 (2026-09-12)
