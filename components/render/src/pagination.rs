@@ -116,7 +116,7 @@ impl<'a> Paginator<'a> {
             .all_pages
             .iter()
             .enumerate()
-            .filter(|(_, p)| library.pages[*p].meta.render)
+            .filter(|(_, p)| library.pages[*p].meta.render())
             .map(|(i, _)| i)
             .collect();
 
@@ -454,7 +454,7 @@ mod tests {
             page.meta.title = Some(i.to_string());
             page.file.path = PathBuf::from(&format!("{}.md", i));
             if i == 2 || i == 4 {
-                page.meta.render = false;
+                page.meta.render = Some(false);
             }
             library.insert_page(page);
         }
@@ -488,7 +488,7 @@ mod tests {
             let mut page = Page::default();
             page.meta.title = Some(i.to_string());
             page.file.path = PathBuf::from(&format!("{}.md", i));
-            page.meta.render = false;
+            page.meta.render = Some(false);
             library.insert_page(page);
         }
 

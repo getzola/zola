@@ -35,6 +35,8 @@
 - Do not error when setting heading ids in content with a Tera error
 - Properly merge taxonomies terms when needed after slugification
 
+- Add `inherit_metadata` setting (config-wide and per-section) letting translated pages inherit front matter they don't specify from the default language
+
 ## 0.23.3 (2026-08-11)
 
 - Fix Windows issues

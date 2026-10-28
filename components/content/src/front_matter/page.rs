@@ -9,7 +9,7 @@ use time::{Date, OffsetDateTime, PrimitiveDateTime};
 use super::datetime::from_unknown_datetime;
 use errors::{Result, bail};
 
-use super::extra::{default_extra, deserialize_extra};
+use super::extra::{default_extra, deserialize_extra, merge_maps};
 
 use crate::front_matter::split::RawFrontMatter;
 
@@ -40,11 +40,11 @@ pub struct PageFrontMatter {
     #[serde(default, skip_deserializing)]
     pub datetime_tuple: Option<(i32, u8, u8)>,
     /// Whether this page is a draft
-    pub draft: bool,
+    pub draft: Option<bool>,
     /// Prevent generation of a folder for current page
     /// Defaults to `true`
     #[serde(skip_serializing)]
-    pub render: bool,
+    pub render: Option<bool>,
     /// The page slug. Will be used instead of the filename if present
     /// Can't be an empty string if present
     pub slug: Option<String>,
@@ -56,7 +56,7 @@ pub struct PageFrontMatter {
     /// Integer to use to order content. Highest is at the bottom, lowest first
     pub weight: Option<usize>,
     /// The authors of the page.
-    pub authors: Vec<String>,
+    pub authors: Option<Vec<String>>,
     /// All aliases for that page. Zola will create HTML templates that will
     /// redirect to this
     #[serde(skip_serializing)]
@@ -67,11 +67,11 @@ pub struct PageFrontMatter {
     /// Whether the page is included in the search index
     /// Defaults to `true` but is only used if search if explicitly enabled in the config.
     #[serde(skip_serializing)]
-    pub in_search_index: bool,
+    pub in_search_index: Option<bool>,
     /// Whether the page is included in feeds (RSS/Atom)
     /// Defaults to `true`
     #[serde(skip_serializing)]
-    pub include_in_feeds: bool,
+    pub include_in_feeds: Option<bool>,
     /// Whether to hide this page everywhere but still render it
     #[serde(skip_serializing)]
     pub hidden: Option<bool>,
@@ -146,13 +146,92 @@ impl PageFrontMatter {
     pub fn weight(&self) -> usize {
         self.weight.unwrap()
     }
+
+    pub fn draft(&self) -> bool {
+        self.draft.unwrap_or(false)
+    }
+
+    pub fn render(&self) -> bool {
+        self.render.unwrap_or(true)
+    }
+
+    pub fn in_search_index(&self) -> bool {
+        self.in_search_index.unwrap_or(true)
+    }
+
+    pub fn include_in_feeds(&self) -> bool {
+        self.include_in_feeds.unwrap_or(true)
+    }
+
+    pub fn authors(&self) -> &[String] {
+        self.authors.as_deref().unwrap_or_default()
+    }
+
+    pub fn inherit_from(self, default: PageFrontMatter) -> PageFrontMatter {
+        let PageFrontMatter {
+            title,
+            description,
+            updated,
+            updated_datetime: _,
+            updated_datetime_tuple: _,
+            date,
+            datetime: _,
+            datetime_tuple: _,
+            draft,
+            render,
+            slug,
+            path,
+            taxonomies,
+            weight,
+            authors,
+            aliases,
+            template,
+            in_search_index,
+            include_in_feeds,
+            hidden,
+            extra,
+        } = self;
+
+        let mut merged_taxonomies = default.taxonomies;
+        merged_taxonomies.extend(taxonomies);
+        let merged_extra = match (default.extra.as_map(), extra.as_map()) {
+            (Some(base), Some(overlay)) => Value::from(merge_maps(base, overlay)),
+            _ => extra,
+        };
+
+        let mut merged = PageFrontMatter {
+            title: title.or(default.title),
+            description: description.or(default.description),
+            updated: updated.or(default.updated),
+            date: date.or(default.date),
+            draft: draft.or(default.draft),
+            render: render.or(default.render),
+            weight: weight.or(default.weight),
+            authors: authors.or(default.authors),
+            template: template.or(default.template),
+            in_search_index: in_search_index.or(default.in_search_index),
+            include_in_feeds: include_in_feeds.or(default.include_in_feeds),
+            hidden: hidden.or(default.hidden),
+            taxonomies: merged_taxonomies,
+            extra: merged_extra,
+            slug,
+            path,
+            aliases,
+            updated_datetime: None,
+            updated_datetime_tuple: None,
+            datetime: None,
+            datetime_tuple: None,
+        };
+        merged.date_to_datetime();
+        merged
+    }
 }
 
 impl Default for PageFrontMatter {
     fn default() -> PageFrontMatter {
         PageFrontMatter {
-            in_search_index: true,
-            include_in_feeds: true,
+            in_search_index: None,
+            include_in_feeds: None,
             title: None,
             description: None,
             updated: None,
@@ -161,13 +240,13 @@ impl Default for PageFrontMatter {
             date: None,
             datetime: None,
             datetime_tuple: None,
-            draft: false,
-            render: true,
+            draft: None,
+            render: None,
             slug: None,
             path: None,
             taxonomies: BTreeMap::new(),
             weight: None,
-            authors: Vec::new(),
+            authors: None,
             aliases: Vec::new(),
             template: None,
             hidden: None,
@@ -197,7 +276,7 @@ mod tests {
     fn include_in_feeds_defaults_to_true() {
         let content = &RawFrontMatter::Toml(r#"title = "Hello""#);
         let res = PageFrontMatter::parse(content).unwrap();
-        assert!(res.include_in_feeds);
+        assert!(res.include_in_feeds());
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -210,7 +289,7 @@ include_in_feeds: false
 "#); "yaml")]
     fn can_disable_include_in_feeds(content: &RawFrontMatter) {
         let res = PageFrontMatter::parse(content).unwrap();
-        assert!(!res.include_in_feeds);
+        assert!(!res.include_in_feeds());
     }
 
     #[test_case(&RawFrontMatter::Toml(r#"
@@ -612,13 +691,86 @@ authors:
         let res = PageFrontMatter::parse(content);
         assert!(res.is_ok());
         let res2 = res.unwrap();
-        assert_eq!(res2.authors.len(), 2);
+        assert_eq!(res2.authors().len(), 2);
         assert_eq!(
             vec!(
                 "person1@example.com (Person One)".to_owned(),
                 "person2@example.com (Person Two)".to_owned()
             ),
-            res2.authors
+            res2.authors()
         );
+    }
+
+    fn toml(content: &str) -> PageFrontMatter {
+        PageFrontMatter::parse(&RawFrontMatter::Toml(content)).unwrap()
+    }
+
+    #[test]
+    fn inherit_missing_keys_and_translated_wins() {
+        let default = toml("title = \"Default\"\nweight = 10\n");
+        let merged = toml("title = \"Traduit\"\n").inherit_from(default);
+        assert_eq!(merged.title.as_deref(), Some("Traduit"));
+        assert_eq!(merged.weight, Some(10));
+    }
+
+    #[test]
+    fn inherit_merges_extra_tables_and_replaces_arrays() {
+        let default = toml(
+            "[extra]\ncover = \"cover.png\"\nflavor = \"default\"\ntypes = [\"a\", \"b\"]\n\
+             [extra.abilities]\n\"Fire walk\" = \"yes\"\n\"Swim\" = \"no\"\n",
+        );
+        let translated = toml(
+            "[extra]\nflavor = \"traduit\"\ntypes = []\n[extra.abilities]\n\"Fire walk\" = \"oui\"\n",
+        );
+        let merged = translated.inherit_from(default);
+        let extra = merged.extra.as_map().unwrap();
+        assert_eq!(extra.get(&Key::from("cover")).unwrap(), &Value::from("cover.png"));
+        assert_eq!(extra.get(&Key::from("flavor")).unwrap(), &Value::from("traduit"));
+        assert!(extra.get(&Key::from("types")).unwrap().as_array().unwrap().is_empty());
+        let abilities = extra.get(&Key::from("abilities")).unwrap().as_map().unwrap();
+        assert_eq!(abilities.get(&Key::from("Fire walk")).unwrap(), &Value::from("oui"));
+        assert_eq!(abilities.get(&Key::from("Swim")).unwrap(), &Value::from("no"));
+    }
+
+    #[test]
+    fn inherit_skips_slug_path_and_aliases() {
+        let default =
+            toml("slug = \"default-slug\"\npath = \"/somewhere\"\naliases = [\"/old\"]\n");
+        let merged = toml("title = \"x\"\n").inherit_from(default);
+        assert_eq!(merged.slug, None);
+        assert_eq!(merged.path, None);
+        assert!(merged.aliases.is_empty());
+    }
+
+    #[test]
+    fn inherit_draft_and_date_and_derives_datetime() {
+        let default = toml("draft = true\ndate = 2002-10-12\n");
+        let merged = toml("title = \"x\"\n").inherit_from(default);
+        assert!(merged.draft());
+        assert_eq!(merged.datetime.unwrap(), datetime!(2002 - 10 - 12 0:00 UTC));
+        assert_eq!(merged.datetime_tuple, Some((2002, 10, 12)));
+    }
+
+    #[test]
+    fn inherit_explicit_false_wins() {
+        let merged = toml("draft = false\n").inherit_from(toml("draft = true\n"));
+        assert!(!merged.draft());
+    }
+
+    #[test]
+    fn inherit_merges_taxonomies_per_key() {
+        let default = toml("[taxonomies]\ntags = [\"hello\"]\nrelated = [\"a\"]\n");
+        let translated = toml("[taxonomies]\ntags = [\"bonjour\"]\n");
+        let merged = translated.inherit_from(default);
+        assert_eq!(merged.taxonomies["tags"], vec!["bonjour".to_string()]);
+        assert_eq!(merged.taxonomies["related"], vec!["a".to_string()]);
+    }
+
+    #[test]
+    fn inherit_empty_authors_in_translation_win() {
+        let merged = toml("authors = []\n").inherit_from(toml("authors = [\"a\"]\n"));
+        assert!(merged.authors().is_empty());
+        let merged = toml("title = \"x\"\n").inherit_from(toml("authors = [\"a\"]\n"));
+        assert_eq!(merged.authors(), ["a".to_string()]);
     }
 }
