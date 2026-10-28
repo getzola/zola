@@ -42,40 +42,21 @@ posts/
     hey.jpg
 ```
 
-In the templates, there is just the `current` variable that has `current.{pages,subsections}` filled if it's the directory page
+In the templates (only pages/sections), there is just the `current` variable that has `current.{pages,subsections}` filled if it's the directory page
 and empty otherwise.
-For existing users, we can create a `section` and `page` alias that match what existed before this merge in each case (eg
-a directory page gets a `section` variable but a normal page does not) using that new `current` shape.
-We do expose a new field, `kind`, which indicates whether it's a section or a page since we need to differentiate between those
+For existing users, we will create a `section` and `page` alias that match what existed before this merge in each case (eg
+a directory page gets a `section` variable but a normal page does not). Those variables will not change so it should not
+be a breaking change.
+
+We do expose a new field on `current`, `kind`, which indicates whether it's a section or a page since we need to differentiate between those
 still.
 
 On the content side, there are no changes to be made for users. Any directory type attribute (eg a `sort_by`) set on a normal page is an error.
 Files with `_index.md` filename will still default to having a `section.html` template (`index.html` for the index section).
 
-The `get_section` function works just like `get_page` but also checks that `kind==Section` and errors if it's not the case.
-`get_page` will be able to get any page or section in the new `current` shape.
-
-Overall, it should be a small breaking change, quick to fix:
-
-```j2
-{% set item = page or section %}
-{# this line won't be falsy anymore if item is a page #}
-{% if item.subsections is defined %}
-...
-{% else %}
-...
-{% endif %}
-
-
-{% for sub in section.subsections %}
-{# this line won't be needed anymore and will error #}
-{% set s = get_section(path=sub) %}
-{% endfor %}
-```
-
-There might be other breakages but only for edge cases
-that I don't think many people would do (like printing all the keys of the variable...?).
-Still it would come in a new release, like 0.24.
+`get_section` will continue to return the old `section` variables.
+`get_page` will instead return the `current` shaped variable for any page/section: since we're adding fields, it should not break anything 
+for pre `current` users.
 
 The main benefit for users is the lower cognitive load for writing templates as well as things working more as expected.
 
@@ -102,7 +83,7 @@ If we allow slugs on sections, we do need to ensure all the descendant permalink
 The `Library` will merge page and sections and we need to ensure `transparent` and the new equivalent of `populate_sections` still work.
 There should be no regression for parallelization of rendering or for `zola serve`.
 
-`subsections` becomes a `Vec<Page>` for `current`, `page` and `section`.
+`subsections` becomes a `Vec<Page>` for `current` but `ancestors` remain `Vec<String>` to avoid cycles.
 
 All the other changes are mechanical, with a special care of still grouping pages through sections (or directories/any name)
 for rendering.
@@ -113,7 +94,6 @@ If what's currently available is not enough, we can add more introspection to Te
 ## Drawbacks
 [drawbacks]: #drawbacks
 
-- Some breaking changes in templates
 - Some users like the distinction
 
 ## Rationale and alternatives
@@ -126,7 +106,23 @@ Alternatives:
 - ship just an alias in the templates for `page` and `section` and have them matching fields: solve the user issue, not the internals
 - solve the duplication internally but don't expose it: doesn't solve the user issue
 - expose a single `item.pages` property instead of keeping both `.pages` and `.subsections`: rejected because
-`sort_by` only applies to pages, so sorting pages and subsections together does not currently make sense. More details on the [PR comments](https://github.com/getzola/zola/pull/3258).
+`sort_by` only applies to pages, so sorting pages and subsections together does not currently make sense:
+  1. How to sort sections? By weight it makes sense and it's the same logic as most documentation site but what about dates. Something like
+     ```
+     blog/
+     ├── _index.md        sort_by = "date"
+     ├── post-a.md        date = 2026-08-25
+     ├── post-b.md        date = 2026-08-20
+     └── archive/
+         └── _index.md
+     ```
+     Where does the archive go? Do we have to add a date just to make it work?
+  2. How to handle subsections in pagination? Are sections part of the pagination? In the above example with `paginate_by = 2` would there be a page with archive?
+     We can't ignore them in the templates because pagination is calculated before template rendering.
+  3. Transparent sections: we do not want those to appear as children of the parent structurally. Pages passed via `transparent` are shown as if they were
+     direct children which they are not. We'd still need `pages`/`subsections` to represent structural children.
+
+Overall I think merging into a single field does not make sense because it doesn't just represent all the direct children, it's a collection (maybe sorted, with lower/higher), that can be paginated and doesn't really work well when mixed.
 
 
 ## Prior art
