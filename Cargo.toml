@@ -89,7 +89,7 @@ fast_image_resize = { version = "6", features = ["image"] }
 filetime = "0.2"
 gh-emoji = "1"
 globset = "0.4"
-grass = { version = "0.13", default-features = false, features = ["random"] }
+sasso = { version = "0.21", default-features = false }
 image = { version = "0.25", default-features = true, features = ["avif"] }
 fs-err = "3.2.2"
 lexical-sort = "0.3"
