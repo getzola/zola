@@ -3,14 +3,14 @@
 title = "catcrew"
 description = "A light and modern lifestyle blog theme for Zola."
 template = "theme.html"
-date = 2026-09-05T17:43:07-07:00
+date = 2026-10-29T01:10:36-07:00
 
 [taxonomies]
 theme-tags = ['light', 'modern', 'blog', 'lifestyle']
 
 [extra]
-created = 2026-09-05T17:43:07-07:00
-updated = 2026-09-05T17:43:07-07:00
+created = 2026-10-29T01:10:36-07:00
+updated = 2026-10-29T01:10:36-07:00
 repository = "https://git.colorized.life/demo.catcrew.studio.git"
 homepage = "https://git.colorized.life/demo.catcrew.studio/about/"
 minimum_version = "0.23.4"
@@ -132,6 +132,11 @@ following routes and templates describe the branded demo:
 | `/blog` | `blog.html` | Paginated blog listing |
 | `/blog/*` | `post.html` | Individual blog post |
 | `/links` | `links.html` | External links (header nav) |
+
+`about.html` renders either a page or a section. To serve the About page at a
+site's root, set `template = "about.html"` in `content/_index.md`, colocate its
+images in `content/`, and pass `content_path={section.path}` to the `image`
+component.
 
 The branded demo adds this source entry to `footer_links` under `[extra]`
 (merge it with the other entries you want to retain):

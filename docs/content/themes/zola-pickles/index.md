@@ -3,14 +3,14 @@
 title = "pickles"
 description = "A modern, simple, clean blog theme for Zola."
 template = "theme.html"
-date = 2026-10-01T08:04:21Z
+date = 2026-11-01T07:45:38Z
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-10-01T08:04:21Z
-updated = 2026-10-01T08:04:21Z
+created = 2026-11-01T07:45:38Z
+updated = 2026-11-01T07:45:38Z
 repository = "https://github.com/lukehsiao/zola-pickles.git"
 homepage = "https://github.com/lukehsiao/zola-pickles"
 minimum_version = "0.23.0"
