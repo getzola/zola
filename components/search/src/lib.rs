@@ -56,7 +56,7 @@ struct IndexItem<'a> {
 /// Collect all pages and sections which should be included in the search index
 /// of a given language.
 fn collect_index_items<'a>(lang: &str, library: &'a Library) -> Vec<IndexItem<'a>> {
-    let mut items: Vec<IndexItem> = Vec::new();
+    let mut items: HashMap<&str, IndexItem> = HashMap::new();
     for (_, section) in &library.sections {
         if section.lang != lang {
             continue;
@@ -66,31 +66,37 @@ fn collect_index_items<'a>(lang: &str, library: &'a Library) -> Vec<IndexItem<'a
         }
 
         if section.meta.redirect_to.is_none() && !section.hidden {
-            items.push(IndexItem {
-                url: &section.permalink,
-                title: &section.meta.title,
-                datetime: &None,
-                description: &section.meta.description,
-                content: &section.content,
-                path: &section.path,
-            });
+            items.insert(
+                &section.permalink,
+                IndexItem {
+                    url: &section.permalink,
+                    title: &section.meta.title,
+                    datetime: &None,
+                    description: &section.meta.description,
+                    content: &section.content,
+                    path: &section.path,
+                },
+            );
         }
 
         for page in &section.pages {
             let page = &library.pages[page];
             if page.meta.in_search_index {
-                items.push(IndexItem {
-                    url: &page.permalink,
-                    title: &page.meta.title,
-                    datetime: &page.meta.datetime,
-                    description: &page.meta.description,
-                    content: &page.content,
-                    path: &page.path,
-                })
+                items.insert(
+                    &page.permalink,
+                    IndexItem {
+                        url: &page.permalink,
+                        title: &page.meta.title,
+                        datetime: &page.meta.datetime,
+                        description: &page.meta.description,
+                        content: &page.content,
+                        path: &page.path,
+                    },
+                );
             }
         }
     }
-    items
+    items.into_values().collect()
 }
 
 #[cfg(test)]

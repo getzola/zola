@@ -31,10 +31,7 @@ impl RawFrontMatter<'_> {
     {
         let f: T = match self {
             RawFrontMatter::Toml(s) => toml::from_str(s)?,
-            RawFrontMatter::Yaml(s) => match serde_yaml::from_str(s) {
-                Ok(d) => d,
-                Err(e) => bail!("YAML deserialize error: {:?}", e),
-            },
+            RawFrontMatter::Yaml(s) => serde_yaml::from_str(s)?,
         };
         Ok(f)
     }
@@ -75,9 +72,8 @@ pub fn split_section_content<'c>(
     content: &'c str,
 ) -> Result<(SectionFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
-    let meta = SectionFrontMatter::parse(&front_matter).with_context(|| {
-        format!("Error when parsing front matter of section `{}`", file_path.to_string_lossy())
-    })?;
+    let meta = SectionFrontMatter::parse(&front_matter)
+        .context("Error when parsing front matter of section")?;
 
     Ok((meta, content))
 }
@@ -89,9 +85,8 @@ pub fn split_page_content<'c>(
     content: &'c str,
 ) -> Result<(PageFrontMatter, &'c str)> {
     let (front_matter, content) = split_content(file_path, content)?;
-    let meta = PageFrontMatter::parse(&front_matter).with_context(|| {
-        format!("Error when parsing front matter of page `{}`", file_path.to_string_lossy())
-    })?;
+    let meta =
+        PageFrontMatter::parse(&front_matter).context("Error when parsing front matter of page")?;
     Ok((meta, content))
 }
 
