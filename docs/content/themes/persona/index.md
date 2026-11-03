@@ -3,14 +3,14 @@
 title = "Persona"
 description = "A portfolio, a resume, a blog, and a Zola theme."
 template = "theme.html"
-date = 2026-10-13T02:13:00Z
+date = 2026-10-31T02:26:36Z
 
 [taxonomies]
 theme-tags = ['portfolio', 'resume', 'blog']
 
 [extra]
-created = 2026-10-13T02:13:00Z
-updated = 2026-10-13T02:13:00Z
+created = 2026-10-31T02:26:36Z
+updated = 2026-10-31T02:26:36Z
 repository = "https://github.com/hanson-hschang/Persona-Zola-Theme.git"
 homepage = "https://github.com/hanson-hschang/Persona-Zola-Theme"
 minimum_version = "0.23.0"
@@ -114,12 +114,44 @@ Basic Setup](#basic-setup) • [Build & Serve
 
 ### Build & Serve
 
-After completing the setup, build and serve your site with Zola:
+Install **Zola 0.23+** and **Python 3.11+**. Citation-enabled posts also need **Pandoc**. The build runner uses Python's standard library; no watcher package is required.
 
-| |terminal command| note|
-|---|---|---|
-|Build the site|```zola build```|site build under `public/`|
-|Serve the site|```zola serve```|locally with live reload|
+In a consuming site's `Makefile`, add:
+
+```make
+include themes/persona/Makefile
+```
+
+The theme demo already includes these targets:
+
+| Command | Result |
+| --- | --- |
+| `make build` | Process source Markdown and build the site under `public/` |
+| `make serve` | Preview with live reload for posts, citations, equations, and assets |
+| `make check ZOLA_ARGS=--skip-external-links` | Check the processed site and internal links |
+| `make clean` | Remove generated output while preserving authored posts |
+
+Pass Zola options with `ZOLA_ARGS`, for example `make serve ZOLA_ARGS="--port 1112"` or `make build ZOLA_ARGS="--base-url https://example.com/project/"`. Without a Makefile, run `python3 themes/persona/scripts/persona.py build --root .`, or use `serve` or `check` in place of `build`.
+
+All posts are authored as ordinary `.md` files. Persona makes a separate build copy, protects math on pages with `[extra.tex]`, processes citations, and runs Zola there. The source tree contains no generated companion Markdown files. Use these commands for both preview and deployment: bare `zola build` and `zola serve` bypass preprocessing.
+
+### Citation Pipeline
+
+Write `[@citation-key]` in your ordinary `index.md`, with `references.bib` beside it. You can select another bibliography through `[extra].bibliography` and a CSL style through `[extra].citation_style`. Styles resolve from the post setting, local `style.csl`, site defaults, then theme defaults. Pandoc generates the references in the build copy, leaving the authored post intact. Native Persona component calls work in citation posts without extra HTML fences.
+
+For math, enable `[extra.tex]` (or `[extra.tex.macros]`) and write `$...$` or `$$...$$` using normal LaTeX. Math regions preserve backslashes, braces, and underscores before Markdown processing; no manual `<div>` wrappers are needed. Code examples and escaped dollar signs retain their ordinary meaning. See [post authoring](docs/posts.md) for examples and delimiter rules.
+
+Legacy `.src.md` files remain accepted for existing sites; migrate by keeping the authored source as `.md` and removing the old generated companion. Do not rename generated HTML output over authored Markdown. `scripts/process_post.sh` is retained only for the legacy explicit conversion interface; the normal build uses `scripts/persona.py`.
+
+### Deployment
+
+CI must prepare the same input as local preview. The included GitHub workflow installs Python and Pandoc, runs:
+
+```bash
+python3 -B scripts/persona.py prepare --root . --output .persona-build
+```
+
+and runs Zola against `.persona-build`. For an installed theme, use `themes/persona/scripts/persona.py`. When using `shalzz/zola-deploy-action`, set `BUILD_DIR: .persona-build` and `BUILD_THEMES: false`, with submodules checked out before preparation. The staging directory is generated and ignored by Git.
 
 > [!TIP]
 > For a complete walkthrough of configuration and customization, see the [Begin with Persona](https://hanson-hschang.github.io/Persona-Zola-Theme/maps/private-soul/begin-with-persona/) post.

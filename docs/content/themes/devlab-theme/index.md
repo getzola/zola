@@ -3,14 +3,14 @@
 title = "devlab-theme"
 description = "A composable Zola theme for product sites, blogs, documentation and books."
 template = "theme.html"
-date = 2026-10-06T17:09:20+02:00
+date = 2026-10-30T22:52:35+05:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'book', 'product', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-10-06T17:09:20+02:00
-updated = 2026-10-06T17:09:20+02:00
+created = 2026-10-30T22:52:35+05:00
+updated = 2026-10-30T22:52:35+05:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
 minimum_version = "0.23.6"
@@ -68,9 +68,47 @@ Building and previewing the theme requires Zola 0.23.6 or newer. Start from the
 source `main` branch, since `pages` contains the generated demo.
 
 ```sh
+zola check --skip-external-links
 zola build
 zola serve
 ```
+
+The consumer regression suite also requires Python 3.11+ and Node.js. It builds
+small sites with the theme and checks the rendered HTML and JavaScript behavior:
+
+```sh
+node --version && NODE_BINARY=node python3 tests/test_theme.py
+python3 tests/test_starter.py
+python3 tests/test_component_labels.py
+NODE_BINARY=node python3 tests/test_regional_locales.py
+python3 tests/test_scroll_regions.py
+```
+
+CI runs these checks before building the demo. The Node.js check is required so
+the JavaScript tests cannot be silently skipped when Node.js is missing.
+
+Browser checks use a separate development package with Node.js 20+ and
+Chromium, Firefox and WebKit. The Chromium print regression also requires
+`pdftotext` (the `poppler-utils` package on Debian/Ubuntu):
+
+```sh
+cd tests/browser
+npm ci
+npx playwright install --with-deps chromium firefox webkit
+npm test
+```
+
+The tests build and serve a temporary consumer site. To use an installed browser,
+run `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chromium npm test -- --project=chromium`
+for a Chromium-only run. The equivalent Firefox and WebKit executable variables
+are available for those projects. CI runs all three engines in the Playwright
+image matching the pinned test package version. Linux WebKit checks do not
+replace testing Safari on a real Apple device.
+Browser tools are not required to build a site using the theme.
+
+CI also validates the editor schema against configurations and documented
+examples. See [schema development checks](content/docs/reference/configuration/defaults.md#optional-editor-validation)
+for its separate Python environment and commands.
 
 The demo's source archives remain unavailable until the corresponding tag is
 published. CI verifies the tag and archive availability before enabling them.
