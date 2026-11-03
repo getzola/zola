@@ -3,14 +3,14 @@
 title = "Persona"
 description = "A portfolio, a resume, a blog, and a Zola theme."
 template = "theme.html"
-date = 2026-09-06T04:53:37Z
+date = 2026-10-31T02:26:36Z
 
 [taxonomies]
 theme-tags = ['portfolio', 'resume', 'blog']
 
 [extra]
-created = 2026-09-06T04:53:37Z
-updated = 2026-09-06T04:53:37Z
+created = 2026-10-31T02:26:36Z
+updated = 2026-10-31T02:26:36Z
 repository = "https://github.com/hanson-hschang/Persona-Zola-Theme.git"
 homepage = "https://github.com/hanson-hschang/Persona-Zola-Theme"
 minimum_version = "0.23.0"
@@ -38,18 +38,17 @@ homepage = "https://hanson-hschang.github.io/"
 <img alt="Website" src="https://img.shields.io/website?url=https%3A%2F%2Fhanson-hschang.github.io%2FPersona-Zola-Theme">
 <img alt="GitHub Release" src="https://img.shields.io/github/v/release/hanson-hschang/Persona-Zola-Theme">
 
-Demo](https://hanson-hschang.github.io/Persona-Zola-Theme/) • [Features](#-features) • [Showcase](#-showcase) • [Installation](#-installation) • [Configuration](#%EF%B8%8F-configuration) • [Citation](#-citation-pipeline) • [Architecture](ARCHITECTURE.md) • [Troubleshooting](#-troubleshooting) • [Credits
+Demo](https://hanson-hschang.github.io/Persona-Zola-Theme/) • [Features](#-features) • [Showcase](#-showcase) • [Installation](#-installation) • [Configuration](#%EF%B8%8F-configuration) • [Troubleshooting](#-troubleshooting) • [Credits
 
 </div>
 
 ## ✨ Features
 
-- 🎨 **Modern Design**: Clean and professional layout easy for customization
+- 🎨 **Modern Design**: Clean, professional, and minimalist aesthetic
 - 📱 **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
 - ⚡️ **Fast Performance**: Lightweight and optimized for speed
-- 📋 **Resume/CV**: Dedicated page for your resume or CV *(--upcoming feature--)*
-- 🎭 **Portfolio Showcase**: Showcase your work with elegant project cards *(--upcoming feature--)*
-- 📝 **Blog with $\TeX$ and Citations**: Built-in blog functionality with equation and bibliography support
+- 📋 **Resume/CV**: Build-in structure designed for customization
+- 🎭 **Portfolio with Posts**: Showcase your work with previews and posts
 - 📧 **Contact Forms**: Integrated contact form email support
 - 🔍 **Search Ready**: Built-in search index generation *(--upcoming feature--)*
 
@@ -65,10 +64,10 @@ Submit a Pull Request to add your site to our showcase.
 
 ## 🚀 Installation
 
-This is a Zola theme.
-Make sure you have [Zola 0.23 or newer installed](https://www.getzola.org/documentation/getting-started/installation/) before proceeding.
+This is a theme built with [Zola 0.23 or newer](https://www.getzola.org/documentation/getting-started/installation/).
+Please proceed to install the theme after [initializing your Zola site](https://www.getzola.org/documentation/getting-started/overview/#initialize-site).
 
-After [initializing your Zola site](https://www.getzola.org/documentation/getting-started/overview/#initialize-site), the easiest way to install the theme is to add it as a git submodule to your `themes` directory:
+The easiest way to install the theme is to add it as a git submodule to your `themes` directory:
 
 ```bash
 # Navigate to your Zola site directory
@@ -89,7 +88,7 @@ git submodule update --init --recursive
 
 <div align="center">
 
-Basic Setup](#basic-setup) • [Segment Front Matter](#segment-front-matter) • [Build & Serve
+Basic Setup](#basic-setup) • [Build & Serve
 
 </div>
 
@@ -113,123 +112,49 @@ Basic Setup](#basic-setup) • [Segment Front Matter](#segment-front-matter) •
     theme = "persona"
     ```
 
-3. **Use Persona media components** inside Markdown content when you need theme-provided image handling.
-   Persona targets Zola 0.23+ and uses Tera 2 components, so component calls use angle-bracket syntax:
-
-    ```tera
-    {{/* <media.image page={page} path="img/example.png" width={700} alt="Example image" /> */}}
-    ```
-
-### Segment Front Matter
-
-The theme supports three main segment types:
-- **Plain segments** (for static text content like about)
-- **Category segments** (for portfolios, projects, showcases)
-- **Blog segments** (for blog posts and articles)
-
-<details>
-<summary>
-Each segment is configured with front matter. 
-Expand to see the details. 
-</summary>
-
-```toml
-+++
-title = "Title of the Segment"
-
-[extra]
-# Segment-specific icon for navigation (Bootstrap Icons)
-icon_class = "bi bi-file-earmark-text"
-# Display order (lower numbers appear first)
-order = 1
-# Segment type determines rendering approach
-# options include "plain", "category", or "blog"
-type = "plain"  
-+++
-```
-
-</details>
-
-> [!TIP]
-> For a complete walkthrough of configuration and customization, see the [Begin with Persona](https://hanson-hschang.github.io/Persona-Zola-Theme/maps/private-soul/begin-with-persona/) blog post.
-
-
-
 ### Build & Serve
 
-After completing the setup, build and serve your site with Zola:
+Install **Zola 0.23+** and **Python 3.11+**. Citation-enabled posts also need **Pandoc**. The build runner uses Python's standard library; no watcher package is required.
 
-| |terminal command| note|
-|---|---|---|
-|Build the site|```zola build```|site build under `public/`|
-|Serve the site|```zola serve```|locally with live reload|
+In a consuming site's `Makefile`, add:
 
-> [!NOTE]
-> If you are using the Citation Pipeline, use `make build` and `make serve` instead to also process `.src.md` files.
+```make
+include themes/persona/Makefile
+```
 
-## 📚 Citation Pipeline
+The theme demo already includes these targets:
 
-<div align="center">
+| Command | Result |
+| --- | --- |
+| `make build` | Process source Markdown and build the site under `public/` |
+| `make serve` | Preview with live reload for posts, citations, equations, and assets |
+| `make check ZOLA_ARGS=--skip-external-links` | Check the processed site and internal links |
+| `make clean` | Remove generated output while preserving authored posts |
 
-How It Works](#how-it-works) • [Setup](#setup) • [Build & Write
+Pass Zola options with `ZOLA_ARGS`, for example `make serve ZOLA_ARGS="--port 1112"` or `make build ZOLA_ARGS="--base-url https://example.com/project/"`. Without a Makefile, run `python3 themes/persona/scripts/persona.py build --root .`, or use `serve` or `check` in place of `build`.
 
-</div>
+All posts are authored as ordinary `.md` files. Persona makes a separate build copy, protects math on pages with `[extra.tex]`, processes citations, and runs Zola there. The source tree contains no generated companion Markdown files. Use these commands for both preview and deployment: bare `zola build` and `zola serve` bypass preprocessing.
 
-The pipeline allows you to write naturally using citation keys from the bibliography file while automatically generating properly formatted references during the build process. 
-It integrates seamlessly with the site workflow, so you can focus on content rather than formatting.
+### Citation Pipeline
 
-### How It Works
+Write `[@citation-key]` in your ordinary `index.md`, with `references.bib` beside it. You can select another bibliography through `[extra].bibliography` and a CSL style through `[extra].citation_style`. Styles resolve from the post setting, local `style.csl`, site defaults, then theme defaults. Pandoc generates the references in the build copy, leaving the authored post intact. Native Persona component calls work in citation posts without extra HTML fences.
 
-- Write your post content in `.src.md` files using [Pandoc citation syntax](https://pandoc.org/demo/example33/8.20-citation-syntax.html)  
-- Store your references in the `references.bib` file in the same directory as your post
-- A build script processes the source files and converts them into final Markdown file `.md` with formatted citations  
-- The output is ready for rendering without any additional steps  
+For math, enable `[extra.tex]` (or `[extra.tex.macros]`) and write `$...$` or `$$...$$` using normal LaTeX. Math regions preserve backslashes, braces, and underscores before Markdown processing; no manual `<div>` wrappers are needed. Code examples and escaped dollar signs retain their ordinary meaning. See [post authoring](docs/posts.md) for examples and delimiter rules.
 
-### Setup
+Legacy `.src.md` files remain accepted for existing sites; migrate by keeping the authored source as `.md` and removing the old generated companion. Do not rename generated HTML output over authored Markdown. `scripts/process_post.sh` is retained only for the legacy explicit conversion interface; the normal build uses `scripts/persona.py`.
 
-1. Install dependencies:
-    ```bash
-    # macOS
-    brew install pandoc watchexec
+### Deployment
 
-    # Ubuntu / Debian
-    sudo apt install pandoc
-    cargo install watchexec-cli
-    ```
-2.	Change directory to your website root and copy the `scripts` folder and `Makefile` from the theme:
-    ```bash
-    cp -r themes/persona/{scripts,Makefile} .
-    ```
-3. Ensure source and bibliography files are ignored by Zola in `config.toml` to prevent them from being processed as regular content:
-    ```toml
-    ignored_content = ["*.src.md", "*.bib", "*.csl"]
-    ```
-4. Create your post with a `.src.md` extension and use citation keys in the content:
-    ```markdown
-    This is a citation example [@cite-key].
-    ```
-5. Add a `references.bib` file in the same directory.
+CI must prepare the same input as local preview. The included GitHub workflow installs Python and Pandoc, runs:
 
-The citation preprocessor resolves CSL files in this priority order:
+```bash
+python3 -B scripts/persona.py prepare --root . --output .persona-build
+```
 
-1. Per-post `[extra].citation_style`, resolved as `citation-style/<value>.csl`
-2. Local `style.csl` in the same directory as the `.src.md` file
-3. Site-level `config.toml` `[extra].citation_style`, or Persona-compatible `[extra.persona].citation_style`
-4. Theme-level `themes/persona/theme.toml` `[extra].citation_style`, or `themes/persona/config.toml` `[extra.persona].citation_style`
-5. Exit with an error when citation processing needs a CSL and none can be resolved
-
-### Build & Write
-Use the provided `Makefile` to build or serve your site locally with automatic processing of `.src.md` files:
-
-| |terminal command| note|
-|---|---|---|
-|Build the site|`make build`|site build under `public/`|
-|Serve the site|`make serve`|locally with live reload|
-
+and runs Zola against `.persona-build`. For an installed theme, use `themes/persona/scripts/persona.py`. When using `shalzz/zola-deploy-action`, set `BUILD_DIR: .persona-build` and `BUILD_THEMES: false`, with submodules checked out before preparation. The staging directory is generated and ignored by Git.
 
 > [!TIP]
-> For a complete example (source + bibliography + generated output), see the [Citation Pipeline Guide](https://hanson-hschang.github.io/Persona-Zola-Theme/maps/private-soul/citation-pipeline-guide/) blog post with the [example source directory](https://github.com/hanson-hschang/Persona-Zola-Theme/tree/main/content/maps/private-soul/citation-pipeline-guide/).
-This pipeline is ideal for writing technical, research-oriented, or reference-heavy content with minimal friction.
+> For a complete walkthrough of configuration and customization, see the [Begin with Persona](https://hanson-hschang.github.io/Persona-Zola-Theme/maps/private-soul/begin-with-persona/) post.
 
 ## 🆘 Troubleshooting
 
@@ -239,17 +164,13 @@ This pipeline is ideal for writing technical, research-oriented, or reference-he
   - Ensure `theme = "persona"` is set at the first line of `config.toml`
   - Check that the theme is in the correct directory: `themes/persona/`
 
-- **Navigation not working:**
-  - Ensure `[extra].order` field is set correctly in the front matter
-  - Check `[extra].type` is correctly specified in the front matter
-
 - **Contact form not working:**
   - Verify `web3form_public_key` is set in configuration
   - Check [Web3Forms documentation](https://docs.web3forms.com/) for setup
 
 ### Getting Help
 - Read the [Zola documentation](https://www.getzola.org/documentation/)
-- Check [ARCHITECTURE.md](ARCHITECTURE.md) for detailed theme architecture and organization
+- Check [ARCHITECTURE.md](ARCHITECTURE.md) for detailed theme codebase structure 
 - Report issues or request features by [contributing](CONTRIBUTING.md) on GitHub
 
 
@@ -257,23 +178,26 @@ This pipeline is ideal for writing technical, research-oriented, or reference-he
 
 `Persona` is built with and inspired by:
 
-- [**Zola**](https://www.getzola.org/) - A fast static site generator
-- [**Bootstrap**](https://getbootstrap.com/) - CSS framework for responsive design
-- [**Web3Forms**](https://web3forms.com/) - Contact form service
-- [**KaTeX**](https://katex.org/) - Fast math typesetting library
-- [**Pandoc**](https://pandoc.org/) - Universal document converter for citation processing
-- [**Bootstrap Icons**](https://icons.getbootstrap.com/) - Icon library
-- [**Academicons**](https://jpswalsh.github.io/academicons/) - Academic icons
-- [**AOS (Animate On Scroll)**](https://michalsnik.github.io/aos/) - Animation library
-- [**Google Fonts**](https://fonts.google.com/) - Font library
-- [**Dynamic Badges**](https://shields.io/) - Customizable badges
-- [**PageSpeed Insights**](https://github.com/lowlighter/metrics/tree/master/source/plugins/pagespeed) - Automated performance reporting
-- [**GitHub**](https://github.com/features) - [Actions (CI/CD)](https://github.com/features/actions) • [Pages (Hosting Website)](https://docs.github.com/en/pages/getting-started-with-github-pages) • [Copilot (AI Agent)](https://docs.github.com/en/copilot/get-started/what-is-github-copilot)
-- [**Anthropic**](https://www.anthropic.com/) - [Claude](https://claude.ai/) • [Claude Code](https://code.claude.com/docs/en/overview)
-- [**Google**](https://cloud.google.com/ai/gemini) - [Gemini](https://gemini.google.com/) • [Gemini CLI](https://geminicli.com/)
-- [**OpenAI**](https://openai.com/) - [ChatGPT](https://chat.openai.com/) • [Codex](https://openai.com/codex/)
-- [**BootstrapMade Templates**](https://bootstrapmade.com/) - [Active](https://bootstrapmade.com/demo/Active) • [MyResume](https://bootstrapmade.com/demo/MyResume) • [UpConstruction](https://bootstrapmade.com/demo/UpConstruction)
-- [**Zola Themes**](https://www.getzola.org/themes/) - [Mabuya](https://mabuya.vercel.app/) • [Vonge](https://pascal-berrang.de/vonge-zola-theme/) • [Zluinav](https://harrymkt.github.io/zluinav/)
+| Resource | Description |
+| --- | --- |
+| [**Zola**](https://www.getzola.org/) | A fast static site generator |
+| [**Bootstrap**](https://getbootstrap.com/) | CSS framework for responsive design |
+| [**Web3Forms**](https://web3forms.com/) | Contact form service |
+| [**KaTeX**](https://katex.org/) | Fast math typesetting library |
+| [**Pandoc**](https://pandoc.org/) | Universal document converter for citation processing |
+| [**Bootstrap Icons**](https://icons.getbootstrap.com/) | Icon library |
+| [**Academicons**](https://jpswalsh.github.io/academicons/) | Academic icons |
+| [**AOS (Animate On Scroll)**](https://michalsnik.github.io/aos/) | Animation library |
+| [**Google Fonts**](https://fonts.google.com/) | Font library |
+| [**Dynamic Badges**](https://shields.io/) | Customizable badges |
+| [**PageSpeed Insights**](https://github.com/lowlighter/metrics/tree/master/source/plugins/pagespeed) | Automated performance reporting |
+| [**GitHub**](https://github.com/features) | [Actions (CI/CD)](https://github.com/features/actions) • [Pages (Hosting Website)](https://docs.github.com/en/pages/getting-started-with-github-pages) • [Copilot (AI Agent)](https://docs.github.com/en/copilot/get-started/what-is-github-copilot) |
+| [**OpenAI**](https://openai.com/) | [ChatGPT](https://chat.openai.com/) • [Codex](https://openai.com/codex/) |
+| [**Anthropic**](https://www.anthropic.com/) | [Claude](https://claude.ai/) • [Claude Code](https://code.claude.com/docs/en/overview) |
+| [**Google**](https://cloud.google.com/ai/gemini) | [Gemini](https://gemini.google.com/) • [Gemini CLI](https://geminicli.com/) |
+| [**BootstrapMade Templates**](https://bootstrapmade.com/) | [Active](https://bootstrapmade.com/demo/Active) • [MyResume](https://bootstrapmade.com/demo/MyResume) • [UpConstruction](https://bootstrapmade.com/demo/UpConstruction) • [Style](https://bootstrapmade.com/demo/Style/) • [FolioOne](https://bootstrapmade.com/demo/FolioOne/) |
+| [**Zola Themes**](https://www.getzola.org/themes/) | [Mabuya](https://mabuya.vercel.app/) • [Vonge](https://pascal-berrang.de/vonge-zola-theme/) • [Zluinav](https://harrymkt.github.io/zluinav/) |
+| [**Academic Project Page Template**](https://github.com/eliahuhorwitz/Academic-project-page-template) | Post layout inspiration |
 
 
 ---

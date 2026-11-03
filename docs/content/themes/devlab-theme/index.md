@@ -1,19 +1,19 @@
 
 +++
 title = "devlab-theme"
-description = "A Zola-native theme for documentation, release updates and developer sites."
+description = "A composable Zola theme for product sites, blogs, documentation and books."
 template = "theme.html"
-date = 2026-09-01T23:12:21+05:00
+date = 2026-10-30T22:52:35+05:00
 
 [taxonomies]
-theme-tags = ['documentation', 'blog', 'responsive', 'search', 'dark-mode']
+theme-tags = ['documentation', 'blog', 'book', 'product', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-09-01T23:12:21+05:00
-updated = 2026-09-01T23:12:21+05:00
+created = 2026-10-30T22:52:35+05:00
+updated = 2026-10-30T22:52:35+05:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
-minimum_version = "0.23.4"
+minimum_version = "0.23.6"
 license = "MIT"
 demo = "https://ripetitor.codeberg.page/devlab-theme/"
 
@@ -23,111 +23,100 @@ homepage = "https://codeberg.org/RiPetitor"
 +++        
 
 [![Please don't upload to GitHub](https://nogithub.codeberg.page/badge.svg)](https://nogithub.codeberg.page)
-[![Zola](https://img.shields.io/badge/Zola-0.23.4-blue?style=flat-square)](https://www.getzola.org/)
-[![Version](https://img.shields.io/badge/version-0.7.0-blue?style=flat-square)](https://codeberg.org/RiPetitor/devlab-theme/tags)
+[![Zola](https://img.shields.io/badge/Zola-0.23.6-blue?style=flat-square)](https://www.getzola.org/)
+[![Version](https://img.shields.io/badge/version-0.9.0-blue?style=flat-square)](content/blog/devlab-theme-v0-9-0.md)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 # DevLab Theme
 
-DevLab is a Zola-native theme for documentation, release updates and software projects. One content tree drives the Docs sidebar, mobile navigation, breadcrumbs and previous/next links, while Blog and Downloads provide optional release-facing layouts.
+A Zola theme with layouts for pages, blogs, documentation and books. Content is
+written in Markdown. Configuration lives in `zola.toml`. Builds require Zola
+**0.23.6 or newer**.
 
-![DevLab Theme documentation](screenshot.png)
+The [v0.9.0 release notes](content/blog/devlab-theme-v0-9-0.md) describe layouts,
+collections, navigation, community cards and template extensions.
+
+![DevLab documentation](screenshot.png)
 
 [Live demo](https://ripetitor.codeberg.page/devlab-theme/) · [Documentation](https://ripetitor.codeberg.page/devlab-theme/docs/) · [Updates](https://ripetitor.codeberg.page/devlab-theme/blog/)
 
-The live Demo follows the development branch. Install a tagged release when the site must remain reproducible.
+## Setup
 
-## Features
+[Install the theme](content/docs/getting-started/installation.md), then create
+`zola.toml` and `content/_index.md` with the
+[quick start](content/docs/getting-started/quick-start.md).
+Keep content, styles and template overrides in the site repository.
 
-- Recursive Docs navigation with remembered groups, breadcrumbs, nested page TOC and server-rendered previous/next links
-- Paginated Blog/Updates with published, updated and release metadata
-- Generic pages and sections, a wide landing page and an optional Downloads layout
-- Search, one responsive mobile drawer, skip navigation, Copy feedback and reduced-motion support
-- Light, dark and system color modes with update-safe CSS tokens
-- Namespaced Tera 2 components with synchronized tabs, lazy diagrams, file trees and status badges, plus template hooks without a frontend build step
+## Documentation
 
-## Install
-
-For a standalone theme checkout, clone the latest stable release into an existing Zola site:
-
-```sh
-git clone --branch v0.7.0 --depth 1 https://codeberg.org/RiPetitor/devlab-theme themes/devlab-theme
-```
-
-Pinning the release tag keeps site builds reproducible. Change `v0.7.0` only when you intentionally upgrade the theme.
-
-If the site itself is stored in Git, use a submodule or a vendored copy instead of committing an embedded repository. See [Install and update](https://ripetitor.codeberg.page/devlab-theme/docs/getting-started/installation/) for every installation method and the tagged upgrade workflow.
-
-Enable it in `zola.toml`:
-
-```toml
-base_url = "https://example.com"
-title = "My project"
-theme = "devlab-theme"
-
-compile_sass = true
-build_search_index = true
-
-[search]
-index_format = "elasticlunr_javascript"
-include_title = true
-include_description = true
-include_content = true
-
-[extra.devlab.appearance]
-default_mode = "system"
-show_toggle = true
-```
-
-DevLab search consumes Zola's `elasticlunr_javascript` index. An explicitly configured incompatible format hides the search control and does not load its scripts; omitting `index_format` remains compatible while Zola's default produces the supported format.
-
-Create `content/_index.md`:
-
-```md
-+++
-title = "My project"
-description = "Documentation and release updates."
-+++
-
-Project overview.
-```
-
-Then run:
-
-```sh
-zola serve
-```
-
-Docs, Blog, Downloads and richer homepage sections are opt-in. Continue with [Getting started](https://ripetitor.codeberg.page/devlab-theme/docs/getting-started/), the [Configuration reference](https://ripetitor.codeberg.page/devlab-theme/docs/reference/configuration/) and [Customization](https://ripetitor.codeberg.page/devlab-theme/docs/customization/).
-
-## Tera 2 components
-
-DevLab tracks the current Zola release and requires Zola `0.23.4`. It uses global, namespaced Tera 2 components in Markdown. No import is required:
-
-```jinja
-{%/* <devlab.callout type="tip" title="Native component"> */%}
-The body supports **Markdown**.
-{%/* </devlab.callout> */%}
-```
-
-This release does not support Zola 0.22 or the removed shortcode syntax. Sites upgrading from `v0.3.1` must migrate authored shortcode calls and any Tera 1 template overrides; see the [v0.4.0 migration notes](https://ripetitor.codeberg.page/devlab-theme/blog/devlab-theme-v0-4-0/) and [component reference](https://ripetitor.codeberg.page/devlab-theme/docs/reference/components/).
-
-## Compatibility
-
-- Zola `0.23.4` (the theme tracks the current Zola release)
-- No Node.js, npm or external frontend runtime required
+| Topic | Reference |
+| --- | --- |
+| Landing blocks | [Landing pages](content/docs/reference/landing.md) |
+| Independent documentation trees | [Collections](content/docs/reference/collections.md) |
+| First post, tags, authors and feeds | [Blog guide](content/docs/guides/blog.md) |
+| Books and chapter order | [Reader](content/docs/reference/reader.md) |
+| Site and theme settings | [Configuration](content/docs/reference/configuration/_index.md) |
+| Callouts, cards, tabs and other content blocks | [Components](content/docs/reference/components/_index.md) |
+| Translations and sharing metadata | [Languages](content/docs/reference/languages.md) |
+| Template slots and CSS tokens | [Extensions](content/docs/reference/extensions.md) |
+| Updating a v0.8 site | [Migration](content/docs/guides/upgrading-v0-8.md) |
+| Hosting and live-route checks | [Deployment](content/docs/guides/deployment.md) |
 
 ## Development
 
-This repository contains both the reusable theme and its Demo/Docs site. The Blog is the human-readable release history.
+Building and previewing the theme requires Zola 0.23.6 or newer. Start from the
+source `main` branch, since `pages` contains the generated demo.
 
 ```sh
-zola check
+zola check --skip-external-links
 zola build
+zola serve
 ```
+
+The consumer regression suite also requires Python 3.11+ and Node.js. It builds
+small sites with the theme and checks the rendered HTML and JavaScript behavior:
+
+```sh
+node --version && NODE_BINARY=node python3 tests/test_theme.py
+python3 tests/test_starter.py
+python3 tests/test_component_labels.py
+NODE_BINARY=node python3 tests/test_regional_locales.py
+python3 tests/test_scroll_regions.py
+```
+
+CI runs these checks before building the demo. The Node.js check is required so
+the JavaScript tests cannot be silently skipped when Node.js is missing.
+
+Browser checks use a separate development package with Node.js 20+ and
+Chromium, Firefox and WebKit. The Chromium print regression also requires
+`pdftotext` (the `poppler-utils` package on Debian/Ubuntu):
+
+```sh
+cd tests/browser
+npm ci
+npx playwright install --with-deps chromium firefox webkit
+npm test
+```
+
+The tests build and serve a temporary consumer site. To use an installed browser,
+run `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chromium npm test -- --project=chromium`
+for a Chromium-only run. The equivalent Firefox and WebKit executable variables
+are available for those projects. CI runs all three engines in the Playwright
+image matching the pinned test package version. Linux WebKit checks do not
+replace testing Safari on a real Apple device.
+Browser tools are not required to build a site using the theme.
+
+CI also validates the editor schema against configurations and documented
+examples. See [schema development checks](content/docs/reference/configuration/defaults.md#optional-editor-validation)
+for its separate Python environment and commands.
+
+The demo's source archives remain unavailable until the corresponding tag is
+published. CI verifies the tag and archive availability before enabling them.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). Library licenses and exact upstream versions are listed in
+[Third-party notices](THIRD_PARTY_NOTICES.md) and the
+[search module provenance](third_party/lunr-languages/README.md).
 
         

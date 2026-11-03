@@ -41,6 +41,9 @@ Sections can be nested indefinitely.
 Every page/section of your site is also a [Tera](https://keats.github.io/tera/) template.
 This means you can use any features of Tera in your content (even functions like `resize_image`), not just the shortcode band-aid from before 0.23.
 
+Since templating is done before parsing the CommonMark content, some attributes lik `content`, `summary` and `toc` will be empty while rendering.
+Fields depending on other pages (like `backlinks`, `translations`, `subsections` etc) will also be empty.
+
 See the [Tera migration guide](https://github.com/Keats/tera/blob/master/MIGRATION.md) if you're updating to 0.23 or higher.
 
 ### Migrating from shortcodes
