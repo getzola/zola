@@ -674,7 +674,7 @@ mod tests {
         let mut section = Section::default();
         section.lang = lang.to_owned();
         section.file = FileInfo::new_section(Path::new(file_path), &PathBuf::new());
-        section.meta.weight = weight;
+        section.meta.weight = Some(weight);
         section.meta.transparent = transparent;
         section.meta.sort_by = sort_by;
         section.meta.page_template = Some("new_page.html".to_owned());
@@ -1101,7 +1101,7 @@ mod tests {
             section.lang = "en".to_owned();
             section.file = FileInfo::new_section(Path::new(file_path), &PathBuf::new());
             section.meta.title = Some(title.to_owned());
-            section.meta.weight = weight;
+            section.meta.weight = Some(weight);
             section.meta.transparent = false;
             section.meta.sort_by = sort_by;
             section.meta.page_template = Some("new_page.html".to_owned());

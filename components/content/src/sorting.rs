@@ -95,10 +95,10 @@ pub fn sort_sections(sections: &[&Section], sort_by: SortBy) -> (Vec<PathBuf>, V
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::PageFrontMatter;
+    use crate::FrontMatter;
 
     fn create_page_with_date(date: &str, updated_date: Option<&str>) -> Page {
-        let mut front_matter = PageFrontMatter {
+        let mut front_matter = FrontMatter {
             date: Some(date.to_string()),
             updated: updated_date.map(|c| c.to_string()),
             ..Default::default()
@@ -108,17 +108,17 @@ mod tests {
     }
 
     fn create_page_with_title(title: &str) -> Page {
-        let front_matter = PageFrontMatter { title: Some(title.to_string()), ..Default::default() };
+        let front_matter = FrontMatter { title: Some(title.to_string()), ..Default::default() };
         Page::new(format!("content/hello-{}.md", title), front_matter, &PathBuf::new())
     }
 
     fn create_page_with_weight(weight: usize) -> Page {
-        let front_matter = PageFrontMatter { weight: Some(weight), ..Default::default() };
+        let front_matter = FrontMatter { weight: Some(weight), ..Default::default() };
         Page::new(format!("content/hello-{}.md", weight), front_matter, &PathBuf::new())
     }
 
     fn create_page_with_slug(slug: &str) -> Page {
-        let front_matter = PageFrontMatter { slug: Some(slug.to_owned()), ..Default::default() };
+        let front_matter = FrontMatter { slug: Some(slug.to_owned()), ..Default::default() };
         let mut page =
             Page::new(format!("content/hello-{}.md", slug), front_matter, &PathBuf::new());
         // Normally, the slug field is populated when a page is parsed, but

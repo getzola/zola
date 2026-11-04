@@ -10,7 +10,8 @@ use utils::slugs::slugify_paths;
 use utils::table_of_contents::Heading;
 
 use crate::file_info::FileInfo;
-use crate::front_matter::{PageFrontMatter, split_page_content};
+use crate::file_info::Kind;
+use crate::front_matter::{FrontMatter, split_content};
 use crate::utils::get_reading_analytics;
 use crate::utils::{find_related_assets, get_colocated_assets, has_anchor};
 use utils::anchors::has_anchor_id;
@@ -29,7 +30,7 @@ pub struct Page {
     /// All info about the actual file
     pub file: FileInfo,
     /// The front matter meta-data
-    pub meta: PageFrontMatter,
+    pub meta: FrontMatter,
     /// The list of parent sections relative paths
     pub ancestors: Vec<String>,
     /// The actual content of the page, in markdown
@@ -82,7 +83,7 @@ pub struct Page {
 }
 
 impl Page {
-    pub fn new<P: AsRef<Path>>(file_path: P, meta: PageFrontMatter, base_path: &Path) -> Page {
+    pub fn new<P: AsRef<Path>>(file_path: P, meta: FrontMatter, base_path: &Path) -> Page {
         let file_path = file_path.as_ref();
 
         Page { file: FileInfo::new_page(file_path, base_path), meta, ..Self::default() }
@@ -97,7 +98,7 @@ impl Page {
         config: &Config,
         base_path: &Path,
     ) -> Result<Page> {
-        let (meta, content) = split_page_content(file_path, content)?;
+        let (meta, content) = split_content(file_path, content, Kind::Page)?;
         let mut page = Page::new(file_path, meta, base_path);
 
         page.lang =

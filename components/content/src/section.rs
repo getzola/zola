@@ -7,7 +7,8 @@ use utils::fs::read_file;
 use utils::table_of_contents::Heading;
 
 use crate::file_info::FileInfo;
-use crate::front_matter::{SectionFrontMatter, split_section_content};
+use crate::file_info::Kind;
+use crate::front_matter::{FrontMatter, split_content};
 use crate::utils::{find_related_assets, get_colocated_assets, get_reading_analytics, has_anchor};
 
 // Default is used to create a default index section if there is no _index.md in the root content directory
@@ -16,7 +17,7 @@ pub struct Section {
     /// All info about the actual file
     pub file: FileInfo,
     /// The front matter meta-data
-    pub meta: SectionFrontMatter,
+    pub meta: FrontMatter,
     /// The URL path of the page, always starting with a slash
     pub path: String,
     /// The components for the path of that page
@@ -71,11 +72,7 @@ pub struct Section {
 }
 
 impl Section {
-    pub fn new<P: AsRef<Path>>(
-        file_path: P,
-        meta: SectionFrontMatter,
-        base_path: &Path,
-    ) -> Section {
+    pub fn new<P: AsRef<Path>>(file_path: P, meta: FrontMatter, base_path: &Path) -> Section {
         let file_path = file_path.as_ref();
 
         Section { file: FileInfo::new_section(file_path, base_path), meta, ..Self::default() }
@@ -87,7 +84,7 @@ impl Section {
         config: &Config,
         base_path: &Path,
     ) -> Result<Section> {
-        let (meta, content) = split_section_content(file_path, content)?;
+        let (meta, content) = split_content(file_path, content, Kind::Section)?;
         let mut section = Section::new(file_path, meta, base_path);
         section.lang = section
             .file
@@ -181,7 +178,7 @@ impl Section {
         self.meta.paginate_by.filter(|&x| x > 0)
     }
 
-    pub fn needs_pages_render(&self, old_meta: &SectionFrontMatter) -> bool {
+    pub fn needs_pages_render(&self, old_meta: &FrontMatter) -> bool {
         self.meta.page_template != old_meta.page_template
             || self.meta.sort_by != old_meta.sort_by
             || self.meta.insert_anchor_links != old_meta.insert_anchor_links

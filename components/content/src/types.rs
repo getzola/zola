@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize, Eq)]
+#[derive(Debug, Default, Copy, Clone, PartialEq, Serialize, Deserialize, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum SortBy {
     /// Most recent to oldest
@@ -20,5 +20,6 @@ pub enum SortBy {
     /// Sort by permalink
     Permalink,
     /// No sorting
+    #[default]
     None,
 }

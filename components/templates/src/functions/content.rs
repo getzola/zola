@@ -262,7 +262,7 @@ mod tests {
             &PathBuf::new(),
         );
         section.meta.title = Some(title.to_string());
-        section.meta.weight = 1;
+        section.meta.weight = Some(1);
         section.meta.transparent = false;
         section.meta.sort_by = SortBy::None;
         section.meta.page_template = Some("new_page.html".to_owned());

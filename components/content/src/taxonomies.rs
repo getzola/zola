@@ -175,7 +175,7 @@ mod tests {
 
     use config::{Config, TaxonomyConfig};
 
-    use crate::{Page, PageFrontMatter, Taxonomy, TaxonomyTerm};
+    use crate::{FrontMatter, Page, Taxonomy, TaxonomyTerm};
 
     use super::TaxonomyFound;
 
@@ -229,7 +229,7 @@ mod tests {
 
         fn create_page(name: &str, date: &str) -> Page {
             let mut front_matter =
-                PageFrontMatter { date: Some(date.to_string()), ..Default::default() };
+                FrontMatter { date: Some(date.to_string()), ..Default::default() };
             front_matter.date_to_datetime();
             Page::new(format!("content/{name}.md"), front_matter, &PathBuf::new())
         }

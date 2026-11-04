@@ -212,11 +212,11 @@ impl<'a> Paginator<'a> {
 mod tests {
     use super::*;
     use config::TaxonomyConfig;
-    use content::{Page, SectionFrontMatter};
+    use content::{FrontMatter, Page};
     use tera::value::Key;
 
     fn create_section(is_index: bool, paginate_reversed: bool) -> Section {
-        let f = SectionFrontMatter {
+        let f = FrontMatter {
             paginate_by: Some(2),
             paginate_path: "page".to_string(),
             paginate_reversed,

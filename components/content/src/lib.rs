@@ -1,5 +1,6 @@
 mod front_matter;
 
+mod content;
 mod file_info;
 mod library;
 mod page;
@@ -11,7 +12,7 @@ mod types;
 mod utils;
 
 pub use file_info::FileInfo;
-pub use front_matter::{PageFrontMatter, SectionFrontMatter};
+pub use front_matter::FrontMatter;
 pub use library::Library;
 pub use page::Page;
 pub use section::Section;
