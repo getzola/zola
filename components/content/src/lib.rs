@@ -1,10 +1,8 @@
 mod front_matter;
 
-mod content;
 mod file_info;
 mod library;
 mod page;
-mod section;
 mod ser;
 mod sorting;
 mod taxonomies;
@@ -15,7 +13,6 @@ pub use file_info::FileInfo;
 pub use front_matter::FrontMatter;
 pub use library::Library;
 pub use page::Page;
-pub use section::Section;
 pub use ser::{SerializingPage, SerializingSection};
 pub use taxonomies::{SerializedTaxonomy, SerializedTaxonomyTerm, Taxonomy, TaxonomyTerm};
 pub use types::*;

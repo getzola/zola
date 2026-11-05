@@ -3,8 +3,8 @@ use std::path::Path;
 
 use serde::Serialize;
 
+use crate::Page;
 use crate::library::Library;
-use crate::{Page, Section};
 use tera::Value;
 use utils::table_of_contents::Heading;
 
@@ -29,9 +29,6 @@ fn find_backlinks<'a>(relative_path: &str, library: &'a Library) -> Vec<BackLink
         for backlink in b {
             if let Some(p) = library.pages.get(backlink) {
                 backlinks.push(BackLink { permalink: &p.permalink, title: &p.meta.title });
-            }
-            if let Some(s) = library.sections.get(backlink) {
-                backlinks.push(BackLink { permalink: &s.permalink, title: &s.meta.title });
             }
         }
         backlinks.sort_by_key(|b| b.permalink);
@@ -157,13 +154,13 @@ pub struct SerializingSection<'a> {
 }
 
 impl<'a> SerializingSection<'a> {
-    pub fn new(section: &'a Section, library: &'a Library, pages: Vec<Value>) -> Self {
+    pub fn new(section: &'a Page, library: &'a Library, pages: Vec<Value>) -> Self {
         let translations = library.find_translations(&section.file.canonical);
         let subsections: Vec<&str> = section
             .subsections
             .iter()
             // The library will be empty when rendering markdown the first time
-            .flat_map(|p| library.sections.get(p).map(|s| s.file.relative.as_str()))
+            .flat_map(|p| library.pages.get(p).map(|s| s.file.relative.as_str()))
             .collect();
         let backlinks = find_backlinks(&section.file.relative, library);
 

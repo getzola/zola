@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use crate::ser::TranslatedContent;
 use crate::sorting::{sort_pages, sort_sections};
 use crate::taxonomies::{Taxonomy, TaxonomyFound};
-use crate::{Page, Section, SortBy};
+use crate::{Page, SortBy};
 use ahash::{AHashMap, AHashSet};
 use config::{Config, TaxonomyConfig};
 use errors::Result;
@@ -50,7 +50,6 @@ impl<'a> Display for PathCollision<'a> {
 #[derive(Clone, Debug, Default)]
 pub struct Library {
     pub pages: AHashMap<PathBuf, Page>,
-    pub sections: AHashMap<PathBuf, Section>,
     // aliases -> files, so we can easily check for conflicts
     pub reverse_aliases: AHashMap<String, AHashSet<PathBuf>>,
     pub translations: AHashMap<PathBuf, AHashSet<PathBuf>>,
@@ -165,7 +164,7 @@ impl Library {
         self.pages.insert(file_path, page);
     }
 
-    pub fn insert_section(&mut self, section: Section) {
+    pub fn insert_section(&mut self, section: Page) {
         let file_path = section.file.path.clone();
         if section.meta.render {
             let mut entries = vec![section.path.clone()];
@@ -173,7 +172,7 @@ impl Library {
             self.insert_reverse_aliases(&file_path, entries);
         }
         self.colocated_assets.extend(section.colocated_assets.clone());
-        self.sections.insert(file_path, section);
+        self.pages.insert(file_path, section);
     }
 
     /// Fills a map of target -> {content mentioning it}
@@ -194,11 +193,6 @@ impl Library {
         for (_, page) in &self.pages {
             for (internal_link, _) in &page.internal_links {
                 add_backlink(internal_link, &page.file.path);
-            }
-        }
-        for (_, section) in &self.sections {
-            for (internal_link, _) in &section.internal_links {
-                add_backlink(internal_link, &section.file.path);
             }
         }
     }
@@ -241,26 +235,28 @@ impl Library {
     pub fn sort_section_pages(&mut self) {
         // For determinism sake, we sort pages even if there is no sort_by in the front-matter
         // Those don't get lower/higher though so it's out of the logic below
-        for section in self.sections.values_mut() {
+        for section in self.pages.values_mut().filter(|x| x.is_section()) {
             if section.meta.sort_by == SortBy::None {
                 section.pages.sort();
             }
         }
 
         let mut updates = AHashMap::new();
-        for (path, section) in &self.sections {
+        for (path, section) in self.pages.iter().filter(|(_, x)| x.is_section()) {
             let pages: Vec<_> = section.pages.iter().map(|p| &self.pages[p]).collect();
             let (sorted_pages, cannot_be_sorted_pages) = match section.meta.sort_by {
                 SortBy::None => continue,
                 _ => sort_pages(&pages, section.meta.sort_by),
             };
 
-            updates
-                .insert(path.clone(), (sorted_pages, cannot_be_sorted_pages, section.meta.sort_by));
+            updates.insert(
+                path.clone(),
+                (sorted_pages, cannot_be_sorted_pages, section.meta.transparent),
+            );
         }
 
-        for (path, (sorted, unsortable, _)) in updates {
-            if !self.sections[&path].meta.transparent {
+        for (path, (sorted, unsortable, transparent)) in updates {
+            if !transparent {
                 // Fill siblings
                 for (i, page_path) in sorted.iter().enumerate() {
                     let p = self.pages.get_mut(page_path).unwrap();
@@ -276,7 +272,7 @@ impl Library {
                 }
             }
 
-            if let Some(s) = self.sections.get_mut(&path) {
+            if let Some(s) = self.pages.get_mut(&path) {
                 s.pages = sorted;
                 s.ignored_pages = unsortable;
             }
@@ -287,27 +283,23 @@ impl Library {
     /// Sections that cannot be sorted are set to the section.ignored_subsections instead
     pub fn sort_section_subsections(&mut self) {
         let mut updates = AHashMap::new();
-        for (path, section) in &self.sections {
-            let sections: Vec<_> = section
-                .subsections
-                .iter()
-                .map(|p| &self.sections[p])
-                .filter(|s| !s.hidden)
-                .collect();
+        for (path, section) in self.pages.iter().filter(|(_, x)| x.is_section()) {
+            let sections: Vec<_> =
+                section.subsections.iter().map(|p| &self.pages[p]).filter(|s| !s.hidden).collect();
             let (sorted_sections, cannot_be_sorted_sections) =
                 sort_sections(&sections, section.meta.sort_by);
 
             updates.insert(
                 path.clone(),
-                (sorted_sections, cannot_be_sorted_sections, section.meta.sort_by),
+                (sorted_sections, cannot_be_sorted_sections, section.meta.transparent),
             );
         }
 
-        for (path, (sorted, unsortable, _)) in updates {
-            if !self.sections[&path].meta.transparent {
+        for (path, (sorted, unsortable, transparent)) in updates {
+            if !transparent {
                 // Fill siblings
                 for (i, section_path) in sorted.iter().enumerate() {
-                    let p = self.sections.get_mut(section_path).unwrap();
+                    let p = self.pages.get_mut(section_path).unwrap();
                     if i > 0 {
                         // lighter / later / title_prev
                         p.lower = Some(sorted[i - 1].clone());
@@ -320,7 +312,7 @@ impl Library {
                 }
             }
 
-            if let Some(s) = self.sections.get_mut(&path) {
+            if let Some(s) = self.pages.get_mut(&path) {
                 s.subsections = sorted;
                 s.ignored_subsections = unsortable;
             }
@@ -347,7 +339,7 @@ impl Library {
 
         // We iterate over the sections twice
         // The first time to build up the list of ancestors for each section
-        for (path, section) in &self.sections {
+        for (path, section) in self.pages.iter().filter(|(_, x)| x.is_section()) {
             hidden_by_relative.insert(section.file.relative.clone(), section.meta.hidden);
             if let Some(ref grand_parent) = section.file.grand_parent {
                 subsections
@@ -376,14 +368,14 @@ impl Library {
                 }
 
                 let index_path = cur_path.join(&section.file.filename);
-                if let Some(s) = self.sections.get(&index_path) {
+                if let Some(s) = self.pages.get(&index_path) {
                     parents.push(s.file.relative.clone());
                 }
             }
             ancestors.insert(section.file.path.clone(), parents);
         }
 
-        for (path, section) in self.sections.iter_mut() {
+        for (path, section) in self.pages.iter_mut().filter(|(_, x)| x.is_section()) {
             section.subsections.clear();
             section.ignored_subsections.clear();
             section.pages.clear();
@@ -421,47 +413,53 @@ impl Library {
             }
         }
 
+        // (path, hidden, ancestors, template)
+        let mut page_updates: Vec<(PathBuf, bool, Vec<String>, Option<String>)> = Vec::new();
+        // path -> (visible, hidden)
+        let mut section_pages: AHashMap<PathBuf, (Vec<PathBuf>, Vec<PathBuf>)> = AHashMap::new();
+
         // Then once we took care of the sections, we find the pages of each section
-        for (path, page) in self.pages.iter_mut() {
-            if !page.meta.render {
-                continue;
-            }
+        for (path, page) in self.pages.iter().filter(|(_, x)| x.is_page() && x.meta.render) {
             let parent_filename = &index_filename_by_lang[&page.lang];
             add_translation(&page.file.canonical, path);
             let mut parent_section_path = page.file.parent.join(parent_filename);
 
             // We've resolved the sections visibility before so we will just take the parent one
             // if hidden is not explicitely set
-            page.hidden = page.meta.hidden.unwrap_or_else(|| {
-                self.sections.get(&parent_section_path).map(|s| s.hidden).unwrap_or(false)
+            let hidden = page.meta.hidden.unwrap_or_else(|| {
+                self.pages.get(&parent_section_path).map(|s| s.hidden).unwrap_or(false)
             });
+            let mut page_ancestors = Vec::new();
+            let mut template = page.meta.template.clone();
 
-            while let Some(parent_section) = self.sections.get_mut(&parent_section_path) {
-                let is_transparent = parent_section.meta.transparent;
-                if !page.hidden {
-                    parent_section.pages.push(path.clone());
-                } else {
+            while let Some(parent_section) = self.pages.get(&parent_section_path) {
+                let (visible, hidden_list) =
+                    section_pages.entry(parent_section_path.clone()).or_default();
+                if hidden {
                     // We track hidden pages as well to render them
-                    parent_section.hidden_pages.push(path.clone());
+                    hidden_list.push(path.clone())
+                } else {
+                    visible.push(path.clone())
                 }
-                page.ancestors = ancestors.get(&parent_section_path).cloned().unwrap_or_default();
+
+                page_ancestors = ancestors.get(&parent_section_path).cloned().unwrap_or_default();
                 // Don't forget to push the actual parent
-                page.ancestors.push(parent_section.file.relative.clone());
+                page_ancestors.push(parent_section.file.relative.clone());
 
                 // Find the page template if one of a parent has page_template set
                 // Stops after the first one found, keep in mind page.ancestors
                 // is [index, ..., parent] so we need to reverse it first
                 if page.meta.template.is_none() {
                     for ancestor in page.ancestors.iter().rev() {
-                        let s = self.sections.get(&content_path.join(ancestor)).unwrap();
+                        let s = self.pages.get(&content_path.join(ancestor)).unwrap();
                         if let Some(ref tpl) = s.meta.page_template {
-                            page.meta.template = Some(tpl.clone());
+                            template = Some(tpl.clone());
                             break;
                         }
                     }
                 }
 
-                if !is_transparent {
+                if !parent_section.meta.transparent {
                     break;
                 }
 
@@ -471,6 +469,19 @@ impl Library {
                     None => break,
                 }
             }
+            page_updates.push((path.clone(), hidden, page_ancestors, template));
+        }
+
+        for (path, hidden, ancestors, template) in page_updates {
+            let page = self.pages.get_mut(&path).unwrap();
+            page.hidden = hidden;
+            page.ancestors = ancestors;
+            page.meta.template = template;
+        }
+        for (path, (pages, hidden_pages)) in section_pages {
+            let section = self.pages.get_mut(&path).unwrap();
+            section.pages = pages;
+            section.hidden_pages = hidden_pages;
         }
 
         // And once we have all the pages assigned to their section, we sort them
@@ -491,7 +502,7 @@ impl Library {
         if let Some(paths) = self.translations.get(canonical_path) {
             for path in paths {
                 let (lang, permalink, title, path) = {
-                    if let Some(s) = self.sections.get(path) {
+                    if let Some(s) = self.pages.get(path) {
                         (&s.lang, &s.permalink, &s.meta.title, &s.file.path)
                     } else {
                         let s = &self.pages[path];
@@ -510,8 +521,8 @@ impl Library {
         paths.iter().map(|p| &self.pages[p]).collect()
     }
 
-    pub fn find_sections_by_path(&self, paths: &[PathBuf]) -> Vec<&Section> {
-        paths.iter().map(|p| &self.sections[p]).collect()
+    pub fn find_sections_by_path(&self, paths: &[PathBuf]) -> Vec<&Page> {
+        paths.iter().map(|p| &self.pages[p]).filter(|x| x.is_section()).collect()
     }
 }
 
@@ -527,10 +538,10 @@ mod tests {
     fn can_find_collisions_with_paths() {
         let config = Config::default_for_test();
         let mut library = Library::default();
-        let mut section = Section { path: "hello".to_owned(), ..Default::default() };
+        let mut section = Page { path: "hello".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("hello.md");
         library.insert_section(section.clone());
-        let mut section2 = Section { path: "hello".to_owned(), ..Default::default() };
+        let mut section2 = Page { path: "hello".to_owned(), ..Default::default() };
         section2.file.path = PathBuf::from("bonjour.md");
         library.insert_section(section2.clone());
 
@@ -549,16 +560,16 @@ mod tests {
     fn can_find_collisions_with_aliases() {
         let config = Config::default_for_test();
         let mut library = Library::default();
-        let mut section = Section { path: "hello".to_owned(), ..Default::default() };
+        let mut section = Page { path: "hello".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("hello.md");
         library.insert_section(section.clone());
-        let mut section2 = Section { path: "world".to_owned(), ..Default::default() };
+        let mut section2 = Page { path: "world".to_owned(), ..Default::default() };
         section2.file.path = PathBuf::from("bonjour.md");
         section2.meta.aliases = vec!["hello".to_owned(), "hola".to_owned()];
         library.insert_section(section2.clone());
         // Sections with render=false do not collide with anything
         // https://github.com/getzola/zola/issues/1656
-        let mut section3 = Section { path: "world2".to_owned(), ..Default::default() };
+        let mut section3 = Page { path: "world2".to_owned(), ..Default::default() };
         section3.meta.render = false;
         section3.file.path = PathBuf::from("bonjour2.md");
         section3.meta.aliases = vec!["hola".to_owned()];
@@ -586,7 +597,7 @@ mod tests {
         let mut library = Library::new(&config);
 
         // Create a section that conflicts with the "tags" taxonomy path
-        let mut section = Section { path: "/tags/".to_owned(), ..Default::default() };
+        let mut section = Page { path: "/tags/".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("content/tags/_index.md");
         library.insert_section(section.clone());
 
@@ -616,7 +627,7 @@ mod tests {
         library.insert_page(page);
 
         // Create a section that conflicts with the "tags/rust" term path
-        let mut section = Section { path: "/tags/rust/".to_owned(), ..Default::default() };
+        let mut section = Page { path: "/tags/rust/".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("content/tags/rust/_index.md");
         library.insert_section(section.clone());
 
@@ -644,7 +655,7 @@ mod tests {
     fn create_page(file_path: &str, lang: &str, page_sort: PageSort, hidden: Option<bool>) -> Page {
         let mut page = Page::default();
         page.lang = lang.to_owned();
-        page.file = FileInfo::new_page(Path::new(file_path), &PathBuf::new());
+        page.file = FileInfo::new(Path::new(file_path), &PathBuf::new());
         page.meta.hidden = hidden;
         match page_sort {
             PageSort::None => (),
@@ -670,10 +681,10 @@ mod tests {
         transparent: bool,
         sort_by: SortBy,
         hidden: Option<bool>,
-    ) -> Section {
-        let mut section = Section::default();
+    ) -> Page {
+        let mut section = Page::default();
         section.lang = lang.to_owned();
-        section.file = FileInfo::new_section(Path::new(file_path), &PathBuf::new());
+        section.file = FileInfo::new(Path::new(file_path), &PathBuf::new());
         section.meta.weight = Some(weight);
         section.meta.transparent = transparent;
         section.meta.sort_by = sort_by;
@@ -747,9 +758,9 @@ mod tests {
             library.insert_page(create_page(p, l, s, h));
         }
         library.populate_sections(&config, Path::new("content"));
-        assert_eq!(library.sections.len(), sections.len());
-        assert_eq!(library.pages.len(), pages.len());
-        let blog_section = &library.sections[&PathBuf::from("content/blog/_index.md")];
+        assert_eq!(library.pages.values().filter(|p| p.is_section()).count(), sections.len());
+        assert_eq!(library.pages.values().filter(|p| p.is_page()).count(), pages.len());
+        let blog_section = &library.pages[&PathBuf::from("content/blog/_index.md")];
         assert_eq!(blog_section.pages.len(), 3);
         // sorted by date in desc order
         assert_eq!(
@@ -771,7 +782,7 @@ mod tests {
             Some("new_page.html".to_owned())
         );
 
-        let wiki = &library.sections[&PathBuf::from("content/wiki/_index.md")];
+        let wiki = &library.pages[&PathBuf::from("content/wiki/_index.md")];
         assert_eq!(wiki.pages.len(), 4);
         // sorted by weight, in asc order
         assert_eq!(
@@ -802,12 +813,12 @@ mod tests {
         );
         assert_eq!(wiki.ancestors, vec!["_index.md".to_owned()]);
         assert_eq!(
-            library.sections[&PathBuf::from("content/wiki/recipes/_index.md")].ancestors,
+            library.pages[&PathBuf::from("content/wiki/recipes/_index.md")].ancestors,
             vec!["_index.md".to_owned(), "wiki/_index.md".to_owned()]
         );
 
         // also works for other languages
-        let french_wiki = &library.sections[&PathBuf::from("content/wiki/_index.fr.md")];
+        let french_wiki = &library.pages[&PathBuf::from("content/wiki/_index.fr.md")];
         assert_eq!(french_wiki.pages.len(), 3);
         // sorted by weight, in asc order
         assert_eq!(
@@ -840,22 +851,22 @@ mod tests {
         assert!(translations[1].title.is_some());
 
         // Visibility should be correct
-        let secret = &library.sections[&PathBuf::from("content/secret/_index.md")];
+        let secret = &library.pages[&PathBuf::from("content/secret/_index.md")];
         assert!(secret.hidden);
         assert_eq!(secret.pages, vec![PathBuf::from("content/secret/unhidden.md")]);
         // Hidden pages are kept out of `pages` but tracked so they can still be rendered
         assert_eq!(secret.hidden_pages, vec![PathBuf::from("content/secret/first.md")]);
         assert_eq!(
-            library.sections[&PathBuf::from("content/secret/inner/_index.md")].hidden_pages,
+            library.pages[&PathBuf::from("content/secret/inner/_index.md")].hidden_pages,
             vec![PathBuf::from("content/secret/inner/deep.md")]
         );
         assert_eq!(
-            library.sections[&PathBuf::from("content/blog/_index.md")].hidden_pages,
+            library.pages[&PathBuf::from("content/blog/_index.md")].hidden_pages,
             vec![PathBuf::from("content/blog/surprise.md")]
         );
         assert_eq!(secret.subsections, vec![PathBuf::from("content/secret/visible/_index.md")]);
-        assert!(library.sections[&PathBuf::from("content/secret/inner/_index.md")].hidden);
-        let visible = &library.sections[&PathBuf::from("content/secret/visible/_index.md")];
+        assert!(library.pages[&PathBuf::from("content/secret/inner/_index.md")].hidden);
+        let visible = &library.pages[&PathBuf::from("content/secret/visible/_index.md")];
         assert!(!visible.hidden);
         assert_eq!(visible.pages, vec![PathBuf::from("content/secret/visible/shown.md")]);
         assert!(library.pages[&PathBuf::from("content/secret/first.md")].hidden);
@@ -1057,16 +1068,16 @@ mod tests {
         }
 
         library.populate_sections(&config, Path::new("content"));
-        assert_eq!(library.sections.len(), sections.len());
-        let root_section = &library.sections[&PathBuf::from("content/_index.md")];
+        assert_eq!(library.pages.values().filter(|p| p.is_section()).count(), sections.len());
+        let root_section = &library.pages[&PathBuf::from("content/_index.md")];
         assert_eq!(root_section.lower, None);
         assert_eq!(root_section.higher, None);
 
-        let blog_section = &library.sections[&PathBuf::from("content/blog/_index.md")];
+        let blog_section = &library.pages[&PathBuf::from("content/blog/_index.md")];
         assert_eq!(blog_section.lower, None);
         assert_eq!(blog_section.higher, Some(PathBuf::from("content/novels/_index.md")));
 
-        let novels_section = &library.sections[&PathBuf::from("content/novels/_index.md")];
+        let novels_section = &library.pages[&PathBuf::from("content/novels/_index.md")];
         assert_eq!(novels_section.lower, Some(PathBuf::from("content/blog/_index.md")));
         assert_eq!(novels_section.higher, Some(PathBuf::from("content/wiki/_index.md")));
         assert_eq!(
@@ -1077,8 +1088,7 @@ mod tests {
             ]
         );
 
-        let first_novel_section =
-            &library.sections[&PathBuf::from("content/novels/first/_index.md")];
+        let first_novel_section = &library.pages[&PathBuf::from("content/novels/first/_index.md")];
         assert_eq!(
             first_novel_section.lower,
             Some(PathBuf::from("content/novels/second/_index.md"))
@@ -1086,7 +1096,7 @@ mod tests {
         assert_eq!(first_novel_section.higher, None);
 
         let second_novel_section =
-            &library.sections[&PathBuf::from("content/novels/second/_index.md")];
+            &library.pages[&PathBuf::from("content/novels/second/_index.md")];
         assert_eq!(second_novel_section.lower, None);
         assert_eq!(
             second_novel_section.higher,
@@ -1096,10 +1106,10 @@ mod tests {
 
     #[test]
     fn can_sort_sections_by_title() {
-        fn create_section(file_path: &str, title: &str, weight: usize, sort_by: SortBy) -> Section {
-            let mut section = Section::default();
+        fn create_section(file_path: &str, title: &str, weight: usize, sort_by: SortBy) -> Page {
+            let mut section = Page::default();
             section.lang = "en".to_owned();
-            section.file = FileInfo::new_section(Path::new(file_path), &PathBuf::new());
+            section.file = FileInfo::new(Path::new(file_path), &PathBuf::new());
             section.meta.title = Some(title.to_owned());
             section.meta.weight = Some(weight);
             section.meta.transparent = false;
@@ -1121,21 +1131,21 @@ mod tests {
         }
 
         library.populate_sections(&config, Path::new("content"));
-        assert_eq!(library.sections.len(), sections.len());
+        assert_eq!(library.pages.values().filter(|p| p.is_section()).count(), sections.len());
 
-        let root_section = &library.sections[&PathBuf::from("content/_index.md")];
+        let root_section = &library.pages[&PathBuf::from("content/_index.md")];
         assert_eq!(root_section.lower, None);
         assert_eq!(root_section.higher, None);
 
-        let first = &library.sections[&PathBuf::from("content/a_first/_index.md")];
+        let first = &library.pages[&PathBuf::from("content/a_first/_index.md")];
         assert_eq!(first.lower, None);
         assert_eq!(first.higher, Some(PathBuf::from("content/c_second/_index.md")));
 
-        let second = &library.sections[&PathBuf::from("content/c_second/_index.md")];
+        let second = &library.pages[&PathBuf::from("content/c_second/_index.md")];
         assert_eq!(second.lower, Some(PathBuf::from("content/a_first/_index.md")));
         assert_eq!(second.higher, Some(PathBuf::from("content/b_third/_index.md")));
 
-        let third = &library.sections[&PathBuf::from("content/b_third/_index.md")];
+        let third = &library.pages[&PathBuf::from("content/b_third/_index.md")];
         assert_eq!(third.lower, Some(PathBuf::from("content/c_second/_index.md")));
         assert_eq!(third.higher, None);
     }

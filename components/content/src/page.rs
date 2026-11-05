@@ -1,21 +1,18 @@
-/// A page, can be a blog post or a basic page
 use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 
 use ahash::AHashMap;
-use config::Config;
-use errors::Result;
 use regex::Regex;
-use utils::slugs::slugify_paths;
-use utils::table_of_contents::Heading;
 
-use crate::file_info::FileInfo;
+use crate::FileInfo;
 use crate::file_info::Kind;
 use crate::front_matter::{FrontMatter, split_content};
-use crate::utils::get_reading_analytics;
-use crate::utils::{find_related_assets, get_colocated_assets, has_anchor};
+use crate::utils::{find_related_assets, get_colocated_assets, get_reading_analytics, has_anchor};
+use config::Config;
 use utils::anchors::has_anchor_id;
 use utils::fs::read_file;
+use utils::slugs::slugify_paths;
+use utils::table_of_contents::Heading;
 
 // Based on https://regex101.com/r/H2n38Z/1/tests
 // A regex parsing RFC3339 date followed by {_,-} and some characters
@@ -27,9 +24,7 @@ static RFC3339_DATE: LazyLock<Regex> = LazyLock::new(|| {
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Page {
-    /// All info about the actual file
     pub file: FileInfo,
-    /// The front matter meta-data
     pub meta: FrontMatter,
     /// The list of parent sections relative paths
     pub ancestors: Vec<String>,
@@ -80,13 +75,26 @@ pub struct Page {
     pub colocated_assets: AHashMap<String, (String, String)>,
     /// Computed visibility
     pub hidden: bool,
+
+    // Those below only apply to sections and will be empty on pages
+    /// All direct pages of that section
+    pub pages: Vec<PathBuf>,
+    /// All direct hidden pages of that section that are hidden
+    /// Not listed directly anywhere but we still render them in the queue
+    pub hidden_pages: Vec<PathBuf>,
+    /// All pages that cannot be sorted in this section
+    pub ignored_pages: Vec<PathBuf>,
+    /// All direct subsections
+    pub subsections: Vec<PathBuf>,
+    /// All subsections that cannot be sorted in this section
+    pub ignored_subsections: Vec<PathBuf>,
 }
 
 impl Page {
-    pub fn new<P: AsRef<Path>>(file_path: P, meta: FrontMatter, base_path: &Path) -> Page {
+    pub fn new<P: AsRef<Path>>(file_path: P, meta: FrontMatter, base_path: &Path) -> Self {
         let file_path = file_path.as_ref();
 
-        Page { file: FileInfo::new_page(file_path, base_path), meta, ..Self::default() }
+        Self { file: FileInfo::new(file_path, base_path), meta, ..Self::default() }
     }
 
     /// Parse a page given the content of the .md file
@@ -97,9 +105,10 @@ impl Page {
         content: &str,
         config: &Config,
         base_path: &Path,
-    ) -> Result<Page> {
-        let (meta, content) = split_content(file_path, content, Kind::Page)?;
-        let mut page = Page::new(file_path, meta, base_path);
+    ) -> errors::Result<Self> {
+        let file = FileInfo::new(file_path, base_path);
+        let (meta, content) = split_content(file_path, content, file.kind)?;
+        let mut page = Self { file, meta, ..Self::default() };
 
         page.lang =
             page.file.find_language(&config.default_language, &config.other_languages_codes())?;
@@ -136,6 +145,8 @@ impl Page {
                 slugify_paths(slug, config.slugify.paths)
             } else if let Some(slug) = slug_from_dated_filename {
                 slugify_paths(&slug, config.slugify.paths)
+            } else if page.is_section() {
+                String::new()
             } else {
                 slugify_paths(&file_path_for_slug, config.slugify.paths)
             }
@@ -179,14 +190,18 @@ impl Page {
     }
 
     /// Read and parse a .md file into a Page struct
-    pub fn from_file<P: AsRef<Path>>(path: P, config: &Config, base_path: &Path) -> Result<Page> {
+    pub fn from_file<P: AsRef<Path>>(
+        path: P,
+        config: &Config,
+        base_path: &Path,
+    ) -> errors::Result<Self> {
         let path = path.as_ref();
         let content = read_file(path)?;
-        let mut page = Page::parse(path, &content, config, base_path)?;
+        let mut page = Self::parse(path, &content, config, base_path)?;
 
-        if page.file.name == "index" {
+        if page.is_section() || page.is_colocated_page() {
             let parent_dir = path.parent().unwrap();
-            page.assets = find_related_assets(parent_dir, config, true);
+            page.assets = find_related_assets(parent_dir, config, page.is_page());
             page.serialized_assets = page.serialize_assets(base_path);
             if let Some(colocated_path) = page.file.colocated_path.as_ref()
                 && !page.assets.is_empty()
@@ -195,11 +210,13 @@ impl Page {
                     &page.assets,
                     page.file.path.parent().unwrap(),
                     colocated_path,
-                    &format!("{}index.md", colocated_path),
+                    &format!(
+                        "{}{}index.md",
+                        if page.is_section() { "_" } else { "" },
+                        colocated_path
+                    ),
                 );
             }
-        } else {
-            page.assets = vec![];
         }
 
         Ok(page)
@@ -227,12 +244,56 @@ impl Page {
             .collect()
     }
 
+    pub fn get_template_name(&self) -> &str {
+        match self.meta.template {
+            Some(ref l) => l,
+            None => match self.kind() {
+                Kind::Page => "page.html",
+                Kind::Section if self.is_index() => "index.html",
+                Kind::Section => "section.html",
+            },
+        }
+    }
+
+    pub fn kind(&self) -> Kind {
+        self.file.kind
+    }
+
+    pub fn is_section(&self) -> bool {
+        self.kind() == Kind::Section
+    }
+
+    pub fn is_page(&self) -> bool {
+        self.kind() == Kind::Page
+    }
+
+    pub fn is_colocated_page(&self) -> bool {
+        self.is_page() && self.file.name == "index"
+    }
+
+    /// Is this the index section?
+    pub fn is_index(&self) -> bool {
+        self.is_section() && self.file.components.is_empty()
+    }
+
     pub fn has_anchor(&self, anchor: &str) -> bool {
         has_anchor(&self.toc, anchor)
     }
 
     pub fn has_anchor_id(&self, id: &str) -> bool {
         has_anchor_id(&self.content, id)
+    }
+
+    pub fn paginate_by(&self) -> Option<usize> {
+        self.meta.paginate_by.filter(|&x| x > 0)
+    }
+
+    pub fn needs_pages_render(&self, old_meta: &FrontMatter) -> bool {
+        self.meta.page_template != old_meta.page_template
+            || self.meta.sort_by != old_meta.sort_by
+            || self.meta.insert_anchor_links != old_meta.insert_anchor_links
+            || self.meta.transparent != old_meta.transparent
+            || self.meta.hidden != old_meta.hidden
     }
 }
 
@@ -245,7 +306,7 @@ mod tests {
     use globset::{Glob, GlobSetBuilder};
     use tempfile::tempdir;
 
-    use crate::Page;
+    use super::Page;
     use config::{Config, LanguageOptions};
     use utils::slugs::SlugifyStrategy;
 
@@ -777,5 +838,139 @@ Bonjour le monde"#
         assert_eq!(page.lang, "fr".to_string());
         assert_eq!(page.slug, "hello");
         assert_eq!(page.permalink, "http://a-website.com/bonjour/");
+    }
+
+    #[test]
+    fn section_with_assets_gets_right_info() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        fs::create_dir(&path.join("content")).expect("create content temp dir");
+        fs::create_dir(&path.join("content").join("posts")).expect("create posts temp dir");
+        let nested_path = path.join("content").join("posts").join("with-assets");
+        fs::create_dir(&nested_path).expect("create nested temp dir");
+        let mut f = fs::File::create(nested_path.join("_index.md")).unwrap();
+        f.write_all(b"+++\n+++\n").unwrap();
+        fs::File::create(nested_path.join("example.js")).unwrap();
+        fs::File::create(nested_path.join("graph.jpg")).unwrap();
+        fs::File::create(nested_path.join("fail.png")).unwrap();
+
+        let res =
+            Page::from_file(nested_path.join("_index.md").as_path(), &Config::default(), &path);
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.assets.len(), 3);
+        assert!(section.serialized_assets[0].starts_with('/'));
+        assert_eq!(section.permalink, "http://a-website.com/posts/with-assets/");
+    }
+
+    #[test]
+    fn section_with_ignored_assets_filters_out_correct_files() {
+        let tmp_dir = tempdir().expect("create temp dir");
+        let path = tmp_dir.path();
+        let article_path = path.join("content/posts/with-assets");
+        fs::create_dir_all(path.join(&article_path).join("foo/bar/baz/quux"))
+            .expect("create nested temp dir");
+        fs::create_dir_all(path.join(&article_path).join("foo/baz/quux"))
+            .expect("create nested temp dir");
+        let mut f = fs::File::create(article_path.join("_index.md")).unwrap();
+        f.write_all(b"+++\n+++\n").unwrap();
+        fs::File::create(article_path.join("example.js")).unwrap();
+        fs::File::create(article_path.join("graph.jpg")).unwrap();
+        fs::File::create(article_path.join("fail.png")).unwrap();
+        fs::File::create(article_path.join("foo/bar/baz/quux/quo.xlsx")).unwrap();
+        fs::File::create(article_path.join("foo/bar/baz/quux/quo.docx")).unwrap();
+
+        let mut gsb = GlobSetBuilder::new();
+        gsb.add(Glob::new("*.{js,png}").unwrap());
+        gsb.add(Glob::new("foo/**/baz").unwrap());
+        let mut config = Config::default();
+        config.ignored_content_globset = Some(gsb.build().unwrap());
+
+        let res = Page::from_file(article_path.join("_index.md").as_path(), &config, &path);
+
+        assert!(res.is_ok());
+        let page = res.unwrap();
+        assert_eq!(page.assets.len(), 1);
+        assert_eq!(page.assets[0].file_name().unwrap().to_str(), Some("graph.jpg"));
+    }
+
+    #[test]
+    fn can_specify_language_in_filename_for_section() {
+        let mut config = Config::default();
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Page::parse(
+            Path::new("content/hello/nested/_index.fr.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.permalink, "http://a-website.com/fr/hello/nested/");
+    }
+
+    // https://zola.discourse.group/t/rfc-i18n/13/17?u=keats
+    #[test]
+    fn can_make_links_to_translated_sections_without_double_trailing_slash() {
+        let mut config = Config::default();
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res =
+            Page::parse(Path::new("content/_index.fr.md"), &content, &config, &PathBuf::new());
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.permalink, "http://a-website.com/fr/");
+    }
+
+    #[test]
+    fn can_make_links_to_translated_subsections_with_trailing_slash() {
+        let mut config = Config::default();
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
+        let content = r#"
++++
++++
+Bonjour le monde"#
+            .to_string();
+        let res = Page::parse(
+            Path::new("content/subcontent/_index.fr.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.lang, "fr".to_string());
+        assert_eq!(section.permalink, "http://a-website.com/fr/subcontent/");
+    }
+
+    #[test]
+    fn can_redirect_to_external_site() {
+        let config = Config::default();
+        let content = r#"
++++
+redirect_to = "https://bar.com/something"
++++
+Example"#
+            .to_string();
+        let res = Page::parse(
+            Path::new("content/subcontent/_index.md"),
+            &content,
+            &config,
+            &PathBuf::new(),
+        );
+        assert!(res.is_ok());
+        let section = res.unwrap();
+        assert_eq!(section.meta.redirect_to, Some("https://bar.com/something".to_owned()));
     }
 }
