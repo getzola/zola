@@ -20,7 +20,7 @@ use walkdir::{DirEntry, WalkDir};
 
 use crate::queue::Queue;
 use config::{Config, IndexFormat, get_config};
-use content::{Library, Page, Section, Taxonomy};
+use content::{Library, Page, PageFrontMatter, Section, Taxonomy};
 use errors::{Context, Result, anyhow, bail};
 use relative_path::RelativePathBuf;
 use render::{RenderCache, Renderer};
@@ -304,12 +304,24 @@ impl Site {
             return Err(anyhow!("Failed to parse {} page(s):\n{}", errors.len(), msg.trim_end()));
         }
 
-        let pages: Vec<Page> = pages.into_iter().map(|(_, r)| r.unwrap()).collect();
+        let mut pages: Vec<Page> = pages.into_iter().map(|(_, r)| r.unwrap()).collect();
         self.create_default_index_sections()?;
+        if self.config.is_multilingual() {
+            let defaults: HashMap<PathBuf, PageFrontMatter> = pages
+                .iter()
+                .filter(|p| p.lang == self.config.default_language)
+                .map(|p| (p.file.canonical.clone(), p.meta.clone()))
+                .collect();
+            for page in &mut pages {
+                if let Some(default) = defaults.get(&page.file.canonical) {
+                    self.inherit_metadata(page, default);
+                }
+            }
+        }
 
         for page in pages {
             // should we skip drafts?
-            if page.meta.draft && !self.include_drafts {
+            if page.meta.draft() && !self.include_drafts {
                 continue;
             }
 
@@ -536,7 +548,7 @@ impl Site {
             }
         }
 
-        if page.meta.render {
+        if page.meta.render() {
             self.permalinks.insert(page.file.relative.clone(), page.permalink.clone());
         }
 
@@ -564,8 +576,13 @@ impl Site {
     /// Adds a page to the site and render it
     /// Only used in `zola serve --fast`
     pub fn add_and_render_page(&mut self, path: &Path) -> Result<()> {
-        let page = Page::from_file(path, &self.config, &self.base_path)
+        let mut page = Page::from_file(path, &self.config, &self.base_path)
             .with_context(|| format!("Failed to parse page `{}`", path.display()))?;
+        let mut default_path = page.file.canonical.clone().into_os_string();
+        default_path.push(".md");
+        if let Some(default_page) = self.library.pages.get(Path::new(&default_path)) {
+            self.inherit_metadata(&mut page, &default_page.meta);
+        }
         self.add_page(page, true)?;
         let page = self.library.pages.get(path).unwrap();
         Queue::single_page(self, page).process()
@@ -637,6 +654,32 @@ impl Site {
     pub fn populate_taxonomies(&mut self) -> Result<()> {
         self.taxonomies = self.library.find_taxonomies(&self.config)?;
         Ok(())
+    }
+
+    fn inherits_metadata(&self, dir: &Path, lang: &str) -> bool {
+        let mut dir = Some(dir);
+        while let Some(d) = dir {
+            for name in [format!("_index.{lang}.md"), "_index.md".to_string()] {
+                if let Some(v) =
+                    self.library.sections.get(&d.join(name)).and_then(|s| s.meta.inherit_metadata)
+                {
+                    return v;
+                }
+            }
+            dir = d.parent().filter(|p| p.starts_with(&self.content_path));
+        }
+        self.config.inherit_metadata
+    }
+
+    fn inherit_metadata(&self, page: &mut Page, default: &PageFrontMatter) {
+        if page.lang == self.config.default_language
+            || !self.inherits_metadata(&page.file.parent, &page.lang)
+        {
+            return;
+        }
+        let mut default = default.clone();
+        default.taxonomies.retain(|name, _| self.config.has_taxonomy(name, &page.lang));
+        page.meta = std::mem::take(&mut page.meta).inherit_from(default);
     }
 
     /// Rebuild the render cache (needed after modifying library or taxonomies)

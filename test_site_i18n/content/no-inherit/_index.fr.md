@@ -1,0 +1,3 @@
++++
+title = "Pas d'héritage"
++++

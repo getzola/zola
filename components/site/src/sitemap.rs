@@ -80,7 +80,7 @@ pub fn find_entries<'a>(
     let mut entries = HashSet::new();
 
     for p in library.pages.values() {
-        if !p.meta.render || p.hidden {
+        if !p.meta.render() || p.hidden {
             continue;
         }
 

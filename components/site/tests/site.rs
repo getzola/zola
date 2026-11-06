@@ -650,7 +650,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
             let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
             for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
                 // Discard not rendered pages and hidden ones
-                if i % 2 == 0 && page.meta.render && !page.hidden {
+                if i % 2 == 0 && page.meta.render() && !page.hidden {
                     nb_a_pages += 1;
                 }
                 page.meta.taxonomies = {
@@ -1036,9 +1036,9 @@ fn can_find_site_and_page_authors() {
     let p2 = &site.library.pages[&posts_section.pages[1]];
 
     // Only the first page has had an author added.
-    assert_eq!(1, p1.meta.authors.len());
-    assert_eq!("page@example.com (Page Author)", p1.meta.authors.first().unwrap());
-    assert_eq!(0, p2.meta.authors.len());
+    assert_eq!(1, p1.meta.authors().len());
+    assert_eq!("page@example.com (Page Author)", p1.meta.authors().first().unwrap());
+    assert_eq!(0, p2.meta.authors().len());
 }
 
 // Follows test_site/themes/sample/templates/current_path.html

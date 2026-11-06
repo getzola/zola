@@ -74,6 +74,8 @@ pub struct SectionFrontMatter {
     /// Pages and subsections can override it by setting their own `hidden` field
     #[serde(skip_serializing)]
     pub hidden: Option<bool>,
+    #[serde(skip_serializing)]
+    pub inherit_metadata: Option<bool>,
     /// Any extra parameter present in the front matter
     #[serde(default = "default_extra", deserialize_with = "deserialize_extra")]
     pub extra: Value,
@@ -110,6 +112,7 @@ impl Default for SectionFrontMatter {
             aliases: Vec::new(),
             generate_feeds: false,
             hidden: None,
+            inherit_metadata: None,
             extra: Value::from(Map::new()),
             draft: false,
         }
