@@ -87,25 +87,13 @@ pub fn find_entries<'a>(
         let mut entry = SitemapEntry::new(Cow::Borrowed(&p.permalink), lastmod(p));
         entry.add_extra(p.meta.extra.clone());
         entries.insert(entry);
-    }
 
-    for s in library.sections.values() {
-        if s.hidden {
-            continue;
-        }
-
-        if s.meta.render {
-            let mut entry = SitemapEntry::new(Cow::Borrowed(&s.permalink), None);
-            entry.add_extra(s.meta.extra.clone());
-            entries.insert(entry);
-        }
-
-        if let Some(paginate_by) = s.paginate_by()
+        if let Some(paginate_by) = p.paginate_by()
             && !config.should_exclude_paginated_pages_in_sitemap()
         {
-            let number_pagers = (s.pages.len() as f64 / paginate_by as f64).ceil() as isize;
+            let number_pagers = (p.pages.len() as f64 / paginate_by as f64).ceil() as isize;
             for i in 1..=number_pagers {
-                let permalink = format!("{}{}/{}/", s.permalink, s.meta.paginate_path, i);
+                let permalink = format!("{}{}/{}/", p.permalink, p.meta.paginate_path, i);
                 entries.insert(SitemapEntry::new(Cow::Owned(permalink), None));
             }
         }

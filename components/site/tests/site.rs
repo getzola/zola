@@ -22,7 +22,7 @@ fn can_parse_site() {
     site.load().unwrap();
 
     // Correct number of pages (sections do not count as pages, draft are ignored)
-    assert_eq!(site.library.pages.len(), 41);
+    assert_eq!(site.library.pages.values().filter(|p| p.is_page()).count(), 41);
     let posts_path = path.join("content").join("posts");
 
     // Make sure the page with a url doesn't have any sections
@@ -35,15 +35,15 @@ fn can_parse_site() {
     assert_eq!(asset_folder_post.file.components, vec!["posts".to_string()]);
 
     // That we have the right number of sections
-    assert_eq!(site.library.sections.len(), 16);
+    assert_eq!(site.library.pages.values().filter(|p| p.is_section()).count(), 16);
 
     // And that the sections are correct
-    let index_section = site.library.sections.get(&path.join("content").join("_index.md")).unwrap();
+    let index_section = site.library.pages.get(&path.join("content").join("_index.md")).unwrap();
     assert_eq!(index_section.subsections.len(), 5);
     assert_eq!(index_section.pages.len(), 5);
     assert!(index_section.ancestors.is_empty());
 
-    let posts_section = site.library.sections.get(&posts_path.join("_index.md")).unwrap();
+    let posts_section = site.library.pages.get(&posts_path.join("_index.md")).unwrap();
     assert_eq!(posts_section.subsections.len(), 2);
     assert_eq!(posts_section.pages.len(), 10); // 11 with 1 draft == 10
     assert_eq!(posts_section.ancestors, vec![index_section.file.relative.clone()]);
@@ -57,17 +57,17 @@ fn can_parse_site() {
     );
 
     let tutorials_section =
-        site.library.sections.get(&posts_path.join("tutorials").join("_index.md")).unwrap();
+        site.library.pages.get(&posts_path.join("tutorials").join("_index.md")).unwrap();
     assert_eq!(tutorials_section.subsections.len(), 2);
-    let sub1 = &site.library.sections[&tutorials_section.subsections[0]];
-    let sub2 = &site.library.sections[&tutorials_section.subsections[1]];
+    let sub1 = &site.library.pages[&tutorials_section.subsections[0]];
+    let sub2 = &site.library.pages[&tutorials_section.subsections[1]];
     assert_eq!(sub1.clone().meta.title.unwrap(), "Programming");
     assert_eq!(sub2.clone().meta.title.unwrap(), "DevOps");
     assert_eq!(tutorials_section.pages.len(), 0);
 
     let devops_section = site
         .library
-        .sections
+        .pages
         .get(&posts_path.join("tutorials").join("devops").join("_index.md"))
         .unwrap();
     assert_eq!(devops_section.subsections.len(), 0);
@@ -83,7 +83,7 @@ fn can_parse_site() {
 
     let prog_section = site
         .library
-        .sections
+        .pages
         .get(&posts_path.join("tutorials").join("programming").join("_index.md"))
         .unwrap();
     assert_eq!(prog_section.subsections.len(), 0);
@@ -313,7 +313,7 @@ fn can_build_site_with_live_reload_and_drafts() {
     assert!(file_contains!(public, "sitemap.xml", "draft"));
 
     // drafted sections are included
-    assert_eq!(site.library.sections.len(), 18);
+    assert_eq!(site.library.pages.values().filter(|p| p.is_section()).count(), 18);
 
     assert!(file_exists!(public, "secret_section/index.html"));
     assert!(file_exists!(public, "secret_section/draft-page/index.html"));
@@ -331,6 +331,10 @@ fn can_build_site_with_taxonomies() {
 
             let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
             for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
+                if page.is_section() {
+                    pages.push(page);
+                    continue;
+                }
                 page.meta.taxonomies = {
                     let mut taxonomies = BTreeMap::new();
                     taxonomies.insert(
@@ -440,8 +444,8 @@ fn can_build_site_with_pagination_for_section() {
         site.load().unwrap();
         {
             let library = Arc::make_mut(&mut site.library);
-            for (_, section) in library.sections.iter_mut() {
-                if section.is_index() {
+            for (_, section) in library.pages.iter_mut() {
+                if !section.is_section() || section.is_index() {
                     continue;
                 }
                 section.meta.paginate_by = Some(2);
@@ -569,7 +573,7 @@ fn can_build_site_with_pagination_for_index() {
             let library = Arc::make_mut(&mut site.library);
             {
                 let index = library
-                    .sections
+                    .pages
                     .get_mut(&site.base_path.join("content").join("_index.md"))
                     .unwrap();
                 index.meta.paginate_by = Some(2);
@@ -649,6 +653,10 @@ fn can_build_site_with_pagination_for_taxonomy() {
 
             let pages_data = std::mem::replace(&mut library.pages, AHashMap::new());
             for (i, (_, mut page)) in pages_data.into_iter().enumerate() {
+                if page.is_section() {
+                    pages.push(page);
+                    continue;
+                }
                 // Discard not rendered pages and hidden ones
                 if i % 2 == 0 && page.meta.render && !page.hidden {
                     nb_a_pages += 1;
@@ -827,7 +835,7 @@ fn can_apply_page_templates() {
 
     let template_path = path.join("content").join("applying_page_template");
 
-    let template_section = site.library.sections.get(&template_path.join("_index.md")).unwrap();
+    let template_section = site.library.pages.get(&template_path.join("_index.md")).unwrap();
     assert_eq!(template_section.subsections.len(), 2);
     assert_eq!(template_section.pages.len(), 2);
 
@@ -840,11 +848,8 @@ fn can_apply_page_templates() {
     assert_eq!(override_page_template.meta.title, Some("Override".into()));
 
     // It should have applied recursively as well
-    let another_section = site
-        .library
-        .sections
-        .get(&template_path.join("another_section").join("_index.md"))
-        .unwrap();
+    let another_section =
+        site.library.pages.get(&template_path.join("another_section").join("_index.md")).unwrap();
     assert_eq!(another_section.subsections.len(), 0);
     assert_eq!(another_section.pages.len(), 1);
 
@@ -855,7 +860,7 @@ fn can_apply_page_templates() {
     // But it should not have override a children page_template
     let yet_another_section = site
         .library
-        .sections
+        .pages
         .get(&template_path.join("yet_another_section").join("_index.md"))
         .unwrap();
     assert_eq!(yet_another_section.subsections.len(), 0);
@@ -1030,7 +1035,7 @@ fn can_find_site_and_page_authors() {
     assert_eq!(Some("config@example.com (Config Author)".to_string()), author);
 
     let posts_path = path.join("content").join("posts");
-    let posts_section = site.library.sections.get(&posts_path.join("_index.md")).unwrap();
+    let posts_section = site.library.pages.get(&posts_path.join("_index.md")).unwrap();
 
     let p1 = &site.library.pages[&posts_section.pages[0]];
     let p2 = &site.library.pages[&posts_section.pages[1]];

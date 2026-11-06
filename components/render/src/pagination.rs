@@ -1,12 +1,12 @@
 use crate::RenderCache;
-use content::{Library, Section, Taxonomy, TaxonomyTerm};
+use content::{Library, Page, Taxonomy, TaxonomyTerm};
 use serde::Serialize;
 use std::path::PathBuf;
 use tera::{Map, Tera, Value};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum PaginationRoot<'a> {
-    Section(&'a Section),
+    Section(&'a Page),
     Taxonomy(&'a Taxonomy, &'a TaxonomyTerm),
 }
 
@@ -55,7 +55,7 @@ pub struct Paginator<'a> {
 impl<'a> Paginator<'a> {
     /// Create a new paginator from a section
     /// It will always at least create one pager (the first) even if there are not enough pages to paginate
-    pub fn from_section(section: &'a Section, library: &'a Library) -> Paginator<'a> {
+    pub fn from_section(section: &'a Page, library: &'a Library) -> Paginator<'a> {
         let paginate_by = section.meta.paginate_by.unwrap();
         let mut paginator = Paginator {
             all_pages: &section.pages,
@@ -215,7 +215,7 @@ mod tests {
     use content::{FrontMatter, Page};
     use tera::value::Key;
 
-    fn create_section(is_index: bool, paginate_reversed: bool) -> Section {
+    fn create_section(is_index: bool, paginate_reversed: bool) -> Page {
         let f = FrontMatter {
             paginate_by: Some(2),
             paginate_path: "page".to_string(),
@@ -223,7 +223,7 @@ mod tests {
             ..Default::default()
         };
 
-        let mut s = Section::new("content/_index.md", f, &PathBuf::new());
+        let mut s = Page::new("content/_index.md", f, &PathBuf::new());
         if !is_index {
             s.path = "/posts/".to_string();
             s.permalink = "https://vincent.is/posts/".to_string();
@@ -241,7 +241,7 @@ mod tests {
         is_index: bool,
         num_pages: usize,
         paginate_reversed: bool,
-    ) -> (Section, Library) {
+    ) -> (Page, Library) {
         let mut library = Library::default();
         for i in 1..=num_pages {
             let mut page = Page::default();
@@ -392,7 +392,12 @@ mod tests {
             slug: "something".to_string(),
             path: "/some-tags/something/".to_string(),
             permalink: "https://vincent.is/some-tags/something/".to_string(),
-            pages: library.pages.keys().cloned().collect(),
+            pages: library
+                .pages
+                .values()
+                .filter(|p| p.is_page())
+                .map(|p| p.file.path.clone())
+                .collect(),
         };
         let taxonomy = Taxonomy {
             kind: taxonomy_def,

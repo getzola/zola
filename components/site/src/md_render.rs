@@ -9,7 +9,7 @@ use regex::Regex;
 use tera::Tera;
 
 use config::Config;
-use content::{Page, Section};
+use content::Page;
 use errors::{Context as _, Result};
 use markdown::MarkdownContext;
 use render::Renderer;
@@ -44,7 +44,6 @@ fn protect_heading_ids(content: &str) -> Cow<'_, str> {
 
 #[inline]
 fn restore_heading_ids(rendered: String) -> String {
-    // fast path: no sentinel → return unchanged
     if rendered.contains(SENTINEL) { rendered.replace(SENTINEL, "{") } else { rendered }
 }
 
@@ -107,63 +106,11 @@ pub fn render_page(
     page.toc = res.toc;
     page.internal_links = res.internal_links;
     page.external_links = res.external_links;
-    Ok(())
-}
-
-pub fn render_section(
-    section: &mut Section,
-    renderer: Renderer,
-    permalinks: &HashMap<String, String>,
-    colocated_assets: &AHashMap<String, (String, String)>,
-    tera: &Tera,
-    config: &Config,
-) -> Result<()> {
-    let skip_templating = config
-        .skip_content_templating_globset
-        .as_ref()
-        .is_some_and(|gs| gs.is_match(&section.file.relative));
-
-    let input = if !skip_templating {
-        let protected = protect_heading_ids(&section.raw_content);
-        if !needs_templating(protected.as_ref()) {
-            Cow::Borrowed(&section.raw_content)
-        } else {
-            let rendered = renderer.render_section_content(&protected, section)?;
-            Cow::Owned(match protected {
-                Cow::Owned(_) => restore_heading_ids(rendered),
-                Cow::Borrowed(_) => rendered,
-            })
-        }
-    } else {
-        Cow::Borrowed(&section.raw_content)
-    };
-
-    let context = MarkdownContext {
-        tera,
-        config,
-        permalinks,
-        colocated_assets,
-        lang: &section.lang,
-        current_permalink: &section.permalink,
-        current_path: &section.file.relative,
-        insert_anchor: section
-            .meta
-            .insert_anchor_links
-            .unwrap_or(config.markdown.insert_anchor_links),
-    };
-    let res = markdown::render_content(&input, &context)
-        .with_context(|| format!("Failed to render content of {}", section.file.path.display()))?;
-
-    section.content = res.body;
-    section.raw_content = String::new();
-    section.toc = res.toc;
-    section.external_links = res.external_links;
-    if let Some(ref redirect_to) = section.meta.redirect_to
+    if let Some(ref redirect_to) = page.meta.redirect_to
         && is_external_link(redirect_to)
     {
-        section.external_links.push(redirect_to.to_owned());
+        page.external_links.push(redirect_to.to_owned());
     }
-    section.internal_links = res.internal_links;
     Ok(())
 }
 

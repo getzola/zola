@@ -5,7 +5,7 @@ use tera::{Tera, Value};
 
 use config::Config;
 use content::{
-    Library, SerializedTaxonomy, SerializedTaxonomyTerm, SerializingPage, SerializingSection,
+    Library, Page, SerializedTaxonomy, SerializedTaxonomyTerm, SerializingPage, SerializingSection,
     Taxonomy,
 };
 
@@ -33,11 +33,8 @@ pub struct CachedTaxonomy {
 #[derive(Debug, Clone, Default)]
 pub struct RenderCache {
     pub pages: AHashMap<PathBuf, CachedContent>,
-    pub sections: AHashMap<PathBuf, CachedContent>,
     /// canonical path -> (lang -> file path)
     pub pages_by_canonical: AHashMap<PathBuf, AHashMap<String, PathBuf>>,
-    /// canonical path -> (lang -> file path)
-    pub sections_by_canonical: AHashMap<PathBuf, AHashMap<String, PathBuf>>,
     /// Serialized config per language
     pub configs: AHashMap<String, Value>,
     /// Cached taxonomies: lang -> (taxonomy_slug -> CachedTaxonomy)
@@ -59,131 +56,46 @@ impl RenderCache {
     }
 
     pub fn build(&mut self, library: &Library, taxonomies: &[Taxonomy], tera: &Tera) {
+        let mut cached_pages = AHashMap::with_capacity(library.pages.len());
+        let mut pages_by_canonical: AHashMap<PathBuf, AHashMap<String, PathBuf>> = AHashMap::new();
+
         // First pass: serialize all pages without siblings
-        let (mut pages, pages_by_canonical) = library.pages.iter().fold(
-            (
-                AHashMap::with_capacity(library.pages.len()),
-                AHashMap::<PathBuf, AHashMap<String, PathBuf>>::new(),
-            ),
-            |(mut pages, mut pages_by_canonical), (path, page)| {
-                pages.insert(
-                    path.clone(),
-                    CachedContent {
-                        value: Value::from_serializable(&SerializingPage::new(page, library)),
-                        canonical: page.file.canonical.clone(),
-                    },
-                );
-                pages_by_canonical
-                    .entry(page.file.canonical.clone())
-                    .or_default()
-                    .insert(page.lang.clone(), path.clone());
-                (pages, pages_by_canonical)
-            },
-        );
-
-        // Second pass: inject sibling Values from cache
-        // Collect siblings first to avoid borrow issues
-        let siblings: Vec<_> = library
-            .pages
-            .iter()
-            .filter_map(|(path, page)| {
-                let lower = page.lower.as_ref().and_then(|p| pages.get(p)).map(|c| c.value.clone());
-                let higher =
-                    page.higher.as_ref().and_then(|p| pages.get(p)).map(|c| c.value.clone());
-                if lower.is_some() || higher.is_some() {
-                    Some((path.clone(), lower, higher))
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        for (path, lower, higher) in siblings {
-            if let Some(mut cached) = pages.remove(&path) {
-                let new_value = match cached.value.into_map() {
-                    Some(mut map) => {
-                        if let Some(lower_val) = lower {
-                            map.insert("lower".into(), lower_val);
-                        }
-                        if let Some(higher_val) = higher {
-                            map.insert("higher".into(), higher_val);
-                        }
-                        Value::from(map)
-                    }
-                    None => unreachable!("serialized page should always be a map"),
-                };
-                cached.value = new_value;
-                pages.insert(path, cached);
-            }
+        for (path, page) in library.pages.iter().filter(|(_, x)| x.is_page()) {
+            cached_pages.insert(
+                path.clone(),
+                CachedContent {
+                    value: Value::from_serializable(&SerializingPage::new(page, library)),
+                    canonical: page.file.canonical.clone(),
+                },
+            );
+            pages_by_canonical
+                .entry(page.file.canonical.clone())
+                .or_default()
+                .insert(page.lang.clone(), path.clone());
         }
+        inject_siblings(&mut cached_pages, library.pages.values().filter(|p| p.is_page()));
 
-        let (mut sections, sections_by_canonical) = library.sections.iter().fold(
-            (
-                AHashMap::with_capacity(library.sections.len()),
-                AHashMap::<PathBuf, AHashMap<String, PathBuf>>::new(),
-            ),
-            |(mut sections, mut sections_by_canonical), (path, section)| {
-                // Look up cached page values
-                let section_pages: Vec<Value> = section
-                    .pages
-                    .iter()
-                    .filter_map(|p| pages.get(p).map(|c| c.value.clone()))
-                    .collect();
+        for (path, page) in library.pages.iter().filter(|(_, x)| x.is_section()) {
+            // Look up cached page values
+            let pages: Vec<Value> = page
+                .pages
+                .iter()
+                .filter_map(|p| cached_pages.get(p).map(|c| c.value.clone()))
+                .collect();
 
-                sections.insert(
-                    path.clone(),
-                    CachedContent {
-                        value: Value::from_serializable(&SerializingSection::new(
-                            section,
-                            library,
-                            section_pages,
-                        )),
-                        canonical: section.file.canonical.clone(),
-                    },
-                );
-                sections_by_canonical
-                    .entry(section.file.canonical.clone())
-                    .or_default()
-                    .insert(section.lang.clone(), path.clone());
-                (sections, sections_by_canonical)
-            },
-        );
-
-        // Second pass for sections: inject sibling subsection Values
-        let section_siblings: Vec<_> = library
-            .sections
-            .iter()
-            .filter_map(|(path, section)| {
-                let lower =
-                    section.lower.as_ref().and_then(|p| sections.get(p)).map(|c| c.value.clone());
-                let higher =
-                    section.higher.as_ref().and_then(|p| sections.get(p)).map(|c| c.value.clone());
-                if lower.is_some() || higher.is_some() {
-                    Some((path.clone(), lower, higher))
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        for (path, lower, higher) in section_siblings {
-            if let Some(mut cached) = sections.remove(&path) {
-                let new_value = match cached.value.into_map() {
-                    Some(mut map) => {
-                        if let Some(lower_val) = lower {
-                            map.insert("lower".into(), lower_val);
-                        }
-                        if let Some(higher_val) = higher {
-                            map.insert("higher".into(), higher_val);
-                        }
-                        Value::from(map)
-                    }
-                    None => unreachable!("serialized section should always be a map"),
-                };
-                cached.value = new_value;
-                sections.insert(path, cached);
-            }
+            cached_pages.insert(
+                path.clone(),
+                CachedContent {
+                    value: Value::from_serializable(&SerializingSection::new(page, library, pages)),
+                    canonical: page.file.canonical.clone(),
+                },
+            );
+            pages_by_canonical
+                .entry(page.file.canonical.clone())
+                .or_default()
+                .insert(page.lang.clone(), path.clone());
         }
+        inject_siblings(&mut cached_pages, library.pages.values().filter(|p| p.is_section()));
 
         let mut taxonomies_slug: AHashMap<_, AHashMap<_, _>> = AHashMap::new();
         let cached_taxonomies: Vec<(_, _, _, _)> = taxonomies
@@ -203,7 +115,7 @@ impl RenderCache {
                     let term_pages: Vec<Value> = term
                         .pages
                         .iter()
-                        .filter_map(|p| pages.get(p).map(|c| c.value.clone()))
+                        .filter_map(|p| cached_pages.get(p).map(|c| c.value.clone()))
                         .collect();
 
                     let serialized_term =
@@ -240,10 +152,8 @@ impl RenderCache {
             },
         );
 
-        self.pages = pages;
-        self.sections = sections;
+        self.pages = cached_pages;
         self.pages_by_canonical = pages_by_canonical;
-        self.sections_by_canonical = sections_by_canonical;
         self.taxonomies = taxonomies;
         self.taxo_name_to_slug = taxonomies_slug;
     }
@@ -254,5 +164,41 @@ impl RenderCache {
             return Some(terms);
         }
         taxonomies.get(self.taxo_name_to_slug.get(lang)?.get(kind)?)
+    }
+}
+
+fn inject_siblings<'a>(
+    cache: &mut AHashMap<PathBuf, CachedContent>,
+    items: impl Iterator<Item = &'a Page>,
+) {
+    let siblings: Vec<_> = items
+        .filter_map(|p| {
+            let lower = p.lower.as_ref().and_then(|x| cache.get(x)).map(|c| c.value.clone());
+            let higher = p.higher.as_ref().and_then(|x| cache.get(x)).map(|c| c.value.clone());
+            if lower.is_some() || higher.is_some() {
+                Some((p.file.path.clone(), lower, higher))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    for (path, lower, higher) in siblings {
+        if let Some(mut cached) = cache.remove(&path) {
+            let new_value = match cached.value.into_map() {
+                Some(mut map) => {
+                    if let Some(lower_val) = lower {
+                        map.insert("lower".into(), lower_val);
+                    }
+                    if let Some(higher_val) = higher {
+                        map.insert("higher".into(), higher_val);
+                    }
+                    Value::from(map)
+                }
+                None => unreachable!("serialized page should always be a map"),
+            };
+            cached.value = new_value;
+            cache.insert(path, cached);
+        }
     }
 }

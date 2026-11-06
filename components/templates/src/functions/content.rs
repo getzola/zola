@@ -113,13 +113,13 @@ impl Function<TeraResult<Value>> for GetSection {
         let res = (|| {
             let cached = self
                 .cache
-                .sections
+                .pages
                 .get(&full_path)
                 .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))?;
 
             let file_path = self
                 .cache
-                .sections_by_canonical
+                .pages_by_canonical
                 .get(&cached.canonical)
                 .and_then(|by_lang| by_lang.get(&lang))
                 .ok_or_else(|| {
@@ -127,7 +127,7 @@ impl Function<TeraResult<Value>> for GetSection {
                 })?;
 
             self.cache
-                .sections
+                .pages
                 .get(file_path)
                 .map(|c| c.value.clone())
                 .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))
@@ -150,7 +150,7 @@ impl Function<TeraResult<Value>> for GetSection {
 mod tests {
     use super::*;
     use config::Config;
-    use content::{FileInfo, Library, Page, Section, SortBy};
+    use content::{FileInfo, Library, Page, SortBy};
     use render::RenderCache;
     use std::path::Path;
     use tera::value::Key;
@@ -255,8 +255,8 @@ mod tests {
         assert!(res.unwrap() == Value::none());
     }
 
-    fn create_section(title: &str, file_path: &str, lang: &str) -> Section {
-        let mut section = Section { lang: lang.to_owned(), ..Section::default() };
+    fn create_section(title: &str, file_path: &str, lang: &str) -> Page {
+        let mut section = Page { lang: lang.to_owned(), ..Page::default() };
         section.file = FileInfo::new_section(
             Path::new(format!("/test/base/path/{}", file_path).as_str()),
             &PathBuf::new(),

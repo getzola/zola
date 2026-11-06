@@ -449,8 +449,8 @@ impl Library {
                 // Find the page template if one of a parent has page_template set
                 // Stops after the first one found, keep in mind page.ancestors
                 // is [index, ..., parent] so we need to reverse it first
-                if page.meta.template.is_none() {
-                    for ancestor in page.ancestors.iter().rev() {
+                if template.is_none() {
+                    for ancestor in page_ancestors.iter().rev() {
                         let s = self.pages.get(&content_path.join(ancestor)).unwrap();
                         if let Some(ref tpl) = s.meta.page_template {
                             template = Some(tpl.clone());
@@ -491,7 +491,7 @@ impl Library {
 
     /// Find all the orphan pages: pages that are in a folder without an `_index.md`
     pub fn get_all_orphan_pages(&self) -> Vec<&Page> {
-        self.pages.iter().filter(|(_, p)| p.ancestors.is_empty()).map(|(_, p)| p).collect()
+        self.pages.values().filter(|p| p.is_page() && p.ancestors.is_empty()).collect()
     }
 
     /// Find all the translated content for a given canonical path.
@@ -501,15 +501,13 @@ impl Library {
 
         if let Some(paths) = self.translations.get(canonical_path) {
             for path in paths {
-                let (lang, permalink, title, path) = {
-                    if let Some(s) = self.pages.get(path) {
-                        (&s.lang, &s.permalink, &s.meta.title, &s.file.path)
-                    } else {
-                        let s = &self.pages[path];
-                        (&s.lang, &s.permalink, &s.meta.title, &s.file.path)
-                    }
-                };
-                translations.push(TranslatedContent { lang, permalink, title, path });
+                let Some(s) = self.pages.get(path) else { continue };
+                translations.push(TranslatedContent {
+                    lang: &s.lang,
+                    permalink: &s.permalink,
+                    title: &s.meta.title,
+                    path: &s.file.path,
+                });
             }
         }
 

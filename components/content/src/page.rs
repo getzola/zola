@@ -212,8 +212,8 @@ impl Page {
                     colocated_path,
                     &format!(
                         "{}{}index.md",
-                        if page.is_section() { "_" } else { "" },
-                        colocated_path
+                        colocated_path,
+                        if page.is_section() { "_" } else { "" }
                     ),
                 );
             }
@@ -224,10 +224,19 @@ impl Page {
 
     /// Creates a vectors of asset URLs.
     fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
-        self.assets
+        // TODO: this differs between pages and sections, fix it or remove the branch if it's the same
+        // need to add tests first
+        let filenames = self
+            .assets
             .iter()
             .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
-            .filter_map(|filename| filename.to_str())
+            .filter_map(|filename| filename.to_str());
+
+        if self.is_section() {
+            return filenames.map(|filename| format!("{}{}", self.path, filename)).collect();
+        }
+
+        filenames
             .map(|filename| {
                 let mut path = self.file.path.clone();
                 // Popping the index.md from the path since file.parent would be one level too high
@@ -859,8 +868,12 @@ Bonjour le monde"#
         assert!(res.is_ok());
         let section = res.unwrap();
         assert_eq!(section.assets.len(), 3);
-        assert!(section.serialized_assets[0].starts_with('/'));
+        assert_eq!(section.serialized_assets[0], "/posts/with-assets/example.js");
         assert_eq!(section.permalink, "http://a-website.com/posts/with-assets/");
+        assert_eq!(
+            section.colocated_assets["posts/with-assets/graph.jpg"],
+            ("posts/with-assets/_index.md".to_string(), "graph.jpg".to_string())
+        );
     }
 
     #[test]

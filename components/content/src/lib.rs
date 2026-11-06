@@ -9,7 +9,7 @@ mod taxonomies;
 mod types;
 mod utils;
 
-pub use file_info::FileInfo;
+pub use file_info::{FileInfo, Kind};
 pub use front_matter::FrontMatter;
 pub use library::Library;
 pub use page::Page;

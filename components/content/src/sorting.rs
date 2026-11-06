@@ -80,7 +80,7 @@ pub fn sort_sections(sections: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<
                 a.meta.title.as_ref().unwrap().cmp(b.meta.title.as_ref().unwrap())
             }
             SortBy::Permalink => a.permalink.cmp(&b.permalink),
-            _ => a.meta.weight.cmp(&b.meta.weight),
+            _ => a.meta.weight().cmp(&b.meta.weight()),
         };
 
         if ord == Ordering::Equal { a.permalink.cmp(&b.permalink) } else { ord }
