@@ -93,6 +93,13 @@ css = "path/to/math.css"
 addon = "path/to/addon.typ"
 ```
 
+Note that Typst and LaTeX syntax are **not mutually compatible**,
+because the markup language is completely different.
+This means that switching between them is not generally possible
+(without changing all the posts from one language to another).
+In other words, the choice of `engine` also dictates which language
+is used between dollar signs.
+
 ### Writing Math Expressions
 
 For inline math expressions, surround your Typst/LaTeX formula with single dollar signs:
