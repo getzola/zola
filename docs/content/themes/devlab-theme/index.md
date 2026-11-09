@@ -3,14 +3,14 @@
 title = "devlab-theme"
 description = "A composable Zola theme for product sites, blogs, documentation and books."
 template = "theme.html"
-date = 2026-10-30T22:52:35+05:00
+date = 2026-11-09T12:14:22+01:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'book', 'product', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-10-30T22:52:35+05:00
-updated = 2026-10-30T22:52:35+05:00
+created = 2026-11-09T12:14:22+01:00
+updated = 2026-11-09T12:14:22+01:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
 minimum_version = "0.23.6"
