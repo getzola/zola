@@ -3,14 +3,14 @@
 title = "arabesque"
 description = "A calm, accessible, bidirectional theme built on the Arabesque design system: English and Arabic, light and dark, from the start."
 template = "theme.html"
-date = 2026-10-26T19:45:35Z
+date = 2026-11-03T21:42:11Z
 
 [taxonomies]
 theme-tags = ['blog', 'documentation', 'multilingual', 'rtl', 'accessible', 'dark-mode', 'responsive', 'search']
 
 [extra]
-created = 2026-10-26T19:45:35Z
-updated = 2026-10-26T19:45:35Z
+created = 2026-11-03T21:42:11Z
+updated = 2026-11-03T21:42:11Z
 repository = "https://github.com/ArabesqueLabs/zola-theme-arabesque.git"
 homepage = "https://github.com/ArabesqueLabs/zola-theme-arabesque"
 minimum_version = "0.23.0"

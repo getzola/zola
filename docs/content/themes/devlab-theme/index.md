@@ -3,14 +3,14 @@
 title = "devlab-theme"
 description = "A composable Zola theme for product sites, blogs, documentation and books."
 template = "theme.html"
-date = 2026-10-30T22:52:35+05:00
+date = 2026-11-15T23:19:59+05:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'book', 'product', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-10-30T22:52:35+05:00
-updated = 2026-10-30T22:52:35+05:00
+created = 2026-11-15T23:19:59+05:00
+updated = 2026-11-15T23:19:59+05:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
 minimum_version = "0.23.6"
@@ -23,49 +23,49 @@ homepage = "https://codeberg.org/RiPetitor"
 +++        
 
 [![Please don't upload to GitHub](https://nogithub.codeberg.page/badge.svg)](https://nogithub.codeberg.page)
-[![Zola](https://img.shields.io/badge/Zola-0.23.6-blue?style=flat-square)](https://www.getzola.org/)
-[![Version](https://img.shields.io/badge/version-0.9.0-blue?style=flat-square)](content/blog/devlab-theme-v0-9-0.md)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 # DevLab Theme
 
-A Zola theme with layouts for pages, blogs, documentation and books. Content is
-written in Markdown. Configuration lives in `zola.toml`. Builds require Zola
-**0.23.6 or newer**.
+DevLab is a Zola theme for project sites, blogs, manuals and books. Write your
+pages in Markdown and use Tera 2 components when you need a callout, tabs or a
+diagram. Zola is a static site generator written in Rust. To build a DevLab
+site, all you need is **Zola 0.23.6 or newer**.
 
-The [v0.9.0 release notes](content/blog/devlab-theme-v0-9-0.md) describe layouts,
-collections, navigation, community cards and template extensions.
+[Live demo](https://ripetitor.codeberg.page/devlab-theme/) · [Documentation](https://ripetitor.codeberg.page/devlab-theme/docs/) · [Release notes](https://ripetitor.codeberg.page/devlab-theme/blog/)
 
-![DevLab documentation](screenshot.png)
+![DevLab documentation with a section sidebar and an on-page table of contents](screenshot.png)
 
-[Live demo](https://ripetitor.codeberg.page/devlab-theme/) · [Documentation](https://ripetitor.codeberg.page/devlab-theme/docs/) · [Updates](https://ripetitor.codeberg.page/devlab-theme/blog/)
+## Make your first site
 
-## Setup
+The starter comes with a homepage and a manual. You can open it in your browser
+before changing any files.
 
-[Install the theme](content/docs/getting-started/installation.md), then create
-`zola.toml` and `content/_index.md` with the
-[quick start](content/docs/getting-started/quick-start.md).
-Keep content, styles and template overrides in the site repository.
+1. Install Zola and run `zola --version` in a terminal. [Zola installation guide](https://www.getzola.org/documentation/getting-started/installation/)
+2. Download and extract DevLab. Copy `zola.toml` and `content/` from `starter/`
+   into a new folder called `my-site`. If you use Git, also copy `.gitignore`,
+   which may be hidden. [Download DevLab v1.1 (ZIP)](https://codeberg.org/RiPetitor/devlab-theme/archive/v1.1.zip)
+3. Create `my-site/themes/` and move the extracted theme folder into it. Name
+   that folder `devlab-theme`. Check that `my-site/themes/devlab-theme/theme.toml`
+   exists.
+4. Open a terminal in `my-site`, run `zola serve` and open the address it prints.
+   Edit `content/_index.md` and save it to change the homepage.
 
-## Documentation
+The [Quick start](https://ripetitor.codeberg.page/devlab-theme/docs/getting-started/quick-start/)
+shows the folder layout and walks through adding an About page and a menu link.
+If you already have a Zola site or want to install DevLab as a Git submodule, see
+[Install and update](https://ripetitor.codeberg.page/devlab-theme/docs/getting-started/installation/).
 
-| Topic | Reference |
-| --- | --- |
-| Landing blocks | [Landing pages](content/docs/reference/landing.md) |
-| Independent documentation trees | [Collections](content/docs/reference/collections.md) |
-| First post, tags, authors and feeds | [Blog guide](content/docs/guides/blog.md) |
-| Books and chapter order | [Reader](content/docs/reference/reader.md) |
-| Site and theme settings | [Configuration](content/docs/reference/configuration/_index.md) |
-| Callouts, cards, tabs and other content blocks | [Components](content/docs/reference/components/_index.md) |
-| Translations and sharing metadata | [Languages](content/docs/reference/languages.md) |
-| Template slots and CSS tokens | [Extensions](content/docs/reference/extensions.md) |
-| Updating a v0.8 site | [Migration](content/docs/guides/upgrading-v0-8.md) |
-| Hosting and live-route checks | [Deployment](content/docs/guides/deployment.md) |
+## Add to your site
+
+- Give the site a name, logo and colors. [Branding](https://ripetitor.codeberg.page/devlab-theme/docs/customization/branding/)
+- Make a landing page, a blog or a manual with a sidebar. [Landing blocks](https://ripetitor.codeberg.page/devlab-theme/docs/reference/landing/) · [Blog](https://ripetitor.codeberg.page/devlab-theme/docs/guides/blog/) · [Manuals and books](https://ripetitor.codeberg.page/devlab-theme/docs/reference/collections/)
+- Add callouts, cards, tabs and diagrams to Markdown. [Components](https://ripetitor.codeberg.page/devlab-theme/docs/reference/components/)
+- Build and upload your site. [Deployment](https://ripetitor.codeberg.page/devlab-theme/docs/guides/deployment/)
 
 ## Development
 
-Building and previewing the theme requires Zola 0.23.6 or newer. Start from the
-source `main` branch, since `pages` contains the generated demo.
+The repository root is the demo site. Work from the source branch `main`.
+The `pages` branch holds the generated demo.
 
 ```sh
 zola check --skip-external-links
@@ -73,23 +73,18 @@ zola build
 zola serve
 ```
 
-The consumer regression suite also requires Python 3.11+ and Node.js. It builds
-small sites with the theme and checks the rendered HTML and JavaScript behavior:
+The test suite builds small sites with the theme. It requires Python 3.11+
+and Node.js on your PATH. Install the schema test dependency in a virtual
+environment before running the suite.
 
 ```sh
-node --version && NODE_BINARY=node python3 tests/test_theme.py
-python3 tests/test_starter.py
-python3 tests/test_component_labels.py
-NODE_BINARY=node python3 tests/test_regional_locales.py
-python3 tests/test_scroll_regions.py
+python -m pip install -r tests/requirements.txt
+node --version && python -m unittest discover -s tests
 ```
 
-CI runs these checks before building the demo. The Node.js check is required so
-the JavaScript tests cannot be silently skipped when Node.js is missing.
-
-Browser checks use a separate development package with Node.js 20+ and
-Chromium, Firefox and WebKit. The Chromium print regression also requires
-`pdftotext` (the `poppler-utils` package on Debian/Ubuntu):
+The browser suite also needs Node.js 22.12+, Playwright's Chromium, Firefox and
+WebKit, and `pdftotext` for the Chromium print test. On Debian or Ubuntu,
+`pdftotext` comes from `poppler-utils`.
 
 ```sh
 cd tests/browser
@@ -98,25 +93,13 @@ npx playwright install --with-deps chromium firefox webkit
 npm test
 ```
 
-The tests build and serve a temporary consumer site. To use an installed browser,
-run `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/path/to/chromium npm test -- --project=chromium`
-for a Chromium-only run. The equivalent Firefox and WebKit executable variables
-are available for those projects. CI runs all three engines in the Playwright
-image matching the pinned test package version. Linux WebKit checks do not
-replace testing Safari on a real Apple device.
-Browser tools are not required to build a site using the theme.
+To use an existing Chromium binary, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`
+and run `npm test -- --project=chromium`.
 
-CI also validates the editor schema against configurations and documented
-examples. See [schema development checks](content/docs/reference/configuration/defaults.md#optional-editor-validation)
-for its separate Python environment and commands.
-
-The demo's source archives remain unavailable until the corresponding tag is
-published. CI verifies the tag and archive availability before enabling them.
+[Release checklist](https://codeberg.org/RiPetitor/devlab-theme/src/branch/main/docs/releasing.md)
 
 ## License
 
-[MIT](LICENSE). Library licenses and exact upstream versions are listed in
-[Third-party notices](THIRD_PARTY_NOTICES.md) and the
-[search module provenance](third_party/lunr-languages/README.md).
+DevLab is MIT-licensed. [License](https://codeberg.org/RiPetitor/devlab-theme/src/branch/main/LICENSE) · [Third-party notices](https://codeberg.org/RiPetitor/devlab-theme/src/branch/main/THIRD_PARTY_NOTICES.md)
 
         
