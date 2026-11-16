@@ -2,7 +2,7 @@ use fs_err as fs;
 use std::path::{Path, PathBuf};
 
 use globset::Glob;
-use grass::{Options, OutputStyle, from_path as compile_file};
+use sasso::{FsImporter, Options, OutputStyle, Syntax};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::anyhow;
@@ -18,12 +18,11 @@ pub fn compile_sass(base_path: &Path, output_path: &Path) -> Result<()> {
         sass_path
     };
 
-    let options = Options::default().style(OutputStyle::Compressed);
     let files = get_non_partial_scss(&sass_path);
     let mut compiled_paths = Vec::new();
 
     for file in files {
-        let css = compile_file(&file, &options).map_err(|e| anyhow!(e))?;
+        let css = compile_file(&file).map_err(|e| anyhow!(e))?;
 
         let path_inside_sass = file.strip_prefix(&sass_path).unwrap();
         let parent_inside_sass = path_inside_sass.parent();
@@ -66,6 +65,22 @@ fn get_non_partial_scss(sass_path: &Path) -> Vec<PathBuf> {
         .map(|e| e.into_path())
         .filter(|e| glob.is_match(e))
         .collect::<Vec<_>>()
+}
+
+fn compile_file(file: &Path) -> Result<String> {
+    let source = fs::read_to_string(file)?;
+    let syntax = match file.extension().and_then(|e| e.to_str()) {
+        Some("sass") => Syntax::Sass,
+        _ => Syntax::Scss,
+    };
+    let importer = FsImporter::new(vec![]);
+    let url = file.to_string_lossy();
+    let options = Options::new()
+        .with_style(OutputStyle::Compressed)
+        .with_syntax(syntax)
+        .with_importer(&importer)
+        .with_url(&url);
+    sasso::compile(&source, &options).map_err(|e| anyhow!("{e}"))
 }
 
 #[cfg(test)]

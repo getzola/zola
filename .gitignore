@@ -34,3 +34,4 @@ shell.nix
 /result
 flake.nix
 flake.lock
+__pycache__

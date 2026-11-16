@@ -21,7 +21,7 @@ use walkdir::{DirEntry, WalkDir};
 use crate::queue::Queue;
 use config::{Config, IndexFormat, get_config};
 use content::{Library, Page, Section, Taxonomy};
-use errors::{Result, anyhow, bail};
+use errors::{Context, Result, anyhow, bail};
 use relative_path::RelativePathBuf;
 use render::{RenderCache, Renderer};
 use templates::load_tera;
@@ -263,7 +263,10 @@ impl Site {
 
                 for index_file in index_files {
                     let section =
-                        Section::from_file(index_file.path(), &self.config, &self.base_path)?;
+                        Section::from_file(index_file.path(), &self.config, &self.base_path)
+                            .with_context(|| {
+                                format!("Failed to parse section `{}`", index_file.path().display())
+                            })?;
                     sections.insert(section.components.join("/"));
 
                     // if the section is drafted we can skip the entire dir
@@ -289,12 +292,16 @@ impl Site {
             // sort by path for deterministic output
             errors.sort_by(|(a, _), (b, _)| a.cmp(b));
 
-            let msg = errors
-                .iter()
-                .map(|(p, e)| format!("  - {}: {e}", p.display()))
-                .collect::<Vec<_>>()
-                .join("\n");
-            return Err(anyhow!("Failed to parse {} page(s):\n{msg}", errors.len()));
+            let mut msg = String::new();
+            for (p, e) in &errors {
+                msg.push_str(&format!("  - {}\n", p.display()));
+                for cause in e.chain() {
+                    for line in cause.to_string().lines() {
+                        msg.push_str(&format!("    {line}\n"));
+                    }
+                }
+            }
+            return Err(anyhow!("Failed to parse {} page(s):\n{}", errors.len(), msg.trim_end()));
         }
 
         let pages: Vec<Page> = pages.into_iter().map(|(_, r)| r.unwrap()).collect();
@@ -557,7 +564,8 @@ impl Site {
     /// Adds a page to the site and render it
     /// Only used in `zola serve --fast`
     pub fn add_and_render_page(&mut self, path: &Path) -> Result<()> {
-        let page = Page::from_file(path, &self.config, &self.base_path)?;
+        let page = Page::from_file(path, &self.config, &self.base_path)
+            .with_context(|| format!("Failed to parse page `{}`", path.display()))?;
         self.add_page(page, true)?;
         let page = self.library.pages.get(path).unwrap();
         Queue::single_page(self, page).process()
@@ -589,7 +597,8 @@ impl Site {
     /// Adds a section to the site and render it
     /// Only used in `zola serve --fast`
     pub fn add_and_render_section(&mut self, path: &Path) -> Result<()> {
-        let section = Section::from_file(path, &self.config, &self.base_path)?;
+        let section = Section::from_file(path, &self.config, &self.base_path)
+            .with_context(|| format!("Failed to parse section `{}`", path.display()))?;
         let old_meta = self.library.sections.get(path).map(|s| s.meta.clone());
         self.add_section(section, true)?;
         self.populate_sections();
