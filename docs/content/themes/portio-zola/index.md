@@ -3,14 +3,14 @@
 title = "Portio-Zola"
 description = "Portio-Zola is a minimal, well-formatted and extremely flexible theme"
 template = "theme.html"
-date = 2026-09-22T07:50:50+02:00
+date = 2026-11-12T08:07:44+01:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-09-22T07:50:50+02:00
-updated = 2026-09-22T07:50:50+02:00
+created = 2026-11-12T08:07:44+01:00
+updated = 2026-11-12T08:07:44+01:00
 repository = "https://github.com/quentin-rodriguez/portio-zola.git"
 homepage = "https://github.com/quentin-rodriguez/portio-zola.git"
 minimum_version = "0.23.2"
