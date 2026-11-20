@@ -1,12 +1,12 @@
 {% extends "index.html" %}
 
 {% block content %}
-    {{ page.title | safe }}
-    {{ page.content | safe }}
-    {{ page.relative_path | safe }}
-    {% if page.aliases %}Page aliases: {{ page.aliases | join(sep=",") | safe }}{% endif %}
-    {{ page.toc }}
+    {{ current.title | safe }}
+    {{ current.content | safe }}
+    {{ current.relative_path | safe }}
+    {% if current.aliases %}Page aliases: {{ current.aliases | join(sep=",") | safe }}{% endif %}
+    {{ current.toc }}
 
-    {% if page.earlier %}Previous article: {{ page.earlier.permalink }}{% endif %}
-    {% if page.later %}Next article: {{ page.later.permalink }}{% endif %}
+    {% if current.earlier %}Previous article: {{ current.earlier.permalink }}{% endif %}
+    {% if current.later %}Next article: {{ current.later.permalink }}{% endif %}
 {% endblock content %}

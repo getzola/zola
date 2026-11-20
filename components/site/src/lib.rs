@@ -453,7 +453,7 @@ impl Site {
                     &self.config.default_language,
                     &self.config.other_languages_codes(),
                 )?;
-                library.insert_section(index_section);
+                library.insert(index_section);
             }
         }
 
@@ -539,7 +539,7 @@ impl Site {
 
         let library = Arc::make_mut(&mut self.library);
         library.pages.remove(&page.file.path);
-        library.insert_page(page);
+        library.insert(page);
 
         Ok(())
     }
@@ -577,7 +577,7 @@ impl Site {
         }
         let library = Arc::make_mut(&mut self.library);
         library.pages.remove(&section.file.path);
-        library.insert_section(section);
+        library.insert(section);
 
         Ok(())
     }

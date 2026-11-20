@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use content::Kind;
 use render::RenderCache;
 use tera::{Error, Function, Kwargs, State, TeraResult, Value};
 
@@ -44,7 +45,7 @@ impl Function<TeraResult<Value>> for GetPage {
                 .cache
                 .pages
                 .get(&full_path)
-                .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))?;
+                .ok_or_else(|| Error::message(format!("Page `{path}` not found.")))?;
 
             let file_path = self
                 .cache
@@ -52,14 +53,14 @@ impl Function<TeraResult<Value>> for GetPage {
                 .get(&cached.canonical)
                 .and_then(|by_lang| by_lang.get(&lang))
                 .ok_or_else(|| {
-                    Error::message(format!("Page `{}` not found for language `{}`.", path, lang))
+                    Error::message(format!("Page `{path}` not found for language `{lang}`."))
                 })?;
 
             self.cache
                 .pages
                 .get(file_path)
-                .map(|c| c.value.clone())
-                .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))
+                .map(|c| c.current.clone())
+                .ok_or_else(|| Error::message(format!("Page `{path}` not found.")))
         })();
 
         match res {
@@ -115,7 +116,11 @@ impl Function<TeraResult<Value>> for GetSection {
                 .cache
                 .pages
                 .get(&full_path)
-                .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))?;
+                .ok_or_else(|| Error::message(format!("Section `{path}` not found.")))?;
+
+            if cached.kind != Kind::Section {
+                return Err(Error::message(format!("Section `{path}` not found.")));
+            }
 
             let file_path = self
                 .cache
@@ -123,14 +128,15 @@ impl Function<TeraResult<Value>> for GetSection {
                 .get(&cached.canonical)
                 .and_then(|by_lang| by_lang.get(&lang))
                 .ok_or_else(|| {
-                    Error::message(format!("Section `{}` not found for language `{}`.", path, lang))
+                    Error::message(format!("Section `{path}` not found for language `{lang}`."))
                 })?;
 
+            // The legacy section shape when `legacy_page_template` is set, `current` otherwise
             self.cache
                 .pages
                 .get(file_path)
-                .map(|c| c.value.clone())
-                .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))
+                .map(|c| c.legacy.clone().unwrap_or_else(|| c.current.clone()))
+                .ok_or_else(|| Error::message(format!("Section `{path}` not found.")))
         })();
 
         match res {
@@ -192,8 +198,9 @@ mod tests {
             ("Des Romans", "content/novels.fr.md", "fr"),
         ];
         for (t, f, l) in pages.clone() {
-            library.insert_page(create_page(t, f, l));
+            library.insert(create_page(t, f, l));
         }
+        library.insert(create_section("Wiki section", "content/wiki/_index.md", "en"));
         let tera = Tera::default();
         let mut cache = RenderCache::new(&config);
         cache.build(&library, &[], &tera);
@@ -253,6 +260,20 @@ mod tests {
         let res = get_page.call(kwargs, &State::new(&ctx));
         assert!(res.is_ok());
         assert!(res.unwrap() == Value::none());
+
+        // get_page can now get sections as well
+        let kwargs = Kwargs::from([("path", Value::from("wiki/recipes.md"))]);
+        let ctx = Context::new();
+        let res = get_page.call(kwargs, &State::new(&ctx)).unwrap();
+        let res_obj = res.as_map().unwrap();
+        assert_eq!(res_obj.get(&Key::from("kind")).unwrap().as_str().unwrap(), "page");
+
+        let kwargs = Kwargs::from([("path", Value::from("wiki/_index.md"))]);
+        let ctx = Context::new();
+        let res = get_page.call(kwargs, &State::new(&ctx)).unwrap();
+        let res_obj = res.as_map().unwrap();
+        assert_eq!(res_obj.get(&Key::from("kind")).unwrap().as_str().unwrap(), "section");
+        assert_eq!(res_obj.get(&Key::from("title")).unwrap().as_str().unwrap(), "Wiki section");
     }
 
     fn create_section(title: &str, file_path: &str, lang: &str) -> Page {
@@ -288,8 +309,9 @@ mod tests {
             ("Des Romans", "content/novels/_index.fr.md", "fr"),
         ];
         for (t, f, l) in sections.clone() {
-            library.insert_section(create_section(t, f, l));
+            library.insert(create_section(t, f, l));
         }
+        library.insert(create_page("Wiki page", "content/wiki/page.md", "en"));
         let tera = Tera::default();
         let mut cache = RenderCache::new(&config);
         cache.build(&library, &[], &tera);
@@ -352,5 +374,19 @@ mod tests {
         let res = get_section.call(kwargs, &State::new(&ctx));
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), Value::none());
+
+        // get_section is limited to sections
+        let kwargs = Kwargs::from([("path", Value::from("wiki/page.md"))]);
+        let ctx = Context::new();
+        let res = get_section.call(kwargs, &State::new(&ctx));
+        assert!(res.unwrap_err().to_string().contains("Section `wiki/page.md` not found"));
+
+        let kwargs = Kwargs::from([
+            ("path", Value::from("wiki/page.md")),
+            ("allow_missing", Value::from(true)),
+        ]);
+        let ctx = Context::new();
+        let res = get_section.call(kwargs, &State::new(&ctx)).unwrap();
+        assert_eq!(res, Value::none());
     }
 }

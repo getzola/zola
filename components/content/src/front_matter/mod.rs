@@ -212,6 +212,9 @@ impl FrontMatter {
             if f.path.is_some() {
                 bail!("`path` can only be set on pages");
             }
+            if !f.taxonomies.is_empty() {
+                bail!("`taxonomies` can only be set on pages");
+            }
         }
 
         // Generic validation
@@ -731,21 +734,27 @@ authors:
     }
 
     #[test]
-    fn section_can_have_date_authors_and_taxonomies() {
+    fn section_can_have_date_and_authors() {
         let content = RawFrontMatter::Toml(
             r#"
 date = 2021-01-01
 updated = 2021-02-01
 authors = ["me"]
-[taxonomies]
-tags = ["rust"]
 "#,
         );
         let res = FrontMatter::parse(&content, Kind::Section).unwrap();
         assert!(res.datetime.is_some());
         assert!(res.updated_datetime.is_some());
         assert_eq!(res.authors, vec!["me".to_string()]);
-        assert_eq!(res.taxonomies["tags"], vec!["rust".to_string()]);
+
+        let content = RawFrontMatter::Toml(
+            r#"
+[taxonomies]
+tags = ["rust"]
+"#,
+        );
+        let err = FrontMatter::parse(&content, Kind::Section).unwrap_err();
+        assert!(err.to_string().contains("`taxonomies` can only be set on pages"));
     }
 
     #[test_case(Kind::Page; "page")]

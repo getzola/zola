@@ -13,6 +13,6 @@ pub use file_info::{FileInfo, Kind};
 pub use front_matter::FrontMatter;
 pub use library::Library;
 pub use page::Page;
-pub use ser::{SerializingPage, SerializingSection};
+pub use ser::{SerializingCurrent, SerializingPage, SerializingSection};
 pub use taxonomies::{SerializedTaxonomy, SerializedTaxonomyTerm, Taxonomy, TaxonomyTerm};
 pub use types::*;

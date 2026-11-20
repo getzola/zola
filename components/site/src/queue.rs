@@ -433,7 +433,7 @@ impl<'a> Queue<'a> {
                 let feed_data =
                     feeds::prepare_feed(pages, self.site.config.feed_limit, &self.site.cache);
                 let base_path = PathBuf::from(&section.path[1..]);
-                let cached_section = &self.site.cache.pages[&section.file.path].value;
+                let cached_section = &self.site.cache.pages[&section.file.path];
                 for feed_filename in &self.site.config.languages[&section.lang].feed_filenames {
                     let feed_url = self.site.make_feed_url(Some(&base_path), feed_filename);
                     let input = FeedInput {
@@ -443,8 +443,7 @@ impl<'a> Queue<'a> {
                         pages: &feed_data.pages,
                         last_updated: feed_data.last_updated.as_deref(),
                     };
-                    let content =
-                        self.renderer().render_section_feed(&input, cached_section.clone())?;
+                    let content = self.renderer().render_section_feed(&input, cached_section)?;
                     let path = base_path.join(feed_filename);
                     res.push(RenderedOutput {
                         path,

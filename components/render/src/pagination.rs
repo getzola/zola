@@ -183,7 +183,7 @@ impl<'a> Paginator<'a> {
         let pages: Vec<Value> = current_pager
             .page_indices
             .iter()
-            .filter_map(|&idx| cache.pages.get(&self.all_pages[idx]).map(|c| c.value.clone()))
+            .filter_map(|&idx| cache.pages.get(&self.all_pages[idx]).map(|c| c.current.clone()))
             .collect();
         map.insert("pages".into(), Value::from(pages));
 
@@ -247,13 +247,13 @@ mod tests {
             let mut page = Page::default();
             page.meta.title = Some(i.to_string());
             page.file.path = PathBuf::from(&format!("{}.md", i));
-            library.insert_page(page);
+            library.insert(page);
         }
 
         let mut section = create_section(is_index, paginate_reversed);
         section.pages = library.pages.keys().cloned().collect();
         section.pages.sort();
-        library.insert_section(section.clone());
+        library.insert(section.clone());
 
         (section, library)
     }
@@ -461,13 +461,13 @@ mod tests {
             if i == 2 || i == 4 {
                 page.meta.render = false;
             }
-            library.insert_page(page);
+            library.insert(page);
         }
 
         let mut section = create_section(false, false);
         section.pages = library.pages.keys().cloned().collect();
         section.pages.sort();
-        library.insert_section(section.clone());
+        library.insert(section.clone());
 
         let paginator = Paginator::from_section(&section, &library);
 
@@ -494,12 +494,12 @@ mod tests {
             page.meta.title = Some(i.to_string());
             page.file.path = PathBuf::from(&format!("{}.md", i));
             page.meta.render = false;
-            library.insert_page(page);
+            library.insert(page);
         }
 
         let mut section = create_section(false, false);
         section.pages = library.pages.keys().cloned().collect();
-        library.insert_section(section.clone());
+        library.insert(section.clone());
 
         let paginator = Paginator::from_section(&section, &library);
 

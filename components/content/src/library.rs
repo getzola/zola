@@ -137,7 +137,7 @@ impl Library {
         collisions
     }
 
-    pub fn insert_page(&mut self, page: Page) {
+    pub fn insert(&mut self, page: Page) {
         let file_path = page.file.path.clone();
         if page.meta.render {
             let mut entries = vec![page.path.clone()];
@@ -162,17 +162,6 @@ impl Library {
 
         self.colocated_assets.extend(page.colocated_assets.clone());
         self.pages.insert(file_path, page);
-    }
-
-    pub fn insert_section(&mut self, section: Page) {
-        let file_path = section.file.path.clone();
-        if section.meta.render {
-            let mut entries = vec![section.path.clone()];
-            entries.extend(section.meta.aliases.to_vec());
-            self.insert_reverse_aliases(&file_path, entries);
-        }
-        self.colocated_assets.extend(section.colocated_assets.clone());
-        self.pages.insert(file_path, section);
     }
 
     /// Fills a map of target -> {content mentioning it}
@@ -538,10 +527,10 @@ mod tests {
         let mut library = Library::default();
         let mut section = Page { path: "hello".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("hello.md");
-        library.insert_section(section.clone());
+        library.insert(section.clone());
         let mut section2 = Page { path: "hello".to_owned(), ..Default::default() };
         section2.file.path = PathBuf::from("bonjour.md");
-        library.insert_section(section2.clone());
+        library.insert(section2.clone());
 
         let collisions = library.find_path_collisions(&config);
         assert_eq!(collisions.len(), 1);
@@ -560,18 +549,18 @@ mod tests {
         let mut library = Library::default();
         let mut section = Page { path: "hello".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("hello.md");
-        library.insert_section(section.clone());
+        library.insert(section.clone());
         let mut section2 = Page { path: "world".to_owned(), ..Default::default() };
         section2.file.path = PathBuf::from("bonjour.md");
         section2.meta.aliases = vec!["hello".to_owned(), "hola".to_owned()];
-        library.insert_section(section2.clone());
+        library.insert(section2.clone());
         // Sections with render=false do not collide with anything
         // https://github.com/getzola/zola/issues/1656
         let mut section3 = Page { path: "world2".to_owned(), ..Default::default() };
         section3.meta.render = false;
         section3.file.path = PathBuf::from("bonjour2.md");
         section3.meta.aliases = vec!["hola".to_owned()];
-        library.insert_section(section3);
+        library.insert(section3);
 
         let collisions = library.find_path_collisions(&config);
         assert_eq!(collisions.len(), 1);
@@ -597,7 +586,7 @@ mod tests {
         // Create a section that conflicts with the "tags" taxonomy path
         let mut section = Page { path: "/tags/".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("content/tags/_index.md");
-        library.insert_section(section.clone());
+        library.insert(section.clone());
 
         let collisions = library.find_path_collisions(&config);
         assert_eq!(collisions.len(), 1);
@@ -622,12 +611,12 @@ mod tests {
 
         // Create a page with a "rust" tag to populate the taxonomy terms
         let page = create_page_w_taxa("a.md", "en", vec![("tags", vec!["rust"])]);
-        library.insert_page(page);
+        library.insert(page);
 
         // Create a section that conflicts with the "tags/rust" term path
         let mut section = Page { path: "/tags/rust/".to_owned(), ..Default::default() };
         section.file.path = PathBuf::from("content/tags/rust/_index.md");
-        library.insert_section(section.clone());
+        library.insert(section.clone());
 
         let collisions = library.find_path_collisions(&config);
         assert_eq!(collisions.len(), 1);
@@ -714,7 +703,7 @@ mod tests {
             ("content/secret/visible/_index.md", "en", 2, false, SortBy::Weight, Some(false)),
         ];
         for (p, l, w, t, s, h) in sections.clone() {
-            library.insert_section(create_section(p, l, w, t, s, h));
+            library.insert(create_section(p, l, w, t, s, h));
         }
 
         let pages = vec![
@@ -753,7 +742,7 @@ mod tests {
             ("content/secret/visible/shown.md", "en", PageSort::Weight(1), None),
         ];
         for (p, l, s, h) in pages.clone() {
-            library.insert_page(create_page(p, l, s, h));
+            library.insert(create_page(p, l, s, h));
         }
         library.populate_sections(&config, Path::new("content"));
         assert_eq!(library.pages.values().filter(|p| p.is_section()).count(), sections.len());
@@ -878,7 +867,7 @@ mod tests {
         ($config:expr, [$($page:expr),+]) => {{
             let mut library = Library::new(&$config);
             $(
-                library.insert_page($page);
+                library.insert($page);
             )+
             library.find_taxonomies(&$config)
         }};
@@ -1032,9 +1021,9 @@ mod tests {
         section1.internal_links.push(("page1.md".to_owned(), None));
         section1.internal_links.push(("page2.md".to_owned(), None));
         let mut library = Library::default();
-        library.insert_page(page1);
-        library.insert_page(page2);
-        library.insert_section(section1);
+        library.insert(page1);
+        library.insert(page2);
+        library.insert(section1);
         library.fill_backlinks();
 
         assert_eq!(library.backlinks.len(), 3);
@@ -1062,7 +1051,7 @@ mod tests {
             ("content/wiki/programming/_index.md", "en", 2, false, SortBy::Weight),
         ];
         for (p, l, w, t, s) in sections.clone() {
-            library.insert_section(create_section(p, l, w, t, s, None));
+            library.insert(create_section(p, l, w, t, s, None));
         }
 
         library.populate_sections(&config, Path::new("content"));
@@ -1125,7 +1114,7 @@ mod tests {
             ("content/c_second/_index.md", "2", 2, SortBy::Title),
         ];
         for (p, l, w, s) in sections.clone() {
-            library.insert_section(create_section(p, l, w, s));
+            library.insert(create_section(p, l, w, s));
         }
 
         library.populate_sections(&config, Path::new("content"));

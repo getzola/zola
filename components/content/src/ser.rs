@@ -3,8 +3,8 @@ use std::path::Path;
 
 use serde::Serialize;
 
-use crate::Page;
 use crate::library::Library;
+use crate::{Kind, Page};
 use tera::Value;
 use utils::table_of_contents::Heading;
 
@@ -200,6 +200,113 @@ impl<'a> SerializingSection<'a> {
             paginate_by: &section.meta.paginate_by,
             paginate_reversed: section.meta.paginate_reversed,
             hidden: section.hidden,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct SerializingCurrent<'a> {
+    kind: Kind,
+    relative_path: &'a str,
+    colocated_path: &'a Option<String>,
+    slug: &'a str,
+    content: &'a str,
+    permalink: &'a str,
+    draft: bool,
+    ancestors: &'a [String],
+    title: &'a Option<String>,
+    description: &'a Option<String>,
+    updated: &'a Option<String>,
+    date: &'a Option<String>,
+    authors: &'a [String],
+    aliases: &'a [String],
+    summary: &'a Option<String>,
+    extra: &'a Value,
+    year: Option<i32>,
+    month: Option<u8>,
+    day: Option<u8>,
+    path: &'a str,
+    components: &'a [String],
+    toc: &'a [Heading],
+    word_count: Option<usize>,
+    reading_time: Option<usize>,
+    weight: Option<usize>,
+    lang: &'a str,
+    assets: &'a [String],
+    pages: Vec<Value>,
+    subsections: Vec<Value>,
+    taxonomies: &'a BTreeMap<String, Vec<String>>,
+    include_in_feeds: bool,
+    lower: Option<Value>,
+    higher: Option<Value>,
+    translations: Vec<TranslatedContent<'a>>,
+    backlinks: Vec<BackLink<'a>>,
+    generate_feeds: bool,
+    transparent: bool,
+    paginate_by: &'a Option<usize>,
+    paginate_reversed: bool,
+    hidden: bool,
+}
+
+impl<'a> SerializingCurrent<'a> {
+    pub fn new(
+        page: &'a Page,
+        library: &'a Library,
+        pages: Vec<Value>,
+        subsections: Vec<Value>,
+    ) -> Self {
+        let mut year = None;
+        let mut month = None;
+        let mut day = None;
+        if let Some(d) = page.meta.datetime_tuple {
+            year = Some(d.0);
+            month = Some(d.1);
+            day = Some(d.2);
+        }
+        let translations = library.find_translations(&page.file.canonical);
+        let backlinks = find_backlinks(&page.file.relative, library);
+
+        Self {
+            kind: page.kind(),
+            relative_path: &page.file.relative,
+            colocated_path: &page.file.colocated_path,
+            ancestors: &page.ancestors,
+            content: &page.content,
+            permalink: &page.permalink,
+            slug: &page.slug,
+            title: &page.meta.title,
+            description: &page.meta.description,
+            extra: &page.meta.extra,
+            updated: &page.meta.updated,
+            date: &page.meta.date,
+            year,
+            month,
+            day,
+            taxonomies: &page.meta.taxonomies,
+            authors: &page.meta.authors,
+            aliases: &page.meta.aliases,
+            path: &page.path,
+            components: &page.components,
+            summary: &page.summary,
+            toc: &page.toc,
+            word_count: page.word_count,
+            reading_time: page.reading_time,
+            assets: &page.serialized_assets,
+            draft: page.meta.draft,
+            lang: &page.lang,
+            include_in_feeds: page.meta.include_in_feeds,
+            lower: None,
+            higher: None,
+            translations,
+            backlinks,
+            generate_feeds: page.meta.generate_feeds,
+            transparent: page.meta.transparent,
+            paginate_by: &page.meta.paginate_by,
+            paginate_reversed: page.meta.paginate_reversed,
+            hidden: page.hidden,
+            weight: page.meta.weight,
+            pages,
+            subsections,
         }
     }
 }

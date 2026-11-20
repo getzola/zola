@@ -346,7 +346,7 @@ fn can_build_site_with_taxonomies() {
                 pages.push(page);
             }
             for p in pages {
-                library.insert_page(p);
+                library.insert(p);
             }
         }
         site.populate_taxonomies().unwrap();
@@ -672,7 +672,7 @@ fn can_build_site_with_pagination_for_taxonomy() {
                 pages.push(page);
             }
             for p in pages {
-                library.insert_page(p);
+                library.insert(p);
             }
         }
         site.populate_taxonomies().unwrap();
