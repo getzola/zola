@@ -922,6 +922,13 @@ fn can_resolve_colocated_assets_with_internal_links() {
         "posts/with-assets/index.html",
         "get_url asset: https://replace-this-with-your-url.com/posts/with-assets/zola.png"
     ));
+    // `current.assets` paths start with `@/` and we can resolve them with get_url
+    assert!(file_contains!(public, "posts/with-assets/index.html", "@/posts/with-assets/zola.png"));
+    assert!(file_contains!(
+        public,
+        "posts/with-assets/index.html",
+        "https://replace-this-with-your-url.com/posts/with-assets/with.js"
+    ));
 }
 
 #[test]

@@ -4,6 +4,8 @@
 
 ### Breaking
 
+- Fix `section.assets` not having paths of the same shape as `page.assets`. Also remove the language prefix for translated sections
+
 ### Other
 
 - Make `cachebust` arg of `get_url` work with colocated asset `@/` path

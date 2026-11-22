@@ -222,21 +222,12 @@ impl Page {
         Ok(page)
     }
 
-    /// Creates a vectors of asset URLs.
+    /// Creates a vector of asset paths relative to the content directory, starting with `/`.
     fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
-        // TODO: this differs between pages and sections, fix it or remove the branch if it's the same
-        // need to add tests first
-        let filenames = self
-            .assets
+        self.assets
             .iter()
             .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
-            .filter_map(|filename| filename.to_str());
-
-        if self.is_section() {
-            return filenames.map(|filename| format!("{}{}", self.path, filename)).collect();
-        }
-
-        filenames
+            .filter_map(|filename| filename.to_str())
             .map(|filename| {
                 let mut path = self.file.path.clone();
                 // Popping the index.md from the path since file.parent would be one level too high
@@ -874,6 +865,17 @@ Bonjour le monde"#
             section.colocated_assets["posts/with-assets/graph.jpg"],
             ("posts/with-assets/_index.md".to_string(), "graph.jpg".to_string())
         );
+
+        // A translation gets the same assets paths
+        let mut f = fs::File::create(nested_path.join("_index.fr.md")).unwrap();
+        f.write_all(b"+++\n+++\n").unwrap();
+        let mut config = Config::default();
+        config.languages.insert("fr".to_owned(), LanguageOptions::default());
+        let section =
+            Page::from_file(nested_path.join("_index.fr.md").as_path(), &config, &path).unwrap();
+        assert_eq!(section.permalink, "http://a-website.com/fr/posts/with-assets/");
+        assert_eq!(section.assets.len(), 3);
+        assert_eq!(section.serialized_assets[0], "/posts/with-assets/example.js");
     }
 
     #[test]
