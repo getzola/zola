@@ -8,7 +8,7 @@ mod load_data;
 mod taxonomy;
 
 pub use build_info::Now;
-pub use content::{GetPage, GetSection};
+pub use content::GetContent;
 pub use env::get_env;
 pub use files::{GetHash, GetUrl};
 pub use i18n::{TextDirection, Trans};

@@ -72,18 +72,20 @@ pub fn register_early_global_fns(site: &mut Site) {
 pub fn register_tera_global_fns(site: &mut Site) {
     site.tera.register_function(
         "get_page",
-        functions::GetPage::new(
+        functions::GetContent::new(
             site.base_path.clone(),
             &site.config.default_language,
             site.cache.clone(),
+            None,
         ),
     );
     site.tera.register_function(
         "get_section",
-        functions::GetSection::new(
+        functions::GetContent::new(
             site.base_path.clone(),
             &site.config.default_language,
             site.cache.clone(),
+            Some(content::Kind::Section),
         ),
     );
     site.tera.register_function(

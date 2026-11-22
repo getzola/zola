@@ -5,30 +5,37 @@ use content::Kind;
 use render::RenderCache;
 use tera::{Error, Function, Kwargs, State, TeraResult, Value};
 
+/// Both `get_page` and `get_section`
 #[derive(Debug)]
-pub struct GetPage {
+pub struct GetContent {
     base_path: PathBuf,
     cache: Arc<RenderCache>,
     default_lang: String,
+    /// `Some(Section)` for `get_section`, `None` for `get_page` which can return both kinds
+    kind: Option<Kind>,
 }
 
-impl GetPage {
-    pub fn new(base_path: PathBuf, default_lang: &str, cache: Arc<RenderCache>) -> Self {
-        Self { base_path: base_path.join("content"), default_lang: default_lang.to_string(), cache }
-    }
-}
-
-impl Default for GetPage {
-    fn default() -> Self {
+impl GetContent {
+    pub fn new(
+        base_path: PathBuf,
+        default_lang: &str,
+        cache: Arc<RenderCache>,
+        kind: Option<Kind>,
+    ) -> Self {
         Self {
-            base_path: PathBuf::new(),
-            default_lang: String::new(),
-            cache: Arc::new(RenderCache::default()),
+            base_path: base_path.join("content"),
+            default_lang: default_lang.to_string(),
+            cache,
+            kind,
         }
     }
+
+    pub fn empty(kind: Option<Kind>) -> Self {
+        Self::new(PathBuf::new(), "", Arc::new(RenderCache::default()), kind)
+    }
 }
 
-impl Function<TeraResult<Value>> for GetPage {
+impl Function<TeraResult<Value>> for GetContent {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
         let path: String = kwargs.must_get("path")?;
         let lang: String = kwargs
@@ -39,87 +46,13 @@ impl Function<TeraResult<Value>> for GetPage {
         let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or(false);
 
         let full_path = self.base_path.join(&path);
+        let kind = if self.kind.is_some() { "Section" } else { "Page" };
+        let not_found = || Error::message(format!("{kind} `{path}` not found."));
 
         let res = (|| {
-            let cached = self
-                .cache
-                .pages
-                .get(&full_path)
-                .ok_or_else(|| Error::message(format!("Page `{path}` not found.")))?;
-
-            let file_path = self
-                .cache
-                .pages_by_canonical
-                .get(&cached.canonical)
-                .and_then(|by_lang| by_lang.get(&lang))
-                .ok_or_else(|| {
-                    Error::message(format!("Page `{path}` not found for language `{lang}`."))
-                })?;
-
-            self.cache
-                .pages
-                .get(file_path)
-                .map(|c| c.current.clone())
-                .ok_or_else(|| Error::message(format!("Page `{path}` not found.")))
-        })();
-
-        match res {
-            Ok(v) => Ok(v),
-            Err(err) => {
-                if allow_missing {
-                    Ok(Value::none())
-                } else {
-                    Err(err)
-                }
-            }
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct GetSection {
-    base_path: PathBuf,
-    cache: Arc<RenderCache>,
-    default_lang: String,
-}
-
-impl GetSection {
-    pub fn new(base_path: PathBuf, default_lang: &str, cache: Arc<RenderCache>) -> Self {
-        Self { base_path: base_path.join("content"), default_lang: default_lang.to_string(), cache }
-    }
-}
-
-impl Default for GetSection {
-    fn default() -> Self {
-        Self {
-            base_path: PathBuf::new(),
-            default_lang: String::new(),
-            cache: Arc::new(RenderCache::default()),
-        }
-    }
-}
-
-impl Function<TeraResult<Value>> for GetSection {
-    fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
-        let path: String = kwargs.must_get("path")?;
-        let lang: String = kwargs
-            .get::<String>("lang")?
-            .or_else(|| state.get::<String>("lang").ok().flatten())
-            .unwrap_or_else(|| self.default_lang.clone());
-
-        let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or(false);
-
-        let full_path = self.base_path.join(&path);
-
-        let res = (|| {
-            let cached = self
-                .cache
-                .pages
-                .get(&full_path)
-                .ok_or_else(|| Error::message(format!("Section `{path}` not found.")))?;
-
-            if cached.kind != Kind::Section {
-                return Err(Error::message(format!("Section `{path}` not found.")));
+            let cached = self.cache.pages.get(&full_path).ok_or_else(not_found)?;
+            if self.kind.is_some_and(|k| cached.kind != k) {
+                return Err(not_found());
             }
 
             let file_path = self
@@ -128,15 +61,16 @@ impl Function<TeraResult<Value>> for GetSection {
                 .get(&cached.canonical)
                 .and_then(|by_lang| by_lang.get(&lang))
                 .ok_or_else(|| {
-                    Error::message(format!("Section `{path}` not found for language `{lang}`."))
+                    Error::message(format!("{kind} `{path}` not found for language `{lang}`."))
                 })?;
+            let cached = self.cache.pages.get(file_path).ok_or_else(not_found)?;
 
             // The legacy section shape when `legacy_page_template` is set, `current` otherwise
-            self.cache
-                .pages
-                .get(file_path)
-                .map(|c| c.legacy.clone().unwrap_or_else(|| c.current.clone()))
-                .ok_or_else(|| Error::message(format!("Section `{path}` not found.")))
+            Ok(if self.kind.is_some() {
+                cached.legacy.clone().unwrap_or_else(|| cached.current.clone())
+            } else {
+                cached.current.clone()
+            })
         })();
 
         match res {
@@ -206,7 +140,7 @@ mod tests {
         cache.build(&library, &[], &tera);
         let base_path = "/test/base/path".into();
 
-        let get_page = GetPage::new(base_path, "en", Arc::new(cache));
+        let get_page = GetContent::new(base_path, "en", Arc::new(cache), None);
 
         // Find with lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes.md"))]);
@@ -317,7 +251,7 @@ mod tests {
         cache.build(&library, &[], &tera);
         let base_path = "/test/base/path".into();
 
-        let get_section = GetSection::new(base_path, "en", Arc::new(cache));
+        let get_section = GetContent::new(base_path, "en", Arc::new(cache), Some(Kind::Section));
 
         // Find with lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes/_index.md"))]);

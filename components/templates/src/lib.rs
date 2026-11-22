@@ -10,10 +10,11 @@ use tera::{Context, Tera};
 
 use crate::filters::{MarkdownFilter, NumFormatFilter};
 use crate::functions::{
-    GetHash, GetImageMetadata, GetPage, GetSection, GetTaxonomy, GetTaxonomyTerm, GetTaxonomyUrl,
-    GetUrl, LoadData, ResizeImage, TextDirection, Trans,
+    GetContent, GetHash, GetImageMetadata, GetTaxonomy, GetTaxonomyTerm, GetTaxonomyUrl, GetUrl,
+    LoadData, ResizeImage, TextDirection, Trans,
 };
 use config::Config;
+use content::Kind;
 use errors::{Context as ErrorContext, Result, bail};
 
 const REDIRECT_TPL_NAME: &str = "internal/alias.html";
@@ -64,8 +65,8 @@ pub static ZOLA_TERA: LazyLock<Tera> = LazyLock::new(|| {
     // needed since tera will validate templates we will load that use these functions
     tera.register_function("get_url", GetUrl::default());
     tera.register_function("get_hash", GetHash::default());
-    tera.register_function("get_section", GetSection::default());
-    tera.register_function("get_page", GetPage::default());
+    tera.register_function("get_section", GetContent::empty(Some(Kind::Section)));
+    tera.register_function("get_page", GetContent::empty(None));
     tera.register_function("get_taxonomy", GetTaxonomy::default());
     tera.register_function("get_taxonomy_term", GetTaxonomyTerm::default());
     tera.register_function("get_taxonomy_url", GetTaxonomyUrl::default());
