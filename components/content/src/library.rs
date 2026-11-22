@@ -507,14 +507,6 @@ impl Library {
         translations.sort_by(|a, b| a.lang.cmp(b.lang));
         translations
     }
-
-    pub fn find_pages_by_path(&self, paths: &[PathBuf]) -> Vec<&Page> {
-        paths.iter().map(|p| &self.pages[p]).collect()
-    }
-
-    pub fn find_sections_by_path(&self, paths: &[PathBuf]) -> Vec<&Page> {
-        paths.iter().map(|p| &self.pages[p]).filter(|x| x.is_section()).collect()
-    }
 }
 
 #[cfg(test)]
