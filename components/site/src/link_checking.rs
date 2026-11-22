@@ -23,17 +23,11 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
     log::info!("Checking all internal links with anchors.");
 
     // Chain all internal links, from both sections and pages.
-    let page_links = site
+    let all_links = site
         .library
         .pages
         .values()
         .flat_map(|p| p.internal_links.iter().map(move |l| (&p.file.path, l)));
-    let section_links = site
-        .library
-        .sections
-        .values()
-        .flat_map(|p| p.internal_links.iter().map(move |l| (&p.file.path, l)));
-    let all_links = page_links.chain(section_links);
 
     // Only keep links with anchor fragments.
     // Bare files have already been checked elsewhere, thus they are not interesting here.
@@ -59,26 +53,15 @@ pub fn check_internal_links_with_anchors(site: &Site) -> Vec<String> {
         // NOTE: This will also match _index.foobar.md where foobar is not a language
         // as well as any other string containing "_index." which is now referenced as
         // unsupported page path in the docs.
-        if md_path.contains("_index.") {
-            let section = site.library.sections.get(&full_path).unwrap_or_else(|| {
-                panic!(
-                    "Couldn't find section {} in check_internal_links_with_anchors from page {:?}",
-                    md_path,
-                    page.strip_prefix(&site.base_path).unwrap()
-                )
-            });
-            !section.has_anchor(anchor)
-        } else {
-            let page = site.library.pages.get(&full_path).unwrap_or_else(|| {
-                panic!(
-                    "Couldn't find page {} in check_internal_links_with_anchors from page {:?}",
-                    md_path,
-                    page.strip_prefix(&site.base_path).unwrap()
-                )
-            });
+        let page = site.library.pages.get(&full_path).unwrap_or_else(|| {
+            panic!(
+                "Couldn't find page {} in check_internal_links_with_anchors from page {:?}",
+                md_path,
+                page.strip_prefix(&site.base_path).unwrap()
+            )
+        });
 
-            !(page.has_anchor(anchor) || page.has_anchor_id(anchor))
-        }
+        !(page.has_anchor(anchor) || page.has_anchor_id(anchor))
     });
 
     // Format faulty entries into error messages, and collect them.
@@ -148,9 +131,6 @@ pub fn check_external_links(site: &Site) -> Vec<String> {
     let mut external_links = Vec::new();
     for p in site.library.pages.values() {
         external_links.push((&p.file.path, &p.external_links));
-    }
-    for s in site.library.sections.values() {
-        external_links.push((&s.file.path, &s.external_links));
     }
 
     let mut checked_links: Vec<LinkDef> = vec![];

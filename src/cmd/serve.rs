@@ -826,9 +826,7 @@ pub fn serve(
                                             .file_name()
                                             .unwrap_or_else(|| OsStr::new(""))
                                             .to_string_lossy();
-                                        let res = if filename == "_index.md" {
-                                            site.add_and_render_section(full_path)
-                                        } else if filename.ends_with(".md") {
+                                        let res = if filename.ends_with(".md") {
                                             site.add_and_render_page(full_path)
                                         } else {
                                             // an asset changed? a folder renamed?

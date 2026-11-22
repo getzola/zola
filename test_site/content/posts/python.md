@@ -14,6 +14,6 @@ Same filename but different path
 {{ <pirate name="Bob_Sponge" /> }}
 {{ get_taxonomy_url(kind="categories", term="a-category") }}
 
-{% if page.description %}
-DESCRIPTION: {{page.description}}
+{% if current.description %}
+DESCRIPTION: {{current.description}}
 {% endif %}

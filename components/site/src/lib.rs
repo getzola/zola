@@ -20,7 +20,7 @@ use walkdir::{DirEntry, WalkDir};
 
 use crate::queue::Queue;
 use config::{Config, IndexFormat, get_config};
-use content::{Library, Page, Section, Taxonomy};
+use content::{Kind, Library, Page, Taxonomy};
 use errors::{Context, Result, anyhow, bail};
 use relative_path::RelativePathBuf;
 use render::{RenderCache, Renderer};
@@ -262,11 +262,10 @@ impl Site {
                     .collect::<Vec<DirEntry>>();
 
                 for index_file in index_files {
-                    let section =
-                        Section::from_file(index_file.path(), &self.config, &self.base_path)
-                            .with_context(|| {
-                                format!("Failed to parse section `{}`", index_file.path().display())
-                            })?;
+                    let section = Page::from_file(index_file.path(), &self.config, &self.base_path)
+                        .with_context(|| {
+                            format!("Failed to parse section `{}`", index_file.path().display())
+                        })?;
                     sections.insert(section.components.join("/"));
 
                     // if the section is drafted we can skip the entire dir
@@ -275,7 +274,7 @@ impl Site {
                         continue;
                     }
 
-                    self.add_section(section, false)?;
+                    self.add_page(section, false)?;
                 }
             } else {
                 page_paths.push(path.to_path_buf());
@@ -406,7 +405,7 @@ impl Site {
     pub fn create_default_index_sections(&mut self) -> Result<()> {
         let mut missing_sections = Vec::new();
         for (index_path, lang) in self.index_section_paths() {
-            if let Some(index_section) = self.library.sections.get(&index_path)
+            if let Some(index_section) = self.library.pages.get(&index_path)
                 && self.config.build_search_index
                 && !index_section.meta.in_search_index
             {
@@ -417,7 +416,7 @@ impl Site {
                 )
             }
             // Not in else because of borrow checker
-            if !self.library.sections.contains_key(&index_path) {
+            if !self.library.pages.contains_key(&index_path) {
                 missing_sections.push((index_path, lang.map(|l| l.to_string())));
             }
         }
@@ -428,8 +427,9 @@ impl Site {
 
         let library = Arc::make_mut(&mut self.library);
         for (index_path, lang) in missing_sections {
-            if !library.sections.contains_key(&index_path) {
-                let mut index_section = Section::default();
+            if !library.pages.contains_key(&index_path) {
+                let mut index_section = Page::default();
+                index_section.file.kind = Kind::Section;
                 index_section.file.parent = self.content_path.clone();
                 index_section.file.filename =
                     index_path.file_name().unwrap().to_string_lossy().to_string();
@@ -453,7 +453,7 @@ impl Site {
                     &self.config.default_language,
                     &self.config.other_languages_codes(),
                 )?;
-                library.insert_section(index_section);
+                library.insert(index_section);
             }
         }
 
@@ -503,23 +503,6 @@ impl Site {
             })
             .collect::<Result<()>>()?;
 
-        library
-            .sections
-            .values_mut()
-            .collect::<Vec<_>>()
-            .par_iter_mut()
-            .map(|section| {
-                md_render::render_section(
-                    section,
-                    renderer.clone(),
-                    permalinks,
-                    &colocated_assets,
-                    tera,
-                    config,
-                )
-            })
-            .collect::<Result<()>>()?;
-
         Ok(())
     }
 
@@ -541,8 +524,11 @@ impl Site {
         }
 
         if render_md {
-            let insert_anchor =
-                self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
+            let insert_anchor = if page.is_section() {
+                page.meta.insert_anchor_links.unwrap_or(self.config.markdown.insert_anchor_links)
+            } else {
+                self.find_parent_section_insert_anchor(&page.file.parent, &page.lang)
+            };
             md_render::render_page(
                 &mut page,
                 self.renderer(),
@@ -556,7 +542,7 @@ impl Site {
 
         let library = Arc::make_mut(&mut self.library);
         library.pages.remove(&page.file.path);
-        library.insert_page(page);
+        library.insert(page);
 
         Ok(())
     }
@@ -565,46 +551,19 @@ impl Site {
     /// Only used in `zola serve --fast`
     pub fn add_and_render_page(&mut self, path: &Path) -> Result<()> {
         let page = Page::from_file(path, &self.config, &self.base_path)
-            .with_context(|| format!("Failed to parse page `{}`", path.display()))?;
+            .with_context(|| format!("Failed to parse `{}`", path.display()))?;
+        let is_section = page.is_section();
+        let old_meta = self.library.pages.get(path).map(|s| s.meta.clone());
         self.add_page(page, true)?;
+        if is_section {
+            self.populate_sections();
+        }
         let page = self.library.pages.get(path).unwrap();
-        Queue::single_page(self, page).process()
-    }
+        // Only a section whose relevant settings changed needs its pages re-rendered
+        let render_pages =
+            is_section && old_meta.map(|m| page.needs_pages_render(&m)).unwrap_or(true);
 
-    /// Add a section to the site
-    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
-    pub fn add_section(&mut self, mut section: Section, render_md: bool) -> Result<()> {
-        if section.meta.render {
-            self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
-        }
-        if render_md {
-            md_render::render_section(
-                &mut section,
-                self.renderer(),
-                &self.permalinks,
-                &self.library.colocated_assets,
-                &self.tera,
-                &self.config,
-            )?;
-        }
-        let library = Arc::make_mut(&mut self.library);
-        library.sections.remove(&section.file.path);
-        library.insert_section(section);
-
-        Ok(())
-    }
-
-    /// Adds a section to the site and render it
-    /// Only used in `zola serve --fast`
-    pub fn add_and_render_section(&mut self, path: &Path) -> Result<()> {
-        let section = Section::from_file(path, &self.config, &self.base_path)
-            .with_context(|| format!("Failed to parse section `{}`", path.display()))?;
-        let old_meta = self.library.sections.get(path).map(|s| s.meta.clone());
-        self.add_section(section, true)?;
-        self.populate_sections();
-        let section = self.library.sections.get(path).unwrap();
-        let render_pages = old_meta.map(|m| section.needs_pages_render(&m)).unwrap_or(true);
-        Queue::single_section(self, section, render_pages).process()
+        Queue::single_page(self, page, render_pages).process()
     }
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.
@@ -620,7 +579,7 @@ impl Site {
             parent_path.join("_index.md")
         };
         self.library
-            .sections
+            .pages
             .get(&parent)
             .and_then(|s| s.meta.insert_anchor_links)
             .unwrap_or(self.config.markdown.insert_anchor_links)

@@ -1,6 +1,6 @@
 {% extends "sample/templates/section-specific-extends.html" %}
 {% block content %}
-    {% for page in section.pages %}
+    {% for page in current.pages %}
         {{page.title}}
     {% endfor %}
     {{ super() }}

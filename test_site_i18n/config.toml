@@ -9,6 +9,8 @@ build_search_index = true
 
 default_language = "en"
 
+legacy_page_template = true
+
 generate_feeds = true
 
 taxonomies = [

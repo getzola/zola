@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::path::PathBuf;
 
-use crate::{Page, Section, SortBy};
+use crate::{Page, SortBy};
 use lexical_sort::natural_lexical_cmp;
 use rayon::prelude::*;
 
@@ -59,13 +59,13 @@ pub fn sort_pages(pages: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBu
 
 /// Sort by the field picked by the function.
 /// The sections permalinks are used to break the ties.
-pub fn sort_sections(sections: &[&Section], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBuf>) {
+pub fn sort_sections(sections: &[&Page], sort_by: SortBy) -> (Vec<PathBuf>, Vec<PathBuf>) {
     let sort_by = match sort_by {
         SortBy::Title | SortBy::TitleBytes | SortBy::Permalink => sort_by,
         _ => SortBy::Weight,
     };
 
-    let (mut can_be_sorted, cannot_be_sorted): (Vec<&Section>, Vec<_>) =
+    let (mut can_be_sorted, cannot_be_sorted): (Vec<&Page>, Vec<_>) =
         sections.par_iter().partition(|section| match sort_by {
             SortBy::Title | SortBy::TitleBytes => section.meta.title.is_some(),
             _ => true,
@@ -80,7 +80,7 @@ pub fn sort_sections(sections: &[&Section], sort_by: SortBy) -> (Vec<PathBuf>, V
                 a.meta.title.as_ref().unwrap().cmp(b.meta.title.as_ref().unwrap())
             }
             SortBy::Permalink => a.permalink.cmp(&b.permalink),
-            _ => a.meta.weight.cmp(&b.meta.weight),
+            _ => a.meta.weight().cmp(&b.meta.weight()),
         };
 
         if ord == Ordering::Equal { a.permalink.cmp(&b.permalink) } else { ord }
@@ -88,17 +88,17 @@ pub fn sort_sections(sections: &[&Section], sort_by: SortBy) -> (Vec<PathBuf>, V
 
     (
         can_be_sorted.iter().map(|s| s.file.path.clone()).collect(),
-        cannot_be_sorted.iter().map(|s: &&Section| s.file.path.clone()).collect(),
+        cannot_be_sorted.iter().map(|s: &&Page| s.file.path.clone()).collect(),
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::PageFrontMatter;
+    use crate::FrontMatter;
 
     fn create_page_with_date(date: &str, updated_date: Option<&str>) -> Page {
-        let mut front_matter = PageFrontMatter {
+        let mut front_matter = FrontMatter {
             date: Some(date.to_string()),
             updated: updated_date.map(|c| c.to_string()),
             ..Default::default()
@@ -108,17 +108,17 @@ mod tests {
     }
 
     fn create_page_with_title(title: &str) -> Page {
-        let front_matter = PageFrontMatter { title: Some(title.to_string()), ..Default::default() };
+        let front_matter = FrontMatter { title: Some(title.to_string()), ..Default::default() };
         Page::new(format!("content/hello-{}.md", title), front_matter, &PathBuf::new())
     }
 
     fn create_page_with_weight(weight: usize) -> Page {
-        let front_matter = PageFrontMatter { weight: Some(weight), ..Default::default() };
+        let front_matter = FrontMatter { weight: Some(weight), ..Default::default() };
         Page::new(format!("content/hello-{}.md", weight), front_matter, &PathBuf::new())
     }
 
     fn create_page_with_slug(slug: &str) -> Page {
-        let front_matter = PageFrontMatter { slug: Some(slug.to_owned()), ..Default::default() };
+        let front_matter = FrontMatter { slug: Some(slug.to_owned()), ..Default::default() };
         let mut page =
             Page::new(format!("content/hello-{}.md", slug), front_matter, &PathBuf::new());
         // Normally, the slug field is populated when a page is parsed, but
