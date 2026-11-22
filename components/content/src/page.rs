@@ -224,23 +224,14 @@ impl Page {
 
     /// Creates a vector of asset paths relative to the content directory, starting with `/`.
     fn serialize_assets(&self, base_path: &Path) -> Vec<String> {
+        let content_path = base_path.join("content");
         self.assets
             .iter()
-            .filter_map(|asset| asset.strip_prefix(self.file.path.parent().unwrap()).ok())
-            .filter_map(|filename| filename.to_str())
-            .map(|filename| {
-                let mut path = self.file.path.clone();
-                // Popping the index.md from the path since file.parent would be one level too high
-                // for our need here
-                path.pop();
-                path.push(filename);
-                path = path
-                    .strip_prefix(base_path.join("content"))
-                    .expect("Should be able to strip prefix")
-                    .to_path_buf();
-                path
+            .filter_map(|asset| asset.strip_prefix(&content_path).ok())
+            .map(|asset| {
+                let components: Vec<_> = asset.iter().map(|c| c.to_string_lossy()).collect();
+                format!("/{}", components.join("/"))
             })
-            .map(|path| format!("/{}", path.display()))
             .collect()
     }
 
