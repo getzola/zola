@@ -138,13 +138,14 @@ impl<'a> Queue<'a> {
         }
     }
 
-    pub fn single_page(site: &'a Site, page: &'a Page) -> Self {
-        Self { jobs: vec![Job::Page(page)], site, paginators: vec![] }
-    }
-
-    pub fn single_section(site: &'a Site, section: &'a Page, render_pages: bool) -> Self {
+    /// The jobs for a single page or section, `render_pages` only applies to a section
+    pub fn single_page(site: &'a Site, page: &'a Page, render_pages: bool) -> Self {
         let mut queue = Self { jobs: vec![], site, paginators: vec![] };
-        queue.add_section_jobs(section, render_pages, &mut HashSet::new());
+        if page.is_page() {
+            queue.jobs.push(Job::Page(page));
+        } else {
+            queue.add_section_jobs(page, render_pages, &mut HashSet::new());
+        }
         queue
     }
 
@@ -329,7 +330,7 @@ impl<'a> Queue<'a> {
             let content = render_redirect_template(&permalink, &self.site.tera)?;
             Ok(RenderedOutput { path: path.join("index.html"), content, kind: OutputKind::Html })
         } else {
-            let content = self.renderer().render_section(section)?;
+            let content = self.renderer().render_page(section)?;
             Ok(RenderedOutput { path: path.join("index.html"), content, kind: OutputKind::Html })
         }
     }

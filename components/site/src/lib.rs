@@ -274,7 +274,7 @@ impl Site {
                         continue;
                     }
 
-                    self.add_section(section, false)?;
+                    self.add_page(section, false)?;
                 }
             } else {
                 page_paths.push(path.to_path_buf());
@@ -524,8 +524,11 @@ impl Site {
         }
 
         if render_md {
-            let insert_anchor =
-                self.find_parent_section_insert_anchor(&page.file.parent, &page.lang);
+            let insert_anchor = if page.is_section() {
+                page.meta.insert_anchor_links.unwrap_or(self.config.markdown.insert_anchor_links)
+            } else {
+                self.find_parent_section_insert_anchor(&page.file.parent, &page.lang)
+            };
             md_render::render_page(
                 &mut page,
                 self.renderer(),
@@ -548,51 +551,19 @@ impl Site {
     /// Only used in `zola serve --fast`
     pub fn add_and_render_page(&mut self, path: &Path) -> Result<()> {
         let page = Page::from_file(path, &self.config, &self.base_path)
-            .with_context(|| format!("Failed to parse page `{}`", path.display()))?;
-        self.add_page(page, true)?;
-        let page = self.library.pages.get(path).unwrap();
-        Queue::single_page(self, page).process()
-    }
-
-    /// Add a section to the site
-    /// The `render` parameter is used in the serve command with --fast, when rebuilding a page.
-    pub fn add_section(&mut self, mut section: Page, render_md: bool) -> Result<()> {
-        if section.meta.render {
-            self.permalinks.insert(section.file.relative.clone(), section.permalink.clone());
-        }
-        if render_md {
-            let insert_anchor_links = section
-                .meta
-                .insert_anchor_links
-                .unwrap_or(self.config.markdown.insert_anchor_links);
-            md_render::render_page(
-                &mut section,
-                self.renderer(),
-                &self.permalinks,
-                &self.library.colocated_assets,
-                &self.tera,
-                &self.config,
-                insert_anchor_links,
-            )?;
-        }
-        let library = Arc::make_mut(&mut self.library);
-        library.pages.remove(&section.file.path);
-        library.insert(section);
-
-        Ok(())
-    }
-
-    /// Adds a section to the site and render it
-    /// Only used in `zola serve --fast`
-    pub fn add_and_render_section(&mut self, path: &Path) -> Result<()> {
-        let section = Page::from_file(path, &self.config, &self.base_path)
-            .with_context(|| format!("Failed to parse section `{}`", path.display()))?;
+            .with_context(|| format!("Failed to parse `{}`", path.display()))?;
+        let is_section = page.is_section();
         let old_meta = self.library.pages.get(path).map(|s| s.meta.clone());
-        self.add_section(section, true)?;
-        self.populate_sections();
-        let section = self.library.pages.get(path).unwrap();
-        let render_pages = old_meta.map(|m| section.needs_pages_render(&m)).unwrap_or(true);
-        Queue::single_section(self, section, render_pages).process()
+        self.add_page(page, true)?;
+        if is_section {
+            self.populate_sections();
+        }
+        let page = self.library.pages.get(path).unwrap();
+        // Only a section whose relevant settings changed needs its pages re-rendered
+        let render_pages =
+            is_section && old_meta.map(|m| page.needs_pages_render(&m)).unwrap_or(true);
+
+        Queue::single_page(self, page, render_pages).process()
     }
 
     /// Finds the insert_anchor for the parent section of the directory at `path`.

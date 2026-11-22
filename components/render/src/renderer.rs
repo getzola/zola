@@ -41,42 +41,24 @@ impl<'a> Renderer<'a> {
 
     pub fn render_page(&self, page: &Page) -> Result<String> {
         let mut context = Context::new();
+        let cached = self.cache.pages.get(&page.file.path).unwrap();
 
         context.insert_value("config", self.cache.configs.get(&page.lang).unwrap().clone());
-        context.insert_value(
-            "current",
-            self.cache.pages.get(&page.file.path).unwrap().current.clone(),
-        );
-        if let Some(legacy) = &self.cache.pages.get(&page.file.path).unwrap().legacy {
-            context.insert_value("page", legacy.clone());
+        context.insert_value("current", cached.current.clone());
+        if let Some(legacy) = &cached.legacy {
+            context.insert_value(if page.is_page() { "page" } else { "section" }, legacy.clone());
         }
         context.insert("current_url", &page.permalink);
         context.insert("current_path", &page.path);
         context.insert("lang", &page.lang);
 
-        let tpl_name = page.meta.template.as_deref().unwrap_or("page.html");
-        render_template(tpl_name, self.tera, context)
-            .with_context(|| format!("Failed to render page '{}'", page.file.path.display()))
-    }
-
-    pub fn render_section(&self, section: &Page) -> Result<String> {
-        let mut context = Context::new();
-
-        context.insert_value("config", self.cache.configs.get(&section.lang).unwrap().clone());
-        if let Some(legacy) = &self.cache.pages.get(&section.file.path).unwrap().legacy {
-            context.insert_value("section", legacy.clone());
-        }
-        context.insert_value(
-            "current",
-            self.cache.pages.get(&section.file.path).unwrap().current.clone(),
-        );
-        context.insert("current_url", &section.permalink);
-        context.insert("current_path", &section.path);
-        context.insert("lang", &section.lang);
-
-        let tpl_name = section.get_template_name();
-        render_template(tpl_name, self.tera, context)
-            .with_context(|| format!("Failed to render section '{}'", section.file.path.display()))
+        render_template(page.get_template_name(), self.tera, context).with_context(|| {
+            format!(
+                "Failed to render {} '{}'",
+                if page.is_page() { "page" } else { "section" },
+                page.file.path.display()
+            )
+        })
     }
 
     pub fn render_taxonomy_term(&self, taxonomy: &Taxonomy, term: &TaxonomyTerm) -> Result<String> {
