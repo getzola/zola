@@ -56,47 +56,25 @@ struct IndexItem<'a> {
 /// Collect all pages and sections which should be included in the search index
 /// of a given language.
 fn collect_index_items<'a>(lang: &str, library: &'a Library) -> Vec<IndexItem<'a>> {
-    let mut items: HashMap<&str, IndexItem> = HashMap::new();
-    for section in library.pages.values().filter(|x| x.is_section()) {
-        if section.lang != lang {
-            continue;
-        }
-        if !section.meta.in_search_index {
-            continue;
-        }
-
-        if section.meta.redirect_to.is_none() && !section.hidden && section.meta.render {
-            items.insert(
-                &section.permalink,
-                IndexItem {
-                    url: &section.permalink,
-                    title: &section.meta.title,
-                    datetime: &section.meta.datetime,
-                    description: &section.meta.description,
-                    content: &section.content,
-                    path: &section.path,
-                },
-            );
-        }
-
-        for page in &section.pages {
-            let page = &library.pages[page];
-            if page.meta.in_search_index {
-                items.insert(
-                    &page.permalink,
-                    IndexItem {
-                        url: &page.permalink,
-                        title: &page.meta.title,
-                        datetime: &page.meta.datetime,
-                        description: &page.meta.description,
-                        content: &page.content,
-                        path: &page.path,
-                    },
-                );
-            }
-        }
-    }
-    items.into_values().collect()
+    library
+        .pages
+        .values()
+        .filter(|p| {
+            p.lang == lang
+                && p.meta.in_search_index
+                && p.meta.render
+                && !p.hidden
+                && p.meta.redirect_to.is_none()
+        })
+        .map(|p| IndexItem {
+            url: &p.permalink,
+            title: &p.meta.title,
+            datetime: &p.meta.datetime,
+            description: &p.meta.description,
+            content: &p.content,
+            path: &p.path,
+        })
+        .collect()
 }
 
 #[cfg(test)]
