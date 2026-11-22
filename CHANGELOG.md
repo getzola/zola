@@ -5,6 +5,7 @@
 ### Breaking
 
 - Fix `section.assets` not having paths of the same shape as `page.assets`. Also remove the language prefix for translated sections
+- `subsections` does not contain sections with `render = false` anymore
 
 ### Other
 

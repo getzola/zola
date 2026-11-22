@@ -65,13 +65,13 @@ fn collect_index_items<'a>(lang: &str, library: &'a Library) -> Vec<IndexItem<'a
             continue;
         }
 
-        if section.meta.redirect_to.is_none() && !section.hidden {
+        if section.meta.redirect_to.is_none() && !section.hidden && section.meta.render {
             items.insert(
                 &section.permalink,
                 IndexItem {
                     url: &section.permalink,
                     title: &section.meta.title,
-                    datetime: &None,
+                    datetime: &section.meta.datetime,
                     description: &section.meta.description,
                     content: &section.content,
                     path: &section.path,

@@ -273,8 +273,12 @@ impl Library {
     pub fn sort_section_subsections(&mut self) {
         let mut updates = AHashMap::new();
         for (path, section) in self.pages.iter().filter(|(_, x)| x.is_section()) {
-            let sections: Vec<_> =
-                section.subsections.iter().map(|p| &self.pages[p]).filter(|s| !s.hidden).collect();
+            let sections: Vec<_> = section
+                .subsections
+                .iter()
+                .map(|p| &self.pages[p])
+                .filter(|s| !s.hidden && s.meta.render)
+                .collect();
             let (sorted_sections, cannot_be_sorted_sections) =
                 sort_sections(&sections, section.meta.sort_by);
 
@@ -1054,8 +1058,13 @@ mod tests {
             library.insert(create_section(p, l, w, t, s, None));
         }
 
+        let mut drafts =
+            create_section("content/novels/drafts/_index.md", "en", 0, false, SortBy::Weight, None);
+        drafts.meta.render = false;
+        library.insert(drafts);
+
         library.populate_sections(&config, Path::new("content"));
-        assert_eq!(library.pages.values().filter(|p| p.is_section()).count(), sections.len());
+        assert_eq!(library.pages.values().filter(|p| p.is_section()).count(), sections.len() + 1);
         let root_section = &library.pages[&PathBuf::from("content/_index.md")];
         assert_eq!(root_section.lower, None);
         assert_eq!(root_section.higher, None);
