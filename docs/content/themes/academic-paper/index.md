@@ -3,14 +3,14 @@
 title = "Academic Paper"
 description = "A Zola theme for a blog-post-style website to facilitate scientific communication of your academic paper"
 template = "theme.html"
-date = 2026-10-27T17:30:43-07:00
+date = 2026-11-19T15:24:29-08:00
 
 [taxonomies]
 theme-tags = []
 
 [extra]
-created = 2026-10-27T17:30:43-07:00
-updated = 2026-10-27T17:30:43-07:00
+created = 2026-11-19T15:24:29-08:00
+updated = 2026-11-19T15:24:29-08:00
 repository = "https://github.com/aterenin/academic-paper.git"
 homepage = "https://github.com/aterenin/academic-paper"
 minimum_version = "0.23.0"
@@ -32,7 +32,7 @@ A demo website built with Academic Paper can be found at [aterenin.github.io/aca
 [Academic Paper](https://github.com/aterenin/academic-paper) is designed to be reasonably feature-complete. Its features include:
 
 * An automatic header which lists the title, author, venue, year, and along with customizable buttons.
-* Syntax highlighting and math rendering via KaTeX which can be done both client-side and server-side with appropriate configuration.
+* Math rendering via KaTeX, which is automatically included on pages that use the syntax `` `$...$` `` or `` ```$$$ ... $$$``` ``, and can be done both client-side and server-side with appropriate configuration. This can also be completely disabled by overriding `templates/includes/katex.html`.
 * Figures via a Zola component `{{/* <figure alt={['Image alt text']} src={['path/to/image.png']} /> */}}`, which supports captions, subfigures, subcaptions, and is rendered using responsive flexbox.
 * Markdown footnotes via Zola's footnote support.
 * Metadata including Twitter Summary Card, OpenGraph, and JSON-LD, implemented similar to [Jekyll SEO Tag](https://github.com/jekyll/jekyll-seo-tag): these ensure pages are search-engine-fiendly and provide social media websites with links which are displayed when links are shared,
@@ -64,7 +64,7 @@ highlighting.dark_theme = "github-dark" # this changes the syntax highlighting t
 
 [extra]
 footer_text = "This website is built using [Zola](https://www.getzola.org) and the [Academic Paper](http://github.com/aterenin/academic-paper/) theme, which is [designed to last](https://jeffhuang.com/designed_to_last/)." # by default this page adds a small and non-intrusive footer with some text linking to this repository - you can set this to false to remove the footer if you prefer
-server_side_katex = false # set to true to enable server-side KaTeX rendering via scripts/katex.js, this will also include KaTeX CSS and fonts in the build
+server_side_katex = false # set to true to enable server-side KaTeX rendering via scripts/katex.mjs, this will also include KaTeX CSS and fonts in the build
 ```
 
 ## Page and section configuration 
@@ -89,7 +89,6 @@ buttons = [ # this theme supports any set of buttons, but and will by default in
     {name="Poster", url = "https://example.com"},
     {name="Your custom button", url = "https://example.com"}, # to add an icon, add it as an include, and override the component icon.html
 ]
-katex = true # to enable math via katex - whether using server-side or client-side rendering - set katex to true
 favicon = false # set to true to use favicon.ico as the page's favicon
 large_card = false # set to true to generate a large-size Twitter card
 +++

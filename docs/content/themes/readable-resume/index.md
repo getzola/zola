@@ -3,14 +3,14 @@
 title = "readable-resume"
 description = "A one-page resume in one column that prints to a clean PDF on Letter or A4"
 template = "theme.html"
-date = 2026-10-18T21:12:04+08:00
+date = 2026-11-22T01:37:43+08:00
 
 [taxonomies]
 theme-tags = ['resume', 'cv', 'minimal', 'print']
 
 [extra]
-created = 2026-10-18T21:12:04+08:00
-updated = 2026-10-18T21:12:04+08:00
+created = 2026-11-22T01:37:43+08:00
+updated = 2026-11-22T01:37:43+08:00
 repository = "https://github.com/supertj/zola-readable-resume.git"
 homepage = "https://github.com/supertj/zola-readable-resume"
 minimum_version = "0.23.2"
@@ -243,6 +243,10 @@ settings Zola also writes `robots.txt`, `sitemap.xml` and `404.html` there.
 
 The page shows everything in your contact line, phone number included, so check
 that before you publish it.
+
+## Maintainer
+
+Super Lede ([Hello.cv profile](https://hello.cv/readableresume-templates)).
 
 ## License
 
