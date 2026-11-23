@@ -1,10 +1,10 @@
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use jiff::tz::TimeZone;
 use tera::{Function, Kwargs, State, TeraResult, Value};
 
 #[derive(Debug, Clone)]
 pub struct Now {
-    zoned: Zoned,
+    zoned: ZonedDateTime,
 }
 
 impl Default for Now {
@@ -15,7 +15,7 @@ impl Default for Now {
 
 impl Now {
     pub fn new() -> Self {
-        Self { zoned: Zoned::now() }
+        Self { zoned: ZonedDateTime::now() }
     }
 }
 
