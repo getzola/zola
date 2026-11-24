@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 use crate::{BuildMode, SITE_CONTENT, Site, feeds, minify, sitemap};
-use content::{Page, Section, Taxonomy, TaxonomyTerm};
+use content::{Page, Taxonomy, TaxonomyTerm};
 use errors::Result;
 use fs_err as fs;
 use rayon::prelude::*;
@@ -15,7 +15,7 @@ use utils::net::is_external_link;
 #[derive(Debug, Clone, PartialEq)]
 enum Feed<'a> {
     Site { lang: &'a str },
-    Section { section: &'a Section, pages: Vec<&'a Page> },
+    Section { section: &'a Page, pages: Vec<&'a Page> },
     Taxonomy { taxonomy: &'a Taxonomy, term: &'a TaxonomyTerm, path: PathBuf },
 }
 
@@ -23,8 +23,8 @@ enum Feed<'a> {
 enum Job<'a> {
     Alias { from: &'a str, to: &'a str },
     Page(&'a Page),
-    Section { section: &'a Section, path: PathBuf },
-    SectionAssets { section: &'a Section, path: PathBuf },
+    Section { section: &'a Page, path: PathBuf },
+    SectionAssets { section: &'a Page, path: PathBuf },
     Paginated { paginator_index: usize, pager_index: usize, path: PathBuf },
     TaxonomyList { taxonomy: &'a Taxonomy, path: PathBuf },
     TaxonomyTerm { taxonomy: &'a Taxonomy, term: &'a TaxonomyTerm, path: PathBuf },
@@ -77,7 +77,7 @@ pub struct Queue<'a> {
 impl<'a> Queue<'a> {
     fn add_section_jobs(
         &mut self,
-        section: &'a Section,
+        section: &'a Page,
         render_pages: bool,
         seen_pages: &mut HashSet<&'a Path>,
     ) {
@@ -138,13 +138,14 @@ impl<'a> Queue<'a> {
         }
     }
 
-    pub fn single_page(site: &'a Site, page: &'a Page) -> Self {
-        Self { jobs: vec![Job::Page(page)], site, paginators: vec![] }
-    }
-
-    pub fn single_section(site: &'a Site, section: &'a Section, render_pages: bool) -> Self {
+    /// The jobs for a single page or section, `render_pages` only applies to a section
+    pub fn single_page(site: &'a Site, page: &'a Page, render_pages: bool) -> Self {
         let mut queue = Self { jobs: vec![], site, paginators: vec![] };
-        queue.add_section_jobs(section, render_pages, &mut HashSet::new());
+        if page.is_page() {
+            queue.jobs.push(Job::Page(page));
+        } else {
+            queue.add_section_jobs(page, render_pages, &mut HashSet::new());
+        }
         queue
     }
 
@@ -165,15 +166,10 @@ impl<'a> Queue<'a> {
                 queue.jobs.push(Job::Alias { from: alias, to: &page.permalink });
             }
         }
-        for (_, section) in &site.library.sections {
-            for alias in &section.meta.aliases {
-                queue.jobs.push(Job::Alias { from: alias, to: &section.permalink });
-            }
-        }
 
         // Pages + sections
         let mut seen_pages = HashSet::new();
-        for (_, section) in &site.library.sections {
+        for section in site.library.pages.values().filter(|x| x.is_section()) {
             queue.add_section_jobs(section, true, &mut seen_pages);
         }
 
@@ -324,7 +320,7 @@ impl<'a> Queue<'a> {
         Ok(RenderedOutput { path, content, kind: OutputKind::Html })
     }
 
-    fn render_section(&self, section: &Section, path: &Path) -> Result<RenderedOutput> {
+    fn render_section(&self, section: &Page, path: &Path) -> Result<RenderedOutput> {
         if let Some(redirect_to) = &section.meta.redirect_to {
             let permalink: Cow<str> = if is_external_link(redirect_to) {
                 Cow::Borrowed(redirect_to)
@@ -334,7 +330,7 @@ impl<'a> Queue<'a> {
             let content = render_redirect_template(&permalink, &self.site.tera)?;
             Ok(RenderedOutput { path: path.join("index.html"), content, kind: OutputKind::Html })
         } else {
-            let content = self.renderer().render_section(section)?;
+            let content = self.renderer().render_page(section)?;
             Ok(RenderedOutput { path: path.join("index.html"), content, kind: OutputKind::Html })
         }
     }
@@ -398,8 +394,13 @@ impl<'a> Queue<'a> {
 
         match feed {
             Feed::Site { lang } => {
-                let pages: Vec<_> =
-                    self.site.library.pages.values().filter(|p| p.lang == *lang).collect();
+                let pages: Vec<_> = self
+                    .site
+                    .library
+                    .pages
+                    .values()
+                    .filter(|p| p.is_page() && p.lang == *lang)
+                    .collect();
                 let feed_data =
                     feeds::prepare_feed(&pages, self.site.config.feed_limit, &self.site.cache);
                 let base_path = if *lang == self.site.config.default_language {
@@ -433,7 +434,7 @@ impl<'a> Queue<'a> {
                 let feed_data =
                     feeds::prepare_feed(pages, self.site.config.feed_limit, &self.site.cache);
                 let base_path = PathBuf::from(&section.path[1..]);
-                let cached_section = &self.site.cache.sections[&section.file.path].value;
+                let cached_section = &self.site.cache.pages[&section.file.path];
                 for feed_filename in &self.site.config.languages[&section.lang].feed_filenames {
                     let feed_url = self.site.make_feed_url(Some(&base_path), feed_filename);
                     let input = FeedInput {
@@ -443,8 +444,7 @@ impl<'a> Queue<'a> {
                         pages: &feed_data.pages,
                         last_updated: feed_data.last_updated.as_deref(),
                     };
-                    let content =
-                        self.renderer().render_section_feed(&input, cached_section.clone())?;
+                    let content = self.renderer().render_section_feed(&input, cached_section)?;
                     let path = base_path.join(feed_filename);
                     res.push(RenderedOutput {
                         path,

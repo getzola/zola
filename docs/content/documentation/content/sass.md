@@ -11,8 +11,8 @@ may be of interest:
 * The [official Sass website](https://sass-lang.com/)
 * [Why Sass?](https://alistapart.com/article/why-sass), by Dan Cederholm
 
-It currently uses [grass](https://github.com/connorskees/grass), a Rust implementation of Sass roughly equivalent
-with dart-sass.
+It currently uses [sasso](https://github.com/momiji-rs/sasso), a Rust implementation of Sass that matches
+dart-sass output.
 
 ## Using Sass in Zola
 

@@ -8,22 +8,16 @@ use site::Site;
 /// Display in the console the number of pages/sections in the site
 pub fn notify_site_size(site: &Site) {
     log::info!(
-        "-> Creating {} pages ({} orphan) and {} sections",
+        "-> Creating {} pages ({} orphan)",
         site.library.pages.len(),
         site.library.get_all_orphan_pages().len(),
-        site.library.sections.len() - 1, // -1 since we do not count the index as a section there
     );
 }
 
 /// Display in the console only the number of pages/sections in the site
 pub fn check_site_summary(site: &Site) {
     let orphans = site.library.get_all_orphan_pages();
-    log::info!(
-        "-> Site content: {} pages ({} orphan), {} sections",
-        site.library.pages.len(),
-        orphans.len(),
-        site.library.sections.len() - 1, // -1 since we do not count the index as a section there
-    );
+    log::info!("-> Site content: {} pages ({} orphan)", site.library.pages.len(), orphans.len(),);
 
     for orphan in orphans {
         log::warn!("Orphan page found: {}", orphan.path);
@@ -34,8 +28,9 @@ pub fn check_site_summary(site: &Site) {
 pub fn warn_about_ignored_pages(site: &Site) {
     let ignored_pages: Vec<_> = site
         .library
-        .sections
+        .pages
         .values()
+        .filter(|x| x.is_section())
         .flat_map(|s| s.ignored_pages.iter().map(|k| site.library.pages[k].file.path.clone()))
         .collect();
 

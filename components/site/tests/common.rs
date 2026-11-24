@@ -193,10 +193,6 @@ impl Translations {
             site.library.pages.get(&site.base_path.join("content").join(path))
         {
             page.file.canonical.clone()
-        } else if let Some(section) =
-            site.library.sections.get(&site.base_path.join("content").join(path))
-        {
-            section.file.canonical.clone()
         } else {
             panic!("No such page or section: {}", path);
         };
@@ -217,7 +213,7 @@ impl Translations {
                 // Are we looking for a section? (no file extension here)
                 if unified_path.ends_with("_index") {
                     //library.get_section_by_key(*key).file.relative.to_string()
-                    let section = &site.library.sections[key];
+                    let section = &site.library.pages[key];
                     Translation {
                         lang: section.lang.clone(),
                         permalink: section.permalink.clone(),

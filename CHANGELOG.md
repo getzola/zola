@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.24.x (unreleased)
+
+### Breaking
+
+- Fix `section.assets` not having paths of the same shape as `page.assets`. Also remove the language prefix for translated sections
+- `subsections` does not contain sections with `render = false` anymore
+
+### Other
+
+- Make `cachebust` arg of `get_url` work with colocated asset `@/` path
+- Change Sass library to support more recent Sass things
+- Apply `ignored_content` only to content changes in `zola serve`
+- Fix line breaks in image alt text being dropped and replace them with spaces instead
+
+
 ## 0.23.6 (2026-09-12)
 
 - Update tera version to support component implicit params

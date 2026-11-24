@@ -1,33 +1,41 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use content::Kind;
 use render::RenderCache;
 use tera::{Error, Function, Kwargs, State, TeraResult, Value};
 
+/// Both `get_page` and `get_section`
 #[derive(Debug)]
-pub struct GetPage {
+pub struct GetContent {
     base_path: PathBuf,
     cache: Arc<RenderCache>,
     default_lang: String,
+    /// `Some(Section)` for `get_section`, `None` for `get_page` which can return both kinds
+    kind: Option<Kind>,
 }
 
-impl GetPage {
-    pub fn new(base_path: PathBuf, default_lang: &str, cache: Arc<RenderCache>) -> Self {
-        Self { base_path: base_path.join("content"), default_lang: default_lang.to_string(), cache }
-    }
-}
-
-impl Default for GetPage {
-    fn default() -> Self {
+impl GetContent {
+    pub fn new(
+        base_path: PathBuf,
+        default_lang: &str,
+        cache: Arc<RenderCache>,
+        kind: Option<Kind>,
+    ) -> Self {
         Self {
-            base_path: PathBuf::new(),
-            default_lang: String::new(),
-            cache: Arc::new(RenderCache::default()),
+            base_path: base_path.join("content"),
+            default_lang: default_lang.to_string(),
+            cache,
+            kind,
         }
     }
+
+    pub fn empty(kind: Option<Kind>) -> Self {
+        Self::new(PathBuf::new(), "", Arc::new(RenderCache::default()), kind)
+    }
 }
 
-impl Function<TeraResult<Value>> for GetPage {
+impl Function<TeraResult<Value>> for GetContent {
     fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
         let path: String = kwargs.must_get("path")?;
         let lang: String = kwargs
@@ -38,13 +46,14 @@ impl Function<TeraResult<Value>> for GetPage {
         let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or(false);
 
         let full_path = self.base_path.join(&path);
+        let kind = if self.kind.is_some() { "Section" } else { "Page" };
+        let not_found = || Error::message(format!("{kind} `{path}` not found."));
 
         let res = (|| {
-            let cached = self
-                .cache
-                .pages
-                .get(&full_path)
-                .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))?;
+            let cached = self.cache.pages.get(&full_path).ok_or_else(not_found)?;
+            if self.kind.is_some_and(|k| cached.kind != k) {
+                return Err(not_found());
+            }
 
             let file_path = self
                 .cache
@@ -52,85 +61,16 @@ impl Function<TeraResult<Value>> for GetPage {
                 .get(&cached.canonical)
                 .and_then(|by_lang| by_lang.get(&lang))
                 .ok_or_else(|| {
-                    Error::message(format!("Page `{}` not found for language `{}`.", path, lang))
+                    Error::message(format!("{kind} `{path}` not found for language `{lang}`."))
                 })?;
+            let cached = self.cache.pages.get(file_path).ok_or_else(not_found)?;
 
-            self.cache
-                .pages
-                .get(file_path)
-                .map(|c| c.value.clone())
-                .ok_or_else(|| Error::message(format!("Page `{}` not found.", path)))
-        })();
-
-        match res {
-            Ok(v) => Ok(v),
-            Err(err) => {
-                if allow_missing {
-                    Ok(Value::none())
-                } else {
-                    Err(err)
-                }
-            }
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct GetSection {
-    base_path: PathBuf,
-    cache: Arc<RenderCache>,
-    default_lang: String,
-}
-
-impl GetSection {
-    pub fn new(base_path: PathBuf, default_lang: &str, cache: Arc<RenderCache>) -> Self {
-        Self { base_path: base_path.join("content"), default_lang: default_lang.to_string(), cache }
-    }
-}
-
-impl Default for GetSection {
-    fn default() -> Self {
-        Self {
-            base_path: PathBuf::new(),
-            default_lang: String::new(),
-            cache: Arc::new(RenderCache::default()),
-        }
-    }
-}
-
-impl Function<TeraResult<Value>> for GetSection {
-    fn call(&self, kwargs: Kwargs, state: &State) -> TeraResult<Value> {
-        let path: String = kwargs.must_get("path")?;
-        let lang: String = kwargs
-            .get::<String>("lang")?
-            .or_else(|| state.get::<String>("lang").ok().flatten())
-            .unwrap_or_else(|| self.default_lang.clone());
-
-        let allow_missing: bool = kwargs.get::<bool>("allow_missing")?.unwrap_or(false);
-
-        let full_path = self.base_path.join(&path);
-
-        let res = (|| {
-            let cached = self
-                .cache
-                .sections
-                .get(&full_path)
-                .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))?;
-
-            let file_path = self
-                .cache
-                .sections_by_canonical
-                .get(&cached.canonical)
-                .and_then(|by_lang| by_lang.get(&lang))
-                .ok_or_else(|| {
-                    Error::message(format!("Section `{}` not found for language `{}`.", path, lang))
-                })?;
-
-            self.cache
-                .sections
-                .get(file_path)
-                .map(|c| c.value.clone())
-                .ok_or_else(|| Error::message(format!("Section `{}` not found.", path)))
+            // The legacy section shape when `legacy_page_template` is set, `current` otherwise
+            Ok(if self.kind.is_some() {
+                cached.legacy.clone().unwrap_or_else(|| cached.current.clone())
+            } else {
+                cached.current.clone()
+            })
         })();
 
         match res {
@@ -150,7 +90,7 @@ impl Function<TeraResult<Value>> for GetSection {
 mod tests {
     use super::*;
     use config::Config;
-    use content::{FileInfo, Library, Page, Section, SortBy};
+    use content::{FileInfo, Library, Page, SortBy};
     use render::RenderCache;
     use std::path::Path;
     use tera::value::Key;
@@ -192,14 +132,15 @@ mod tests {
             ("Des Romans", "content/novels.fr.md", "fr"),
         ];
         for (t, f, l) in pages.clone() {
-            library.insert_page(create_page(t, f, l));
+            library.insert(create_page(t, f, l));
         }
+        library.insert(create_section("Wiki section", "content/wiki/_index.md", "en"));
         let tera = Tera::default();
         let mut cache = RenderCache::new(&config);
         cache.build(&library, &[], &tera);
         let base_path = "/test/base/path".into();
 
-        let get_page = GetPage::new(base_path, "en", Arc::new(cache));
+        let get_page = GetContent::new(base_path, "en", Arc::new(cache), None);
 
         // Find with lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes.md"))]);
@@ -253,16 +194,30 @@ mod tests {
         let res = get_page.call(kwargs, &State::new(&ctx));
         assert!(res.is_ok());
         assert!(res.unwrap() == Value::none());
+
+        // get_page can now get sections as well
+        let kwargs = Kwargs::from([("path", Value::from("wiki/recipes.md"))]);
+        let ctx = Context::new();
+        let res = get_page.call(kwargs, &State::new(&ctx)).unwrap();
+        let res_obj = res.as_map().unwrap();
+        assert_eq!(res_obj.get(&Key::from("kind")).unwrap().as_str().unwrap(), "page");
+
+        let kwargs = Kwargs::from([("path", Value::from("wiki/_index.md"))]);
+        let ctx = Context::new();
+        let res = get_page.call(kwargs, &State::new(&ctx)).unwrap();
+        let res_obj = res.as_map().unwrap();
+        assert_eq!(res_obj.get(&Key::from("kind")).unwrap().as_str().unwrap(), "section");
+        assert_eq!(res_obj.get(&Key::from("title")).unwrap().as_str().unwrap(), "Wiki section");
     }
 
-    fn create_section(title: &str, file_path: &str, lang: &str) -> Section {
-        let mut section = Section { lang: lang.to_owned(), ..Section::default() };
+    fn create_section(title: &str, file_path: &str, lang: &str) -> Page {
+        let mut section = Page { lang: lang.to_owned(), ..Page::default() };
         section.file = FileInfo::new_section(
             Path::new(format!("/test/base/path/{}", file_path).as_str()),
             &PathBuf::new(),
         );
         section.meta.title = Some(title.to_string());
-        section.meta.weight = 1;
+        section.meta.weight = Some(1);
         section.meta.transparent = false;
         section.meta.sort_by = SortBy::None;
         section.meta.page_template = Some("new_page.html".to_owned());
@@ -288,14 +243,15 @@ mod tests {
             ("Des Romans", "content/novels/_index.fr.md", "fr"),
         ];
         for (t, f, l) in sections.clone() {
-            library.insert_section(create_section(t, f, l));
+            library.insert(create_section(t, f, l));
         }
+        library.insert(create_page("Wiki page", "content/wiki/page.md", "en"));
         let tera = Tera::default();
         let mut cache = RenderCache::new(&config);
         cache.build(&library, &[], &tera);
         let base_path = "/test/base/path".into();
 
-        let get_section = GetSection::new(base_path, "en", Arc::new(cache));
+        let get_section = GetContent::new(base_path, "en", Arc::new(cache), Some(Kind::Section));
 
         // Find with lang in context
         let kwargs = Kwargs::from([("path", Value::from("wiki/recipes/_index.md"))]);
@@ -352,5 +308,19 @@ mod tests {
         let res = get_section.call(kwargs, &State::new(&ctx));
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), Value::none());
+
+        // get_section is limited to sections
+        let kwargs = Kwargs::from([("path", Value::from("wiki/page.md"))]);
+        let ctx = Context::new();
+        let res = get_section.call(kwargs, &State::new(&ctx));
+        assert!(res.unwrap_err().to_string().contains("Section `wiki/page.md` not found"));
+
+        let kwargs = Kwargs::from([
+            ("path", Value::from("wiki/page.md")),
+            ("allow_missing", Value::from(true)),
+        ]);
+        let ctx = Context::new();
+        let res = get_section.call(kwargs, &State::new(&ctx)).unwrap();
+        assert_eq!(res, Value::none());
     }
 }

@@ -113,7 +113,8 @@ pub fn filter_events(
             }
         }
 
-        if is_ignored_file(ignored_content_globset, &path) {
+        let (change_k, partial_p) = detect_change_kind(root_dir, &path, config_path);
+        if change_k == ChangeKind::Content && is_ignored_file(ignored_content_globset, &path) {
             log::debug!(target: "file_change", "skipping file change event because it is ignored by content globset {:?}", ignored_content_globset);
             continue;
         }
@@ -136,7 +137,6 @@ pub fn filter_events(
             continue;
         }
 
-        let (change_k, partial_p) = detect_change_kind(root_dir, &path, config_path);
         log::debug!(target: "file_change", "tracking meaningful file change event: path {:?}, partial_p {:?}, simple_kind {:?}, change_k {:?}", path, partial_p, simple_kind.as_ref().unwrap(), change_k);
         meaningful_events.insert(path, (partial_p, simple_kind.unwrap(), change_k));
     }
@@ -192,12 +192,14 @@ fn detect_change_kind(pwd: &Path, path: &Path, config_path: &Path) -> (ChangeKin
 
 #[cfg(test)]
 mod tests {
+    use notify_debouncer_full::DebouncedEvent;
     use notify_debouncer_full::notify::event::*;
     use std::path::{Path, PathBuf};
+    use std::time::Instant;
 
     use super::{
-        ChangeKind, SimpleFileSystemEventKind, detect_change_kind, get_relevant_event_kind,
-        is_temp_file,
+        ChangeKind, SimpleFileSystemEventKind, detect_change_kind, filter_events,
+        get_relevant_event_kind, is_temp_file,
     };
 
     // This test makes sure we at least have code coverage on the `notify` event kinds we care
@@ -256,6 +258,29 @@ mod tests {
             let ek = get_relevant_event_kind(case);
             assert_eq!(ek, *expected, "case: {case:?}");
         }
+    }
+
+    #[test]
+    fn ignored_content_only_filters_content_changes() {
+        let root = Path::new("/home/vincent/site");
+        let ignored = Some(
+            utils::globs::build_ignore_glob_set(&vec!["*.html".to_string()], "ignored_content")
+                .unwrap(),
+        );
+        // Remove events skip the existence check, so no files need to exist.
+        let events = ["content/notes.html", "templates/index.html"]
+            .into_iter()
+            .map(|path| {
+                let event =
+                    Event::new(EventKind::Remove(RemoveKind::File)).add_path(root.join(path));
+                DebouncedEvent::new(event, Instant::now())
+            })
+            .collect();
+
+        let changes = filter_events(events, root, &root.join("config.toml"), &ignored);
+
+        assert!(!changes.contains_key(&ChangeKind::Content));
+        assert_eq!(changes[&ChangeKind::Templates][0].0, PathBuf::from("/templates/index.html"));
     }
 
     #[test]

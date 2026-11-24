@@ -1,6 +1,14 @@
+use errors::{Result, bail};
+use serde::Serialize;
 use std::path::{Path, PathBuf};
 
-use errors::{Result, bail};
+#[derive(Clone, Debug, Copy, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Kind {
+    #[default]
+    Page,
+    Section,
+}
 
 /// Takes a full path to a file and returns only the components after the first `content` directory
 /// Will not return the filename as last component
@@ -51,9 +59,58 @@ pub struct FileInfo {
     /// This is `parent` + `name`, used to find content referring to the same content but in
     /// various languages.
     pub canonical: PathBuf,
+    /// Whether it's a page or a section
+    pub kind: Kind,
 }
 
 impl FileInfo {
+    pub fn new(path: &Path, base_path: &Path) -> Self {
+        let file_path = path.to_path_buf();
+        let mut parent = file_path.parent().expect("Get parent of page").to_path_buf();
+        let grand_parent = parent.parent().map(|p| p.to_path_buf());
+        let name = path.file_stem().unwrap().to_string_lossy().to_string();
+        let canonical = parent.join(&name);
+        let mut components =
+            find_content_components(file_path.strip_prefix(base_path).unwrap_or(&file_path));
+        let relative = if !components.is_empty() {
+            format!("{}/{}.md", components.join("/"), name)
+        } else {
+            format!("{}.md", name)
+        };
+        let kind =
+            if name.split('.').next().unwrap() == "_index" { Kind::Section } else { Kind::Page };
+
+        let mut colocated_path = None;
+        if !components.is_empty() {
+            let is_colocated_page = name.split('.').next().unwrap() == "index";
+            if kind == Kind::Section || is_colocated_page {
+                colocated_path = Some({
+                    let mut val = components.join("/");
+                    val.push('/');
+                    val
+                });
+            }
+            if is_colocated_page {
+                components.pop();
+                // also set parent_path to grandparent instead
+                parent = parent.parent().unwrap().to_path_buf();
+            }
+        }
+
+        FileInfo {
+            filename: file_path.file_name().unwrap().to_string_lossy().to_string(),
+            path: file_path,
+            grand_parent: if kind == Kind::Section { grand_parent } else { None },
+            canonical,
+            parent,
+            name,
+            components,
+            relative,
+            colocated_path,
+            kind,
+        }
+    }
+
     pub fn new_page(path: &Path, base_path: &Path) -> FileInfo {
         let file_path = path.to_path_buf();
         let mut parent = file_path.parent().expect("Get parent of page").to_path_buf();
@@ -94,6 +151,7 @@ impl FileInfo {
             components,
             relative,
             colocated_path,
+            kind: Kind::Page,
         }
     }
 
@@ -130,6 +188,7 @@ impl FileInfo {
             components,
             relative,
             colocated_path,
+            kind: Kind::Section,
         }
     }
 

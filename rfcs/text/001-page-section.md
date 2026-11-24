@@ -44,9 +44,11 @@ posts/
 
 In the templates (only pages/sections), there is just the `current` variable that has `current.{pages,subsections}` filled if it's the directory page
 and empty otherwise.
+
 For existing users, we will create a `section` and `page` alias that match what existed before this merge in each case (eg
-a directory page gets a `section` variable but a normal page does not). Those variables will not change so it should not
-be a breaking change.
+a directory page gets a `section` variable but a normal page does not). Those variables will be the same as the previous version
+but users will need to add `legacy_page_template = true` in their zola.toml file since there would be speed/memory overhead
+if we were always serialising them.
 
 We do expose a new field on `current`, `kind`, which indicates whether it's a section or a page since we need to differentiate between those
 still.

@@ -59,7 +59,7 @@ pub fn prepare_feed(
     let serialized_pages = pages
         .iter()
         .take(num_entries)
-        .map(|page| cache.pages.get(&page.file.path).unwrap().value.clone())
+        .map(|page| cache.pages.get(&page.file.path).unwrap().current.clone())
         .collect::<Vec<_>>();
 
     FeedData { pages: serialized_pages, last_updated }

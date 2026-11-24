@@ -1,7 +1,7 @@
 use config::Config;
 use config::TaxonomyConfig;
 use content::{
-    Library, Page, Section, SerializingPage, SerializingSection, Taxonomy, TaxonomyTerm,
+    Library, Page, SerializingCurrent, SerializingPage, SerializingSection, Taxonomy, TaxonomyTerm,
 };
 use errors::{Context as _, Result};
 use serde::Serialize;
@@ -17,6 +17,7 @@ pub struct FeedInput<'a> {
     pub last_updated: Option<&'a str>,
 }
 
+use crate::cache::CachedContent;
 use crate::pagination::{Pager, PaginationRoot, Paginator};
 use crate::{RenderCache, render_template};
 
@@ -40,33 +41,24 @@ impl<'a> Renderer<'a> {
 
     pub fn render_page(&self, page: &Page) -> Result<String> {
         let mut context = Context::new();
+        let cached = self.cache.pages.get(&page.file.path).unwrap();
 
         context.insert_value("config", self.cache.configs.get(&page.lang).unwrap().clone());
-        context.insert_value("page", self.cache.pages.get(&page.file.path).unwrap().value.clone());
+        context.insert_value("current", cached.current.clone());
+        if let Some(legacy) = &cached.legacy {
+            context.insert_value(if page.is_page() { "page" } else { "section" }, legacy.clone());
+        }
         context.insert("current_url", &page.permalink);
         context.insert("current_path", &page.path);
         context.insert("lang", &page.lang);
 
-        let tpl_name = page.meta.template.as_deref().unwrap_or("page.html");
-        render_template(tpl_name, self.tera, context)
-            .with_context(|| format!("Failed to render page '{}'", page.file.path.display()))
-    }
-
-    pub fn render_section(&self, section: &Section) -> Result<String> {
-        let mut context = Context::new();
-
-        context.insert_value("config", self.cache.configs.get(&section.lang).unwrap().clone());
-        context.insert_value(
-            "section",
-            self.cache.sections.get(&section.file.path).unwrap().value.clone(),
-        );
-        context.insert("current_url", &section.permalink);
-        context.insert("current_path", &section.path);
-        context.insert("lang", &section.lang);
-
-        let tpl_name = section.get_template_name();
-        render_template(tpl_name, self.tera, context)
-            .with_context(|| format!("Failed to render section '{}'", section.file.path.display()))
+        render_template(page.get_template_name(), self.tera, context).with_context(|| {
+            format!(
+                "Failed to render {} '{}'",
+                if page.is_page() { "page" } else { "section" },
+                page.file.path.display()
+            )
+        })
     }
 
     pub fn render_taxonomy_term(&self, taxonomy: &Taxonomy, term: &TaxonomyTerm) -> Result<String> {
@@ -136,9 +128,12 @@ impl<'a> Renderer<'a> {
         match paginator.root {
             PaginationRoot::Section(s) => {
                 context.insert_value(
-                    "section",
-                    self.cache.sections.get(&s.file.path).unwrap().value.clone(),
+                    "current",
+                    self.cache.pages.get(&s.file.path).unwrap().current.clone(),
                 );
+                if let Some(legacy) = &self.cache.pages.get(&s.file.path).unwrap().legacy {
+                    context.insert_value("section", legacy.clone());
+                }
                 context.insert("lang", &s.lang);
                 context.insert_value("config", self.cache.configs.get(&s.lang).unwrap().clone());
             }
@@ -183,9 +178,16 @@ impl<'a> Renderer<'a> {
             .with_context(|| format!("Failed to render feed '{}'", input.feed_filename))
     }
 
-    pub fn render_section_feed(&self, input: &FeedInput<'_>, section: Value) -> Result<String> {
+    pub fn render_section_feed(
+        &self,
+        input: &FeedInput<'_>,
+        cached: &CachedContent,
+    ) -> Result<String> {
         let mut context = self.build_feed_context(input);
-        context.insert_value("section", section);
+        if let Some(legacy) = &cached.legacy {
+            context.insert_value("section", legacy.clone());
+        }
+        context.insert_value("current", cached.current.clone());
         render_template(input.feed_filename, self.tera, context)
             .with_context(|| format!("Failed to render feed '{}'", input.feed_filename))
     }
@@ -219,21 +221,20 @@ impl<'a> Renderer<'a> {
         let mut context = Context::new();
         context.insert("lang", &page.lang);
         context.insert_value("config", self.cache.configs.get(&page.lang).unwrap().clone());
-        context.insert("page", &SerializingPage::new(page, self.library));
+        context.insert(
+            "current",
+            &SerializingCurrent::new(page, self.library, Vec::new(), Vec::new()),
+        );
+        if self.config.legacy_page_template {
+            if page.is_page() {
+                context.insert("page", &SerializingPage::new(page, self.library));
+            } else {
+                context.insert("section", &SerializingSection::new(page, self.library, Vec::new()));
+            }
+        }
 
         self.tera.render_str(content, &context, false).with_context(|| {
             format!("Failed to render page content of '{}'", page.file.path.display())
-        })
-    }
-
-    pub fn render_section_content(&self, content: &str, section: &Section) -> Result<String> {
-        let mut context = Context::new();
-        context.insert("lang", &section.lang);
-        context.insert_value("config", self.cache.configs.get(&section.lang).unwrap().clone());
-        context.insert("section", &SerializingSection::new(section, self.library, Vec::new()));
-
-        self.tera.render_str(content, &context, false).with_context(|| {
-            format!("Failed to render section content of '{}'", section.file.path.display())
         })
     }
 }

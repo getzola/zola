@@ -50,6 +50,11 @@ pub struct Config {
     /// Description of the site
     pub description: Option<String>,
 
+    /// Whether to serialize page/section variables in the templates like it existed
+    /// in Zola < 0.24
+    /// false by default, use `current` instead
+    pub legacy_page_template: bool,
+
     /// The language used in the site. Defaults to "en"
     pub default_language: String,
     /// The list of supported languages outside of the default one
@@ -458,6 +463,7 @@ impl Default for Config {
             title: None,
             description: None,
             theme: None,
+            legacy_page_template: false,
             default_language: "en".to_string(),
             languages: BTreeMap::new(),
             generate_feeds: false,
