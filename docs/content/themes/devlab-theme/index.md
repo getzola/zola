@@ -3,14 +3,14 @@
 title = "devlab-theme"
 description = "A composable Zola theme for product sites, blogs, documentation and books."
 template = "theme.html"
-date = 2026-11-15T23:19:59+05:00
+date = 2026-11-22T17:02:51+05:00
 
 [taxonomies]
 theme-tags = ['documentation', 'blog', 'book', 'product', 'responsive', 'search', 'dark-mode']
 
 [extra]
-created = 2026-11-15T23:19:59+05:00
-updated = 2026-11-15T23:19:59+05:00
+created = 2026-11-22T17:02:51+05:00
+updated = 2026-11-22T17:02:51+05:00
 repository = "https://codeberg.org/ripetitor/devlab-theme.git"
 homepage = "https://codeberg.org/RiPetitor/devlab-theme"
 minimum_version = "0.23.6"
@@ -43,7 +43,7 @@ before changing any files.
 1. Install Zola and run `zola --version` in a terminal. [Zola installation guide](https://www.getzola.org/documentation/getting-started/installation/)
 2. Download and extract DevLab. Copy `zola.toml` and `content/` from `starter/`
    into a new folder called `my-site`. If you use Git, also copy `.gitignore`,
-   which may be hidden. [Download DevLab v1.1 (ZIP)](https://codeberg.org/RiPetitor/devlab-theme/archive/v1.1.zip)
+   which may be hidden. [Download DevLab v1.2 (ZIP)](https://codeberg.org/RiPetitor/devlab-theme/archive/v1.2.zip)
 3. Create `my-site/themes/` and move the extracted theme folder into it. Name
    that folder `devlab-theme`. Check that `my-site/themes/devlab-theme/theme.toml`
    exists.
