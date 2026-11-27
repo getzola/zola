@@ -11,6 +11,7 @@ tempfile = "3"
 ahash = { workspace = true }
 avif-parse = { workspace = true }
 fast_image_resize = { workspace = true }
+heifer = { workspace = true }
 image = { workspace = true }
 log = { workspace = true }
 rayon = { workspace = true }

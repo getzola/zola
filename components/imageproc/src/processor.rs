@@ -45,39 +45,44 @@ impl ImageOp {
 
         log::debug!("processing {} with instructions {:?}", self.input_path.display(), self.instr);
         let input_permissions = fs::metadata(&self.input_path)?.permissions();
-        let reader =
-            ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
-        let mut decoder = reader.into_decoder()?;
-        let color_profile = decoder.icc_profile().ok().flatten();
-        let metadata = decoder.exif_metadata()?.and_then(|raw_metadata| {
-            exif::Reader::new()
-                .read_raw(raw_metadata)
-                .inspect_err(|e| {
-                    log::warn!("Failed to parse exif for {}: {}", self.input_path.display(), e)
-                })
-                .ok()
-        });
-        let img = DynamicImage::from_decoder(decoder)?;
-
-        let mut img = if let Some(metadata) = metadata.as_ref() {
-            match fix_orientation(&img, metadata) {
-                Ok(Some(fixed_img)) => fixed_img,
-                Ok(None) => img,
-                Err(e) => {
-                    log::debug!(
-                        "Using default orientation for {}: could not read exif orientation: {}",
-                        self.input_path.display(),
-                        e
-                    );
-                    img
-                }
-            }
+        let (mut img, color_profile) = if crate::heif::is_heif_file(&self.input_path)? {
+            crate::heif::decode(&self.input_path)?
         } else {
-            log::debug!(
-                "No exif orientation data for {}, using default orientation",
-                self.input_path.display(),
-            );
-            img
+            let reader =
+                ImageReader::open(&self.input_path).and_then(ImageReader::with_guessed_format)?;
+            let mut decoder = reader.into_decoder()?;
+            let color_profile = decoder.icc_profile().ok().flatten();
+            let metadata = decoder.exif_metadata()?.and_then(|raw_metadata| {
+                exif::Reader::new()
+                    .read_raw(raw_metadata)
+                    .inspect_err(|e| {
+                        log::warn!("Failed to parse exif for {}: {}", self.input_path.display(), e)
+                    })
+                    .ok()
+            });
+            let img = DynamicImage::from_decoder(decoder)?;
+
+            let img = if let Some(metadata) = metadata.as_ref() {
+                match fix_orientation(&img, metadata) {
+                    Ok(Some(fixed_img)) => fixed_img,
+                    Ok(None) => img,
+                    Err(e) => {
+                        log::debug!(
+                            "Using default orientation for {}: could not read exif orientation: {}",
+                            self.input_path.display(),
+                            e
+                        );
+                        img
+                    }
+                }
+            } else {
+                log::debug!(
+                    "No exif orientation data for {}, using default orientation",
+                    self.input_path.display(),
+                );
+                img
+            };
+            (img, color_profile)
         };
 
         let img = match self.instr.crop_instruction {
@@ -127,7 +132,11 @@ impl ImageOp {
             Format::Jpeg { quality } => {
                 let mut encoder = JpegEncoder::new_with_quality(&mut tmp_output_writer, quality);
                 add_color_profile(&mut encoder);
-                encoder.encode_image(&img)?;
+                if img.color().has_alpha() {
+                    encoder.encode_image(&DynamicImage::ImageRgb8(img.to_rgb8()))?;
+                } else {
+                    encoder.encode_image(&img)?;
+                }
             }
             Format::WebP { quality } => {
                 // use the `image` builtin encoder for lossless, as it supports color profiles
