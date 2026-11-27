@@ -1935,6 +1935,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
+name = "heifer"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a3614bd55f9e59651c4b72b0767a015d27dcaae5c77daa96cc26653eee00e05b"
+dependencies = [
+ "heifer-hevc-dec",
+ "heifer-isobmff",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "heifer-hevc-dec"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37466056d874f111cadb6c3c1a296f25c8a71d1f34617627bebe7fc90fcacccc"
+dependencies = [
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "heifer-isobmff"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a6017abd814f20c907dce5ba67845bffe79036cf1c63eddd211d04507c111548"
+dependencies = [
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2434,6 +2463,7 @@ dependencies = [
  "errors",
  "fast_image_resize",
  "fs-err",
+ "heifer",
  "image",
  "kamadak-exif",
  "log",

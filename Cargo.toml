@@ -90,6 +90,7 @@ filetime = "0.2"
 gh-emoji = "1"
 globset = "0.4"
 sasso = { version = "0.21", default-features = false }
+heifer = { version = "0.9", default-features = false }
 image = { version = "0.25", default-features = true, features = ["avif"] }
 fs-err = "3.2.2"
 lexical-sort = "0.3"

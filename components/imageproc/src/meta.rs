@@ -1,7 +1,8 @@
 use avif_parse::read_avif;
 use errors::{Context, Result, anyhow};
 use fs_err as fs;
-use image::{ImageDecoder, ImageReader};
+use image::error::{DecodingError, ImageFormatHint};
+use image::{ImageDecoder, ImageError, ImageReader};
 use image::{ImageFormat, ImageResult};
 use serde::Serialize;
 use std::ffi::OsStr;
@@ -24,6 +25,15 @@ pub struct ImageMeta {
 
 impl ImageMeta {
     pub fn read(path: &Path) -> ImageResult<Self> {
+        if crate::heif::is_heif_file(path).unwrap_or(false) {
+            return crate::heif::read_meta(path).map(|(meta, _, _)| meta).map_err(|err| {
+                ImageError::Decoding(DecodingError::new(
+                    ImageFormatHint::Name("HEIF".into()),
+                    std::io::Error::other(err.to_string()),
+                ))
+            });
+        }
+
         let reader = ImageReader::open(path).and_then(ImageReader::with_guessed_format)?;
         let format = reader.format();
         let mut decoder = reader.into_decoder()?;
@@ -97,6 +107,18 @@ impl ImageMetaResponse {
             created: None,
         })
     }
+
+    fn new_heif(path: &Path) -> Result<Self> {
+        let (meta, format, mime) = crate::heif::read_meta(path)?;
+        Ok(Self {
+            width: meta.size.0,
+            height: meta.size.1,
+            format: Some(format),
+            mime: Some(mime),
+            description: meta.description,
+            created: meta.created,
+        })
+    }
 }
 
 impl From<ImageMeta> for ImageMetaResponse {
@@ -125,10 +147,13 @@ pub fn read_image_metadata<P: AsRef<Path>>(path: P) -> Result<ImageMetaResponse>
         )
     };
 
-    match ext.as_str() {
-        "svg" => ImageMetaResponse::new_svg(path),
-        "avif" => ImageMetaResponse::new_avif(path),
-        _ => ImageMeta::read(path).map(ImageMetaResponse::from).map_err(Into::into),
-    }
+    (|| -> Result<ImageMetaResponse> {
+        match ext.as_str() {
+            "svg" => ImageMetaResponse::new_svg(path),
+            "avif" => ImageMetaResponse::new_avif(path),
+            _ if crate::heif::is_heif_file(path)? => ImageMetaResponse::new_heif(path),
+            _ => ImageMeta::read(path).map(ImageMetaResponse::from).map_err(Into::into),
+        }
+    })()
     .with_context(err_context)
 }

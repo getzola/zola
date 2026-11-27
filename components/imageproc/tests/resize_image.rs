@@ -851,7 +851,7 @@ fn check_icc_data_preserved(source_img: &str, target_format: &str) {
     proc.do_process().unwrap();
 
     let processed_path = PathBuf::from(&resp.static_path);
-    let mut reader = ImageReader::open(&tmpdir.join(&processed_path))
+    let mut reader = ImageReader::open(tmpdir.join(&processed_path))
         .and_then(ImageReader::with_guessed_format)
         .unwrap()
         .into_decoder()
@@ -906,4 +906,213 @@ fn preserve_color_profile() {
     check_icc_data_preserved("display_p3.png", "jpg");
     check_icc_data_preserved("display_p3.png", "png");
     check_icc_data_preserved("display_p3.png", "webp");
+}
+
+#[test]
+fn resize_image_heic_auto_to_jpg() {
+    image_op_test(
+        "heic.heic",
+        "scale",
+        Some(150),
+        Some(150),
+        "auto",
+        None,
+        None,
+        "jpg",
+        150,
+        150,
+        300,
+        380,
+        "lanczos3",
+    );
+}
+
+#[test]
+fn resize_image_heif_auto_to_jpg() {
+    image_op_test(
+        "heif.heif",
+        "scale",
+        Some(8),
+        Some(8),
+        "auto",
+        None,
+        None,
+        "jpg",
+        8,
+        8,
+        16,
+        16,
+        "lanczos3",
+    );
+}
+
+#[test]
+fn resize_image_heic_to_webp_png_avif() {
+    for target in &["webp", "png", "avif"] {
+        image_op_test(
+            "heic.heic",
+            "fit_width",
+            Some(150),
+            None,
+            target,
+            None,
+            None,
+            target,
+            150,
+            190,
+            300,
+            380,
+            "lanczos3",
+        );
+    }
+}
+
+#[test]
+fn read_image_metadata_heic_and_heif() {
+    let heic_meta = image_meta_test("heic.heic");
+    assert_eq!(heic_meta.width, 300);
+    assert_eq!(heic_meta.height, 380);
+    assert_eq!(heic_meta.format, Some("heic"));
+    assert_eq!(heic_meta.mime, Some("image/heic"));
+    assert_eq!(heic_meta.description.as_deref(), Some("Description for heic.heic"));
+    assert_eq!(heic_meta.created.as_deref(), Some("2025:01:15 12:34:56"));
+
+    let heif_meta = image_meta_test("heif.heif");
+    assert_eq!(heif_meta.width, 16);
+    assert_eq!(heif_meta.height, 16);
+    assert_eq!(heif_meta.format, Some("heif"));
+    assert_eq!(heif_meta.mime, Some("image/heif"));
+    assert_eq!(heif_meta.description, None);
+    assert_eq!(heif_meta.created, None);
+}
+
+#[test]
+fn heic_irot_with_exif_orientation_does_not_double_rotate() {
+    let meta = image_meta_test("heic_rotated.heic");
+    assert_eq!((meta.width, meta.height), (16, 32));
+    assert_eq!(meta.format, Some("heic"));
+    assert_eq!(meta.mime, Some("image/heic"));
+
+    image_op_test(
+        "heic_rotated.heic",
+        "fit_width",
+        Some(8),
+        None,
+        "auto",
+        None,
+        None,
+        "jpg",
+        8,
+        16,
+        16,
+        32,
+        "lanczos3",
+    );
+
+    let source_path = TEST_IMGS.join("heic_rotated.heic");
+    let tmpdir = tempfile::tempdir().unwrap().keep();
+    let config = Config::parse(CONFIG).unwrap();
+    let mut proc = Processor::new(tmpdir.clone(), &config);
+    let resize_op = ResizeOperation::Scale(16, 32);
+    let resp = proc
+        .enqueue(resize_op, "heic_rotated.heic".into(), source_path, "png", None, None, "lanczos3")
+        .unwrap();
+    assert_eq!((resp.orig_width, resp.orig_height), (16, 32));
+    assert_eq!((resp.width, resp.height), (16, 32));
+
+    proc.do_process().unwrap();
+
+    let img = image::open(tmpdir.join(&resp.static_path)).unwrap();
+    assert_eq!(img.dimensions(), (16, 32));
+    let tl = img.get_pixel(1, 1);
+    let tr = img.get_pixel(14, 1);
+    let bl = img.get_pixel(1, 30);
+    let br = img.get_pixel(14, 30);
+    assert!(tl[0] > 230 && tl[1] < 30 && tl[2] < 30, "expected TL red, got {:?}", tl);
+    assert!(tr[1] > 230 && tr[0] < 30 && tr[2] < 30, "expected TR green, got {:?}", tr);
+    assert!(bl[2] > 230 && bl[0] < 30 && bl[1] < 30, "expected BL blue, got {:?}", bl);
+    assert!(br[0] > 230 && br[1] > 230 && br[2] > 230, "expected BR white, got {:?}", br);
+}
+
+fn processed_icc_profile(source_img: &str, w: u32, h: u32, target_format: &str) -> Option<Vec<u8>> {
+    let source_path = TEST_IMGS.join(source_img);
+    let tmpdir = tempfile::tempdir().unwrap().keep();
+    let config = Config::parse(CONFIG).unwrap();
+    let mut proc = Processor::new(tmpdir.clone(), &config);
+    let resp = proc
+        .enqueue(
+            ResizeOperation::Scale(w, h),
+            source_img.into(),
+            source_path,
+            target_format,
+            None,
+            None,
+            "lanczos3",
+        )
+        .unwrap();
+    proc.do_process().unwrap();
+
+    let mut reader = ImageReader::open(tmpdir.join(&resp.static_path))
+        .and_then(ImageReader::with_guessed_format)
+        .unwrap()
+        .into_decoder()
+        .unwrap();
+    reader.icc_profile().ok().flatten()
+}
+
+#[test]
+fn preserve_heic_color_profile() {
+    let jpg_icc = processed_icc_profile("heic_display_p3.heic", 32, 32, "jpg").unwrap();
+    let png_icc = processed_icc_profile("heic_display_p3.heic", 32, 32, "png").unwrap();
+    let webp_icc = processed_icc_profile("heic_display_p3.heic", 32, 32, "webp").unwrap();
+    assert!(!jpg_icc.is_empty());
+    assert_eq!(&jpg_icc[36..40], b"acsp");
+    assert_eq!(jpg_icc, png_icc);
+    assert_eq!(jpg_icc, webp_icc);
+
+    for fmt in &["jpg", "png", "webp"] {
+        assert_eq!(processed_icc_profile("heic.heic", 150, 190, fmt), None);
+    }
+}
+
+#[test]
+fn heif_corrupt_file_returns_error() {
+    let tmpdir = tempfile::tempdir().unwrap();
+    let config = Config::parse(CONFIG).unwrap();
+
+    let bad_path = tmpdir.path().join("corrupt.heic");
+    std::fs::write(&bad_path, b"\x00\x00\x00\x18ftypheic\x00\x00\x00\x00mif1corrupt-payload")
+        .unwrap();
+    assert!(imageproc::read_image_metadata(&bad_path).is_err());
+
+    let mut proc = Processor::new(tmpdir.path().to_path_buf(), &config);
+    let res = proc
+        .enqueue(
+            ResizeOperation::Scale(16, 16),
+            "corrupt.heic".into(),
+            bad_path,
+            "auto",
+            None,
+            None,
+            "lanczos3",
+        )
+        .and_then(|_| proc.do_process());
+    assert!(res.is_err());
+
+    let valid_bytes = std::fs::read(TEST_IMGS.join("heic.heic")).unwrap();
+    let truncated_path = tmpdir.path().join("truncated.heic");
+    std::fs::write(&truncated_path, &valid_bytes[..valid_bytes.len() / 2]).unwrap();
+    let mut proc = Processor::new(tmpdir.path().to_path_buf(), &config);
+    let res = proc
+        .enqueue(
+            ResizeOperation::Scale(150, 150),
+            "truncated.heic".into(),
+            truncated_path,
+            "auto",
+            None,
+            None,
+            "lanczos3",
+        )
+        .and_then(|_| proc.do_process());
+    assert!(res.is_err());
 }

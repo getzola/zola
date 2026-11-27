@@ -1,5 +1,6 @@
 mod filter;
 mod format;
+mod heif;
 mod helpers;
 mod meta;
 mod ops;
