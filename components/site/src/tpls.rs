@@ -55,6 +55,8 @@ pub fn register_early_global_fns(site: &mut Site) {
             site.output_path.clone(),
         ),
     );
+    register_tera_global_fns(site);
+
     site.tera.register_filter(
         "markdown",
         filters::MarkdownFilter::new(
@@ -64,8 +66,6 @@ pub fn register_early_global_fns(site: &mut Site) {
             site.tera.clone(),
         ),
     );
-
-    register_tera_global_fns(site);
 }
 
 /// Functions filled once we have parsed all the pages/sections only

@@ -112,6 +112,88 @@ fn can_parse_site() {
     assert!(!site.permalinks.contains_key("posts/render.md"));
 }
 
+fn load_site_with_markdown_metadata() -> (Site, tempfile::TempDir) {
+    let tmp_dir = tempfile::tempdir().expect("create temp dir");
+    let path = tmp_dir.path().canonicalize().unwrap();
+    std::fs::create_dir_all(path.join("content/posts")).unwrap();
+    std::fs::create_dir_all(path.join("templates")).unwrap();
+    std::fs::write(path.join("config.toml"), "base_url = \"https://example.com\"\n").unwrap();
+
+    // Check for frontmatter and verify that page/section content is empty
+    let metadata = r#"{% set page = get_page(path="posts/target.md") %}
+Page metadata: {{ page.title }} {{ page.permalink }} {{ page.extra.marker }}
+Page content length: {{ page.content | length }}
+{% set section = get_section(path="posts/_index.md") %}
+Section metadata: {{ section.title }} {{ section.permalink }} {{ section.extra.marker }}
+Section content length: {{ section.content | length }}
+{% for nested_page in section.pages %}
+Nested page: {{ nested_page.title }} content length: {{ nested_page.content | length }}
+{% endfor %}"#;
+
+    for (file, title, weight) in [
+        ("_index.md", "Root", ""),
+        ("posts/_index.md", "Posts", "sort_by = \"weight\""),
+        ("posts/source.md", "Source", "weight = 1"),
+        ("posts/target.md", "Target", "weight = 2"),
+    ] {
+        let metadata = if file == "posts/target.md" { "" } else { metadata };
+        let content = format!(
+            r#"+++
+title = "{title}"
+{weight}
+[extra]
+marker = "{title}-extra"
++++
+# {{{{ page?.title or section.title }}}}
+{metadata}
+"#
+        );
+        std::fs::write(path.join("content").join(file), content).unwrap();
+    }
+    let mut site = Site::new(&path, &path.join("config.toml")).unwrap();
+    site.load().unwrap();
+    (site, tmp_dir)
+}
+
+#[test]
+fn markdown_can_get_metadata_before_rendering() {
+    let (mut site, _tmp_dir) = load_site_with_markdown_metadata();
+    let content = site.base_path.join("content");
+    for rendered in [
+        &site.library.pages[&content.join("posts/source.md")].content,
+        &site.library.sections[&content.join("_index.md")].content,
+        &site.library.sections[&content.join("posts/_index.md")].content,
+    ] {
+        // The markdown step is expected to not include the page/section content
+        for expected in [
+            "Page metadata: Target https://example.com/posts/target/ Target-extra",
+            "Section metadata: Posts https://example.com/posts/ Posts-extra",
+            "Page content length: 0",
+            "Section content length: 0",
+            "Nested page: Source content length: 0",
+            "Nested page: Target content length: 0",
+        ] {
+            assert!(rendered.contains(expected), "Missing {expected:?} in {rendered}");
+        }
+    }
+
+    // Verify that templates still include page/section contents
+    site.tera
+        .add_raw_template(
+            "after-load.html",
+            r#"{% set page = get_page(path="posts/target.md") %}
+{% set section = get_section(path="posts/_index.md") %}
+{{ page.content | safe }}
+{{ section.content | safe }}
+{% for nested_page in section.pages %}{{ nested_page.content | safe }}{% endfor %}"#,
+        )
+        .unwrap();
+    let rendered = site.tera.render("after-load.html", &tera::Context::new()).unwrap();
+    assert!(rendered.contains("<h1 id=\"target\">Target</h1>"), "{}", rendered);
+    assert!(rendered.contains("<h1 id=\"posts\">Posts</h1>"), "{}", rendered);
+    assert!(rendered.contains("<h1 id=\"source\">Source</h1>"), "{}", rendered);
+}
+
 #[test]
 fn errors_on_unknown_taxonomies() {
     let (mut site, _, _) = build_site("test_site");
